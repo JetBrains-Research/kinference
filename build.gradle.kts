@@ -6,7 +6,7 @@ version = "0.1.0"
 plugins {
     kotlin("jvm") version "1.3.61" apply true
     id("org.jetbrains.kotlin.plugin.serialization") version "1.3.61" apply true
-    id("io.gitlab.arturbosch.detekt") version ("1.1.1") apply true
+    id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
 }
 
 repositories {
@@ -19,12 +19,8 @@ detekt {
     failFast = false
     config = files(File(rootProject.projectDir, "buildScripts/detekt/detekt.yml"))
     reports {
-        xml {
-            enabled = false
-        }
-        html {
-            enabled = false
-        }
+        xml.enabled = false
+        html.enabled = false
     }
 }
 
