@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "org.jetbrains.research.kotlin.mpp.inference"
-version = "0.0.1"
+version = "0.1.0"
 
 plugins {
     kotlin("jvm") version "1.3.61" apply true
