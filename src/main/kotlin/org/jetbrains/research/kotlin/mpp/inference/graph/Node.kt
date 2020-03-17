@@ -1,12 +1,11 @@
 package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import NodeProto
+import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
-import kotlin.reflect.KClass
 
-class Node(proto: NodeProto) {
+class Node(proto: NodeProto, val type: NodeType) {
     val inputs: NodeIO = NodeIO()
     val outputs: NodeIO = NodeIO()
     private val operatorName = proto.op_type!!
@@ -14,6 +13,12 @@ class Node(proto: NodeProto) {
     init {
         proto.input.forEach { inputs.addValue(it) }
         proto.output.forEach { outputs.addValue(it) }
+    }
+
+    enum class NodeType {
+        INNER,
+        GRAPH_INPUT,
+        GRAPH_OUTPUT
     }
 
     private val mutableInputs: HashSet<String> = HashSet()
@@ -38,7 +43,8 @@ class Node(proto: NodeProto) {
 
     companion object {
         private fun Collection<Tensor<*>?>.resolveType(): TensorProto.DataType? {
-            require(this.toHashSet().size <= 1)
+            val a = this.mapNotNull { it?.type }.toHashSet().size
+            require(a <= 1)
             return this.first()?.type
         }
     }

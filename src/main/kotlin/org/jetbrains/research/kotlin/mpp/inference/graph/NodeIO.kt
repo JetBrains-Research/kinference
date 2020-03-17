@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
+@Suppress("UNCHECKED_CAST")
 class NodeIO(names: List<String> = emptyList()) : LinkedHashMap<String, Tensor<*>?>() {
     init {
         for (name in names) this[name] = null
@@ -26,6 +27,6 @@ class NodeIO(names: List<String> = emptyList()) : LinkedHashMap<String, Tensor<*
         return this
     }
 
-    val availableInputs: Map<String, Tensor<*>?>
-        get() = this.filter { it.value == null }
+    val availableForWriting: Set<String>
+        get() = this.filter { it.value == null }.keys
 }
