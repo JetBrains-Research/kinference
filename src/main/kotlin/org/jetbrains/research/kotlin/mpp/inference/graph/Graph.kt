@@ -26,31 +26,34 @@ class Graph(
     }
 
     val availableInputs: List<String>
-        get() = nodes.flatMap { it.inputs.availableInputs.keys }
+        get() = nodes.filter { it.type == Node.NodeType.GRAPH_INPUT }.flatMap { it.inputs.availableForWriting }
 
-    inline fun <reified T : Number> setInput(name: String, value: List<T>) {
-        require(name in availableInputs)
-        nodes.findNode(name).inputs[name] = Tensor(value, TensorProto.DataType.FLOAT)
+    inline fun <reified T : Number> setInput(name: String, value: List<T>): Graph {
+        require(name in availableInputs) { "Required input node is already set or not found" }
+        nodes.findInput(name).inputs[name] = Tensor(value, TensorProto.DataType.FLOAT)
+        return this
     }
 
-    inline fun <reified T : Number> setInput(value: List<T>) {
-        require(input.size == 1) { "Specify input node name explicitly" }
+    inline fun <reified T : Number> setInput(value: List<T>): Graph {
+        require(input.size == 1) { "Multiple input nodes found. Specify input name explicitly" }
         val name = input.single().name
-        setInput(name, value)
+        return setInput(name, value)
+    }
+
+    fun fetchOutputs(): List<Tensor<*>?> {
+        val out = nodes.filter { it.type == Node.NodeType.GRAPH_OUTPUT }
+        return out.flatMap { it.outputs.values.toList() }
     }
 
     //only for sequential models
-    fun run() {
+    fun run(): Graph {
         //TODO: check that all inputs were set and not null
         nodes.zipWithNext { current, next ->
             current.process()
             next.inputs.putAll(current.outputs)
         }
         nodes.last().process()
-    }
-
-    private fun fetchOutputs() {
-        nodes.last().outputs
+        return this
     }
 
     companion object {
@@ -60,13 +63,24 @@ class Graph(
             val inputs = proto.input.map { ValueInfo.create(it) }
             val outputs = proto.output.map { ValueInfo.create(it) }
 
-            val nodes = proto.node.map { Node(it) }
+            val nodes = proto.node.map {
+                val type = when {
+                    it.input.any { name -> inputs.containsName(name) } -> Node.NodeType.GRAPH_INPUT
+                    it.output.any { name -> outputs.containsName(name) } -> Node.NodeType.GRAPH_OUTPUT
+                    else -> Node.NodeType.INNER
+                }
+                Node(it, type)
+            }
 
             val info = proto.value_info.map { ValueInfo.create(it) }
             return Graph(initializers, nodes, inputs, outputs, info)
         }
 
-        fun List<Node>.findNode(input: String): Node {
+        private fun List<ValueInfo>.containsName(name: String): Boolean {
+            return this.map { it.name }.contains(name)
+        }
+
+        fun List<Node>.findInput(input: String): Node {
             return this.find { input in it.inputs.keys }!!
         }
     }
