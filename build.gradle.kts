@@ -1,17 +1,48 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.gradle.api.internal.HasConvention
 
 group = "org.jetbrains.research.kotlin.mpp.inference"
 version = "0.1.0"
 
 plugins {
-    kotlin("jvm") version "1.3.61" apply true
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.3.61" apply true
+    java
+    idea
+    kotlin("jvm") version "1.3.70" apply true
+    id("com.squareup.wire") version "3.1.0" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
 }
 
 repositories {
     jcenter()
     maven("https://dl.bintray.com/mipt-npm/scientifik")
+}
+
+val generatedDir = "${projectDir}/src/main/kotlin-gen"
+
+wire {
+    protoPath {
+        srcDir("${projectDir}/src/main/proto")
+    }
+    kotlin {
+        out = generatedDir
+    }
+}
+
+val SourceSet.kotlin: SourceDirectorySet
+    get() = (this as HasConvention)
+        .convention
+        .getPlugin(KotlinSourceSet::class.java)
+        .kotlin
+
+sourceSets {
+    main {
+        kotlin.srcDirs(generatedDir)
+    }
+}
+
+idea {
+    module.generatedSourceDirs.plusAssign(files(generatedDir))
 }
 
 detekt {
@@ -33,12 +64,8 @@ tasks.withType<KotlinJvmCompile> {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("io.jhdf", "jhdf", "0.5.3")
-    api("scientifik", "kmath-core-jvm", "0.1.3") {
-        exclude("org.jetbrains.kotlin")
-    }
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-runtime", "0.14.0") {
-        exclude("org.jetbrains.kotlin")
-    }
+    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
+    api("com.squareup.wire:wire-runtime:3.1.0")
+    api("scientifik", "kmath-core-jvm", "0.1.3")
 }
