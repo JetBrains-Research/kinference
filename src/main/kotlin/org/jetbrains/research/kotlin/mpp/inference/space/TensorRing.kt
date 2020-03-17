@@ -12,6 +12,7 @@ abstract class TensorRing<T : Any>(
 ) : BufferedNDRing<T, Ring<T>> {
     abstract val bufferBuilder: (Int, (Int) -> T) -> Buffer<T>
     abstract val matrixContext : GenericMatrixContext<T, Ring<T>>
+
     abstract fun rebuild(newDims: IntArray): TensorRing<T>
 
     override fun map(arg: NDBuffer<T>, transform: Ring<T>.(T) -> T): NDBuffer<T> {

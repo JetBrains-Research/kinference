@@ -65,7 +65,6 @@ tasks.withType<KotlinJvmCompile> {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation(kotlin("stdlib-jdk8"))
     api("com.squareup.wire:wire-runtime:3.1.0")
     api("scientifik", "kmath-core-jvm", "0.1.3")
 }

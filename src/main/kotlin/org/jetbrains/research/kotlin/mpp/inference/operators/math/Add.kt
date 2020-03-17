@@ -7,9 +7,6 @@ import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 class Add<T : Number> : Operator<T>() {
     override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
         require(inputs.size == 2) { "Applicable only for two arguments" }
-
-        val left = inputs.first()
-        val right = inputs.last()
-        return listOf((left + right)!!)
+        return listOf((inputs.first() + inputs.last())!!)
     }
 }

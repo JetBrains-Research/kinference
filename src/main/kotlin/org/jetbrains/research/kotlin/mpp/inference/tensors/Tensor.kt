@@ -21,7 +21,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
 
         val resMatrix = with (space!!.matrixContext) { other.data.as2D() dot data.as2D() }
         val newSpace = space.rebuild(newDims = resMatrix.shape)
-        return Tensor(name ?: "", resMatrix, type, newSpace)
+        return Tensor(name, resMatrix, type, newSpace)
     }
 
     fun mapElements(func: (T) -> T): Tensor<T> {
@@ -40,12 +40,11 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
             else -> throw IllegalArgumentException("Unsupported data type")
         }
 
-        private operator fun <T : Number> invoke(name: String, matrix: Matrix<T>, type: DataType?, space: TensorRing<T>?): Tensor<T> {
+        private operator fun <T : Number> invoke(name: String?, matrix: Matrix<T>, type: DataType?, space: TensorRing<T>?): Tensor<T> {
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
             return Tensor(name, BufferNDStructure(DefaultStrides(matrix.shape), buffer as Buffer<T>), type, space)
         }
 
-        //TODO: infer type from graph ValueInfo
         operator fun <T : Number> invoke(dims: List<Long>, value: List<T>, type: DataType?, name: String?, space: TensorRing<T>?): Tensor<T> {
             val data = BufferNDStructure(DefaultStrides(dims.asIntArray().reversedArray()), value.asBuffer())
             return Tensor(name, data, type, space!!)
