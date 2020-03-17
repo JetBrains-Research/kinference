@@ -29,7 +29,7 @@ class Graph(
         get() = nodes.filter { it.type == Node.NodeType.GRAPH_INPUT }.flatMap { it.inputs.availableForWriting }
 
     inline fun <reified T : Number> setInput(name: String, value: List<T>): Graph {
-        require(name in availableInputs) { "Required input node either already set or not found" }
+        require(name in availableInputs) { "Required input node is either already set or not found" }
 
         val type = input.find { it.name == name }?.type
         requireNotNull(type)
