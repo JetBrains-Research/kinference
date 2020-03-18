@@ -37,7 +37,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
             DataType.INT64 -> Tensor(proto.dims, proto.int64_data, type, proto.name, resolveSpace(proto.dims))
             DataType.INT32, DataType.INT8, DataType.UINT8, DataType.UINT16,
             DataType.INT16, DataType.BOOL, DataType.FLOAT16 -> Tensor(proto.dims, proto.int32_data, type, proto.name, resolveSpace(proto.dims))
-            else -> throw IllegalArgumentException("Unsupported data type")
+            else -> error("Unsupported data type")
         }
 
         private operator fun <T : Number> invoke(name: String?, matrix: Matrix<T>, type: DataType?, space: TensorRing<T>?): Tensor<T> {
@@ -46,7 +46,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
         }
 
         operator fun <T : Number> invoke(dims: List<Long>, value: List<T>, type: DataType?, name: String?, space: TensorRing<T>?): Tensor<T> {
-            val data = BufferNDStructure(DefaultStrides(dims.asIntArray().reversedArray()), value.asBuffer())
+            val data = BufferNDStructure(DefaultStrides(dims.toIntArray().reversedArray()), value.asBuffer())
             return Tensor(name, data, type, space!!)
         }
 

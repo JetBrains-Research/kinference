@@ -11,14 +11,14 @@ class Node(proto: NodeProto, val type: NodeType) {
     private val operatorName = proto.op_type!!
 
     init {
-        proto.input.forEach { inputs.addValue(it) }
-        proto.output.forEach { outputs.addValue(it) }
+        proto.input.forEach { inputs.addName(it) }
+        proto.output.forEach { outputs.addName(it) }
     }
 
     enum class NodeType {
         INNER,
-        GRAPH_INPUT,
-        GRAPH_OUTPUT
+        INPUT,
+        OUTPUT
     }
 
     private val mutableInputs: HashSet<String> = HashSet()
@@ -34,8 +34,8 @@ class Node(proto: NodeProto, val type: NodeType) {
     fun process(): NodeIO {
         outputs.clearValues()
 
-        val out = Operator(operatorName, inputs.values.resolveType(), inputs.values.requireNoNulls().toList()).toList()
-        outputs.keys.forEachIndexed { i, name -> outputs[name] = out.getOrNull(i) }
+        val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList()).toList()
+        outputs.names.forEachIndexed { i, name -> outputs[name] = out.getOrNull(i) }
 
         clearMutableInputs()
         return outputs
@@ -43,8 +43,8 @@ class Node(proto: NodeProto, val type: NodeType) {
 
     companion object {
         private fun Collection<Tensor<*>?>.resolveType(): TensorProto.DataType? {
-            val a = this.mapNotNull { it?.type }.toHashSet().size
-            require(a <= 1)
+            val typesCount = this.mapNotNull { it?.type }.toHashSet().size
+            require(typesCount <= 1) { "Tensors of more than one type found" }
             return this.first()?.type
         }
     }

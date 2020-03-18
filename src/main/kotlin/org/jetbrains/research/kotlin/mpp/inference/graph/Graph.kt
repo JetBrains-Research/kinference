@@ -1,7 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import GraphProto
-import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.ValueInfo
 
@@ -16,17 +15,17 @@ class Graph(
     val info: List<ValueInfo>
 ) {
     init {
-        val initNodes = NodeIO().addNotNullValues(initializers)
+        val initNodes = NodeIO().addTensors(initializers)
 
         for (node in nodes) {
-            val constInitializers = initNodes.filterKeys { it in node.inputs.keys }
-            node.inputs.putAll(constInitializers)
-            node.setMutable(node.inputs.keys - constInitializers.keys)
+            val constInitializers = initNodes.filterNames { it in node.inputs.names }
+            node.inputs.addNamedTensors(constInitializers)
+            node.setMutable(node.inputs.names - constInitializers.keys)
         }
     }
 
     val availableInputs: List<String>
-        get() = nodes.filter { it.type == Node.NodeType.GRAPH_INPUT }.flatMap { it.inputs.availableForWriting }
+        get() = nodes.filter { it.type == Node.NodeType.INPUT }.flatMap { it.inputs.availableForWriting }
 
     inline fun <reified T : Number> setInput(name: String, value: List<T>): Graph {
         require(name in availableInputs) { "Required input node is either already set or not found" }
@@ -34,7 +33,7 @@ class Graph(
         val type = input.find { it.name == name }?.type
         requireNotNull(type)
 
-        nodes.findInput(name).inputs[name] = Tensor(value, type)
+        nodes.find { name in it.inputs.names }!!.inputs[name] = Tensor(value, type)
         return this
     }
 
@@ -45,8 +44,8 @@ class Graph(
     }
 
     fun fetchOutputs(): List<Tensor<*>?> {
-        val out = nodes.filter { it.type == Node.NodeType.GRAPH_OUTPUT }
-        return out.flatMap { it.outputs.values.toList() }
+        val out = nodes.filter { it.type == Node.NodeType.OUTPUT }
+        return out.flatMap { it.outputs.tensors.toList() }
     }
 
     //only for sequential models
@@ -54,7 +53,7 @@ class Graph(
         //TODO: check that all inputs were set and not null
         nodes.zipWithNext { current, next ->
             current.process()
-            next.inputs.putAll(current.outputs)
+            next.inputs.merge(current.outputs)
         }
         nodes.last().process()
         return this
@@ -69,8 +68,8 @@ class Graph(
 
             val nodes = proto.node.map {
                 val type = when {
-                    it.input.any { name -> inputs.containsName(name) } -> Node.NodeType.GRAPH_INPUT
-                    it.output.any { name -> outputs.containsName(name) } -> Node.NodeType.GRAPH_OUTPUT
+                    it.input.any { name -> inputs.containsName(name) } -> Node.NodeType.INPUT
+                    it.output.any { name -> outputs.containsName(name) } -> Node.NodeType.OUTPUT
                     else -> Node.NodeType.INNER
                 }
                 Node(it, type)
@@ -82,10 +81,6 @@ class Graph(
 
         private fun List<ValueInfo>.containsName(name: String): Boolean {
             return this.map { it.name }.contains(name)
-        }
-
-        fun List<Node>.findInput(input: String): Node {
-            return this.find { input in it.inputs.keys }!!
         }
     }
 }

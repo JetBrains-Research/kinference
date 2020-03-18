@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.attributes
 
 import AttributeProto
 import AttributeProto.*
+import org.jetbrains.research.kotlin.mpp.inference.graph.Graph
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class Attribute<T>(proto: AttributeProto, val value: T) {
@@ -14,15 +15,15 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
             AttributeType.INT -> Attribute(proto, proto.i!!)
             AttributeType.STRING -> Attribute(proto, proto.s!!)
             AttributeType.TENSOR -> Attribute(proto, Tensor.create(proto.t!!))
-            AttributeType.GRAPH -> TODO()
-            AttributeType.SPARSE_TENSOR -> TODO()
+            AttributeType.GRAPH -> Attribute(proto, Graph.build(proto.g!!))
+            AttributeType.SPARSE_TENSOR -> TODO("Not supported in current version of MPP Inference")
             AttributeType.FLOATS -> Attribute(proto, proto.floats)
             AttributeType.INTS -> Attribute(proto, proto.ints)
             AttributeType.STRINGS -> Attribute(proto, proto.strings)
             AttributeType.TENSORS -> Attribute(proto, proto.tensors.map { Tensor.create(it) })
-            AttributeType.GRAPHS -> TODO()
-            AttributeType.SPARSE_TENSORS -> TODO()
-            else -> throw IllegalStateException("Unsupported attribute type")
+            AttributeType.GRAPHS -> Attribute(proto, proto.graphs.map { Graph.build(it) })
+            AttributeType.SPARSE_TENSORS -> TODO("Not supported in current version of MPP Inference")
+            else -> error("Unsupported attribute type")
         }
     }
 }
