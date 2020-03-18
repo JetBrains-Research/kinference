@@ -8,8 +8,8 @@ import org.jetbrains.research.kotlin.mpp.inference.nn.layer.Layer
 import org.jetbrains.research.kotlin.mpp.inference.nn.model.sequential.Perceptron
 import java.io.File
 
-@Suppress("UNCHECKED_CAST")
-object ModelLoader {
+//@Suppress("UNCHECKED_CAST")
+/*object ModelLoader {
     fun loadPerceptronModel(model: File): Perceptron {
         val (config, layers) = importSequentialModelParameters(model)
         config as ModelConfig.Sequential
@@ -34,7 +34,7 @@ object ModelLoader {
             weight to data.data.toMatrix()
         }?.partition { !it.first.contains("bias") } ?: null to null
 
-        val params = Layer.Parameters(
+        val params = Parameters(
             weights?.map { it.second }?.singleOrNull(),
             biases?.map { it.second }?.singleOrNull()
         )
@@ -46,4 +46,4 @@ object ModelLoader {
         return ModelScheme.parse(configString)
     }
 }
-
+*/

@@ -16,11 +16,13 @@ sealed class ActivationFunction(private val func: (Double) -> Double) {
 
     object ReLU : ActivationFunction(func = { x -> max(0.0, x) })
     object Sigmoid : ActivationFunction(func = { x -> 1.0 / (1.0 + exp(-x)) })
+    object Tanh : ActivationFunction(func = { x -> (exp(2*x) - 1.0) / (exp(2*x) + 1) })
 
     companion object {
         operator fun get(type: ActivationType) = when (type) {
             ActivationType.relu -> ReLU
             ActivationType.sigmoid -> Sigmoid
+            ActivationType.tanh -> Tanh
         }
     }
 }

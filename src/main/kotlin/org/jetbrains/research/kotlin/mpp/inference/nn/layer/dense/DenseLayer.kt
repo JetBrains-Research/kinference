@@ -3,13 +3,14 @@ package org.jetbrains.research.kotlin.mpp.inference.nn.layer.dense
 import org.jetbrains.research.kotlin.mpp.inference.nn.activation.ActivatableVector
 import org.jetbrains.research.kotlin.mpp.inference.nn.activation.ActivationFunction
 import org.jetbrains.research.kotlin.mpp.inference.nn.layer.ActivatableLayer
+import org.jetbrains.research.kotlin.mpp.inference.nn.parameters.DenseParameters
 import scientifik.kmath.linear.BufferMatrix
 import scientifik.kmath.linear.Point
 import scientifik.kmath.structures.Matrix
 
 class DenseLayer(
     name: String,
-    params: DenseParameters,
+    override val params: DenseParameters,
     override val activationFunction: ActivationFunction
 ) : ActivatableLayer<Matrix<Double>>(name, params) {
 
