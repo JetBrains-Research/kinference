@@ -1,13 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
-import org.gradle.api.internal.HasConvention
+import org.jetbrains.research.kotlin.mpp.inference.kotlin
 
 group = "org.jetbrains.research.kotlin.mpp.inference"
 version = "0.1.0"
 
 plugins {
     idea
-    kotlin("jvm") version "1.3.70" apply true
+    kotlin("jvm") apply true
     id("com.squareup.wire") version "3.1.0" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
 }
@@ -27,12 +26,6 @@ wire {
         out = generatedDir
     }
 }
-
-val SourceSet.kotlin: SourceDirectorySet
-    get() = (this as HasConvention)
-        .convention
-        .getPlugin(KotlinSourceSet::class.java)
-        .kotlin
 
 sourceSets {
     main {
