@@ -3,30 +3,56 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 @Suppress("UNCHECKED_CAST")
-class NodeIO(names: List<String> = emptyList()) : LinkedHashMap<String, Tensor<*>?>() {
+class NodeIO(names: List<String> = emptyList()) {
+    private val namedTensors: LinkedHashMap<String, Tensor<*>?> = LinkedHashMap()
+
     init {
-        for (name in names) this[name] = null
+        for (name in names) addName(name)
     }
 
-    fun addValue(name: String) {
-        this[name] = null
+    val names: Set<String>
+        get() = namedTensors.keys
+
+    val tensors: MutableCollection<Tensor<*>?>
+        get() = namedTensors.values
+
+    val availableForWriting: Set<String>
+        get() = namedTensors.filter { it.value == null }.keys
+
+    operator fun get(name: String): Tensor<*>? {
+        return namedTensors[name]
     }
 
-    fun addValues(vals: List<Tensor<*>>): NodeIO {
-        vals.forEach { tensor -> this[tensor.name ?: ""] = tensor }
+    operator fun set(name: String, value: Tensor<*>?) {
+        namedTensors[name] = value
+    }
+
+    fun addName(name: String): NodeIO {
+        namedTensors[name] = null
         return this
     }
 
-    fun addNotNullValues(vals: List<Tensor<*>>): NodeIO {
-        vals.filter { it.name != null }.forEach { this[it.name!!] = it }
+    fun addTensors(tensors: List<Tensor<*>>): NodeIO {
+        tensors.filter { it.name != null }.forEach { namedTensors[it.name!!] = it }
+        return this
+    }
+
+    fun addNamedTensors(tensors: Map<String, Tensor<*>?>): NodeIO {
+        namedTensors.putAll(tensors)
+        return this
+    }
+
+    fun merge(io: NodeIO): NodeIO {
+        namedTensors.putAll(io.namedTensors)
         return this
     }
 
     fun clearValues(): NodeIO {
-        this.keys.forEach { this[it] = null }
+        namedTensors.keys.forEach { namedTensors[it] = null }
         return this
     }
 
-    val availableForWriting: Set<String>
-        get() = this.filter { it.value == null }.keys
+    fun filterNames(predicate: (String) -> Boolean): Map<String, Tensor<*>?> {
+        return namedTensors.filterKeys(predicate)
+    }
 }

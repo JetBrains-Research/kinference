@@ -6,7 +6,6 @@ group = "org.jetbrains.research.kotlin.mpp.inference"
 version = "0.1.0"
 
 plugins {
-    java
     idea
     kotlin("jvm") version "1.3.70" apply true
     id("com.squareup.wire") version "3.1.0" apply true
@@ -18,11 +17,11 @@ repositories {
     maven("https://dl.bintray.com/mipt-npm/scientifik")
 }
 
-val generatedDir = "${projectDir}/src/main/kotlin-gen"
+val generatedDir = "$projectDir/src/main/kotlin-gen"
 
 wire {
     protoPath {
-        srcDir("${projectDir}/src/main/proto")
+        srcDir("$projectDir/src/main/proto")
     }
     kotlin {
         out = generatedDir
@@ -65,6 +64,6 @@ tasks.withType<KotlinJvmCompile> {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api("com.squareup.wire:wire-runtime:3.1.0")
+    api("com.squareup.wire", "wire-runtime", "3.1.0")
     api("scientifik", "kmath-core-jvm", "0.1.3")
 }

@@ -55,9 +55,9 @@ inline fun <reified T : Any> tryResolveSpace(dims: IntArray) = when (T::class) {
     Float::class -> FloatTensorRing(dims)
     Long::class -> LongTensorRing(dims)
     Int::class -> IntTensorRing(dims)
-    else -> throw IllegalStateException("Unsupported data type")
+    else -> error("Unsupported data type")
 } as TensorRing<T>
 
-inline fun <reified T : Any> resolveSpace(dims: List<Long>) = tryResolveSpace<T>(dims.asIntArray())
+inline fun <reified T : Any> resolveSpace(dims: List<Long>) = tryResolveSpace<T>(dims.toIntArray())
 
-fun List<Long>.asIntArray() = this.map { it.toInt() }.toIntArray()
+fun Collection<Long>.toIntArray() = this.map { it.toInt() }.toIntArray()
