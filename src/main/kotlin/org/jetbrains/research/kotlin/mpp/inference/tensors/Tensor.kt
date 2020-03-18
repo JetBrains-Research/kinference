@@ -35,8 +35,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
             DataType.DOUBLE -> Tensor(proto.dims, proto.double_data, type, proto.name, resolveSpace(proto.dims))
             DataType.FLOAT -> Tensor(proto.dims, proto.float_data, type, proto.name, resolveSpace(proto.dims))
             DataType.INT64 -> Tensor(proto.dims, proto.int64_data, type, proto.name, resolveSpace(proto.dims))
-            DataType.INT32, DataType.INT8, DataType.UINT8, DataType.UINT16,
-            DataType.INT16, DataType.BOOL, DataType.FLOAT16 -> Tensor(proto.dims, proto.int32_data, type, proto.name, resolveSpace(proto.dims))
+            DataType.INT32 -> Tensor(proto.dims, proto.int32_data, type, proto.name, resolveSpace(proto.dims))
             else -> error("Unsupported data type")
         }
 
