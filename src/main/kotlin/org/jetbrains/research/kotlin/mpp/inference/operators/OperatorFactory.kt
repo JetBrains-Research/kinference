@@ -14,7 +14,7 @@ object OperatorFactory {
         "Identity" -> Activation.Identity()
         "Relu" -> Activation.Relu()
         "Sigmoid" -> Activation.Sigmoid()
-        else -> throw IllegalArgumentException("Unsupported operator")
+        else -> error("Unsupported operator")
     }
 
     fun create(type: DataType?, name: String?): Operator<Number> = when (type?.resolveKClass()!!) {
@@ -22,6 +22,6 @@ object OperatorFactory {
         Double::class -> create<Double>(name)
         Long::class -> create<Long>(name)
         Int::class -> create<Int>(name)
-        else -> throw IllegalStateException("Unsupported data type")
+        else -> error("Unsupported data type")
     } as Operator<Number>
 }
