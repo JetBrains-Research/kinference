@@ -31,7 +31,7 @@ class Node(proto: NodeProto, val type: NodeType) {
         mutableInputs.forEach { inputs[it] = null }
     }
 
-    fun process(): NodeIO {
+    fun execute(): NodeIO {
         outputs.clearValues()
 
         val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList()).toList()

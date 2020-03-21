@@ -3,7 +3,7 @@ rootProject.name = "kotlin-mpp-inference"
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        mavenCentral()
+        jcenter()
     }
 
     resolutionStrategy {

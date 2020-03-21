@@ -2,7 +2,6 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
-@Suppress("UNCHECKED_CAST")
 class NodeIO(names: List<String> = emptyList()) {
     private val namedTensors: LinkedHashMap<String, Tensor<*>?> = LinkedHashMap()
 

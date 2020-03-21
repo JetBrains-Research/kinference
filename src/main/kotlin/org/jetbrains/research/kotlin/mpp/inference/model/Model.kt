@@ -9,7 +9,7 @@ class Model(proto: ModelProto) {
     val graph = Graph.build(proto.graph!!)
 
     inline fun <reified T: Number> predict(input: List<T>): List<Tensor<*>?> {
-        return graph.setInput(input).run().fetchOutputs()
+        return graph.setInput(input).execute().fetchOutputs()
     }
 
     companion object {

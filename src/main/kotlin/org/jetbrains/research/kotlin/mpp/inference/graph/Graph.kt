@@ -49,13 +49,13 @@ class Graph(
     }
 
     //only for sequential models
-    fun run(): Graph {
+    fun execute(): Graph {
         //TODO: check that all inputs were set and not null
         nodes.zipWithNext { current, next ->
-            current.process()
+            current.execute()
             next.inputs.merge(current.outputs)
         }
-        nodes.last().process()
+        nodes.last().execute()
         return this
     }
 
