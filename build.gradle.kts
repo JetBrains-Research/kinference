@@ -16,12 +16,11 @@ repositories {
     maven("https://dl.bintray.com/mipt-npm/scientifik")
 }
 
-val generatedDir = "$projectDir/src/main/kotlin-gen"
+val generatedDir = "src/main/kotlin-gen"
 
 wire {
-    protoPath {
-        srcDir("$projectDir/src/main/proto")
-    }
+    protoPath("src/main/proto")
+
     kotlin {
         out = generatedDir
     }
