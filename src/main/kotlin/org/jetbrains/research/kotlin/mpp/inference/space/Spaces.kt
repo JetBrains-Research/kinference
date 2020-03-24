@@ -4,6 +4,7 @@ import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.MatrixContext
 import scientifik.kmath.operations.*
 import scientifik.kmath.structures.*
+import kotlin.reflect.KClass
 
 class IntTensorRing(shape: IntArray) : TensorRing<Int>(shape, IntRing) {
     override val zero: NDBuffer<Int> = NDStructure.auto(shape) { elementContext.zero }
@@ -50,13 +51,16 @@ class DoubleTensorRing(shape: IntArray) : TensorRing<Double>(shape, RealField) {
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified T : Any> tryResolveSpace(dims: IntArray) = when (T::class) {
+fun <T : Any> resolveSpaceWithKClass(kclass: KClass<T>, dims: IntArray) = when (kclass) {
     Double::class -> DoubleTensorRing(dims)
     Float::class -> FloatTensorRing(dims)
     Long::class -> LongTensorRing(dims)
     Int::class -> IntTensorRing(dims)
     else -> error("Unsupported data type")
 } as TensorRing<T>
+
+@Suppress("UNCHECKED_CAST")
+inline fun <reified T : Any> tryResolveSpace(dims: IntArray) = resolveSpaceWithKClass (T::class, dims)
 
 inline fun <reified T : Any> resolveSpace(dims: List<Long>) = tryResolveSpace<T>(dims.toIntArray())
 
