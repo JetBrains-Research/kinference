@@ -3,6 +3,8 @@ package org.jetbrains.research.kotlin.mpp.inference.tensors
 import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.space.*
+import scientifik.kmath.linear.transpose
+import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
 //TODO: support segments
@@ -27,6 +29,36 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
     fun mapElements(func: (T) -> T): Tensor<T> {
         val newData = BufferNDStructure(DefaultStrides(data.shape), data.buffer.asIterable().map(func).asBuffer())
         return Tensor(name, newData, type, space)
+    }
+
+    infix fun multiply(other: Tensor<T>): Tensor<T> {
+        require(data.shape.contentEquals(other.data.shape))
+
+        val newData = space!!.multiply(this.data, other.data)
+        return Tensor(name, newData, type, space)
+    }
+
+    fun transpose(): Tensor<T> {
+        require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
+
+        val resMatrix = data.as2D().transpose()
+        val newSpace = space?.rebuild(newDims = resMatrix.shape)
+        return Tensor(name, resMatrix, type, newSpace)
+    }
+
+    fun as2DCollection(): Collection<Tensor<T>> {
+        require(data.dimension == 3)
+
+        val blockSize = data.shape[1] * data.shape[2]
+        val newShape = listOf(data.shape[1].toLong(), data.shape[2].toLong())
+        val newSpace = space?.rebuild(newShape.toIntArray())
+        val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
+        return List(data.shape[0]) { Tensor(newShape.reversed(), chunkedBuffer[it], type, null, newSpace) }
+    }
+
+    fun mapIndexed(transform: Ring<T>.(index: IntArray, T) -> T): Tensor<T>{
+        val newBuffer = space!!.mapIndexed(data, transform)
+        return Tensor(name, newBuffer, type, space)
     }
 
     companion object {
