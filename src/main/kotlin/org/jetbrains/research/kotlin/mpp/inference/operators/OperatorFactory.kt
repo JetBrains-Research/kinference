@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators
 
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Activation
+import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm.LSTMLayer
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.Add
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
@@ -13,6 +14,7 @@ object OperatorFactory {
         "Identity" -> Activation.Identity()
         "Relu" -> Activation.Relu()
         "Sigmoid" -> Activation.Sigmoid()
+        "LSTM" -> LSTMLayer()
         else -> error("Unsupported operator")
     }
 

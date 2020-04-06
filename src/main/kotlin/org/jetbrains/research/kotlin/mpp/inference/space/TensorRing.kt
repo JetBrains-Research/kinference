@@ -8,7 +8,7 @@ import scientifik.kmath.structures.*
 abstract class TensorRing<T : Any>(
     override val shape: IntArray,
     override val elementContext: Ring<T>,
-    override val strides: Strides = DefaultStrides(shape)
+    override val strides: Strides = SpaceStrides(shape)
 ) : BufferedNDRing<T, Ring<T>> {
     abstract val bufferBuilder: (Int, (Int) -> T) -> Buffer<T>
     abstract val matrixContext : GenericMatrixContext<T, Ring<T>>

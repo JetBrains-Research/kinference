@@ -11,7 +11,7 @@ import scientifik.kmath.structures.*
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
 class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: DataType?, private val space: TensorRing<T>?) {
-    operator fun plus(other: Tensor<T>): Tensor<T>? {
+    operator fun plus(other: Tensor<T>): Tensor<T> {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
 
         val res = space!!.add(data, other.data)
@@ -21,13 +21,13 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
     infix fun dot(other: Tensor<T>): Tensor<T> {
         require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
 
-        val resMatrix = with (space!!.matrixContext) { other.data.as2D() dot data.as2D() }
+        val resMatrix = with (space!!.matrixContext) { data.as2D() dot other.data.as2D() }
         val newSpace = space.rebuild(newDims = resMatrix.shape)
         return Tensor(name, resMatrix, type, newSpace)
     }
 
     fun mapElements(func: (T) -> T): Tensor<T> {
-        val newData = BufferNDStructure(DefaultStrides(data.shape), data.buffer.asIterable().map(func).asBuffer())
+        val newData = BufferNDStructure(SpaceStrides(data.shape), data.buffer.asIterable().map(func).asBuffer())
         return Tensor(name, newData, type, space)
     }
 
@@ -51,9 +51,9 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
 
         val blockSize = data.shape[1] * data.shape[2]
         val newShape = listOf(data.shape[1].toLong(), data.shape[2].toLong())
-        val newSpace = space?.rebuild(newShape.toIntArray())
+        val newSpace = space!!.rebuild(newShape.toIntArray())
         val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
-        return List(data.shape[0]) { Tensor(newShape.reversed(), chunkedBuffer[it], type, null, newSpace) }
+        return List(data.shape[0]) { Tensor(newShape, chunkedBuffer[it], type, null, newSpace) }
     }
 
     fun mapIndexed(transform: Ring<T>.(index: IntArray, T) -> T): Tensor<T>{
@@ -73,17 +73,17 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
 
         private operator fun <T : Number> invoke(name: String?, matrix: Matrix<T>, type: DataType?, space: TensorRing<T>?): Tensor<T> {
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
-            return Tensor(name, BufferNDStructure(DefaultStrides(matrix.shape), buffer as Buffer<T>), type, space)
+            return Tensor(name, BufferNDStructure(SpaceStrides(matrix.shape), buffer as Buffer<T>), type, space)
         }
 
         operator fun <T : Number> invoke(dims: List<Long>, value: List<T>, type: DataType?, name: String?, space: TensorRing<T>?): Tensor<T> {
-            val data = BufferNDStructure(DefaultStrides(dims.toIntArray().reversedArray()), value.asBuffer())
+            val data = BufferNDStructure(SpaceStrides(dims.toIntArray()), value.asBuffer())
             return Tensor(name, data, type, space!!)
         }
 
         inline operator fun <reified T : Number> invoke(value: List<T>, type: DataType?): Tensor<T> {
             val dims = intArrayOf(value.size, 1)
-            val data = BufferNDStructure(DefaultStrides(dims), value.asBuffer())
+            val data = BufferNDStructure(SpaceStrides(dims), value.asBuffer())
             val space = tryResolveSpace<T>(dims)
             return Tensor(null, data, type, space)
         }
