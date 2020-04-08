@@ -31,10 +31,7 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         val resAnsList = mutableListOf<Tensor<T>>()
 
         for (inputMatrix in inputTensor.as2DCollection()) {
-            var gates = weights.dot(inputMatrix.transpose()) + recWeights.dot(currentState.ans.transpose())
-
-            gates = addBiases(gates, bias, hiddenSize)
-            val gatesData = GatesData.create(gates, batchSize.toLong(), hiddenSize.toLong())
+            val gatesData = GatesData.create(inputMatrix, weights, recWeights, bias, currentState)
             gatesData.activate()
 
             val newCellGate = gatesData.forgetGate.multiply(currentState.cellGate) + gatesData.inputGate.multiply(gatesData.cellGate)
@@ -45,11 +42,6 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         }
 
         return listOf(concatOutput(resAnsList))
-    }
-
-    private fun addBiases(gates: Tensor<T>, biases: Tensor<T>?, hiddenSize: Int) = when(biases){
-        null -> gates
-        else -> gates.mapIndexed { index, t -> t + biases.data[intArrayOf(0, index[0])] + biases.data[intArrayOf(0, index[0] + 4 * hiddenSize)] }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -78,13 +70,20 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
 
         companion object {
             @Suppress("UNCHECKED_CAST")
-            fun <T : Number> create(gates: Tensor<T>, batchSize: Long, hiddenSize: Long) : GatesData<T> {
-                val chunkedBuffer = gates.data.buffer.asIterable().chunked((batchSize * hiddenSize).toInt())
+            fun <T : Number> create(inputMatrix: Tensor<T>, weights: Tensor<T>, recWeights: Tensor<T>,
+                                    biases: Tensor<T>?, prevState: State<T>) : GatesData<T> {
+                var gates = weights.dot(inputMatrix.transpose()) + recWeights.dot(prevState.ans.transpose())
+                val hiddenSize = recWeights.data.shape[1]
+                val batchSize = inputMatrix.data.shape[0]
+                if (biases != null){
+                    gates = gates.mapIndexed { index, t -> t + biases.data[intArrayOf(0, index[0])] + biases.data[intArrayOf(0, index[0] + 4 * hiddenSize)] }
+                }
+                val chunkedGatesBuffer = gates.data.buffer.asIterable().chunked((batchSize * hiddenSize))
 
-                val shape = listOf(hiddenSize, batchSize)
+                val shape = listOf(hiddenSize.toLong(), batchSize.toLong())
                 val gateSpace = resolveSpaceWithKClass(gates.type!!.resolveKClass(), shape.toIntArray())
                 gateSpace as TensorRing<T>
-                val res = List(chunkedBuffer.size) { Tensor(shape, chunkedBuffer[it], gates.type, null, gateSpace) }
+                val res = List(chunkedGatesBuffer.size) { Tensor(shape, chunkedGatesBuffer[it], gates.type, null, gateSpace) }
                 return GatesData(res[0], res[1], res[2], res[3])
             }
         }
