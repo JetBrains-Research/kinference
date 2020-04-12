@@ -16,9 +16,8 @@ class SpaceStrides private constructor(override val shape: IntArray) : Strides {
 
     override fun offset(index: IntArray): Int {
         return index.mapIndexed { i, value ->
-            if (value < 0 || value >= this.shape[i]) {
-                throw RuntimeException("Index $value out of shape bounds: (0,${this.shape[i]})")
-            }
+            require(value in 0 until shape[i]) { "Index $value out of shape bound: (0, ${shape[i]})" }
+
             value * strides[i]
         }.sum()
     }
