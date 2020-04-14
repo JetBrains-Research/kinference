@@ -1,17 +1,17 @@
 package org.jetbrains.research.kotlin.mpp.inference.space
 
+import scientifik.kmath.misc.cumulative
 import scientifik.kmath.structures.Strides
+import java.util.concurrent.ConcurrentHashMap
 
 class SpaceStrides private constructor(override val shape: IntArray) : Strides {
-    override val strides by lazy {
-        sequence {
-            var current = 1
-            yield(1)
-            shape.drop(1).reversed().forEach {
-                current *= it
-                yield(current)
-            }
-        }.toList().reversed()
+    override val strides = ArrayList<Int>(shape.size)
+    init {
+        shape.foldRight(1) { i, acc ->
+            strides.add(acc)
+            acc * i
+        }
+        strides.reverse()
     }
 
     override fun offset(index: IntArray): Int {
@@ -28,33 +28,28 @@ class SpaceStrides private constructor(override val shape: IntArray) : Strides {
         val res = IntArray(shape.size)
         var current = offset
 
-        for (index in strides.indices){
-            res[index] = current / strides[index]
-            current %= strides[index]
+        for ((stride, index) in strides.withIndex()){
+            res[index] = current / stride
+            current %= stride
         }
 
         return res
     }
 
-    override val linearSize: Int
-        get() = strides[0] * shape[0]
+    override val linearSize = strides[0] * shape[0]
 
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is SpaceStrides) return false
 
-        if (!shape.contentEquals(other.shape)) return false
-
-        return true
+        return shape.contentEquals(other.shape)
     }
 
-    override fun hashCode(): Int {
-        return shape.contentHashCode()
-    }
+    override fun hashCode() = shape.contentHashCode()
 
     companion object {
-        private val spaceStridesCache = HashMap<IntArray, Strides>()
+        private val spaceStridesCache = ConcurrentHashMap<IntArray, Strides>()
 
         operator fun invoke(shape: IntArray): Strides = spaceStridesCache.getOrPut(shape) { SpaceStrides(shape) }
     }

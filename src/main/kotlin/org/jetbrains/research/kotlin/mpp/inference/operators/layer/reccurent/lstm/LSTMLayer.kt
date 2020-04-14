@@ -14,7 +14,6 @@ import scientifik.kmath.structures.asBuffer
 import scientifik.kmath.structures.asIterable
 
 class LSTMLayer<T : Number> : RecurrentLayer<T>() {
-    @Suppress("UNCHECKED_CAST")
     override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
@@ -35,8 +34,8 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
             val gatesDataWithBiases = if (bias != null) gatesData.addBiases(bias, hiddenSize) else gatesData
             val activatedGatesData = gatesDataWithBiases.activate()
 
-            val newCellGate = activatedGatesData.forgetGate.multiply(currentState.cellGate) + activatedGatesData.inputGate.multiply(activatedGatesData.cellGate)
-            val newOutput = activatedGatesData.outputGate.multiply(Activation.Tanh<T>().apply(listOf(newCellGate)).first())
+            val newCellGate = activatedGatesData.forgetGate * currentState.cellGate + activatedGatesData.inputGate * activatedGatesData.cellGate
+            val newOutput = activatedGatesData.outputGate * Activation.Tanh<T>().apply(newCellGate).first()
 
             currentState = State(newOutput, newCellGate)
 
@@ -49,10 +48,10 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                                      var forgetGate: Tensor<T>,
                                      var cellGate: Tensor<T>) {
         fun activate() : GatesData<T> {
-            val activatedInputGate = Activation.Sigmoid<T>().apply(listOf(inputGate)).first()
-            val activatedOutputGate = Activation.Sigmoid<T>().apply(listOf(outputGate)).first()
-            val activatedForgetGate = Activation.Sigmoid<T>().apply(listOf(forgetGate)).first()
-            val activatedCellGate = Activation.Tanh<T>().apply(listOf(cellGate)).first()
+            val activatedInputGate = Activation.Sigmoid<T>().apply(inputGate).first()
+            val activatedOutputGate = Activation.Sigmoid<T>().apply(outputGate).first()
+            val activatedForgetGate = Activation.Sigmoid<T>().apply(forgetGate).first()
+            val activatedCellGate = Activation.Tanh<T>().apply(cellGate).first()
             return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
         }
 
@@ -67,7 +66,6 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         }
 
         companion object {
-            @Suppress("UNCHECKED_CAST")
             fun <T : Number> create(inputMatrix: Tensor<T>, weights: Tensor<T>, recWeights: Tensor<T>,
                                     prevState: State<T>): GatesData<T> {
                 val gates = weights.dot(inputMatrix.transpose()) + recWeights.dot(prevState.output.transpose())
@@ -77,6 +75,7 @@ class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                 val chunkedGatesBuffer = gates.data.buffer.asIterable().chunked(batchSize * hiddenSize)
 
                 val shape = listOf(hiddenSize.toLong(), batchSize.toLong())
+                @Suppress("UNCHECKED_CAST")
                 val gateSpace = resolveSpaceWithKClass(gates.type!!.resolveKClass(), shape.toIntArray()) as TensorRing<T>
                 val res = List(chunkedGatesBuffer.size) { Tensor(shape, chunkedGatesBuffer[it], gates.type, null, gateSpace) }
                 return GatesData(res[0], res[1], res[2], res[3])

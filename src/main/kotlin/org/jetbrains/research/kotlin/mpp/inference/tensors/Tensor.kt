@@ -31,7 +31,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
         return Tensor(name, newData, type, space)
     }
 
-    infix fun multiply(other: Tensor<T>): Tensor<T> {
+    operator fun times(other: Tensor<T>): Tensor<T> {
         require(data.shape.contentEquals(other.data.shape))
 
         val newData = space!!.multiply(this.data, other.data)
