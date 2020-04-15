@@ -50,10 +50,14 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
         require(data.dimension == 3)
 
         val blockSize = data.shape[1] * data.shape[2]
-        val newShape = listOf(data.shape[1].toLong(), data.shape[2].toLong())
-        val newSpace = space!!.rebuild(newShape.toIntArray())
-        val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
-        return List(data.shape[0]) { Tensor(newShape, chunkedBuffer[it], type, null, newSpace) }
+        val newShape = intArrayOf(data.shape[1], data.shape[2])
+        val newSpace = space!!.rebuild(newShape)
+        //val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
+        return List(data.shape[0]) {
+            val newBuffer = VirtualBuffer(blockSize) { i -> data.buffer[blockSize * it + i] }
+            val newStructure = BufferNDStructure(SpaceStrides(newShape), newBuffer)
+            Tensor(null, newStructure, type, newSpace)
+        }
     }
 
     fun mapIndexed(transform: Ring<T>.(index: IntArray, T) -> T): Tensor<T>{
