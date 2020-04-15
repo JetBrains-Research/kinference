@@ -123,10 +123,17 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Number> Collection<Tensor<T>>.toOutput(): Collection<Tensor<T>> {
+    private fun <T : Number> List<Tensor<T>>.toOutput(): Collection<Tensor<T>> {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
-        val newData = this.flatMap { output -> output.data.buffer.asIterable() }
-        val newBuffer = BufferNDStructure(SpaceStrides(newShape), newData.asBuffer())
+        val newStrides = SpaceStrides(newShape)
+        val newData = VirtualBuffer(newStrides.linearSize) { i ->
+            val indices = newStrides.index(i)
+            val inputNum = indices[0]
+            val rowNum = indices[2]
+            val colNum = indices[3]
+            this[inputNum].data[rowNum, colNum]
+        }
+        val newBuffer = BufferNDStructure(newStrides, newData)
         val newSpace = resolveSpaceWithKClass(this.first().type!!.resolveKClass(), newShape) as TensorRing<T>
         return listOf(Tensor("Y", newBuffer, this.first().type, newSpace))
     }
