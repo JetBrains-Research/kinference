@@ -73,11 +73,17 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                 val blockSize = hiddenSize * batchSize
 
                 val shape = intArrayOf(hiddenSize, batchSize)
+                val newStrides = SpaceStrides(shape)
                 @Suppress("UNCHECKED_CAST")
                 val gateSpace = resolveSpaceWithKClass(gates.type!!.resolveKClass(), shape) as TensorRing<T>
-                val gatesList = List(4) {index ->
-                    val newBuffer = VirtualBuffer(blockSize) { i -> gates.data.buffer[blockSize * index + i] }
-                    val newStructure = BufferNDStructure(SpaceStrides(shape), newBuffer)
+                val gatesList = List(4) { index ->
+                    val newBuffer = VirtualBuffer(blockSize) { i ->
+                        val indices = newStrides.index(i)
+                        val rowNum = indices[0]
+                        val colNum = indices[1]
+                        gates.data[hiddenSize * index + rowNum, colNum]
+                    }
+                    val newStructure = BufferNDStructure(newStrides, newBuffer)
                     Tensor(null, newStructure, gates.type, gateSpace)
                 }
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])

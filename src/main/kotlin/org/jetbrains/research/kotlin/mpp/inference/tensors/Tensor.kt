@@ -52,9 +52,15 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
         val blockSize = data.shape[1] * data.shape[2]
         val newShape = intArrayOf(data.shape[1], data.shape[2])
         val newSpace = space!!.rebuild(newShape)
+        val newStrides = SpaceStrides(newShape)
         //val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
-        return List(data.shape[0]) {
-            val newBuffer = VirtualBuffer(blockSize) { i -> data.buffer[blockSize * it + i] }
+        return List(data.shape[0]) {index ->
+            val newBuffer = VirtualBuffer(blockSize) { i ->
+                val indices = newStrides.index(i)
+                val rowNum = indices[0]
+                val colNum = indices[1]
+                data[index, rowNum, colNum]
+            }
             val newStructure = BufferNDStructure(SpaceStrides(newShape), newBuffer)
             Tensor(null, newStructure, type, newSpace)
         }
