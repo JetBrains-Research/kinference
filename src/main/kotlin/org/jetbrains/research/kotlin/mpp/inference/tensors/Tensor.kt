@@ -53,7 +53,6 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
         val newShape = intArrayOf(data.shape[1], data.shape[2])
         val newSpace = space!!.rebuild(newShape)
         val newStrides = SpaceStrides(newShape)
-        //val chunkedBuffer = data.buffer.asIterable().chunked(blockSize)
         return List(data.shape[0]) {index ->
             val newBuffer = VirtualBuffer(blockSize) { i ->
                 val indices = newStrides.index(i)
@@ -61,7 +60,7 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
                 val colNum = indices[1]
                 data[index, rowNum, colNum]
             }
-            val newStructure = BufferNDStructure(SpaceStrides(newShape), newBuffer)
+            val newStructure = BufferNDStructure(newStrides, newBuffer)
             Tensor(null, newStructure, type, newSpace)
         }
     }
@@ -69,6 +68,44 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
     fun mapIndexed(transform: Ring<T>.(index: IntArray, T) -> T): Tensor<T>{
         val newBuffer = space!!.mapIndexed(data, transform)
         return Tensor(name, newBuffer, type, space)
+    }
+
+    // A function that divides the tensor into several parts just like in numpy, where "index" is "axis" in numpy
+    fun splitByIndex(parts: Int, index: Int = 0): List<Tensor<T>> {
+        require(index in data.shape.indices) { "Index $index out of shape bound: (0, ${data.dimension - 1}" }
+
+        val elementsByIndex = data.shape[index]
+
+        require(elementsByIndex % parts == 0) { "$elementsByIndex is not divisible by $parts" }
+
+        val elementsInChunk = elementsByIndex.div(parts)
+        val newShape = data.shape.copyOf()
+        newShape[index] = elementsInChunk
+        val newStrides = SpaceStrides(newShape)
+        val blockSize = newStrides.linearSize
+        val newSpace = space!!.rebuild(newShape)
+        return List(parts) { num ->
+            val newBuffer = VirtualBuffer(blockSize) { i ->
+                val indices = newStrides.index(i)
+                indices[index] += num * elementsInChunk
+                data[indices]
+            }
+            val newStructure = BufferNDStructure(newStrides, newBuffer)
+            Tensor(null, newStructure, type, newSpace)
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Tensor<*>) return false
+
+        return type == other.type && data == other.data
+    }
+
+    override fun hashCode(): Int {
+        var result = data.hashCode()
+        result = 31 * result + (type?.hashCode() ?: 0)
+        return result
     }
 
     companion object {

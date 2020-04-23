@@ -3,15 +3,12 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Activation
 import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.RecurrentLayer
-import org.jetbrains.research.kotlin.mpp.inference.space.SpaceStrides
-import org.jetbrains.research.kotlin.mpp.inference.space.TensorRing
-import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpaceWithKClass
+import org.jetbrains.research.kotlin.mpp.inference.space.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
-    @Suppress("UNCHECKED_CAST")
     override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
@@ -26,10 +23,10 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         val batchSize = inputTensor.data.shape[1]
 
         var currentState = State.initialize<T>(hiddenSize, batchSize, inputTensor.type!!)
+        val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
         return inputTensor.as2DCollection().map { inputMatrix ->
             val gatesData = GatesData.create(inputMatrix, weights, recWeights, currentState)
-            val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
             val gatesDataWithBiases = if (biasesData != null) gatesData.addBiases(biasesData.first, biasesData.second) else gatesData
             val activatedGatesData = gatesDataWithBiases.activate()
@@ -39,7 +36,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
 
             currentState = State(newOutput, newCellGate)
 
-            newOutput.transpose()
+            newOutput
         }.toOutput()
     }
 
@@ -67,25 +64,8 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         companion object {
             fun <T : Number> create(inputMatrix: Tensor<T>, weights: Tensor<T>, recWeights: Tensor<T>,
                                     prevState: State<T>): GatesData<T> {
-                val gates = weights.dot(inputMatrix.transpose()) + recWeights.dot(prevState.output.transpose())
-                val hiddenSize = recWeights.data.shape[1]
-                val batchSize = inputMatrix.data.shape[0]
-                val blockSize = hiddenSize * batchSize
-
-                val shape = intArrayOf(hiddenSize, batchSize)
-                val newStrides = SpaceStrides(shape)
-                @Suppress("UNCHECKED_CAST")
-                val gateSpace = resolveSpaceWithKClass(gates.type!!.resolveKClass(), shape) as TensorRing<T>
-                val gatesList = List(4) { index ->
-                    val newBuffer = VirtualBuffer(blockSize) { i ->
-                        val indices = newStrides.index(i)
-                        val rowNum = indices[0]
-                        val colNum = indices[1]
-                        gates.data[hiddenSize * index + rowNum, colNum]
-                    }
-                    val newStructure = BufferNDStructure(newStrides, newBuffer)
-                    Tensor(null, newStructure, gates.type, gateSpace)
-                }
+                val gates = inputMatrix.dot(weights.transpose()) + prevState.output.dot(recWeights.transpose())
+                val gatesList = gates.splitByIndex(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
             }
         }

@@ -28,7 +28,7 @@ class SpaceStrides private constructor(override val shape: IntArray) : Strides {
         val res = IntArray(shape.size)
         var current = offset
 
-        for ((stride, index) in strides.withIndex()){
+        for ((index, stride) in strides.withIndex()){
             res[index] = current / stride
             current %= stride
         }
