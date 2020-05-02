@@ -13,7 +13,7 @@ class Model(proto: ModelProto) {
     }
 
     inline fun <reified T : Number> predict(input: Collection<Tensor<T>>) : List<Tensor<*>> {
-        input.forEach() { graph.setInput(it) }
+        input.forEach { graph.setInput(it) }
         return graph.execute().fetchOutputs()
     }
 

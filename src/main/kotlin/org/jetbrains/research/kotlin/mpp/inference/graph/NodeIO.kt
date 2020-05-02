@@ -32,8 +32,7 @@ class NodeIO(names: List<String> = emptyList()) {
     }
 
     fun addTensors(tensors: List<Tensor<*>>): NodeIO {
-        val namedInputTensors = tensors.filter { it.name != null }
-        for (tensor in namedInputTensors){
+        for (tensor in tensors.filter { it.name != null }){
             namedTensors[tensor.name!!] = tensor
         }
         return this

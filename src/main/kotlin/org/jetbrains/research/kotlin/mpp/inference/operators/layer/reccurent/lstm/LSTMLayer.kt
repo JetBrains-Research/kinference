@@ -114,9 +114,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         val newStrides = SpaceStrides(newShape)
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
-            val inputNum = indices[0]
-            val rowNum = indices[2]
-            val colNum = indices[3]
+            val (inputNum, _, rowNum, colNum) = indices
             this[inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
