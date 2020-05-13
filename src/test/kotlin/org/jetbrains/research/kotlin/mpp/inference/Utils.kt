@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference
 
 import TensorProto
 import TensorProto.DataType
+import org.jetbrains.research.kotlin.mpp.inference.model.Model
 import org.jetbrains.research.kotlin.mpp.inference.space.SpaceStrides
 import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpace
 import org.jetbrains.research.kotlin.mpp.inference.space.toIntArray
@@ -24,7 +25,7 @@ object Utils {
     }
 
     private fun getTensorFloat(tensorProto : TensorProto) : Tensor<Float> {
-        val rawFloatData = tensorProto.raw_data!!.toByteArray()//.asIterable().chunked(4) { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
+        val rawFloatData = tensorProto.raw_data!!.toByteArray()
         val chunkedRawFloatData = rawFloatData.asIterable().chunked(4)
         val floatData = chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
         val structure = BufferNDStructure(SpaceStrides(tensorProto.dims.toIntArray()), floatData)
@@ -33,6 +34,7 @@ object Utils {
 
     fun assertTensors(expected: Tensor<*>, actual: Tensor<*>) {
         assertEquals(expected.type, actual.type, "Types of tensors ${expected.name} do not match")
+        assertArrayEquals(expected.data.shape, actual.data.shape)
         @Suppress("UNCHECKED_CAST")
         when (expected.type) {
             DataType.FLOAT -> {
@@ -53,5 +55,19 @@ object Utils {
 
             else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun operatorTestHelper(folderName: String): Pair<List<Tensor<Number>>, List<Tensor<Number>>> {
+        val path = javaClass.getResource(folderName).path
+        val model = Model.load(path + "model.onnx")
+
+        val inputFiles = File(path).walk().filter { "input" in it.name }
+        val outputFiles = File(path).walk().filter { "output" in it.name }
+
+        val inputTensors = inputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
+        val expectedOutputTensors = outputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
+        val actualOutputTensors = model.predict(inputTensors) as List<Tensor<Number>>
+        return Pair(expectedOutputTensors, actualOutputTensors)
     }
 }

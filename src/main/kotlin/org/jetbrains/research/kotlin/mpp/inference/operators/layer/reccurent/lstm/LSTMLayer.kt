@@ -15,29 +15,37 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         val inputList = inputs.toList()
 
         val inputTensor = inputList[0]
-        val weights = inputList[1].as2DCollection().first()
-        val recWeights = inputList[2].as2DCollection().first()
+        val weights = inputList[1].squeeze(0)
+        val recWeights = inputList[2].squeeze(0)
         val bias = inputList.getOrNull(3)
 
-        val hiddenSize = recWeights.data.shape[1]
         val batchSize = inputTensor.data.shape[1]
+        val hiddenSize = recWeights.data.shape[1]
 
-        var currentState = State.initialize<T>(hiddenSize, batchSize, inputTensor.type!!)
+        val (mainOutput, currentState) = activate(inputTensor.as2DCollection(), weights, recWeights, bias)
+        val shapeForOutput = intArrayOf(1, batchSize, hiddenSize)
+        return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput), currentState.cellGate.reshape(shapeForOutput))
+    }
+
+    protected fun activate(inputMatrices: Collection<Tensor<T>>, weights: Tensor<T>, recWeights: Tensor<T>, bias: Tensor<T>?) : Pair<List<Tensor<T>>, State<T>> {
+        val hiddenSize = recWeights.data.shape[1]
+        val batchSize = inputMatrices.first().data.shape[0]
+
+        var currentState = State.initialize<T>(hiddenSize, batchSize, inputMatrices.first().type!!)
         val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
-        return inputTensor.as2DCollection().map { inputMatrix ->
+        val mainOutput = inputMatrices.map { inputMatrix ->
             val gatesData = GatesData.create(inputMatrix, weights, recWeights, currentState)
 
             val gatesDataWithBiases = if (biasesData != null) gatesData.addBiases(biasesData.first, biasesData.second) else gatesData
             val activatedGatesData = gatesDataWithBiases.activate()
 
-            val newCellGate = activatedGatesData.forgetGate * currentState.cellGate + activatedGatesData.inputGate * activatedGatesData.cellGate
-            val newOutput = activatedGatesData.outputGate * Activation.Tanh<T>().apply(newCellGate).first()
+            currentState = State.create(activatedGatesData, currentState)
 
-            currentState = State(newOutput, newCellGate)
+            currentState.output
+        }
 
-            newOutput
-        }.toOutput()
+        return Pair(mainOutput, currentState)
     }
 
     data class GatesData<T : Number>(val inputGate: Tensor<T>,
@@ -78,6 +86,12 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                 val stateSpace = resolveSpaceWithKClass(type.resolveKClass(), intArrayOf(batchSize, hiddenSize)) as TensorRing<T>
                 return State(Tensor(null, stateSpace.zero, type, stateSpace), Tensor(null, stateSpace.zero, type, stateSpace))
             }
+
+            fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>) : State<T> {
+                val newCellGate = gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate
+                val newOutput = gatesData.outputGate * Activation.Tanh<T>().apply(newCellGate).first()
+                return State(newOutput, newCellGate)
+            }
         }
     }
 
@@ -109,7 +123,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Number> List<Tensor<T>>.toOutput(): Collection<Tensor<T>> {
+    private fun <T : Number> List<Tensor<T>>.toOutput(): Tensor<T> {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
         val newStrides = SpaceStrides(newShape)
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
@@ -119,6 +133,6 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
         val newSpace = resolveSpaceWithKClass(this.first().type!!.resolveKClass(), newShape) as TensorRing<T>
-        return listOf(Tensor("Y", newBuffer, this.first().type, newSpace))
+        return Tensor(null, newBuffer, this.first().type, newSpace)
     }
 }

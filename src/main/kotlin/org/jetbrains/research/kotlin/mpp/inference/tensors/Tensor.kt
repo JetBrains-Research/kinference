@@ -10,7 +10,7 @@ import scientifik.kmath.structures.*
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
-class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: DataType?, private val space: TensorRing<T>?) {
+class Tensor<T : Number>(var name: String?, val data: NDBuffer<T>, val type: DataType?, private val space: TensorRing<T>?) {
     operator fun plus(other: Tensor<T>): Tensor<T> {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
 
@@ -93,6 +93,26 @@ class Tensor<T : Number>(val name: String?, val data: NDBuffer<T>, val type: Dat
             val newStructure = BufferNDStructure(newStrides, newBuffer)
             Tensor(null, newStructure, type, newSpace)
         }
+    }
+
+    fun reshape(shape: IntArray) : Tensor<T> {
+        val newStrides = SpaceStrides(shape)
+
+        require(data.strides.linearSize == newStrides.linearSize) { "New shape is not compatible with the previous one" }
+
+        val newBuffer = BufferNDStructure(newStrides, data.buffer)
+        val newSpace = space!!.rebuild(shape)
+
+        return Tensor(name, newBuffer, type, newSpace)
+    }
+
+    fun squeeze(index: Int) : Tensor<T> {
+        require(data.shape[index] == 1) { "shape[$index] == ${data.shape[index]}, but require 1" }
+
+        val shapeIndices = data.shape.indices.minus(index)
+        val newShape = data.shape.slice(shapeIndices).toIntArray()
+
+        return reshape(newShape)
     }
 
     override fun equals(other: Any?): Boolean {

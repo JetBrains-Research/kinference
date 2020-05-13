@@ -54,14 +54,20 @@ class Graph(
 
     fun fetchOutputs(): List<Tensor<*>> {
         val outputNodes = if (nodes.size == 1) nodes else nodes.filter { it.type == Node.NodeType.OUTPUT }
-        val expectedOutputTensorNames = output.map { it.name }
 
-        val outputTensors = outputNodes.flatMap { it.outputs.tensors.toList() }.filterNotNull()
-        val actualOutputTensorNames = outputTensors.map { it.name }
+        val requireTensorNames = output.map { it.name }
+        val outputTensors = arrayListOf<Tensor<*>>()
 
-        require(expectedOutputTensorNames.minus(actualOutputTensorNames).isEmpty()) { "Not all outputs were generated" }
+        for (node in outputNodes){
+            val names = requireTensorNames.intersect(node.outputs.names)
+            for (name in names){
+                val namedTensor = node.outputs[name]
+                require(namedTensor != null) { "Not all outputs were generated" }
+                outputTensors.add(namedTensor)
+            }
+        }
 
-        return outputTensors
+        return outputTensors.toList()
     }
 
     //only for sequential models
