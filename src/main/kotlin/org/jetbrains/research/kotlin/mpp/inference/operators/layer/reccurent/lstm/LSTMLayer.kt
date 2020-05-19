@@ -31,7 +31,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         val hiddenSize = recWeights.data.shape[1]
         val batchSize = inputMatrices.first().data.shape[0]
 
-        var currentState = State.initialize<T>(hiddenSize, batchSize, inputMatrices.first().type!!)
+        var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().type!!)
         val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
         val mainOutput = inputMatrices.map { inputMatrix ->

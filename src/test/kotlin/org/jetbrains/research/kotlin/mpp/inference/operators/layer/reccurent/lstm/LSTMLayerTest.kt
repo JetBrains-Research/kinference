@@ -17,7 +17,18 @@ class LSTMLayerTest {
     }
 
     @Test
-    @Suppress("UNCHECKED_CAST")
+    fun `LSTM with bias`(){
+        val (expectedOutputTensors, actualOutputTensors) = Utils.operatorTestHelper("/lstm_with_bias/")
+
+        val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
+
+        for (expectedOutputTensor in expectedOutputTensors){
+            val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
+            Utils.assertTensors(expectedOutputTensor, actualOutputTensor)
+        }
+    }
+
+    @Test
     fun `BiLSTM test`(){
         val (expectedOutputTensors, actualOutputTensors) = Utils.operatorTestHelper("/bi_lstm_defaults/")
 
