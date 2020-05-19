@@ -37,8 +37,8 @@ class Node(proto: NodeProto, val type: NodeType) {
         outputs.clearValues()
 
         val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList(), attributes).toList()
-        outputs.names.forEachIndexed { i, name ->
-            val tensor = out.getOrNull(i)
+        for ((index, name) in outputs.names.withIndex()){
+            val tensor = out.getOrNull(index)
             if (tensor != null) tensor.name = name
             outputs[name] = tensor
         }

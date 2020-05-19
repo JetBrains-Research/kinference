@@ -56,7 +56,7 @@ class Graph(
         val outputNodes = if (nodes.size == 1) nodes else nodes.filter { it.type == Node.NodeType.OUTPUT }
 
         val requireTensorNames = output.map { it.name }
-        val outputTensors = arrayListOf<Tensor<*>>()
+        val outputTensors = ArrayList<Tensor<*>>()
 
         for (node in outputNodes){
             val names = requireTensorNames.intersect(node.outputs.names)
