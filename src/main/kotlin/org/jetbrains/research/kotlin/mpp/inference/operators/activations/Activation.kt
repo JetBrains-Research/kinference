@@ -21,8 +21,14 @@ sealed class Activation<T : Number>(private val func: (T) -> T) : Operator<T>() 
     //only for float and double types
     class Sigmoid<T : Number> : Activation<T>(func = { x -> (1.0 / (1.0 + exp(-x.toDouble()))) as T })
 
+    //only for float and double types
+    class Tanh<T : Number> : Activation<T>(func = { x ->
+        ((exp(2.0 * x.toDouble()) - 1.0) /
+            (exp(2.0 * x.toDouble()) + 1.0)) as T
+    })
+
     companion object {
-        fun <T: Number> max(x: Number, y: T): T {
+        private fun <T : Number> max(x: Number, y: T): T {
             val a = BigDecimal(x.toString())
             val b = BigDecimal(y.toString())
             return a.max(b) as T

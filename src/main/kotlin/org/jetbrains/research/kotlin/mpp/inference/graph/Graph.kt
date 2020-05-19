@@ -43,9 +43,31 @@ class Graph(
         return setInput(name, value)
     }
 
-    fun fetchOutputs(): List<Tensor<*>?> {
-        val out = nodes.filter { it.type == Node.NodeType.OUTPUT }
-        return out.flatMap { it.outputs.tensors.toList() }
+    inline fun <reified T : Number> setInput(tensor: Tensor<T>): Graph {
+        val name = tensor.name!!
+
+        require(name in availableInputs) { "Required input node is either already set or not found" }
+
+        nodes.find { name in it.inputs.names }!!.inputs[name] = tensor
+        return this
+    }
+
+    fun fetchOutputs(): List<Tensor<*>> {
+        val outputNodes = if (nodes.size == 1) nodes else nodes.filter { it.type == Node.NodeType.OUTPUT }
+
+        val requireTensorNames = output.map { it.name }
+        val outputTensors = ArrayList<Tensor<*>>()
+
+        for (node in outputNodes){
+            val names = requireTensorNames.intersect(node.outputs.names)
+            for (name in names){
+                val namedTensor = node.outputs[name]
+                require(namedTensor != null) { "Not all outputs were generated" }
+                outputTensors.add(namedTensor)
+            }
+        }
+
+        return outputTensors.toList()
     }
 
     //only for sequential models

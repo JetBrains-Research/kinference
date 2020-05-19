@@ -32,7 +32,9 @@ class NodeIO(names: List<String> = emptyList()) {
     }
 
     fun addTensors(tensors: List<Tensor<*>>): NodeIO {
-        tensors.filter { it.name != null }.forEach { namedTensors[it.name!!] = it }
+        for (tensor in tensors.filter { it.name != null }){
+            namedTensors[tensor.name!!] = tensor
+        }
         return this
     }
 

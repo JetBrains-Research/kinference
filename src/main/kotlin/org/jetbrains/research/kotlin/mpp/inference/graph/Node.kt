@@ -2,12 +2,14 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import NodeProto
 import TensorProto
+import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class Node(proto: NodeProto, val type: NodeType) {
     val inputs: NodeIO = NodeIO()
     val outputs: NodeIO = NodeIO()
+    val attributes = proto.attribute.map { Attribute.create(it) }.associateBy { it.name }
     private val operatorName = proto.op_type!!
 
     init {
@@ -34,8 +36,12 @@ class Node(proto: NodeProto, val type: NodeType) {
     fun execute(): NodeIO {
         outputs.clearValues()
 
-        val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList()).toList()
-        outputs.names.forEachIndexed { i, name -> outputs[name] = out.getOrNull(i) }
+        val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList(), attributes).toList()
+        for ((index, name) in outputs.names.withIndex()){
+            val tensor = out.getOrNull(index)
+            if (tensor != null) tensor.name = name
+            outputs[name] = tensor
+        }
 
         clearMutableInputs()
         return outputs
