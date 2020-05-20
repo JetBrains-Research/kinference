@@ -101,7 +101,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                                       val cellGateBiases: Tensor<T>) {
         companion object {
             fun <T : Number> create(biases: Tensor<T>, hiddenSize: Int, batchSize: Int) : Pair<BiasesData<T>, BiasesData<T>> {
-                val shape = intArrayOf(hiddenSize, batchSize)
+                val shape = intArrayOf(batchSize, hiddenSize)
                 val blockSize = hiddenSize * batchSize
                 val newStrides = SpaceStrides(shape)
                 @Suppress("UNCHECKED_CAST")

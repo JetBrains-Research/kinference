@@ -14,7 +14,7 @@ class Tensor<T : Number>(var name: String?, val data: NDBuffer<T>, val type: Dat
     operator fun plus(other: Tensor<T>): Tensor<T> {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
 
-        val res = space!!.add(data, other.data)
+        val res = space!!.matrixContext.add(data.as2D(), other.data.as2D())
         return Tensor(name, res, type, space)
     }
 
