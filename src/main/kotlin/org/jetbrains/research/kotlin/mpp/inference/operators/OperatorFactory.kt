@@ -17,6 +17,7 @@ object OperatorFactory {
         "Identity" -> Activation.Identity()
         "Relu" -> Activation.Relu()
         "Sigmoid" -> Activation.Sigmoid()
+        "Tanh" -> Activation.Tanh()
         "LSTM" -> LSTMFactory.create(attributes)
         else -> error("Unsupported operator")
     }
