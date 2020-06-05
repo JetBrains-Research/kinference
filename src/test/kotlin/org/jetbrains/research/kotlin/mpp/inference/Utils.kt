@@ -14,7 +14,7 @@ import java.nio.ByteBuffer
 import kotlin.math.pow
 
 object Utils {
-    private val delta = (10.0).pow(-7)
+    private val delta = (10.0).pow(-6)
 
     fun getTensor(path: File) : Tensor<*> {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
@@ -58,16 +58,18 @@ object Utils {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun operatorTestHelper(folderName: String): Pair<List<Tensor<Number>>, List<Tensor<Number>>> {
+    fun operatorTestHelper(folderName: String): List<Pair<List<Tensor<Number>>, List<Tensor<Number>>>> {
         val path = javaClass.getResource(folderName).path
         val model = Model.load(path + "model.onnx")
 
-        val inputFiles = File(path).walk().filter { "input" in it.name }
-        val outputFiles = File(path).walk().filter { "output" in it.name }
+        return File(path).list()!!.filter { "test" in it }.map {
+            val inputFiles = File("$path/$it").walk().filter { file ->  "input" in file.name }
+            val outputFiles = File("$path/$it").walk().filter { file -> "output" in file.name }
 
-        val inputTensors = inputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
-        val expectedOutputTensors = outputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
-        val actualOutputTensors = model.predict(inputTensors) as List<Tensor<Number>>
-        return Pair(expectedOutputTensors, actualOutputTensors)
+            val inputTensors = inputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
+            val expectedOutputTensors = outputFiles.map { getTensor(it) }.toList() as List<Tensor<Number>>
+            val actualOutputTensors = model.predict(inputTensors) as List<Tensor<Number>>
+            Pair(expectedOutputTensors, actualOutputTensors)
+        }
     }
 }
