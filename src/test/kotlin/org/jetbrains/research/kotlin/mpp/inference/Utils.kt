@@ -20,6 +20,7 @@ object Utils {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
         return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
+            DataType.INT64 -> getTensorLong(tensorProto)
             else -> throw UnsupportedOperationException()
         }
     }
@@ -30,6 +31,14 @@ object Utils {
         val floatData = chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
         val structure = BufferNDStructure(SpaceStrides(tensorProto.dims.toIntArray()), floatData)
         return Tensor(tensorProto.name, structure, DataType.FLOAT, resolveSpace(tensorProto.dims))
+    }
+
+    private fun getTensorLong(tensorProto: TensorProto) : Tensor<Long> {
+        val rawLongData = tensorProto.raw_data!!.toByteArray()
+        val chunkedRawLongData = rawLongData.asIterable().chunked(8)
+        val longData = chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.asBuffer()
+        val structure = BufferNDStructure(SpaceStrides(tensorProto.dims.toIntArray()), longData)
+        return Tensor(tensorProto.name, structure, DataType.INT64, resolveSpace(tensorProto.dims))
     }
 
     fun assertTensors(expected: Tensor<*>, actual: Tensor<*>) {
