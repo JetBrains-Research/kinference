@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class MatMulTests {
+/*class MatMulTests {
     @Test
     fun `All tests`(){
         val path = javaClass.getResource("/matmul/").path
@@ -24,3 +24,4 @@ class MatMulTests {
         }
     }
 }
+*/

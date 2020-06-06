@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class GatherTest {
+/*class GatherTest {
     @Test
     fun `All tests`(){
         val path = javaClass.getResource("/gather/").path
@@ -24,3 +24,4 @@ class GatherTest {
         }
     }
 }
+*/

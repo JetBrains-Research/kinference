@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class ReshapeTest {
+/*class ReshapeTest {
     @Test
     fun `All tests`(){
         val path = javaClass.getResource("/reshape/").path
@@ -24,3 +24,4 @@ class ReshapeTest {
         }
     }
 }
+*/
