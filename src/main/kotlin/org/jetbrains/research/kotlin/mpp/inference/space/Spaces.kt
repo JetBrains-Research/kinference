@@ -1,6 +1,5 @@
 package org.jetbrains.research.kotlin.mpp.inference.space
 
-import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.MatrixContext
 import scientifik.kmath.operations.*
 import scientifik.kmath.structures.*
@@ -9,7 +8,6 @@ import kotlin.reflect.KClass
 class IntTensorRing(shape: IntArray) : TensorRing<Int>(shape, IntRing) {
     override val zero: NDBuffer<Int> = NDStructure.auto(shape) { elementContext.zero }
     override val one: NDBuffer<Int> = NDStructure.auto(shape) { elementContext.one }
-    override val matrixContext: GenericMatrixContext<Int, Ring<Int>> = MatrixContext.auto(IntRing)
 
     override fun rebuild(newDims: IntArray): TensorRing<Int> = IntTensorRing(newDims)
 
@@ -20,7 +18,6 @@ class IntTensorRing(shape: IntArray) : TensorRing<Int>(shape, IntRing) {
 class LongTensorRing(shape: IntArray) : TensorRing<Long>(shape, LongRing) {
     override val zero: NDBuffer<Long> = NDStructure.auto(shape) { elementContext.zero }
     override val one: NDBuffer<Long> = NDStructure.auto(shape) { elementContext.one }
-    override val matrixContext: GenericMatrixContext<Long, Ring<Long>> = MatrixContext.auto(LongRing)
 
     override fun rebuild(newDims: IntArray): TensorRing<Long> = LongTensorRing(newDims)
 
@@ -31,7 +28,6 @@ class LongTensorRing(shape: IntArray) : TensorRing<Long>(shape, LongRing) {
 class FloatTensorRing(shape: IntArray) : TensorRing<Float>(shape, FloatField) {
     override val zero: NDBuffer<Float> = NDStructure.auto(shape) { elementContext.zero }
     override val one: NDBuffer<Float> = NDStructure.auto(shape) { elementContext.one }
-    override val matrixContext: GenericMatrixContext<Float, Ring<Float>> = MatrixContext.auto(FloatField)
 
     override fun rebuild(newDims: IntArray): TensorRing<Float> = FloatTensorRing(newDims)
 
@@ -42,7 +38,6 @@ class FloatTensorRing(shape: IntArray) : TensorRing<Float>(shape, FloatField) {
 class DoubleTensorRing(shape: IntArray) : TensorRing<Double>(shape, RealField) {
     override val zero: NDBuffer<Double> = NDStructure.auto(shape) { elementContext.zero }
     override val one: NDBuffer<Double> = NDStructure.auto(shape) { elementContext.one }
-    override val matrixContext: GenericMatrixContext<Double, Ring<Double>> = MatrixContext.auto(RealField)
 
     override fun rebuild(newDims: IntArray): TensorRing<Double> = DoubleTensorRing(newDims)
 
@@ -65,3 +60,12 @@ inline fun <reified T : Any> tryResolveSpace(dims: IntArray) = resolveSpaceWithK
 inline fun <reified T : Any> resolveSpace(dims: List<Long>) = tryResolveSpace<T>(dims.toIntArray())
 
 fun Collection<Long>.toIntArray() = this.map { it.toInt() }.toIntArray()
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> resolveMatrixContext(kclass: KClass<T>) = when (kclass) {
+    Double::class -> MatrixContext.auto(RealField)
+    Float::class -> MatrixContext.auto(FloatField)
+    Long::class -> MatrixContext.auto(LongRing)
+    Int::class -> MatrixContext.auto(IntRing)
+    else -> error("Unsupported data type")
+}

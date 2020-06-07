@@ -3,7 +3,8 @@ package org.jetbrains.research.kotlin.mpp.inference.tensors
 import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.space.*
-import scientifik.kmath.linear.transpose
+import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
+import scientifik.kmath.linear.*
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
@@ -20,15 +21,15 @@ class Tensor<T : Number>(var name: String?, val data: NDBuffer<T>, val type: Dat
     operator fun plus(other: Tensor<T>): Tensor<T> {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
 
-        val res = space!!.matrixContext.add(data.as2D(), other.data.as2D())
-        return Tensor(name, res, type, space)
+        val result = space!!.combine(data, other.data) { fst, snd -> fst + snd }
+        return Tensor(name, result, type, space)
     }
 
     infix fun dot(other: Tensor<T>): Tensor<T> {
         require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
-
-        val resMatrix = with (space!!.matrixContext) { data.as2D() dot other.data.as2D() }
-        val newSpace = space.rebuild(newDims = resMatrix.shape)
+        val context = resolveMatrixContext(type!!.resolveKClass()) as GenericMatrixContext<T, Ring<T>>
+        val resMatrix = with (context) { data.as2D() dot other.data.as2D() }
+        val newSpace = space!!.rebuild(newDims = resMatrix.shape)
         return Tensor(name, resMatrix, type, newSpace)
     }
 

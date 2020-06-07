@@ -1,6 +1,5 @@
 package org.jetbrains.research.kotlin.mpp.inference.space
 
-import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.operations.RingElement
 import scientifik.kmath.structures.*
@@ -11,7 +10,6 @@ abstract class TensorRing<T : Any>(
     override val strides: Strides = SpaceStrides(shape)
 ) : BufferedNDRing<T, Ring<T>> {
     abstract val bufferBuilder: (Int, (Int) -> T) -> Buffer<T>
-    abstract val matrixContext : GenericMatrixContext<T, Ring<T>>
 
     abstract fun rebuild(newDims: IntArray): TensorRing<T>
 
