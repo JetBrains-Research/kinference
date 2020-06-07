@@ -2,26 +2,42 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.operations
 
 import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
-import java.io.File
 
-/*class TransposeTest {
-    @Test
-    fun `All tests`(){
-        val path = javaClass.getResource("/transpose/").path
-        val tests = File(path).list()!!
-        for (test in tests) {
-            val dataSets = Utils.operatorTestHelper("/transpose/$test/")
-            for (dataSet in dataSets) {
-                val (expectedOutputTensors, actualOutputTensors) = dataSet
+class TransposeTest {
+    private fun getTargetPath(dirName: String) = "/transpose/$dirName/"
 
-                val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
-
-                for (expectedOutputTensor in expectedOutputTensors){
-                    val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
-                    Utils.assertTensors(expectedOutputTensor, actualOutputTensor)
-                }
-            }
-        }
+    /*@Test
+    fun test_transpose_all_permutations_0() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_0"))
     }
+
+    @Test
+    fun test_transpose_all_permutations_1() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_1"))
+    }
+
+    @Test
+    fun test_transpose_all_permutations_2() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_2"))
+    }
+
+    @Test
+    fun test_transpose_all_permutations_3() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_3"))
+    }
+
+    @Test
+    fun test_transpose_all_permutations_4() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_4"))
+    }
+
+    @Test
+    fun test_transpose_all_permutations_5() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_5"))
+    }
+
+    @Test
+    fun test_transpose_default() {
+        Utils.singleTestHelper(getTargetPath("test_transpose_default"))
+    }*/
 }
-*/

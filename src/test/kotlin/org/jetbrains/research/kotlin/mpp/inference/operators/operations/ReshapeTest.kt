@@ -2,26 +2,52 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.operations
 
 import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
-import java.io.File
 
-/*class ReshapeTest {
-    @Test
-    fun `All tests`(){
-        val path = javaClass.getResource("/reshape/").path
-        val tests = File(path).list()!!
-        for (test in tests) {
-            val dataSets = Utils.operatorTestHelper("/reshape/$test/")
-            for (dataSet in dataSets) {
-                val (expectedOutputTensors, actualOutputTensors) = dataSet
+class ReshapeTest {
+    private fun getTargetPath(dirName: String) = "/reshape/$dirName/"
 
-                val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
-
-                for (expectedOutputTensor in expectedOutputTensors){
-                    val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
-                    Utils.assertTensors(expectedOutputTensor, actualOutputTensor)
-                }
-            }
-        }
+    /*@Test
+    fun test_reshape_extended_dims(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_extended_dims"))
     }
+
+    @Test
+    fun test_reshape_negative_dim(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_negative_dim"))
+    }
+
+    @Test
+    fun test_reshape_negative_extended_dims(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_negative_extended_dims"))
+    }
+
+    @Test
+    fun test_reshape_one_dim(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_one_dim"))
+    }
+
+    @Test
+    fun test_reshape_reduces_dims(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_reduces_dims"))
+    }
+
+    @Test
+    fun test_reshape_reordered_all_dims(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_reordered_all_dims"))
+    }
+
+    @Test
+    fun test_reshape_reordered_last_dims(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_reordered_last_dims"))
+    }
+
+    @Test
+    fun test_reshape_zero_and_negative_dim(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_zero_and_negative_dim"))
+    }
+
+    @Test
+    fun test_reshape_zero_dim(){
+        Utils.singleTestHelper(getTargetPath("test_reshape_zero_dim"))
+    }*/
 }
-*/

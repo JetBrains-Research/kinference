@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Activation
+import org.jetbrains.research.kotlin.mpp.inference.operators.activations.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.RecurrentLayer
 import org.jetbrains.research.kotlin.mpp.inference.space.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
@@ -53,10 +53,10 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                                      val forgetGate: Tensor<T>,
                                      val cellGate: Tensor<T>) {
         fun activate() : GatesData<T> {
-            val activatedInputGate = Activation.Sigmoid<T>().apply(inputGate).first()
-            val activatedOutputGate = Activation.Sigmoid<T>().apply(outputGate).first()
-            val activatedForgetGate = Activation.Sigmoid<T>().apply(forgetGate).first()
-            val activatedCellGate = Activation.Tanh<T>().apply(cellGate).first()
+            val activatedInputGate = Sigmoid<T>().apply(inputGate).first()
+            val activatedOutputGate = Sigmoid<T>().apply(outputGate).first()
+            val activatedForgetGate = Sigmoid<T>().apply(forgetGate).first()
+            val activatedCellGate = Tanh<T>().apply(cellGate).first()
             return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
         }
 
@@ -89,7 +89,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
 
             fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>) : State<T> {
                 val newCellGate = gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate
-                val newOutput = gatesData.outputGate * Activation.Tanh<T>().apply(newCellGate).first()
+                val newOutput = gatesData.outputGate * Tanh<T>().apply(newCellGate).first()
                 return State(newOutput, newCellGate)
             }
         }

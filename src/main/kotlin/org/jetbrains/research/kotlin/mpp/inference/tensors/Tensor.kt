@@ -10,7 +10,13 @@ import scientifik.kmath.structures.*
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
-class Tensor<T : Number>(var name: String?, val data: NDBuffer<T>, val type: DataType?, private val space: TensorRing<T>?) {
+class Tensor<T : Number>(var name: String?, val data: NDBuffer<T>, val type: DataType?, val space: TensorRing<T>?) {
+    val elementsList: List<T>
+        get() = data.buffer.asIterable().toList()
+
+    val rank: Int
+        get() = data.dimension
+
     operator fun plus(other: Tensor<T>): Tensor<T> {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
 

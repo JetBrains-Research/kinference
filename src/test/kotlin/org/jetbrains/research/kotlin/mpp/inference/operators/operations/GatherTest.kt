@@ -2,26 +2,22 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.operations
 
 import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
-import java.io.File
 
-/*class GatherTest {
-    @Test
-    fun `All tests`(){
-        val path = javaClass.getResource("/gather/").path
-        val tests = File(path).list()!!
-        for (test in tests) {
-            val dataSets = Utils.operatorTestHelper("/gather/$test/")
-            for (dataSet in dataSets) {
-                val (expectedOutputTensors, actualOutputTensors) = dataSet
+class GatherTest {
+    private fun getTargetPath(dirName: String) = "/gather/$dirName/"
 
-                val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
-
-                for (expectedOutputTensor in expectedOutputTensors){
-                    val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
-                    Utils.assertTensors(expectedOutputTensor, actualOutputTensor)
-                }
-            }
-        }
+    /*@Test
+    fun test_gather_0(){
+        Utils.singleTestHelper(getTargetPath("test_gather_0"))
     }
+
+    @Test
+    fun test_gather_1(){
+        Utils.singleTestHelper(getTargetPath("test_gather_1"))
+    }
+
+    @Test
+    fun test_gather_negative_indices(){
+        Utils.singleTestHelper(getTargetPath("test_gather_negative_indices"))
+    }*/
 }
-*/

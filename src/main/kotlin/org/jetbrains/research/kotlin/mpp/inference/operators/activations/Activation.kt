@@ -2,36 +2,41 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
 import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.NDStructure
 import java.math.BigDecimal
-import kotlin.math.exp
 
 @Suppress("UNCHECKED_CAST")
-sealed class Activation<T : Number>(private val func: (T) -> T) : Operator<T>() {
+abstract class Activation<T : Number> : Operator<T>() {
+    abstract fun activate(input: Tensor<T>): Tensor<T>
+
     override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
         val toActivate = inputs.singleOrNull()
         requireNotNull(toActivate) { "Multiple inputs are not allowed" }
 
-        return listOf(toActivate.mapElements(func))
+        return listOf(activate(toActivate))
     }
 
-    class Identity<T : Number> : Activation<T>(func = { x -> x })
-
-    class Relu<T : Number> : Activation<T>(func = { x -> max(0, x) })
-
-    //only for float and double types
-    class Sigmoid<T : Number> : Activation<T>(func = { x -> (1.0 / (1.0 + exp(-x.toDouble()))) as T })
-
-    //only for float and double types
-    class Tanh<T : Number> : Activation<T>(func = { x ->
-        ((exp(2.0 * x.toDouble()) - 1.0) /
-            (exp(2.0 * x.toDouble()) + 1.0)) as T
-    })
-
     companion object {
-        private fun <T : Number> max(x: Number, y: T): T {
+        fun <T : Number> max(x: Number, y: T): T {
             val a = BigDecimal(x.toString())
             val b = BigDecimal(y.toString())
             return a.max(b) as T
+        }
+
+        inline fun <T : Number, reified R : Number> reduceTensorAxis(tensor: NDStructure<T>, axis: Int, crossinline func: (Int, (Int) -> T) -> R): BufferNDStructure<R> {
+            val shape = tensor.shape
+            if (axis < 0 || axis >= shape.size)
+                throw IllegalArgumentException("Illegal axis: $axis")
+            val newShape = IntArray(shape.size) { if (it == axis) 1 else shape[it] }
+            val index = IntArray(shape.size)
+            return NDStructure.auto(newShape) { newIndex: IntArray ->
+                for (i in index.indices) index[i] = newIndex[i]
+                func(shape[axis]) {
+                    index[axis] = it
+                    tensor[index]
+                }
+            }
         }
     }
 }

@@ -81,4 +81,18 @@ object Utils {
             Pair(expectedOutputTensors, actualOutputTensors)
         }
     }
+
+    fun singleTestHelper(testDir: String) {
+        val dataSets = operatorTestHelper(testDir)
+        for (dataSet in dataSets) {
+            val (expectedOutputTensors, actualOutputTensors) = dataSet
+
+            val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
+
+            for (expectedOutputTensor in expectedOutputTensors){
+                val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
+                assertTensors(expectedOutputTensor, actualOutputTensor)
+            }
+        }
+    }
 }
