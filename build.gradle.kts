@@ -32,6 +32,12 @@ sourceSets {
     }
 }
 
+tasks.compileTestKotlin{
+    doFirst(){
+        source = source.filter { "kotlin-gen" !in it.path }.asFileTree
+    }
+}
+
 idea {
     module.generatedSourceDirs.plusAssign(files(generatedDir))
 }
