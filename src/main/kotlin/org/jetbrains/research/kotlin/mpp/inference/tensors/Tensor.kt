@@ -4,14 +4,13 @@ import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.GenericMatrixContext
-import scientifik.kmath.linear.transpose
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
-class Tensor(var name: String?, val data: BufferNDStructure<Any>, val type: DataType?) {
+class Tensor(var name: String?, val data: NDBuffer<Any>, val type: DataType?) {
     val elementsList: List<Any>
         get() = data.buffer.asIterable().toList()
 
@@ -49,11 +48,24 @@ class Tensor(var name: String?, val data: BufferNDStructure<Any>, val type: Data
         return Tensor(name, result as BufferNDStructure<Any>, type)
     }
 
-    fun transpose(): Tensor {
-        require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
+    fun transpose(perm: List<Long>? = null): Tensor {
+        val actualPerm = if (perm.isNullOrEmpty()) data.shape.indices.reversed() else perm.toIntArray()
+        val newShape = IntArray(data.shape.size)
+        for ((i, axis)  in actualPerm.withIndex()) {
+            newShape[i] = data.shape[axis]
+        }
+        val newStrides = TensorStrides(newShape)
 
-        val resMatrix = data.as2D().transpose()
-        return Tensor(name, resMatrix, type)
+        val newBuffer = MutableBufferNDStructure<Any?>(newStrides, MutableBuffer.boxing(newStrides.linearSize) { null })
+        for (i in 0 until data.strides.linearSize) {
+            val indices = data.strides.index(i)
+            val newIndices = IntArray(indices.size)
+            for ((id, axis) in actualPerm.withIndex()) {
+                newIndices[id] = indices[axis]
+            }
+            newBuffer[newIndices] = data[indices]
+        }
+        return Tensor(name, newBuffer as NDBuffer<Any>, type)
     }
 
     fun as2DCollection(): Collection<Tensor> {

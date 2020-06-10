@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class TransposeTest {
     private fun getTargetPath(dirName: String) = "/transpose/$dirName/"
 
-    /*@Test
+    @Test
     fun test_transpose_all_permutations_0() {
         Utils.singleTestHelper(getTargetPath("test_transpose_all_permutations_0"))
     }
@@ -39,5 +39,5 @@ class TransposeTest {
     @Test
     fun test_transpose_default() {
         Utils.singleTestHelper(getTargetPath("test_transpose_default"))
-    }*/
+    }
 }
