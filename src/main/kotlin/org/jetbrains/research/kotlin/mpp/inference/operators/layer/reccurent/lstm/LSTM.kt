@@ -9,7 +9,7 @@ import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
 import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
-class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attributes, ATTRIBUTE_CONSTRAINTS, INPUT_CONSTRAINTS, OUTPUT_CONSTRAINTS) {
+class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
     val layer: LSTMLayer<Number> = when (attributes["direction"]?.value) {
         "forward" -> LSTMLayer()
         "bidirectional" -> BiLSTMLayer()
@@ -23,7 +23,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attribute
             TensorProto.DataType.DOUBLE
         )
 
-        private val ATTRIBUTE_CONSTRAINTS = listOf(
+        private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("activation_alpha", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
             AttributeInfo("activation_beta", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
             AttributeInfo("activations", setOf(AttributeProto.AttributeType.STRINGS), false, listOf("Sigmoid", "Tanh", "Tanh")),
@@ -33,7 +33,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attribute
             AttributeInfo("input_forget", setOf(AttributeProto.AttributeType.INT), false, 0)
         )
 
-        private val INPUT_CONSTRAINTS = listOf(
+        private val INPUTS_INFO = listOf(
             InputInfo(0, TYPE_CONSTRAINTS, "X", true),
             InputInfo(1, TYPE_CONSTRAINTS, "W", true),
             InputInfo(2, TYPE_CONSTRAINTS, "R", true),
@@ -45,7 +45,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attribute
             InputInfo(7, TYPE_CONSTRAINTS, "P", false, 0)
         )
 
-        private val OUTPUT_CONSTRAINTS = listOf(
+        private val OUTPUTS_INFO = listOf(
             OutputInfo(0, TYPE_CONSTRAINTS, "Y"),
             OutputInfo(1, TYPE_CONSTRAINTS, "Y_h"),
             OutputInfo(2, TYPE_CONSTRAINTS, "Y_c")

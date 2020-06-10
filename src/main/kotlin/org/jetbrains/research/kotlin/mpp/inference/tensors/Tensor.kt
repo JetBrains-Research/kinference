@@ -11,7 +11,7 @@ import scientifik.kmath.structures.*
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
-class Tensor(var name: String?, val data: BufferNDStructure<Any>, val type: DataType?) {
+data class Tensor(var name: String?, val data: BufferNDStructure<Any>, val type: DataType?) {
     val elementsList: List<Any>
         get() = data.buffer.asIterable().toList()
 
@@ -115,19 +115,6 @@ class Tensor(var name: String?, val data: BufferNDStructure<Any>, val type: Data
         val newShape = data.shape.slice(shapeIndices).toIntArray()
 
         return reshape(newShape)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Tensor) return false
-
-        return type == other.type && data == other.data
-    }
-
-    override fun hashCode(): Int {
-        var result = data.hashCode()
-        result = 31 * result + (type?.hashCode() ?: 0)
-        return result
     }
 
     companion object {

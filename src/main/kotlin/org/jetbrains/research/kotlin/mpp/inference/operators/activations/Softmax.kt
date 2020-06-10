@@ -4,14 +4,14 @@ import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.AttributeInfo
-import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
 import scientifik.kmath.linear.VirtualMatrix
 import scientifik.kmath.structures.*
 import kotlin.math.exp
 
 //only for float and double types
-class Softmax(attributes: Map<String, Attribute<Any>>) : Activation("Softmax", TYPE_CONSTRAINTS, attributes, ATTRIBUTE_CONSTRAINTS) {
+class Softmax(attributes: Map<String, Attribute<Any>>) : Activation("Softmax", TYPE_CONSTRAINTS, attributes, ATTRIBUTES_INFO) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -20,7 +20,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>) : Activation("Softmax", T
             TensorProto.DataType.BFLOAT16
         )
 
-        private val ATTRIBUTE_CONSTRAINTS = listOf(
+        private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1L)
         )
     }

@@ -6,15 +6,15 @@ import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import java.io.File
 
 class Model(proto: ModelProto) {
-    val graph = Graph.build(proto.graph!!)
+    val graph = Graph(proto.graph!!)
 
     inline fun <reified T : Number> predict(input: List<T>): List<Tensor> {
-        return graph.setInput(input).execute().fetchOutputs()
+        return graph.setInput(input).execute()
     }
 
     fun predict(input: Collection<Tensor>): List<Tensor> {
         input.forEach { graph.setInput(it) }
-        return graph.execute().fetchOutputs()
+        return graph.execute()
     }
 
     companion object {

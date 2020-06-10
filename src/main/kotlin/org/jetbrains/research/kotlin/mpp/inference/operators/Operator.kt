@@ -36,7 +36,7 @@ abstract class Operator(val name: String,
         // TODO check attributes
     }
 
-    protected fun applyWithCheck(inputs: Collection<Tensor>): Collection<Tensor> {
+    fun applyWithCheck(inputs: Collection<Tensor>): Collection<Tensor> {
         // TODO check inputs
         val outputs = apply(inputs)
         // TODO check outputs
@@ -54,10 +54,4 @@ abstract class Operator(val name: String,
 
     abstract fun apply(inputs: Collection<Tensor>): Collection<Tensor>
     open fun apply(vararg inputs: Tensor): Collection<Tensor> = apply(inputs.toList())
-
-    companion object {
-        operator fun invoke(name: String?, type: DataType?, value: Collection<Tensor>, attributes: Map<String, Attribute<Any>>): Collection<Tensor> {
-            return OperatorFactory.create(name, attributes).applyWithCheck(value)
-        }
-    }
 }
