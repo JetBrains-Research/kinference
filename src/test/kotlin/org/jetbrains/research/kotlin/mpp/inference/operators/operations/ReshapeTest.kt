@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class ReshapeTest {
     private fun getTargetPath(dirName: String) = "/reshape/$dirName/"
 
-    /*@Test
+    @Test
     fun test_reshape_extended_dims(){
         Utils.singleTestHelper(getTargetPath("test_reshape_extended_dims"))
     }
@@ -28,7 +28,7 @@ class ReshapeTest {
 
     @Test
     fun test_reshape_reduces_dims(){
-        Utils.singleTestHelper(getTargetPath("test_reshape_reduces_dims"))
+        Utils.singleTestHelper(getTargetPath("test_reshape_reduced_dims"))
     }
 
     @Test
@@ -49,5 +49,5 @@ class ReshapeTest {
     @Test
     fun test_reshape_zero_dim(){
         Utils.singleTestHelper(getTargetPath("test_reshape_zero_dim"))
-    }*/
+    }
 }

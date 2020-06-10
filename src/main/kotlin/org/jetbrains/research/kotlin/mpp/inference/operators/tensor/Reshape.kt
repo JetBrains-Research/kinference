@@ -1,12 +1,14 @@
-package org.jetbrains.research.kotlin.mpp.inference.operators
+package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
-class Transpose(attributes: Map<String, Attribute<Any>>) : Operator("Transpose", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
+class Reshape(attributes: Map<String, Attribute<Any>>) : Operator("Reshape", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT64,
+            TensorProto.DataType.UINT16,
             TensorProto.DataType.INT32,
             TensorProto.DataType.INT64,
             TensorProto.DataType.FLOAT16,
@@ -20,20 +22,19 @@ class Transpose(attributes: Map<String, Attribute<Any>>) : Operator("Transpose",
             TensorProto.DataType.COMPLEX64,
             TensorProto.DataType.UINT32,
             TensorProto.DataType.INT16,
-            TensorProto.DataType.INT8,
-            TensorProto.DataType.UINT16
+            TensorProto.DataType.INT8
         )
 
-        private val INPUTS_INFO = listOf(
-            InputInfo(0, TYPE_CONSTRAINTS, "data", true)
+        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true)
         )
 
         private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "transposed")
+            OutputInfo(0, TYPE_CONSTRAINTS, "reshape"),
+            OutputInfo(1, setOf(TensorProto.DataType.INT64), "shape")
         )
     }
 
     override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
-        return listOf(inputs.first().transpose(attributes["perm"]?.value as? List<Long>))
+        return listOf(inputs.elementAt(0).reshape(inputs.elementAt(1)))
     }
 }

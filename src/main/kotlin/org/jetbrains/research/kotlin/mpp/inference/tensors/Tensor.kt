@@ -120,6 +120,22 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         return Tensor(name, newBuffer, type)
     }
 
+    fun reshape(tensorShape: Tensor): Tensor {
+        val shape = tensorShape.elementsList as List<Long>
+        val newShape = shape.toMutableList()
+        for ((i, axisShape) in shape.withIndex()) {
+            if (axisShape == 0L) newShape[i] = data.shape[i].toLong()
+        }
+
+        val negIdx = newShape.indexOf(-1L)
+        if (negIdx != -1) {
+            val elementsCount = newShape.filter { it != -1L }.reduce(Long::times)
+            newShape[negIdx] = data.shape.reduce(Int::times).toLong() / elementsCount
+        }
+
+        return reshape(newShape.toIntArray())
+    }
+
     fun squeeze(index: Int): Tensor {
         require(data.shape[index] == 1) { "shape[$index] == ${data.shape[index]}, but require 1" }
 
