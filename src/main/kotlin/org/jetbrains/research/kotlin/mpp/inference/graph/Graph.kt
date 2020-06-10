@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.mpp.inference.types.ValueInfo
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 class Graph(
-    initializers: List<Tensor<*>>,
+    initializers: List<Tensor>,
     val nodes: List<Node>,
     val input: List<ValueInfo>,
     val output: List<ValueInfo>,
@@ -27,7 +27,7 @@ class Graph(
     val availableInputs: List<String>
         get() = nodes.filter { it.type == Node.NodeType.INPUT }.flatMap { it.inputs.availableForWriting }
 
-    inline fun <reified T : Number> setInput(name: String, value: List<T>): Graph {
+    fun setInput(name: String, value: List<Any>): Graph {
         require(name in availableInputs) { "Required input node is either already set or not found" }
 
         val type = input.find { it.name == name }?.type
@@ -43,7 +43,7 @@ class Graph(
         return setInput(name, value)
     }
 
-    inline fun <reified T : Number> setInput(tensor: Tensor<T>): Graph {
+    fun setInput(tensor: Tensor): Graph {
         val name = tensor.name!!
 
         require(name in availableInputs) { "Required input node is either already set or not found" }
@@ -52,15 +52,15 @@ class Graph(
         return this
     }
 
-    fun fetchOutputs(): List<Tensor<*>> {
+    fun fetchOutputs(): List<Tensor> {
         val outputNodes = if (nodes.size == 1) nodes else nodes.filter { it.type == Node.NodeType.OUTPUT }
 
         val requireTensorNames = output.map { it.name }
-        val outputTensors = ArrayList<Tensor<*>>()
+        val outputTensors = ArrayList<Tensor>()
 
-        for (node in outputNodes){
+        for (node in outputNodes) {
             val names = requireTensorNames.intersect(node.outputs.names)
-            for (name in names){
+            for (name in names) {
                 val namedTensor = node.outputs[name]
                 require(namedTensor != null) { "Not all outputs were generated" }
                 outputTensors.add(namedTensor)

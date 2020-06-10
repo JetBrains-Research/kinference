@@ -8,11 +8,11 @@ import java.io.File
 class Model(proto: ModelProto) {
     val graph = Graph.build(proto.graph!!)
 
-    inline fun <reified T: Number> predict(input: List<T>): List<Tensor<*>> {
+    inline fun <reified T : Number> predict(input: List<T>): List<Tensor> {
         return graph.setInput(input).execute().fetchOutputs()
     }
 
-    inline fun <reified T : Number> predict(input: Collection<Tensor<T>>) : List<Tensor<*>> {
+    fun predict(input: Collection<Tensor>): List<Tensor> {
         input.forEach { graph.setInput(it) }
         return graph.execute().fetchOutputs()
     }

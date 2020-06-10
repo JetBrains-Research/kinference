@@ -5,11 +5,12 @@ import org.jetbrains.research.kotlin.mpp.inference.space.TensorRing
 import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpaceWithKClass
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
+import scientifik.kmath.structures.BufferNDStructure
 import scientifik.kmath.structures.VirtualBuffer
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.get
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
-    override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
+    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
         val inputList = inputs.toList()
@@ -33,13 +34,13 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun mainOutputHelper(mainForwardOutput: List<Tensor<T>>, mainBackwardOutput: List<Tensor<T>>) : Tensor<T>{
+    private fun mainOutputHelper(mainForwardOutput: List<Tensor>, mainBackwardOutput: List<Tensor>): Tensor {
         val (batchSize, hiddenSize) = mainBackwardOutput.first().data.shape
         val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput)
 
         val newShape = intArrayOf(mainForwardOutput.size, 2, batchSize, hiddenSize)
         val newStrides = SpaceStrides(newShape)
-        val newSpace = resolveSpaceWithKClass(mainForwardOutput.first().type!!.resolveKClass(), newShape) as TensorRing<T>
+        val newSpace = resolveSpaceWithKClass(mainForwardOutput.first().type!!.resolveKClass(), newShape) as TensorRing<Any>
 
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
@@ -51,13 +52,13 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun stateOutputHelper(lastForwardState: State<T>, lastBackwardState: State<T>) : List<Tensor<T>> {
+    private fun stateOutputHelper(lastForwardState: State<T>, lastBackwardState: State<T>): List<Tensor> {
         val (batchSize, hiddenSize) = lastForwardState.output.data.shape
         val type = lastForwardState.output.type
 
         val newShape = intArrayOf(2, batchSize, hiddenSize)
         val newStrides = SpaceStrides(newShape)
-        val newSpace = resolveSpaceWithKClass(type!!.resolveKClass(), newShape) as TensorRing<T>
+        val newSpace = resolveSpaceWithKClass(type!!.resolveKClass(), newShape) as TensorRing<Any>
 
         val lastOutputs = listOf(lastForwardState.output, lastBackwardState.output)
         val newOutputData = VirtualBuffer(newStrides.linearSize) { i ->

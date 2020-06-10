@@ -1,20 +1,29 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
+import TensorProto
+import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.mpp.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
 import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
+import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import scientifik.kmath.structures.BufferNDStructure
 import scientifik.kmath.structures.NDStructure
 import java.math.BigDecimal
 
 @Suppress("UNCHECKED_CAST")
-abstract class Activation<T : Number> : Operator<T>() {
-    abstract fun activate(input: Tensor<T>): Tensor<T>
+abstract class Activation(name: String,
+                          constraints: Set<TensorProto.DataType>,
+                          attributes: Map<String, Attribute<Any>> = emptyMap(),
+                          attributesInfo: Collection<AttributeInfo> = emptyList()
+) : Operator(name, attributes, attributesInfo,
+    listOf(InputInfo(0, constraints, "input")),
+    listOf(OutputInfo(0, constraints, "output"))) {
 
-    override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
-        val toActivate = inputs.singleOrNull()
-        requireNotNull(toActivate) { "Multiple inputs are not allowed" }
+    abstract fun activate(input: Tensor): Tensor
 
-        return listOf(activate(toActivate))
+    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+        return listOf(activate(inputs.first()))
     }
 
     companion object {

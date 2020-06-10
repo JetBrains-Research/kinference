@@ -1,7 +1,10 @@
 package org.jetbrains.research.kotlin.mpp.inference.space
 
 import scientifik.kmath.linear.MatrixContext
-import scientifik.kmath.operations.*
+import scientifik.kmath.operations.FloatField
+import scientifik.kmath.operations.IntRing
+import scientifik.kmath.operations.LongRing
+import scientifik.kmath.operations.RealField
 import scientifik.kmath.structures.*
 import kotlin.reflect.KClass
 
@@ -51,7 +54,7 @@ fun <T : Any> resolveSpaceWithKClass(kclass: KClass<T>, dims: IntArray) = when (
     Float::class -> FloatTensorRing(dims)
     Long::class -> LongTensorRing(dims)
     Int::class -> IntTensorRing(dims)
-    else -> error("Unsupported data type")
+    else -> error("Unsupported data type: $kclass")
 } as TensorRing<T>
 
 @Suppress("UNCHECKED_CAST")

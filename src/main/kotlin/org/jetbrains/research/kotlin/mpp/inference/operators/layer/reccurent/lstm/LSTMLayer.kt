@@ -1,15 +1,19 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.operators.activations.*
-import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.RecurrentLayer
-import org.jetbrains.research.kotlin.mpp.inference.space.*
+import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
+import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
+import org.jetbrains.research.kotlin.mpp.inference.space.SpaceStrides
+import org.jetbrains.research.kotlin.mpp.inference.space.TensorRing
+import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpaceWithKClass
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.VirtualBuffer
+import scientifik.kmath.structures.get
 
-open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
-    override fun apply(inputs: Collection<Tensor<T>>): Collection<Tensor<T>> {
+open class LSTMLayer<T : Number> {
+    open fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
         val inputList = inputs.toList()
@@ -27,12 +31,12 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput), currentState.cellGate.reshape(shapeForOutput))
     }
 
-    protected fun activate(inputMatrices: Collection<Tensor<T>>, weights: Tensor<T>, recWeights: Tensor<T>, bias: Tensor<T>?) : Pair<List<Tensor<T>>, State<T>> {
+    protected fun activate(inputMatrices: Collection<Tensor>, weights: Tensor, recWeights: Tensor, bias: Tensor?): Pair<List<Tensor>, State<T>> {
         val hiddenSize = recWeights.data.shape[1]
         val batchSize = inputMatrices.first().data.shape[0]
 
         var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().type!!)
-        val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
+        val biasesData = if (bias != null) BiasesData.create<T>(bias, hiddenSize, batchSize) else null
 
         val mainOutput = inputMatrices.map { inputMatrix ->
             val gatesData = GatesData.create(inputMatrix, weights, recWeights, currentState)
@@ -48,19 +52,19 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         return Pair(mainOutput, currentState)
     }
 
-    data class GatesData<T : Number>(val inputGate: Tensor<T>,
-                                     val outputGate: Tensor<T>,
-                                     val forgetGate: Tensor<T>,
-                                     val cellGate: Tensor<T>) {
-        fun activate() : GatesData<T> {
-            val activatedInputGate = Sigmoid<T>().apply(inputGate).first()
-            val activatedOutputGate = Sigmoid<T>().apply(outputGate).first()
-            val activatedForgetGate = Sigmoid<T>().apply(forgetGate).first()
-            val activatedCellGate = Tanh<T>().apply(cellGate).first()
+    data class GatesData<T : Number>(val inputGate: Tensor,
+                                     val outputGate: Tensor,
+                                     val forgetGate: Tensor,
+                                     val cellGate: Tensor) {
+        fun activate(): GatesData<T> {
+            val activatedInputGate = Sigmoid().apply(inputGate).first()
+            val activatedOutputGate = Sigmoid().apply(outputGate).first()
+            val activatedForgetGate = Sigmoid().apply(forgetGate).first()
+            val activatedCellGate = Tanh().apply(cellGate).first()
             return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
         }
 
-        fun addBiases(weightsBiasesData: BiasesData<T>, recursiveWeightsBiasesData: BiasesData<T>) : GatesData<T> {
+        fun addBiases(weightsBiasesData: BiasesData<T>, recursiveWeightsBiasesData: BiasesData<T>): GatesData<T> {
             val inputGateWithBiases = inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases
             val outputGateWithBiases = outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases
             val forgetGateWithBiases = forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases
@@ -70,7 +74,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         }
 
         companion object {
-            fun <T : Number> create(inputMatrix: Tensor<T>, weights: Tensor<T>, recWeights: Tensor<T>,
+            fun <T : Number> create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor,
                                     prevState: State<T>): GatesData<T> {
                 val gates = inputMatrix.dot(weights.transpose()) + prevState.output.dot(recWeights.transpose())
                 val gatesList = gates.splitByIndex(4, 1)
@@ -79,33 +83,34 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
         }
     }
 
-    data class State<T : Number>(val output: Tensor<T>, val cellGate: Tensor<T>) {
+    data class State<T : Number>(val output: Tensor, val cellGate: Tensor) {
         companion object {
             @Suppress("UNCHECKED_CAST")
             fun <T : Number> initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State<T> {
-                val stateSpace = resolveSpaceWithKClass(type.resolveKClass(), intArrayOf(batchSize, hiddenSize)) as TensorRing<T>
+                val stateSpace = resolveSpaceWithKClass(type.resolveKClass(), intArrayOf(batchSize, hiddenSize)) as TensorRing<Any>
                 return State(Tensor(null, stateSpace.zero, type, stateSpace), Tensor(null, stateSpace.zero, type, stateSpace))
             }
 
-            fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>) : State<T> {
+            fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>): State<T> {
                 val newCellGate = gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate
-                val newOutput = gatesData.outputGate * Tanh<T>().apply(newCellGate).first()
+                val newOutput = gatesData.outputGate * Tanh().apply(newCellGate).first()
                 return State(newOutput, newCellGate)
             }
         }
     }
 
-    data class BiasesData<T : Number>(val inputGateBiases: Tensor<T>,
-                                      val outputGateBiases: Tensor<T>,
-                                      val forgetGateBiases: Tensor<T>,
-                                      val cellGateBiases: Tensor<T>) {
+    data class BiasesData<T : Number>(val inputGateBiases: Tensor,
+                                      val outputGateBiases: Tensor,
+                                      val forgetGateBiases: Tensor,
+                                      val cellGateBiases: Tensor) {
         companion object {
-            fun <T : Number> create(biases: Tensor<T>, hiddenSize: Int, batchSize: Int) : Pair<BiasesData<T>, BiasesData<T>> {
+            fun <T : Number> create(biases: Tensor, hiddenSize: Int, batchSize: Int): Pair<BiasesData<T>, BiasesData<T>> {
                 val shape = intArrayOf(batchSize, hiddenSize)
                 val blockSize = hiddenSize * batchSize
                 val newStrides = SpaceStrides(shape)
+
                 @Suppress("UNCHECKED_CAST")
-                val newSpace = resolveSpaceWithKClass(biases.type!!.resolveKClass(), shape) as TensorRing<T>
+                val newSpace = resolveSpaceWithKClass(biases.type!!.resolveKClass(), shape) as TensorRing<Any>
                 val parsedBiases = List(8) { index ->
                     val newBuffer = VirtualBuffer(blockSize) { i ->
                         val indices = newStrides.index(i)
@@ -115,15 +120,15 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
                     Tensor(null, newStructure, biases.type, newSpace)
                 }
-                val weightsBiasesData = BiasesData(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
-                val recursiveWeightsBiasesData = BiasesData(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
+                val weightsBiasesData = BiasesData<T>(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
+                val recursiveWeightsBiasesData = BiasesData<T>(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
                 return Pair(weightsBiasesData, recursiveWeightsBiasesData)
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Number> List<Tensor<T>>.toOutput(): Tensor<T> {
+    private fun List<Tensor>.toOutput(): Tensor {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
         val newStrides = SpaceStrides(newShape)
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
@@ -132,7 +137,7 @@ open class LSTMLayer<T : Number> : RecurrentLayer<T>() {
             this[inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
-        val newSpace = resolveSpaceWithKClass(this.first().type!!.resolveKClass(), newShape) as TensorRing<T>
+        val newSpace = resolveSpaceWithKClass(this.first().type!!.resolveKClass(), newShape) as TensorRing<Any>
         return Tensor(null, newBuffer, this.first().type, newSpace)
     }
 }

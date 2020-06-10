@@ -1,16 +1,18 @@
 package org.jetbrains.research.kotlin.mpp.inference.attributes
 
 import AttributeProto
-import AttributeProto.*
+import AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.mpp.inference.graph.Graph
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class Attribute<T>(proto: AttributeProto, val value: T) {
     val name: String = proto.name!!
+    val type: AttributeType = proto.type!!
+
     val refAttrName: String? = proto.ref_attr_name
 
     companion object {
-        fun create(proto: AttributeProto): Attribute<*> = when(proto.type) {
+        fun create(proto: AttributeProto): Attribute<*> = when (proto.type) {
             AttributeType.FLOAT -> Attribute(proto, proto.f!!)
             AttributeType.INT -> Attribute(proto, proto.i!!)
             AttributeType.STRING -> Attribute(proto, proto.s!!.utf8())

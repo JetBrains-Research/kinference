@@ -36,7 +36,7 @@ class Node(proto: NodeProto, val type: NodeType) {
     fun execute(): NodeIO {
         outputs.clearValues()
 
-        val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList(), attributes).toList()
+        val out = Operator(operatorName, inputs.tensors.resolveType(), inputs.tensors.requireNoNulls().toList(), attributes as Map<String, Attribute<Any>>).toList()
         for ((index, name) in outputs.names.withIndex()){
             val tensor = out.getOrNull(index)
             if (tensor != null) tensor.name = name
@@ -48,7 +48,7 @@ class Node(proto: NodeProto, val type: NodeType) {
     }
 
     companion object {
-        private fun Collection<Tensor<*>?>.resolveType(): TensorProto.DataType? {
+        private fun Collection<Tensor?>.resolveType(): TensorProto.DataType? {
             val typesCount = this.mapNotNull { it?.type }.toHashSet().size
             require(typesCount <= 1) { "Tensors of more than one type found" }
             return this.first()?.type
