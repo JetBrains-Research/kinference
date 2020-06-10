@@ -1,10 +1,9 @@
-package org.jetbrains.research.kotlin.mpp.inference.space
+package org.jetbrains.research.kotlin.mpp.inference.tensors
 
-import scientifik.kmath.misc.cumulative
 import scientifik.kmath.structures.Strides
 import java.util.concurrent.ConcurrentHashMap
 
-class SpaceStrides private constructor(override val shape: IntArray) : Strides {
+class TensorStrides private constructor(override val shape: IntArray) : Strides {
     override val strides = ArrayList<Int>(shape.size)
     init {
         shape.foldRight(1) { i, acc ->
@@ -41,7 +40,7 @@ class SpaceStrides private constructor(override val shape: IntArray) : Strides {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is SpaceStrides) return false
+        if (other !is TensorStrides) return false
 
         return shape.contentEquals(other.shape)
     }
@@ -51,6 +50,6 @@ class SpaceStrides private constructor(override val shape: IntArray) : Strides {
     companion object {
         private val spaceStridesCache = ConcurrentHashMap<IntArray, Strides>()
 
-        operator fun invoke(shape: IntArray): Strides = spaceStridesCache.getOrPut(shape) { SpaceStrides(shape) }
+        operator fun invoke(shape: IntArray): Strides = spaceStridesCache.getOrPut(shape) { TensorStrides(shape) }
     }
 }

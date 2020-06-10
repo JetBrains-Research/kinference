@@ -1,10 +1,7 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
-import org.jetbrains.research.kotlin.mpp.inference.space.SpaceStrides
-import org.jetbrains.research.kotlin.mpp.inference.space.TensorRing
-import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpaceWithKClass
+import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.structures.BufferNDStructure
 import scientifik.kmath.structures.VirtualBuffer
 import scientifik.kmath.structures.get
@@ -39,8 +36,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput)
 
         val newShape = intArrayOf(mainForwardOutput.size, 2, batchSize, hiddenSize)
-        val newStrides = SpaceStrides(newShape)
-        val newSpace = resolveSpaceWithKClass(mainForwardOutput.first().type!!.resolveKClass(), newShape) as TensorRing<Any>
+        val newStrides = TensorStrides(newShape)
 
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
@@ -48,7 +44,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
             mainOutputs[numDirection][inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
-        return Tensor(null, newBuffer, mainForwardOutput.first().type, newSpace)
+        return Tensor(null, newBuffer, mainForwardOutput.first().type)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -57,8 +53,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val type = lastForwardState.output.type
 
         val newShape = intArrayOf(2, batchSize, hiddenSize)
-        val newStrides = SpaceStrides(newShape)
-        val newSpace = resolveSpaceWithKClass(type!!.resolveKClass(), newShape) as TensorRing<Any>
+        val newStrides = TensorStrides(newShape)
 
         val lastOutputs = listOf(lastForwardState.output, lastBackwardState.output)
         val newOutputData = VirtualBuffer(newStrides.linearSize) { i ->
@@ -76,8 +71,8 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         }
         val newCellGateBuffer = BufferNDStructure(newStrides, newCellGatesData)
 
-        val outputTensor = Tensor(null, newOutputBuffer, type, newSpace)
-        val cellGateTensor = Tensor(null, newCellGateBuffer, type, newSpace)
+        val outputTensor = Tensor(null, newOutputBuffer, type)
+        val cellGateTensor = Tensor(null, newCellGateBuffer, type)
         return listOf(outputTensor, cellGateTensor)
     }
 }

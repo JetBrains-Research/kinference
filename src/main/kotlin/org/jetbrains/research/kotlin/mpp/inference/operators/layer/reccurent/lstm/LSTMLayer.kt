@@ -3,14 +3,9 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import org.jetbrains.research.kotlin.mpp.inference.space.SpaceStrides
-import org.jetbrains.research.kotlin.mpp.inference.space.TensorRing
-import org.jetbrains.research.kotlin.mpp.inference.space.resolveSpaceWithKClass
+import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.VirtualBuffer
-import scientifik.kmath.structures.get
+import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> {
     open fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
@@ -87,8 +82,9 @@ open class LSTMLayer<T : Number> {
         companion object {
             @Suppress("UNCHECKED_CAST")
             fun <T : Number> initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State<T> {
-                val stateSpace = resolveSpaceWithKClass(type.resolveKClass(), intArrayOf(batchSize, hiddenSize)) as TensorRing<Any>
-                return State(Tensor(null, stateSpace.zero, type, stateSpace), Tensor(null, stateSpace.zero, type, stateSpace))
+                val newShape = intArrayOf(batchSize, hiddenSize)
+                val zeros = BufferNDStructure(TensorStrides(newShape), VirtualBuffer(batchSize * hiddenSize) { 0.0 as T }) as BufferNDStructure<Any>
+                return State(Tensor(null, zeros, type), Tensor(null, zeros, type))
             }
 
             fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>): State<T> {
@@ -107,10 +103,9 @@ open class LSTMLayer<T : Number> {
             fun <T : Number> create(biases: Tensor, hiddenSize: Int, batchSize: Int): Pair<BiasesData<T>, BiasesData<T>> {
                 val shape = intArrayOf(batchSize, hiddenSize)
                 val blockSize = hiddenSize * batchSize
-                val newStrides = SpaceStrides(shape)
+                val newStrides = TensorStrides(shape)
 
                 @Suppress("UNCHECKED_CAST")
-                val newSpace = resolveSpaceWithKClass(biases.type!!.resolveKClass(), shape) as TensorRing<Any>
                 val parsedBiases = List(8) { index ->
                     val newBuffer = VirtualBuffer(blockSize) { i ->
                         val indices = newStrides.index(i)
@@ -118,7 +113,7 @@ open class LSTMLayer<T : Number> {
                         biases.data.buffer[hiddenSize * index + rowNum]
                     }
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
-                    Tensor(null, newStructure, biases.type, newSpace)
+                    Tensor(null, newStructure, biases.type)
                 }
                 val weightsBiasesData = BiasesData<T>(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
                 val recursiveWeightsBiasesData = BiasesData<T>(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
@@ -130,14 +125,13 @@ open class LSTMLayer<T : Number> {
     @Suppress("UNCHECKED_CAST")
     private fun List<Tensor>.toOutput(): Tensor {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
-        val newStrides = SpaceStrides(newShape)
+        val newStrides = TensorStrides(newShape)
         val newData = VirtualBuffer(newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
             val (inputNum, _, rowNum, colNum) = indices
             this[inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
-        val newSpace = resolveSpaceWithKClass(this.first().type!!.resolveKClass(), newShape) as TensorRing<Any>
-        return Tensor(null, newBuffer, this.first().type, newSpace)
+        return Tensor(null, newBuffer, this.first().type)
     }
 }
