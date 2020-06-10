@@ -4,14 +4,13 @@ import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.GenericMatrixContext
-import scientifik.kmath.linear.transpose
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
-data class Tensor(var name: String?, val data: NDBuffer<Any>, val type: DataType?) {
+data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType) {
     val elementsList: List<Any>
         get() = data.buffer.asIterable().toList()
 
@@ -140,17 +139,17 @@ data class Tensor(var name: String?, val data: NDBuffer<Any>, val type: DataType
             else -> error("Unsupported data type")
         }
 
-        private operator fun invoke(name: String?, matrix: Matrix<*>, type: DataType?): Tensor {
+        private operator fun invoke(name: String?, matrix: Matrix<*>, type: DataType): Tensor {
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
             return Tensor(name, BufferNDStructure(TensorStrides(matrix.shape), buffer as Buffer<Any>), type)
         }
 
-        operator fun invoke(dims: List<Long>, value: List<*>, type: DataType?, name: String?): Tensor {
+        operator fun invoke(dims: List<Long>, value: List<*>, type: DataType, name: String?): Tensor {
             val data = BufferNDStructure(TensorStrides(dims.toIntArray()), value.asBuffer() as Buffer<Any>)
             return Tensor(name, data, type)
         }
 
-        operator fun invoke(value: List<Any>, type: DataType?): Tensor {
+        operator fun invoke(value: List<Any>, type: DataType): Tensor {
             val dims = intArrayOf(value.size, 1)
             val data = BufferNDStructure(TensorStrides(dims), value.asBuffer())
             return Tensor(null, data, type)
