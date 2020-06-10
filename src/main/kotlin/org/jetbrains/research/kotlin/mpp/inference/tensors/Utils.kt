@@ -9,6 +9,8 @@ import kotlin.reflect.KClass
 
 fun Collection<Long>.toIntArray() = this.map { it.toInt() }.toIntArray()
 
+fun IntRange.reversed() = this.toList().reversed().toIntArray()
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> resolveMatrixContext(kclass: KClass<T>) = when (kclass) {
     Double::class -> MatrixContext.auto(RealField)

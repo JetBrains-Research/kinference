@@ -16,6 +16,7 @@ object OperatorFactory {
         "Tanh" -> Tanh(attributes)
         "Softmax" -> Softmax(attributes)
         "LSTM" -> LSTM(attributes)
+        "Transpose" -> Transpose(attributes)
         else -> error("Unsupported operator")
     }
 }
