@@ -25,12 +25,13 @@ class Reshape(attributes: Map<String, Attribute<Any>>) : Operator("Reshape", att
             TensorProto.DataType.INT8
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true)
+        private val INPUTS_INFO = listOf(
+            InputInfo(0, TYPE_CONSTRAINTS, "data", true),
+            InputInfo(1, setOf(TensorProto.DataType.INT64), "shape", true)
         )
 
         private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "reshape"),
-            OutputInfo(1, setOf(TensorProto.DataType.INT64), "shape")
+            OutputInfo(0, TYPE_CONSTRAINTS, "reshaped")
         )
     }
 
