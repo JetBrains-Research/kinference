@@ -12,7 +12,7 @@ fun Collection<Long>.toIntArray() = this.map { it.toInt() }.toIntArray()
 fun IntRange.reversed() = this.toList().reversed().toIntArray()
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> resolveMatrixContext(kclass: KClass<T>) = when (kclass) {
+fun <T : Any> resolveMatrixContext(kClass: KClass<T>) = when (kClass) {
     Double::class -> MatrixContext.auto(RealField)
     Float::class -> MatrixContext.auto(FloatField)
     Long::class -> MatrixContext.auto(LongRing)

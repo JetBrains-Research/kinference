@@ -10,7 +10,7 @@ class Node(proto: NodeProto, graph: Graph) {
     private val operator = OperatorFactory.create(proto.op_type, proto.attribute.map { Attribute.create(it, graph) }.associateBy(Attribute<Any>::name))
 
     fun execute(context: Context) {
-        operator.applyWithCheck(inputs.map { input -> context.getValue(input) }).zip(outputs) { tensor, output ->
+        operator.applyWithCheck(outputs.size, inputs.map { input -> context.getValue(input) }).zip(outputs) { tensor, output ->
             if (output.isNotBlank()) {
                 context.putValue(output, tensor.copy(name = output))
             }

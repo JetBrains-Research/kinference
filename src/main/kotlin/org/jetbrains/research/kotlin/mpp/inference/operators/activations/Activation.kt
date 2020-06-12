@@ -22,7 +22,7 @@ abstract class Activation(name: String,
 
     abstract fun activate(input: Tensor): Tensor
 
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
         return listOf(activate(inputs.first()))
     }
 

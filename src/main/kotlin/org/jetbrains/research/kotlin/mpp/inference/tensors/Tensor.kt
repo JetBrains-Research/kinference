@@ -10,6 +10,7 @@ import scientifik.kmath.structures.*
 //TODO: support segments
 //TODO: support external and raw data
 //TODO: numpy-like multidirectional broadcasting
+@Suppress("UNCHECKED_CAST")
 data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType) {
     val elementsList: List<Any>
         get() = data.buffer.asIterable().toList()
@@ -28,7 +29,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
     infix fun dot(other: Tensor): Tensor {
         require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
 
-        val context = resolveMatrixContext(type!!.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
+        val context = resolveMatrixContext(type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
         val resMatrix = with(context) { data.as2D() dot other.data.as2D() }
         return Tensor(name, resMatrix, type)
     }
@@ -68,41 +69,15 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         return Tensor(name, newBuffer as NDBuffer<Any>, type)
     }
 
-    fun as2DCollection(): Collection<Tensor> {
-        require(data.dimension == 3)
-
-        val blockSize = data.shape[1] * data.shape[2]
-        val newShape = intArrayOf(data.shape[1], data.shape[2])
-        val newStrides = TensorStrides(newShape)
-        return List(data.shape[0]) { index ->
-            val newBuffer = VirtualBuffer(blockSize) { i ->
+    fun splitWithAxis(split: IntArray, axis: Int = 0): List<Tensor> {
+        return List(split.size) { num ->
+            val newShape = data.shape.copyOf()
+            newShape[axis] = split[num]
+            val newStrides = TensorStrides(newShape)
+            val blockSize = newStrides.linearSize
+            val newBuffer = ListBuffer(blockSize) { i ->
                 val indices = newStrides.index(i)
-                val rowNum = indices[0]
-                val colNum = indices[1]
-                data[index, rowNum, colNum]
-            }
-            val newStructure = BufferNDStructure(newStrides, newBuffer)
-            Tensor(null, newStructure, type)
-        }
-    }
-
-    // A function that divides the tensor into several parts just like in numpy, where "index" is "axis" in numpy
-    fun splitByIndex(parts: Int, index: Int = 0): List<Tensor> {
-        require(index in data.shape.indices) { "Index $index out of shape bound: (0, ${data.dimension - 1}" }
-
-        val elementsByIndex = data.shape[index]
-
-        require(elementsByIndex % parts == 0) { "$elementsByIndex is not divisible by $parts" }
-
-        val elementsInChunk = elementsByIndex.div(parts)
-        val newShape = data.shape.copyOf()
-        newShape[index] = elementsInChunk
-        val newStrides = TensorStrides(newShape)
-        val blockSize = newStrides.linearSize
-        return List(parts) { num ->
-            val newBuffer = VirtualBuffer(blockSize) { i ->
-                val indices = newStrides.index(i)
-                indices[index] += num * elementsInChunk
+                indices[axis] += num * (split.getOrNull(num - 1) ?: 0)
                 data[indices]
             }
             val newStructure = BufferNDStructure(newStrides, newBuffer)

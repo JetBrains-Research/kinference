@@ -3,8 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.tensors.*
 import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> {
@@ -72,7 +71,7 @@ open class LSTMLayer<T : Number> {
             fun <T : Number> create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor,
                                     prevState: State<T>): GatesData<T> {
                 val gates = inputMatrix.dot(weights.transpose()) + prevState.output.dot(recWeights.transpose())
-                val gatesList = gates.splitByIndex(4, 1)
+                val gatesList = gates.splitWithAxis(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
             }
         }

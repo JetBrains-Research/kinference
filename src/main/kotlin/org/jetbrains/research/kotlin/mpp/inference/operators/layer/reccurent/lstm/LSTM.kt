@@ -52,7 +52,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attribute
         )
     }
 
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
         // TODO: use attributes to set up layer
         return layer.apply(inputs)
     }

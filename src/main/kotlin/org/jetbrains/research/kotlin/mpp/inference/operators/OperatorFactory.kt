@@ -5,8 +5,7 @@ import org.jetbrains.research.kotlin.mpp.inference.operators.activations.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm.LSTM
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.Add
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.MatMul
-import org.jetbrains.research.kotlin.mpp.inference.operators.tensor.Reshape
-import org.jetbrains.research.kotlin.mpp.inference.operators.tensor.Transpose
+import org.jetbrains.research.kotlin.mpp.inference.operators.tensor.*
 
 object OperatorFactory {
     fun create(name: String?, attributes: Map<String, Attribute<Any>>): Operator = when (name) {
@@ -20,6 +19,7 @@ object OperatorFactory {
         "LSTM" -> LSTM(attributes)
         "Transpose" -> Transpose(attributes)
         "Reshape" -> Reshape(attributes)
+        "Split" -> Split(attributes)
         else -> error("Unsupported operator")
     }
 }

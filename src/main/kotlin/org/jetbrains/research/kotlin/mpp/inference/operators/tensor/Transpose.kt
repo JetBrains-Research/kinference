@@ -32,7 +32,7 @@ class Transpose(attributes: Map<String, Attribute<Any>>) : Operator("Transpose",
         )
     }
 
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
         return listOf(inputs.first().transpose(attributes["perm"]?.value as? List<Long>))
     }
 }

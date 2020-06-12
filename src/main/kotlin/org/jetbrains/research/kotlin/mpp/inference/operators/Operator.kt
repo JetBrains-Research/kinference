@@ -36,9 +36,9 @@ abstract class Operator(val name: String,
         // TODO check attributes
     }
 
-    fun applyWithCheck(inputs: Collection<Tensor>): Collection<Tensor> {
+    fun applyWithCheck(numOutputs: Int, inputs: Collection<Tensor>): Collection<Tensor> {
         // TODO check inputs
-        val outputs = apply(inputs)
+        val outputs = apply(inputs, numOutputs)
         // TODO check outputs
         return outputs
     }
@@ -52,6 +52,6 @@ abstract class Operator(val name: String,
         return value
     }
 
-    abstract fun apply(inputs: Collection<Tensor>): Collection<Tensor>
-    open fun apply(vararg inputs: Tensor): Collection<Tensor> = apply(inputs.toList())
+    abstract fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor>
+    open fun apply(vararg inputs: Tensor, numOutputs: Int = 1): Collection<Tensor> = apply(inputs.toList(), numOutputs)
 }

@@ -30,7 +30,7 @@ class MatMul(attributes: Map<String, Attribute<Any>>) : Operator("MatMul", attri
         )
     }
 
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
         return listOf(inputs.first() dot inputs.last())
     }
 }

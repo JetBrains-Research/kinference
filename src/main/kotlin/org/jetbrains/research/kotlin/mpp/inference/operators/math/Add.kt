@@ -30,7 +30,7 @@ class Add(attributes: Map<String, Attribute<Any>>) : Operator("Add", attributes,
         )
     }
 
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
         return listOf(inputs.first() + inputs.last())
     }
 }

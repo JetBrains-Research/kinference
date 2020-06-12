@@ -1,7 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
-import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.tensors.*
 import scientifik.kmath.structures.BufferNDStructure
 import scientifik.kmath.structures.VirtualBuffer
 import scientifik.kmath.structures.get
@@ -13,9 +12,9 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val inputList = inputs.toList()
 
         val inputTensor = inputList[0]
-        val (forwardWeights, backwardWeights) = inputList[1].splitByIndex(2)
-        val (forwardRecWeights, backwardRecWeights) = inputList[2].splitByIndex(2)
-        val (forwardBias, backwardBias) = inputList.getOrNull(3)?.splitByIndex(2) ?: listOf(null, null)
+        val (forwardWeights, backwardWeights) = inputList[1].splitWithAxis(2)
+        val (forwardRecWeights, backwardRecWeights) = inputList[2].splitWithAxis(2)
+        val (forwardBias, backwardBias) = inputList.getOrNull(3)?.splitWithAxis(2) ?: listOf(null, null)
 
         val inputMatrices = inputTensor.as2DCollection().toList()
 
