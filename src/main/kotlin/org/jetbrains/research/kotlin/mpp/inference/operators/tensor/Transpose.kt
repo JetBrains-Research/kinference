@@ -25,11 +25,9 @@ class Transpose(attributes: Map<String, Attribute<Any>>) : Operator("Transpose",
             TensorProto.DataType.UINT16
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true)
-        )
+        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "transposed")
-        )
+        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "transposed"))
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {

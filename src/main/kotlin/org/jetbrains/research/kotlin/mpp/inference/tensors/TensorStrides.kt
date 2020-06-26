@@ -48,8 +48,8 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
     override fun hashCode() = shape.contentHashCode()
 
     companion object {
-        private val spaceStridesCache = ConcurrentHashMap<IntArray, Strides>()
+        private val spaceStridesCache = ConcurrentHashMap<IntArray, TensorStrides>()
 
-        operator fun invoke(shape: IntArray): Strides = spaceStridesCache.getOrPut(shape) { TensorStrides(shape) }
+        operator fun invoke(shape: IntArray): TensorStrides = spaceStridesCache.getOrPut(shape) { TensorStrides(shape) }
     }
 }

@@ -25,12 +25,12 @@ open class LSTMLayer<T : Number> {
         return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput), currentState.cellGate.reshape(shapeForOutput))
     }
 
-    protected fun activate(inputMatrices: Collection<Tensor>, weights: Tensor, recWeights: Tensor, bias: Tensor?): Pair<List<Tensor>, State<T>> {
+    protected fun activate(inputMatrices: Collection<Tensor>, weights: Tensor, recWeights: Tensor, bias: Tensor?): Pair<List<Tensor>, State> {
         val hiddenSize = recWeights.data.shape[1]
         val batchSize = inputMatrices.first().data.shape[0]
 
-        var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().type!!)
-        val biasesData = if (bias != null) BiasesData.create<T>(bias, hiddenSize, batchSize) else null
+        var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().type)
+        val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
         val mainOutput = inputMatrices.map { inputMatrix ->
             val gatesData = GatesData.create(inputMatrix, weights, recWeights, currentState)
@@ -46,11 +46,11 @@ open class LSTMLayer<T : Number> {
         return Pair(mainOutput, currentState)
     }
 
-    data class GatesData<T : Number>(val inputGate: Tensor,
+    data class GatesData(val inputGate: Tensor,
                                      val outputGate: Tensor,
                                      val forgetGate: Tensor,
                                      val cellGate: Tensor) {
-        fun activate(): GatesData<T> {
+        fun activate(): GatesData {
             val activatedInputGate = Sigmoid().apply(inputGate).first()
             val activatedOutputGate = Sigmoid().apply(outputGate).first()
             val activatedForgetGate = Sigmoid().apply(forgetGate).first()
@@ -58,7 +58,7 @@ open class LSTMLayer<T : Number> {
             return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
         }
 
-        fun addBiases(weightsBiasesData: BiasesData<T>, recursiveWeightsBiasesData: BiasesData<T>): GatesData<T> {
+        fun addBiases(weightsBiasesData: BiasesData, recursiveWeightsBiasesData: BiasesData): GatesData {
             val inputGateWithBiases = inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases
             val outputGateWithBiases = outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases
             val forgetGateWithBiases = forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases
@@ -68,8 +68,7 @@ open class LSTMLayer<T : Number> {
         }
 
         companion object {
-            fun <T : Number> create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor,
-                                    prevState: State<T>): GatesData<T> {
+            fun create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor, prevState: State): GatesData {
                 val gates = inputMatrix.dot(weights.transpose()) + prevState.output.dot(recWeights.transpose())
                 val gatesList = gates.splitWithAxis(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
@@ -77,16 +76,16 @@ open class LSTMLayer<T : Number> {
         }
     }
 
-    data class State<T : Number>(val output: Tensor, val cellGate: Tensor) {
+    data class State(val output: Tensor, val cellGate: Tensor) {
         companion object {
             @Suppress("UNCHECKED_CAST")
-            fun <T : Number> initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State<T> {
+            fun <T : Number> initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State {
                 val newShape = intArrayOf(batchSize, hiddenSize)
                 val zeros = BufferNDStructure(TensorStrides(newShape), VirtualBuffer(batchSize * hiddenSize) { 0.0 as T }) as BufferNDStructure<Any>
                 return State(Tensor(null, zeros, type), Tensor(null, zeros, type))
             }
 
-            fun <T : Number> create(gatesData: GatesData<T>, prevState: State<T>): State<T> {
+            fun create(gatesData: GatesData, prevState: State): State {
                 val newCellGate = gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate
                 val newOutput = gatesData.outputGate * Tanh().apply(newCellGate).first()
                 return State(newOutput, newCellGate)
@@ -94,12 +93,12 @@ open class LSTMLayer<T : Number> {
         }
     }
 
-    data class BiasesData<T : Number>(val inputGateBiases: Tensor,
+    data class BiasesData(val inputGateBiases: Tensor,
                                       val outputGateBiases: Tensor,
                                       val forgetGateBiases: Tensor,
                                       val cellGateBiases: Tensor) {
         companion object {
-            fun <T : Number> create(biases: Tensor, hiddenSize: Int, batchSize: Int): Pair<BiasesData<T>, BiasesData<T>> {
+            fun create(biases: Tensor, hiddenSize: Int, batchSize: Int): Pair<BiasesData, BiasesData> {
                 val shape = intArrayOf(batchSize, hiddenSize)
                 val blockSize = hiddenSize * batchSize
                 val newStrides = TensorStrides(shape)
@@ -114,8 +113,8 @@ open class LSTMLayer<T : Number> {
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
                     Tensor(null, newStructure, biases.type)
                 }
-                val weightsBiasesData = BiasesData<T>(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
-                val recursiveWeightsBiasesData = BiasesData<T>(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
+                val weightsBiasesData = BiasesData(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
+                val recursiveWeightsBiasesData = BiasesData(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
                 return Pair(weightsBiasesData, recursiveWeightsBiasesData)
             }
         }

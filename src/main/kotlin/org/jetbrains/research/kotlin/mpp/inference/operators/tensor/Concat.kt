@@ -25,13 +25,9 @@ class Concat(attributes: Map<String, Attribute<Any>>) : Operator("Concat", attri
             TensorProto.DataType.INT8
         )
 
-        private val INPUTS_INFO = listOf(
-            InputInfo(0, TYPE_CONSTRAINTS, "inputs", true)
-        )
+        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "inputs", true))
 
-        private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "concat_result")
-        )
+        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "concat_result"))
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {

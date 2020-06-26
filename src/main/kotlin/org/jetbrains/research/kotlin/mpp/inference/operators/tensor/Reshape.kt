@@ -30,9 +30,7 @@ class Reshape(attributes: Map<String, Attribute<Any>>) : Operator("Reshape", att
             InputInfo(1, setOf(TensorProto.DataType.INT64), "shape", true)
         )
 
-        private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "reshaped")
-        )
+        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "reshaped"))
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {

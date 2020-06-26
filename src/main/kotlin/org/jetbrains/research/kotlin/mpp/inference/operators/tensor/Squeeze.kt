@@ -2,9 +2,10 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
-import org.jetbrains.research.kotlin.mpp.inference.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.tensors.toIntArray
 
-class Split(attributes: Map<String, Attribute<Any>>) : Operator("Split", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
+class Squeeze(attributes: Map<String, Attribute<Any>>) : Operator("Squeeze", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT64,
@@ -25,19 +26,17 @@ class Split(attributes: Map<String, Attribute<Any>>) : Operator("Split", attribu
             TensorProto.DataType.INT8
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true))
+        private val INPUTS_INFO = listOf(
+            InputInfo(0, TYPE_CONSTRAINTS, "data", true)
+        )
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "outputs"))
+        private val OUTPUTS_INFO = listOf(
+            OutputInfo(0, TYPE_CONSTRAINTS, "squeezed")
+        )
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
-        val axis = attributes["axis"]?.value as? Long ?: 0L
-
-        return when (val parts = attributes["split"]?.value) {
-            null -> inputs.first().splitWithAxis(numOutputs, axis.toInt())
-            is Number -> inputs.first().splitWithAxis(parts.toInt(), axis.toInt())
-            is List<*> -> inputs.first().splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
-            else -> error("Unsupported splitter value type")
-        }
+        val axes = attributes["axes"]?.value as? List<Long>
+        return listOf(inputs.first().squeeze(*axes!!.toIntArray()))
     }
 }

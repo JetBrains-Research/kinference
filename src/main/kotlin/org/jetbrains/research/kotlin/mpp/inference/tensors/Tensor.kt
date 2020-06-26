@@ -30,7 +30,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         val rowLength: Int = data.strides.linearSize / data.shape[0]
         val start = row * rowLength
         val rowData = data.buffer.asIterable().toList().subList(start, start + rowLength)
-        val dims = if (data.shape.size == 2) {
+        val dims = if (rank == 2) {
             intArrayOf(data.shape[1])
         } else {
             data.shape.copyOfRange(1, data.shape.size)
@@ -64,7 +64,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
 
     fun transpose(perm: List<Long>? = null): Tensor {
         val actualPerm = if (perm.isNullOrEmpty()) data.shape.indices.reversed() else perm.toIntArray()
-        val newShape = IntArray(data.shape.size)
+        val newShape = IntArray(rank)
         for ((i, axis)  in actualPerm.withIndex()) {
             newShape[i] = data.shape[axis]
         }
@@ -109,25 +109,24 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
     }
 
     fun reshape(tensorShape: Tensor): Tensor {
-        val shape = tensorShape.elementsList as List<Long>
-        val newShape = shape.toMutableList()
-        for ((i, axisShape) in shape.withIndex()) {
-            if (axisShape == 0L) newShape[i] = data.shape[i].toLong()
+        val requestedShape = (tensorShape.elementsList as List<Long>).toIntArray()
+        val newShape = requestedShape.toMutableList()
+        for ((i, axisShape) in requestedShape.withIndex()) {
+            if (axisShape == 0) newShape[i] = data.shape[i]
         }
 
-        val negIdx = newShape.indexOf(-1L)
+        val negIdx = newShape.indexOf(-1)
         if (negIdx != -1) {
-            val elementsCount = newShape.filter { it != -1L }.reduce(Long::times)
-            newShape[negIdx] = data.shape.reduce(Int::times).toLong() / elementsCount
+            val elementsCount = newShape.filter { it != -1 }.reduce(Int::times)
+            newShape[negIdx] = data.shape.reduce(Int::times) / elementsCount
         }
 
         return reshape(newShape.toIntArray())
     }
 
-    fun squeeze(index: Int): Tensor {
-        require(data.shape[index] == 1) { "shape[$index] == ${data.shape[index]}, but require 1" }
-
-        val shapeIndices = data.shape.indices.minus(index)
+    fun squeeze(vararg axes: Int): Tensor {
+        val actualAxes = axes.map { if (it < 0) rank + it else it }
+        val shapeIndices = data.shape.indices - actualAxes
         val newShape = data.shape.slice(shapeIndices).toIntArray()
 
         return reshape(newShape)

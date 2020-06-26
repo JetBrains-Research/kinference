@@ -21,6 +21,7 @@ object OperatorFactory {
         "Reshape" -> Reshape(attributes)
         "Split" -> Split(attributes)
         "Concat" -> Concat(attributes)
+        "Squeeze" -> Squeeze(attributes)
         else -> error("Unsupported operator")
     }
 }

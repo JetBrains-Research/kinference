@@ -47,7 +47,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun stateOutputHelper(lastForwardState: State<T>, lastBackwardState: State<T>): List<Tensor> {
+    private fun stateOutputHelper(lastForwardState: State, lastBackwardState: State): List<Tensor> {
         val (batchSize, hiddenSize) = lastForwardState.output.data.shape
         val type = lastForwardState.output.type
 
@@ -55,23 +55,22 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val newStrides = TensorStrides(newShape)
 
         val lastOutputs = listOf(lastForwardState.output, lastBackwardState.output)
-        val newOutputData = VirtualBuffer(newStrides.linearSize) { i ->
-            val indices = newStrides.index(i)
-            val (numDirection, rowNum, colNum) = indices
-            lastOutputs[numDirection].data[rowNum, colNum]
-        }
-        val newOutputBuffer = BufferNDStructure(newStrides, newOutputData)
+        val newOutputBuffer = extractActualStates(lastOutputs, newStrides)
 
         val lastCellGates = listOf(lastForwardState.cellGate, lastBackwardState.cellGate)
-        val newCellGatesData = VirtualBuffer(newStrides.linearSize) { i ->
-            val indices = newStrides.index(i)
-            val (numDirection, rowNum, colNum) = indices
-            lastCellGates[numDirection].data[rowNum, colNum]
-        }
-        val newCellGateBuffer = BufferNDStructure(newStrides, newCellGatesData)
+        val newCellGateBuffer = extractActualStates(lastCellGates, newStrides)
 
         val outputTensor = Tensor(null, newOutputBuffer, type)
         val cellGateTensor = Tensor(null, newCellGateBuffer, type)
         return listOf(outputTensor, cellGateTensor)
+    }
+
+    private fun extractActualStates(states: List<Tensor>, strides: TensorStrides) : BufferNDStructure<Any> {
+        val newOutputData = VirtualBuffer(strides.linearSize) { i ->
+            val indices = strides.index(i)
+            val (numDirection, rowNum, colNum) = indices
+            states[numDirection].data[rowNum, colNum]
+        }
+        return BufferNDStructure(strides, newOutputData)
     }
 }

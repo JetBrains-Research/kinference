@@ -3,7 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.tensors
 import scientifik.kmath.structures.*
 
 fun Tensor.as2DCollection(): Collection<Tensor> {
-    require(data.dimension == 3)
+    require(rank == 3)
 
     val blockSize = data.shape[1] * data.shape[2]
     val newShape = intArrayOf(data.shape[1], data.shape[2])
