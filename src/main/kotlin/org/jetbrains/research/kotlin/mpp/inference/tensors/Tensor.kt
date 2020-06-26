@@ -26,6 +26,19 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         return Tensor(name, result as BufferNDStructure<Any>, type)
     }
 
+    fun row(row: Int): Tensor {
+        val rowLength: Int = data.strides.linearSize / data.shape[0]
+        val start = row * rowLength
+        val rowData = data.buffer.asIterable().toList().subList(start, start + rowLength)
+        val dims = if (data.shape.size == 2) {
+            intArrayOf(data.shape[1])
+        } else {
+            data.shape.copyOfRange(1, data.shape.size)
+        }
+        val buffer = BufferNDStructure(TensorStrides(dims), rowData.asBuffer())
+        return Tensor("row", buffer, type)
+    }
+
     infix fun dot(other: Tensor): Tensor {
         require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
 

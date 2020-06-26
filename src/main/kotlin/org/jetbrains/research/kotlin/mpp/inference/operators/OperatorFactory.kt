@@ -20,6 +20,7 @@ object OperatorFactory {
         "Transpose" -> Transpose(attributes)
         "Reshape" -> Reshape(attributes)
         "Split" -> Split(attributes)
+        "Concat" -> Concat(attributes)
         else -> error("Unsupported operator")
     }
 }

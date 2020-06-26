@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.Utils
 import org.junit.jupiter.api.Test
 
 class SplitTest {
-    private fun getTargetPath(dirName: String) = "/split_to_sequence/$dirName/"
+    private fun getTargetPath(dirName: String) = "/split/$dirName/"
 
     @Test
     fun test_split_equal_parts_1d() {
