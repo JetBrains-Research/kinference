@@ -88,7 +88,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
     fun transpose(perm: List<Long>? = null): Tensor {
         val actualPerm = if (perm.isNullOrEmpty()) data.shape.indices.reversed() else perm.toIntArray()
         val newShape = IntArray(rank)
-        for ((i, axis)  in actualPerm.withIndex()) {
+        for ((i, axis) in actualPerm.withIndex()) {
             newShape[i] = data.shape[axis]
         }
         val newStrides = TensorStrides(newShape)

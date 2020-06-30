@@ -46,10 +46,12 @@ open class LSTMLayer<T : Number> {
         return Pair(mainOutput, currentState)
     }
 
-    data class GatesData(val inputGate: Tensor,
-                                     val outputGate: Tensor,
-                                     val forgetGate: Tensor,
-                                     val cellGate: Tensor) {
+    data class GatesData(
+        val inputGate: Tensor,
+        val outputGate: Tensor,
+        val forgetGate: Tensor,
+        val cellGate: Tensor
+    ) {
         fun activate(): GatesData {
             val activatedInputGate = Sigmoid().apply(inputGate).first()
             val activatedOutputGate = Sigmoid().apply(outputGate).first()
@@ -93,10 +95,12 @@ open class LSTMLayer<T : Number> {
         }
     }
 
-    data class BiasesData(val inputGateBiases: Tensor,
-                                      val outputGateBiases: Tensor,
-                                      val forgetGateBiases: Tensor,
-                                      val cellGateBiases: Tensor) {
+    data class BiasesData(
+        val inputGateBiases: Tensor,
+        val outputGateBiases: Tensor,
+        val forgetGateBiases: Tensor,
+        val cellGateBiases: Tensor
+    ) {
         companion object {
             fun create(biases: Tensor, hiddenSize: Int, batchSize: Int): Pair<BiasesData, BiasesData> {
                 val shape = intArrayOf(batchSize, hiddenSize)

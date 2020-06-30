@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.operators.AttributeInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {

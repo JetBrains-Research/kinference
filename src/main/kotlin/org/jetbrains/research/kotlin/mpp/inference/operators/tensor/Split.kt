@@ -1,5 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
+import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.*

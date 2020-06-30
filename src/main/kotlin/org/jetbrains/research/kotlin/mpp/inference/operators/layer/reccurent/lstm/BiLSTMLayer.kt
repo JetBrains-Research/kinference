@@ -1,9 +1,7 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
 import org.jetbrains.research.kotlin.mpp.inference.tensors.*
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.VirtualBuffer
-import scientifik.kmath.structures.get
+import scientifik.kmath.structures.*
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
@@ -65,7 +63,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         return listOf(outputTensor, cellGateTensor)
     }
 
-    private fun extractActualStates(states: List<Tensor>, strides: TensorStrides) : BufferNDStructure<Any> {
+    private fun extractActualStates(states: List<Tensor>, strides: TensorStrides): BufferNDStructure<Any> {
         val newOutputData = VirtualBuffer(strides.linearSize) { i ->
             val indices = strides.index(i)
             val (numDirection, rowNum, colNum) = indices

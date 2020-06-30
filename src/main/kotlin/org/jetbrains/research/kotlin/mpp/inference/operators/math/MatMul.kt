@@ -2,9 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.math
 
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class MatMul(attributes: Map<String, Attribute<Any>>) : Operator("MatMul", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
@@ -25,9 +23,7 @@ class MatMul(attributes: Map<String, Attribute<Any>>) : Operator("MatMul", attri
             InputInfo(1, TYPE_CONSTRAINTS, "B", true)
         )
 
-        private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "Y")
-        )
+        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "Y"))
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {

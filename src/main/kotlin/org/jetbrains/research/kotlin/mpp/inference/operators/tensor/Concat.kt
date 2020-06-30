@@ -1,8 +1,10 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
+import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
-import org.jetbrains.research.kotlin.mpp.inference.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.tensors.concatenate
 
 class Concat(attributes: Map<String, Attribute<Any>>) : Operator("Concat", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
     companion object {

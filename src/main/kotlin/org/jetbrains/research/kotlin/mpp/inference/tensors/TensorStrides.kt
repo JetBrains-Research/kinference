@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class TensorStrides private constructor(override val shape: IntArray) : Strides {
     override val strides = ArrayList<Int>(shape.size)
+
     init {
         shape.foldRight(1) { i, acc ->
             strides.add(acc)
@@ -27,7 +28,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         val res = IntArray(shape.size)
         var current = offset
 
-        for ((index, stride) in strides.withIndex()){
+        for ((index, stride) in strides.withIndex()) {
             res[index] = current / stride
             current %= stride
         }

@@ -1,5 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
+import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
@@ -26,13 +27,9 @@ class Squeeze(attributes: Map<String, Attribute<Any>>) : Operator("Squeeze", att
             TensorProto.DataType.INT8
         )
 
-        private val INPUTS_INFO = listOf(
-            InputInfo(0, TYPE_CONSTRAINTS, "data", true)
-        )
+        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true))
 
-        private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "squeezed")
-        )
+        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "squeezed"))
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {

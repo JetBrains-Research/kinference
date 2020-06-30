@@ -2,9 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.math
 
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
 
 class Add(attributes: Map<String, Attribute<Any>>) : Operator("Add", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {

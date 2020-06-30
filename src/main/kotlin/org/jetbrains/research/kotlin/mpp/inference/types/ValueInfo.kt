@@ -1,5 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.types
 
+import TensorProto
 import TensorShapeProto
 import ValueInfoProto
 

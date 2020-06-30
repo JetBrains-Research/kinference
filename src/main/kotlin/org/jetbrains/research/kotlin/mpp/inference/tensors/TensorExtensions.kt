@@ -27,7 +27,7 @@ private fun Tensor.mergeOnAxis(other: Tensor, axis: Int): Tensor {
     val rows = MutableList(dim[0]) { i -> this.row(i).concatenate(other.row(i), axis - 1) }
     var result = rows[0]
 
-    if (dim[0] > 1) result = rows.map { row -> row.wrapOneDim() }.reduce { acc, tensor -> acc.concatenate(tensor)}
+    if (dim[0] > 1) result = rows.map { row -> row.wrapOneDim() }.reduce { acc, tensor -> acc.concatenate(tensor) }
     if (dim[0] == 1 && axis > 0) result = result.wrapOneDim()
 
     return result
