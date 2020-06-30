@@ -57,8 +57,8 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
             return Tensor("result", matrix, type)
         }
 
-        val thisMatrices = this.toMatrixStack()
-        val otherMatrices = other.toMatrixStack()
+        val thisMatrices = this.as2DList()
+        val otherMatrices = other.as2DList()
         val resMatrices = thisMatrices.mapIndexed { i, tensor ->
             with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
         }.map { matrix ->

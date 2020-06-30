@@ -2,25 +2,6 @@ package org.jetbrains.research.kotlin.mpp.inference.tensors
 
 import scientifik.kmath.structures.*
 
-fun Tensor.as2DCollection(): Collection<Tensor> {
-    require(rank == 3)
-
-    val blockSize = data.shape[1] * data.shape[2]
-    val newShape = intArrayOf(data.shape[1], data.shape[2])
-    val newStrides = TensorStrides(newShape)
-    return List(data.shape[0]) { index ->
-        val newBuffer = VirtualBuffer(blockSize) { i ->
-            val indices = newStrides.index(i)
-            val rowNum = indices[0]
-            val colNum = indices[1]
-            data[index, rowNum, colNum]
-        }
-        val newStructure = BufferNDStructure(newStrides, newBuffer)
-        Tensor(null, newStructure, type)
-    }
-}
-
-
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0): List<Tensor> {
     require(axis in data.shape.indices) { "Index $axis out of shape bound: (0, ${data.dimension - 1}" }
 
@@ -75,9 +56,9 @@ fun Collection<Tensor>.concatenate(axis: Int): Tensor {
     return this.reduce { acc, tensor -> acc.concatenate(tensor, axis) }
 }
 
-fun Tensor.toMatrixStack(): List<Tensor> {
+fun Tensor.as2DList(): List<Tensor> {
     if (this.data.dimension == 2) return listOf(this)
     if (this.data.dimension == 1) return listOf(this.wrapOneDim())
 
-    return this.rows().map { it.toMatrixStack() }.flatten()
+    return this.rows().map { it.as2DList() }.flatten()
 }

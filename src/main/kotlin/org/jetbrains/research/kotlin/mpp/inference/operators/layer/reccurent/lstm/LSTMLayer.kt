@@ -20,7 +20,7 @@ open class LSTMLayer<T : Number> {
         val batchSize = inputTensor.data.shape[1]
         val hiddenSize = recWeights.data.shape[1]
 
-        val (mainOutput, currentState) = activate(inputTensor.as2DCollection(), weights, recWeights, bias)
+        val (mainOutput, currentState) = activate(inputTensor.as2DList(), weights, recWeights, bias)
         val shapeForOutput = intArrayOf(1, batchSize, hiddenSize)
         return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput), currentState.cellGate.reshape(shapeForOutput))
     }

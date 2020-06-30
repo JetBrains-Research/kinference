@@ -16,7 +16,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val (forwardRecWeights, backwardRecWeights) = inputList[2].splitWithAxis(2)
         val (forwardBias, backwardBias) = inputList.getOrNull(3)?.splitWithAxis(2) ?: listOf(null, null)
 
-        val inputMatrices = inputTensor.as2DCollection().toList()
+        val inputMatrices = inputTensor.as2DList()
 
         val (mainForwardOutput, lastForwardState) =
             activate(inputMatrices, forwardWeights.squeeze(0), forwardRecWeights.squeeze(0), forwardBias)
