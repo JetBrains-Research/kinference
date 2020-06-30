@@ -20,8 +20,11 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
 
     operator fun plus(other: Tensor): Tensor {
         require(type != DataType.STRING) { "Available only for numeric tensors" }
-        data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
+        if (!data.shape.contentEquals(other.data.shape)) {
+            return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
+        }
 
+        data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
         val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
         return Tensor(name, result as BufferNDStructure<Any>, type)
     }
@@ -30,13 +33,19 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         val rowLength: Int = data.strides.linearSize / data.shape[0]
         val start = row * rowLength
         val rowData = data.buffer.asIterable().toList().subList(start, start + rowLength)
-        val dims = if (rank == 2) {
-            intArrayOf(data.shape[1])
-        } else {
-            data.shape.copyOfRange(1, data.shape.size)
-        }
+        val dims = data.shape.copyOf().drop(1).toIntArray()
+
         val buffer = BufferNDStructure(TensorStrides(dims), rowData.asBuffer())
         return Tensor("row", buffer, type)
+    }
+
+    fun rows(): List<Tensor> = List(data.dimension) { i -> row(i) }
+
+    fun repeatRow(times: Int): Tensor {
+        require(data.shape[0] == 1) { "First dimension should be 1" }
+        val resultBuffer = List(times) { data.buffer.asIterable() }.flatten().asBuffer()
+        val newShape = data.shape.copyOf().apply { set(0, times) }
+        return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), type)
     }
 
     infix fun dot(other: Tensor): Tensor {

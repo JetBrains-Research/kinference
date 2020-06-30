@@ -11,8 +11,8 @@ class AddTest {
         Utils.singleTestHelper(getTargetPath("test_add"))
     }
 
-    /*@Test
+    @Test
     fun test_add_bcast(){
         Utils.singleTestHelper(getTargetPath("test_add_bcast"))
-    }*/
+    }
 }
