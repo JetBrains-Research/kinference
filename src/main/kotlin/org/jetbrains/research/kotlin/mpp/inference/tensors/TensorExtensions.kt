@@ -74,3 +74,10 @@ fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
 fun Collection<Tensor>.concatenate(axis: Int): Tensor {
     return this.reduce { acc, tensor -> acc.concatenate(tensor, axis) }
 }
+
+fun Tensor.toMatrixStack(): List<Tensor> {
+    if (this.data.dimension == 2) return listOf(this)
+    if (this.data.dimension == 1) return listOf(this.wrapOneDim())
+
+    return this.rows().map { it.toMatrixStack() }.flatten()
+}

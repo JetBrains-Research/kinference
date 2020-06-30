@@ -6,6 +6,7 @@ import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
+import kotlin.math.min
 
 //TODO: support segments
 //TODO: support external and raw data
@@ -39,7 +40,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         return Tensor("row", buffer, type)
     }
 
-    fun rows(): List<Tensor> = List(data.dimension) { i -> row(i) }
+    fun rows(): List<Tensor> = List(data.shape[0]) { i -> row(i) }
 
     fun repeatRow(times: Int): Tensor {
         require(data.shape[0] == 1) { "First dimension should be 1" }
@@ -48,12 +49,25 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), type)
     }
 
-    infix fun dot(other: Tensor): Tensor {
-        require(data.dimension <= 2) { "Not supported for more than 2-dimensional tensors" }
-
+    infix fun matmul(other: Tensor): Tensor {
         val context = resolveMatrixContext(type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
-        val resMatrix = with(context) { data.as2D() dot other.data.as2D() }
-        return Tensor(name, resMatrix, type)
+
+        if (data.dimension <= 2 && other.data.dimension <= 2) {
+            val matrix = with(context) { data.as2D() dot other.data.as2D() }
+            return Tensor("result", matrix, type)
+        }
+
+        val thisMatrices = this.toMatrixStack()
+        val otherMatrices = other.toMatrixStack()
+        val resMatrices = thisMatrices.mapIndexed { i, tensor ->
+            with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
+        }.map { matrix ->
+            val buffer = matrix.elements().map { it.second }.toList().asBuffer()
+            val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
+            Tensor("out", nd, type)
+        }
+        val shape = data.shape.zip(other.data.shape).map { min(it.first, it.second) }.toIntArray()
+        return resMatrices.concatenate(0).reshape(shape)
     }
 
 

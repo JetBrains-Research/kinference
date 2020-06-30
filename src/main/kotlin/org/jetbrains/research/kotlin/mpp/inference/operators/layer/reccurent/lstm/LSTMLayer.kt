@@ -69,7 +69,7 @@ open class LSTMLayer<T : Number> {
 
         companion object {
             fun create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor, prevState: State): GatesData {
-                val gates = inputMatrix.dot(weights.transpose()) + prevState.output.dot(recWeights.transpose())
+                val gates = inputMatrix.matmul(weights.transpose()) + prevState.output.matmul(recWeights.transpose())
                 val gatesList = gates.splitWithAxis(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
             }

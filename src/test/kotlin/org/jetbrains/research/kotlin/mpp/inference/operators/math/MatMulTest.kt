@@ -7,17 +7,12 @@ import java.io.File
 class MatMulTest {
     private fun getTargetPath(dirName: String) = "/matmul/$dirName/"
 
-    /*@Test
-    fun test_einsum_batch_matmul(){
-        Utils.singleTestHelper(getTargetPath("test_einsum_batch_matmul"))
-    }*/
-
     @Test
     fun test_matmul_2d() {
         Utils.singleTestHelper(getTargetPath("test_matmul_2d"))
     }
 
-    /*@Test
+    @Test
     fun test_matmul_3d(){
         Utils.singleTestHelper(getTargetPath("test_matmul_3d"))
     }
@@ -25,5 +20,5 @@ class MatMulTest {
     @Test
     fun test_matmul_4d(){
         Utils.singleTestHelper(getTargetPath("test_matmul_4d"))
-    }*/
+    }
 }

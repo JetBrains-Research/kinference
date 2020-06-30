@@ -31,6 +31,6 @@ class MatMul(attributes: Map<String, Attribute<Any>>) : Operator("MatMul", attri
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
-        return listOf(inputs.first() dot inputs.last())
+        return listOf(inputs.first() matmul inputs.last())
     }
 }
