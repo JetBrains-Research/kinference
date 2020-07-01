@@ -35,6 +35,10 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         return Tensor("output", result as BufferNDStructure<Any>, info.type)
     }
 
+    fun indexAxis(axis: Int): Int {
+        return if (axis < 0) data.shape.size + axis else axis
+    }
+
     fun row(row: Int): Tensor {
         val rowLength: Int = data.strides.linearSize / data.shape[0]
         val start = row * rowLength
@@ -90,8 +94,10 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         return Tensor(info.name, result as BufferNDStructure<Any>, info.type)
     }
 
-    fun transpose(perm: List<Long>? = null): Tensor {
-        val actualPerm = if (perm.isNullOrEmpty()) data.shape.indices.reversed() else perm.toIntArray()
+    fun transpose(permutations: List<Long>? = null): Tensor {
+        require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
+        val actualPerm = if (permutations.isNullOrEmpty()) data.shape.indices.reversed() else permutations.toIntArray()
+
         val newShape = IntArray(rank)
         for ((i, axis) in actualPerm.withIndex()) {
             newShape[i] = data.shape[axis]
@@ -110,11 +116,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         return Tensor(info.name, newBuffer as NDBuffer<Any>, info.type)
     }
 
-    fun splitWithAxis(split: IntArray, axis: Int = 0): List<Tensor> {
+    fun splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
         return List(split.size) { num ->
-            val newShape = data.shape.copyOf()
-            newShape[axis] = split[num]
-            val newStrides = TensorStrides(newShape)
+            val newShape = data.shape.copyOf().toMutableList()
+            if (!keepDims) newShape.removeAt(axis) else newShape[axis] = split[num]
+            val newStrides = TensorStrides(newShape.toIntArray())
             val blockSize = newStrides.linearSize
             val newBuffer = ListBuffer(blockSize) { i ->
                 val indices = newStrides.index(i)
@@ -128,32 +134,38 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
 
     fun reshape(shape: IntArray): Tensor {
         val newStrides = TensorStrides(shape)
-
         require(data.strides.linearSize == newStrides.linearSize) { "New shape is not compatible with the previous one" }
 
         val newBuffer = BufferNDStructure(newStrides, data.buffer)
-
         return Tensor(info.name, newBuffer, info.type)
     }
 
     fun reshape(tensorShape: Tensor): Tensor {
         val requestedShape = (tensorShape.elementsList as List<Long>).toIntArray()
+        require(requestedShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
+
         val newShape = requestedShape.toMutableList()
         for ((i, axisShape) in requestedShape.withIndex()) {
             if (axisShape == 0) newShape[i] = data.shape[i]
         }
 
-        val negIdx = newShape.indexOf(-1)
-        if (negIdx != -1) {
+        val negativeIdx = newShape.indexOf(-1)
+        if (negativeIdx != -1) {
             val elementsCount = newShape.filter { it != -1 }.reduce(Int::times)
-            newShape[negIdx] = data.shape.reduce(Int::times) / elementsCount
+            newShape[negativeIdx] = data.shape.reduce(Int::times) / elementsCount
         }
 
         return reshape(newShape.toIntArray())
     }
 
     fun squeeze(vararg axes: Int): Tensor {
-        val actualAxes = axes.map { if (it < 0) rank + it else it }
+        val actualAxes = if (axes.isNotEmpty()) {
+            axes.map { indexAxis(it) }
+        } else {
+            data.shape.withIndex().filter { it.value == 1 }.map { it.index }
+        }
+        require(actualAxes.all { data.shape[it] == 1 })
+
         val shapeIndices = data.shape.indices - actualAxes
         val newShape = data.shape.slice(shapeIndices).toIntArray()
 

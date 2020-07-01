@@ -8,6 +8,7 @@ import org.jetbrains.research.kotlin.mpp.inference.types.SequenceInfo
 
 class SplitToSequence(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, TensorSeq>("SplitToSequence", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
     companion object {
+        private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
         private val INPUTS_INFO = listOf(
@@ -20,12 +21,13 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>) : Operator<Tensor
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<TensorSeq> {
         val axis = attributes["axis"]?.value as? Long ?: 0L
+        val keepDims = attributes["keepdims"]?.value as? Long ?: 1L
+        val parts = inputs.elementAtOrNull(1)
 
-        val tensors = when (val parts = attributes["split"]?.value) {
-            null -> inputs.first().splitWithAxis(numOutputs, axis.toInt())
-            is Number -> inputs.first().splitWithAxis(parts.toInt(), axis.toInt())
-            is List<*> -> inputs.first().splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
-            else -> error("Unsupported splitter value type")
+        val tensors = if (parts == null) {
+            inputs.first().splitWithAxis(DEFAULT_SPLIT_LENGTH, axis.toInt(), keepDims == 1L)
+        } else {
+            inputs.first().splitWithAxis(parts, axis.toInt())
         }
 
         return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors.first().info.type)))

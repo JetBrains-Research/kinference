@@ -15,7 +15,7 @@ class Concat(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>
     }
 
     override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
-        val axis = attributes["axis"]?.value as? Long ?: 0L
+        val axis = getAttributeValue("axis") as Long
 
         return listOf(inputs.concatenate(axis.toInt()))
     }

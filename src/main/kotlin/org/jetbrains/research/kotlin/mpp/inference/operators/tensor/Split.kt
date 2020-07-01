@@ -20,7 +20,7 @@ class Split(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>(
             null -> inputs.first().splitWithAxis(numOutputs, axis.toInt())
             is Number -> inputs.first().splitWithAxis(parts.toInt(), axis.toInt())
             is List<*> -> inputs.first().splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
-            else -> error("Unsupported splitter value type")
+            else -> error("Unsupported value type")
         }
     }
 }

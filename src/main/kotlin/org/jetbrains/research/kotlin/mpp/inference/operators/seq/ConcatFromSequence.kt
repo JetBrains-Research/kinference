@@ -15,8 +15,11 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>) : Operator<Ten
     }
 
     override fun apply(inputs: Collection<TensorSeq>, numOutputs: Int): Collection<Tensor> {
-        val axis = attributes["axis"]?.value as? Long ?: 0L
-        val tensor = inputs.first().data.concatenate(axis.toInt())
+        val axis = getAttributeValue("axis") as Long
+        val newAxis = attributes["newAxis"]?.value as? Long ?: 0L
+
+        val srcTensors = inputs.first().data
+        val tensor = if (newAxis == 1L) srcTensors.stack(axis.toInt()) else srcTensors.concatenate(axis.toInt())
         return listOf(tensor)
     }
 }

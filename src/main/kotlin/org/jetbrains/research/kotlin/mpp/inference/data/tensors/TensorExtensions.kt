@@ -2,17 +2,26 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import scientifik.kmath.structures.*
 
-fun Tensor.splitWithAxis(parts: Int, axis: Int = 0): List<Tensor> {
+fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
     require(axis in data.shape.indices) { "Index $axis out of shape bound: (0, ${data.dimension - 1}" }
 
     val elementsByIndex = data.shape[axis]
-    val mainSplit = elementsByIndex.div(parts)
+    val mainSplit = elementsByIndex / parts
     val split = MutableList(parts) { mainSplit }
 
     val tail = elementsByIndex % parts
     if (tail != 0) split.add(tail)
 
-    return splitWithAxis(split.toIntArray(), axis)
+    return this.splitWithAxis(split.toIntArray(), axis, keepDims)
+}
+
+fun Tensor.splitWithAxis(splitTensor: Tensor, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
+    val split = splitTensor.data.buffer as Buffer<Number>
+    return if (split.size == 1) {
+        splitWithAxis(split[0].toInt(), axis, keepDims)
+    } else {
+        this.splitWithAxis(split.toIntArray(), axis, keepDims)
+    }
 }
 
 fun Tensor.wrapOneDim(): Tensor {
@@ -34,7 +43,7 @@ private fun Tensor.mergeOnAxis(other: Tensor, axis: Int): Tensor {
 }
 
 fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
-    val actualAxis = if (axis < 0) this.data.shape.size + axis else axis
+    val actualAxis = this.indexAxis(axis)
     if (actualAxis != 0) return this.mergeOnAxis(other, actualAxis)
 
     val fstDim: IntArray = this.data.shape
@@ -54,6 +63,14 @@ fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
 
 fun Collection<Tensor>.concatenate(axis: Int): Tensor {
     return this.reduce { acc, tensor -> acc.concatenate(tensor, axis) }
+}
+
+fun Collection<Tensor>.stack(axis: Int): Tensor {
+    return this.map {
+        val newShape = this.first().data.shape.toMutableList()
+        newShape.add(axis, 1)
+        it.reshape(newShape.toIntArray())
+    }.concatenate(axis)
 }
 
 fun Tensor.as2DList(): List<Tensor> {

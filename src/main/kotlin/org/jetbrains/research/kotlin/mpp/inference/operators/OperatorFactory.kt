@@ -14,6 +14,7 @@ import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.mpp.inference.types.ValueInfo
 
 object OperatorFactory {
+    @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>) = when (name) {
         "Add" -> Add(attributes)
         "MatMul" -> MatMul(attributes)

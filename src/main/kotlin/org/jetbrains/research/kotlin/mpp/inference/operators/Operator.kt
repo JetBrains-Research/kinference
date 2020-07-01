@@ -55,5 +55,6 @@ abstract class Operator<in T, out U>(val name: String,
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED
+        val FLOAT_DATA_TYPES = setOf(DataType.BFLOAT16, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE)
     }
 }

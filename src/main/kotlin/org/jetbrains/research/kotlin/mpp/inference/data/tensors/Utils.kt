@@ -3,11 +3,14 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.MatrixContext
 import scientifik.kmath.operations.*
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.NDStructure
+import scientifik.kmath.structures.*
 import kotlin.reflect.KClass
+import kotlin.collections.*
 
-fun Collection<Long>.toIntArray() = this.map { it.toInt() }.toIntArray()
+fun Collection<Long>.toIntArray(): IntArray = this.map { it.toInt() }.toIntArray()
+fun Collection<Number>.toDoubleList(): List<Double> = this.map { it.toDouble() }
+fun Buffer<Number>.toIntArray() = IntArray(this.size) { i -> this[i].toInt() }
+fun Buffer<Number>.toDoubleArray() = DoubleArray(this.size) { i -> this[i].toDouble() }
 
 fun IntRange.reversed() = this.toList().reversed().toIntArray()
 
