@@ -31,6 +31,7 @@ object OperatorFactory {
         "Squeeze" -> Squeeze(attributes)
         "SplitToSequence" -> SplitToSequence(attributes)
         "ConcatFromSequence" -> ConcatFromSequence(attributes)
-        else -> error("Unsupported operator")
+        "Constant" -> Constant(attributes)
+        else -> error("Unsupported operator $name")
     } as Operator<ONNXData, ONNXData>
 }

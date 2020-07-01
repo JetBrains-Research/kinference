@@ -2,8 +2,6 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
-import org.jetbrains.research.kotlin.mpp.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.mpp.inference.types.*
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
@@ -13,7 +11,7 @@ import kotlin.math.min
 //TODO: support segments
 //TODO: support external and raw data
 @Suppress("UNCHECKED_CAST")
-class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
+class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     constructor(name: String?, data: NDBuffer<Any>, type: DataType) : this(data, TensorInfo(name ?: "", type, TensorShape(data.shape)))
 
     val elementsList: List<Any>
@@ -24,7 +22,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
 
     override fun clone(newName: String) = Tensor(newName, data, info.type)
 
-    operator fun plus(other: Tensor): Tensor {
+    override fun plus(other: Tensor): Tensor {
         require(info.type != DataType.STRING) { "Available only for numeric tensors" }
         if (!data.shape.contentEquals(other.data.shape)) {
             return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
@@ -33,6 +31,12 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
         val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
         return Tensor("output", result as BufferNDStructure<Any>, info.type)
+    }
+
+    override fun plus(other: ScalarTensor): BaseTensor {
+        other.value as Number
+
+        return this.mapElements { add(it as Number, other.value)  }
     }
 
     fun indexAxis(axis: Int): Int {
@@ -58,7 +62,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), info.type)
     }
 
-    infix fun matmul(other: Tensor): Tensor {
+    override fun matmul(other: ScalarTensor): BaseTensor {
+        return this * other
+    }
+
+    override fun matmul(other: Tensor): Tensor {
         val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
 
         if (data.dimension <= 2 && other.data.dimension <= 2) {
@@ -85,13 +93,19 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         return Tensor(info.name, newData, info.type)
     }
 
-    operator fun times(other: Tensor): Tensor {
+    override fun times(other: Tensor): Tensor {
         require(data.shape.contentEquals(other.data.shape))
         require(info.type != DataType.STRING) { "Available only for numeric tensors" }
         data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
 
         val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
         return Tensor(info.name, result as BufferNDStructure<Any>, info.type)
+    }
+
+    override fun times(other: ScalarTensor): BaseTensor {
+        other.value as Number
+
+        return this.mapElements { times(it as Number, other.value)  }
     }
 
     fun transpose(permutations: List<Long>? = null): Tensor {
@@ -195,7 +209,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         operator fun invoke(value: List<Any>, type: DataType): Tensor {
             val dims = intArrayOf(value.size)
             val data = BufferNDStructure(TensorStrides(dims), value.asBuffer())
-            return Tensor(null, data, type)
+            return Tensor("out", data, type)
         }
     }
 }

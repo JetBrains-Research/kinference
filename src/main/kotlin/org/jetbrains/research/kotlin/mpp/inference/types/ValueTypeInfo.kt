@@ -10,6 +10,8 @@ class TensorShape(val dims: IntArray) {
     //class Dimension(val value: Int?, val param: String?)
 
     companion object {
+        fun empty() = TensorShape(IntArray(0))
+
         operator fun invoke(proto: TensorShapeProto): TensorShape {
             val dims = proto.dim.map { it.dim_value!!.toInt() }
             return TensorShape(dims.toIntArray())

@@ -2,7 +2,6 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import NodeProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorFactory
 
 class Node(proto: NodeProto, graph: Graph) {

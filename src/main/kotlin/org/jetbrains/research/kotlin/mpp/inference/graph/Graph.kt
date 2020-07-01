@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import GraphProto
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.BaseTensor
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.ValueInfo
 
@@ -18,7 +19,7 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
     val info: List<ValueInfo>
 
     init {
-        val initializers = proto.initializer.map { Tensor.create(it) }
+        val initializers = proto.initializer.map { BaseTensor.create(it) }
         for (tensor in initializers) {
             rootContext.putValue(tensor.info.name, tensor)
         }
@@ -44,7 +45,7 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
         return this
     }
 
-    inline fun <reified T : Number> setInput(value: List<T>): Graph {
+    fun setInput(value: List<Any>): Graph {
         require(inputs.size == 1) { "Multiple input nodes found. Specify input name explicitly" }
         val name = inputs.single().name
         return setInput(name, value)

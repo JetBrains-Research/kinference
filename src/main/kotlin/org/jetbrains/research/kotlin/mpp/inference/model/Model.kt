@@ -3,7 +3,6 @@ package org.jetbrains.research.kotlin.mpp.inference.model
 import ModelProto
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.graph.Graph
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import java.io.File
 
 class Model(proto: ModelProto) {

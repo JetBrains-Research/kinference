@@ -98,7 +98,7 @@ complexity:
     active: true
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
     thresholdInFiles: 11
-    thresholdInClasses: 15
+    thresholdInClasses: 20
     thresholdInInterfaces: 11
     thresholdInObjects: 11
     thresholdInEnums: 11
