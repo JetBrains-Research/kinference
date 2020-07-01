@@ -1,7 +1,8 @@
 package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import GraphProto
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.types.ValueInfo
 
 //TODO: support general graphs
@@ -19,7 +20,7 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
     init {
         val initializers = proto.initializer.map { Tensor.create(it) }
         for (tensor in initializers) {
-            rootContext.putValue(tensor.name!!, tensor)
+            rootContext.putValue(tensor.info.name, tensor)
         }
 
         inputs = proto.input.map { ValueInfo.create(it) }
@@ -49,8 +50,8 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
         return setInput(name, value)
     }
 
-    fun setInput(tensor: Tensor): Graph {
-        val name = tensor.name!!
+    fun setInput(tensor: ONNXData): Graph {
+        val name = tensor.info.name
 
         require(name in availableInputs) { "Required input node not found" }
 
@@ -59,7 +60,7 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
     }
 
     //only for sequential models
-    fun execute(): List<Tensor> {
+    fun execute(): List<ONNXData> {
         //TODO: check that all inputs were set and not null
 
         for (node in nodes) {

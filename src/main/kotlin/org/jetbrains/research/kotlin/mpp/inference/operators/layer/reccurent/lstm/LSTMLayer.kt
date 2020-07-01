@@ -3,7 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import org.jetbrains.research.kotlin.mpp.inference.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> {
@@ -29,7 +29,7 @@ open class LSTMLayer<T : Number> {
         val hiddenSize = recWeights.data.shape[1]
         val batchSize = inputMatrices.first().data.shape[0]
 
-        var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().type)
+        var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().info.type)
         val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
 
         val mainOutput = inputMatrices.map { inputMatrix ->
@@ -115,7 +115,7 @@ open class LSTMLayer<T : Number> {
                         biases.data.buffer[hiddenSize * index + rowNum]
                     }
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
-                    Tensor(null, newStructure, biases.type)
+                    Tensor(null, newStructure, biases.info.type)
                 }
                 val weightsBiasesData = BiasesData(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
                 val recursiveWeightsBiasesData = BiasesData(parsedBiases[4], parsedBiases[5], parsedBiases[6], parsedBiases[7])
@@ -134,6 +134,6 @@ open class LSTMLayer<T : Number> {
             this[inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
-        return Tensor(null, newBuffer, this.first().type)
+        return Tensor(null, newBuffer, this.first().info.type)
     }
 }

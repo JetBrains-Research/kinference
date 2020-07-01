@@ -2,10 +2,11 @@ package org.jetbrains.research.kotlin.mpp.inference
 
 import TensorProto
 import TensorProto.DataType
+import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.model.Model
-import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.tensors.toIntArray
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.toIntArray
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import scientifik.kmath.structures.BufferNDStructure
@@ -44,30 +45,30 @@ object Utils {
     }
 
     fun assertTensors(expected: Tensor, actual: Tensor) {
-        assertEquals(expected.type, actual.type, "Types of tensors ${expected.name} do not match")
+        assertEquals(expected.type, actual.type, "Types of tensors ${expected.info.name} do not match")
         assertArrayEquals(expected.data.shape, actual.data.shape)
         @Suppress("UNCHECKED_CAST")
-        when (expected.type) {
+        when (expected.info.type) {
             DataType.FLOAT -> {
                 expected.data.buffer.asIterable().forEachIndexed { index, value ->
                     value as Float
-                    assertEquals(value, (actual.data.buffer[index] as Number).toFloat(), delta.toFloat(), "Tensor ${expected.name} does not match")
+                    assertEquals(value, (actual.data.buffer[index] as Number).toFloat(), delta.toFloat(), "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.DOUBLE -> {
                 expected.data.buffer.asIterable().forEachIndexed { index, value ->
                     value as Double
-                    assertEquals(value, (actual.data.buffer[index] as Number).toDouble(), delta, "Tensor ${expected.name} does not match")
+                    assertEquals(value, (actual.data.buffer[index] as Number).toDouble(), delta, "Tensor ${expected.info.name} does not match")
                 }
             }
 
-            else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
+            else -> assertEquals(expected, actual, "Tensor ${expected.info.name} does not match")
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun operatorTestHelper(folderName: String): List<Pair<List<Tensor>, List<Tensor>>> {
+    fun operatorTestHelper(folderName: String): List<Pair<List<ONNXData>, List<ONNXData>>> {
         val path = javaClass.getResource(folderName).path
         val model = Model.load(path + "model.onnx")
 
@@ -82,16 +83,16 @@ object Utils {
         }
     }
 
-    fun singleTestHelper(testDir: String) {
+    fun tensorTestRunner(testDir: String) {
         val dataSets = operatorTestHelper(testDir)
         for (dataSet in dataSets) {
             val (expectedOutputTensors, actualOutputTensors) = dataSet
 
-            val mappedActualOutputTensors = actualOutputTensors.associateBy { it.name }
+            val mappedActualOutputTensors = actualOutputTensors.associateBy { it.info.name }
 
             for (expectedOutputTensor in expectedOutputTensors){
-                val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.name] ?: error("Required tensor not found")
-                assertTensors(expectedOutputTensor, actualOutputTensor)
+                val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.info.name] ?: error("Required tensor not found")
+                assertTensors(expectedOutputTensor as Tensor, actualOutputTensor as Tensor)
             }
         }
     }

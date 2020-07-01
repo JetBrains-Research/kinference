@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.tensors
+package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import scientifik.kmath.structures.*
 
@@ -18,7 +18,7 @@ fun Tensor.splitWithAxis(parts: Int, axis: Int = 0): List<Tensor> {
 fun Tensor.wrapOneDim(): Tensor {
     val newStrides = TensorStrides(intArrayOf(1, *this.data.shape))
     val buffer = BufferNDStructure(newStrides, this.data.buffer)
-    return Tensor(this.name, buffer, this.type)
+    return Tensor(this.info.name, buffer, this.info.type)
 }
 
 //if axis not 0
@@ -49,7 +49,7 @@ fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
 
     val allElements = this.data.buffer.asSequence() + other.data.buffer.asSequence()
     val buffer = BufferNDStructure(TensorStrides(newShape), allElements.toList().asBuffer())
-    return Tensor("out", buffer, this.type)
+    return Tensor("out", buffer, this.info.type)
 }
 
 fun Collection<Tensor>.concatenate(axis: Int): Tensor {

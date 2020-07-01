@@ -8,11 +8,11 @@ class SigmoidTest {
 
     @Test
     fun test_sigmoid_example(){
-        Utils.singleTestHelper(getTargetPath("test_sigmoid_example"))
+        Utils.tensorTestRunner(getTargetPath("test_sigmoid_example"))
     }
 
     @Test
     fun test_sigmoid(){
-        Utils.singleTestHelper(getTargetPath("test_sigmoid"))
+        Utils.tensorTestRunner(getTargetPath("test_sigmoid"))
     }
 }

@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.tensors
+package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import scientifik.kmath.structures.BufferNDStructure
 import kotlin.math.max
@@ -55,5 +55,5 @@ fun Tensor.elementWiseWithBroadcast(other: Tensor, op: (Any, Any) -> Any): Tenso
     val castedOther = other.broadcast(newShape).data as BufferNDStructure<Any>
 
     val res = castedThis.ndCombine(castedOther) { fst, snd -> op(fst, snd) }
-    return Tensor(name, res, type)
+    return Tensor(this.info.name, res, this.info.type)
 }

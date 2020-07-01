@@ -8,6 +8,6 @@ class ReluTest {
 
     @Test
     fun test_relu(){
-        Utils.singleTestHelper(getTargetPath("test_relu"))
+        Utils.tensorTestRunner(getTargetPath("test_relu"))
     }
 }

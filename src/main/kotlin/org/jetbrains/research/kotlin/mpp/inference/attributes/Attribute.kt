@@ -3,7 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.attributes
 import AttributeProto
 import AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.mpp.inference.graph.Graph
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 
 class Attribute<T>(proto: AttributeProto, val value: T) {
     val name: String = proto.name!!

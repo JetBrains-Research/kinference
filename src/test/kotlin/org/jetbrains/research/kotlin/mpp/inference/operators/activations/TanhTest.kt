@@ -8,11 +8,11 @@ class TanhTest {
 
     @Test
     fun test_tanh_example(){
-        Utils.singleTestHelper(getTargetPath("test_tanh_example"))
+        Utils.tensorTestRunner(getTargetPath("test_tanh_example"))
     }
 
     @Test
     fun test_tanh(){
-        Utils.singleTestHelper(getTargetPath("test_tanh"))
+        Utils.tensorTestRunner(getTargetPath("test_tanh"))
     }
 }

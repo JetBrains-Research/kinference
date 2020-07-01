@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.tensors
+package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import scientifik.kmath.structures.Strides
 import java.util.concurrent.ConcurrentHashMap

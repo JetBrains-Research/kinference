@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
-import org.jetbrains.research.kotlin.mpp.inference.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import scientifik.kmath.structures.*
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
@@ -41,13 +41,13 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
             mainOutputs[numDirection][inputNum].data[rowNum, colNum]
         }
         val newBuffer = BufferNDStructure(newStrides, newData)
-        return Tensor(null, newBuffer, mainForwardOutput.first().type)
+        return Tensor(null, newBuffer, mainForwardOutput.first().info.type)
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun stateOutputHelper(lastForwardState: State, lastBackwardState: State): List<Tensor> {
         val (batchSize, hiddenSize) = lastForwardState.output.data.shape
-        val type = lastForwardState.output.type
+        val type = lastForwardState.output.info.type
 
         val newShape = intArrayOf(2, batchSize, hiddenSize)
         val newStrides = TensorStrides(newShape)

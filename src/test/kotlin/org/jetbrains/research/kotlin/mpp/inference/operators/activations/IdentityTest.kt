@@ -8,6 +8,6 @@ class IdentityTest {
 
     @Test
     fun test_identity(){
-        Utils.singleTestHelper(getTargetPath("test_identity"))
+        Utils.tensorTestRunner(getTargetPath("test_identity"))
     }
 }

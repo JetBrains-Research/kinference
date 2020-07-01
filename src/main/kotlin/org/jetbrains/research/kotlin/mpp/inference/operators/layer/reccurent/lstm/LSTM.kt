@@ -4,9 +4,9 @@ import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 
-class LSTM(attributes: Map<String, Attribute<Any>>) : Operator("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
+class LSTM(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
     val layer: LSTMLayer<Number> = when (attributes["direction"]?.value) {
         "forward" -> LSTMLayer()
         "bidirectional" -> BiLSTMLayer()

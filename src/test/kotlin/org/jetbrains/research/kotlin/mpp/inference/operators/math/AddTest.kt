@@ -8,11 +8,11 @@ class AddTest {
 
     @Test
     fun test_add(){
-        Utils.singleTestHelper(getTargetPath("test_add"))
+        Utils.tensorTestRunner(getTargetPath("test_add"))
     }
 
     @Test
     fun test_add_bcast(){
-        Utils.singleTestHelper(getTargetPath("test_add_bcast"))
+        Utils.tensorTestRunner(getTargetPath("test_add_bcast"))
     }
 }

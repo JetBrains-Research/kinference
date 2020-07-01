@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.mpp.inference.graph
 
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 
 class Context(val base: Context? = null) {
-    private val values = HashMap<String, Tensor>()
+    private val values = HashMap<String, ONNXData>()
     private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
@@ -14,12 +14,12 @@ class Context(val base: Context? = null) {
         return shapes.contains(name)
     }
 
-    fun putValue(name: String, value: Tensor) {
+    fun putValue(name: String, value: ONNXData) {
         require(name !in values && base?.hasValue(name)?.not() ?: true) { "'$name' already exists in context values" }
         values[name] = value
     }
 
-    fun getValue(name: String): Tensor {
+    fun getValue(name: String): ONNXData {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
     }
 

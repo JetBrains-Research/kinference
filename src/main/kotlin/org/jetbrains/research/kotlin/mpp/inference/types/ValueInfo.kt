@@ -1,31 +1,30 @@
 package org.jetbrains.research.kotlin.mpp.inference.types
 
-import TensorProto
-import TensorShapeProto
+import TensorProto.DataType
 import ValueInfoProto
 
 //TODO: optionally support maps and sequences
-class ValueInfo(val name: String, val shape: TensorShape, val type: TensorProto.DataType) {
+abstract class ValueInfo(val name: String, val type: DataType) {
     companion object {
         fun create(proto: ValueInfoProto): ValueInfo {
-            val tensor = proto.type?.tensor_type
-            requireNotNull(tensor) { "Only tensor types are supported" }
-
-            val shape = TensorShape.invoke(tensor.shape!!)
-            val typeInt = tensor.elem_type!!
-
-            return ValueInfo(proto.name!!, shape, TensorProto.DataType.fromValue(typeInt)!!)
+            val type = proto.type!!
+            return when {
+                type.tensor_type != null -> {
+                    val dataType = DataType.fromValue(type.tensor_type.elem_type!!)!!
+                    val shape = TensorShape(type.tensor_type.shape!!)
+                    TensorInfo(proto.name!!, dataType, shape)
+                }
+                type.sequence_type != null -> {
+                    val tensorTypes = type.sequence_type.elem_type!!.tensor_type!!
+                    SequenceInfo(proto.name!!, DataType.fromValue(tensorTypes.elem_type!!)!!)
+                }
+                type.map_type != null -> TODO("Maps are not supported")
+                else -> error("Unsupported data type")
+            }
         }
     }
 }
 
-class TensorShape(val dims: List<Dimension>) {
-    class Dimension(values: Long?, params: String?)
+class TensorInfo(name: String, type: DataType, val shape: TensorShape) : ValueInfo(name, type)
 
-    companion object {
-        operator fun invoke(proto: TensorShapeProto): TensorShape {
-            val dims = proto.dim.map { Dimension(it.dim_value, it.dim_param) }
-            return TensorShape(dims)
-        }
-    }
-}
+class SequenceInfo(name: String, type: DataType) : ValueInfo(name, type)

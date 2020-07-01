@@ -1,8 +1,10 @@
-package org.jetbrains.research.kotlin.mpp.inference.tensors
+package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
+import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
+import org.jetbrains.research.kotlin.mpp.inference.data.ONNXDataType
+import org.jetbrains.research.kotlin.mpp.inference.types.*
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
@@ -10,24 +12,27 @@ import kotlin.math.min
 
 //TODO: support segments
 //TODO: support external and raw data
-//TODO: numpy-like multidirectional broadcasting
 @Suppress("UNCHECKED_CAST")
-data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType) {
+class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
+    constructor(name: String?, data: NDBuffer<Any>, type: DataType) : this(data, TensorInfo(name ?: "", type, TensorShape(data.shape)))
+
     val elementsList: List<Any>
         get() = data.buffer.asIterable().toList()
 
     val rank: Int
         get() = data.dimension
 
+    override fun clone(newName: String) = Tensor(newName, data, info.type)
+
     operator fun plus(other: Tensor): Tensor {
-        require(type != DataType.STRING) { "Available only for numeric tensors" }
+        require(info.type != DataType.STRING) { "Available only for numeric tensors" }
         if (!data.shape.contentEquals(other.data.shape)) {
             return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
         }
 
         data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
         val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
-        return Tensor(name, result as BufferNDStructure<Any>, type)
+        return Tensor("output", result as BufferNDStructure<Any>, info.type)
     }
 
     fun row(row: Int): Tensor {
@@ -37,7 +42,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         val dims = data.shape.copyOf().drop(1).toIntArray()
 
         val buffer = BufferNDStructure(TensorStrides(dims), rowData.asBuffer())
-        return Tensor("row", buffer, type)
+        return Tensor("row", buffer, info.type)
     }
 
     fun rows(): List<Tensor> = List(data.shape[0]) { i -> row(i) }
@@ -46,15 +51,15 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         require(data.shape[0] == 1) { "First dimension should be 1" }
         val resultBuffer = List(times) { data.buffer.asIterable() }.flatten().asBuffer()
         val newShape = data.shape.copyOf().apply { set(0, times) }
-        return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), type)
+        return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), info.type)
     }
 
     infix fun matmul(other: Tensor): Tensor {
-        val context = resolveMatrixContext(type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
+        val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
 
         if (data.dimension <= 2 && other.data.dimension <= 2) {
             val matrix = with(context) { data.as2D() dot other.data.as2D() }
-            return Tensor("result", matrix, type)
+            return Tensor("result", matrix, info.type)
         }
 
         val thisMatrices = this.as2DList()
@@ -64,7 +69,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
         }.map { matrix ->
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
             val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
-            Tensor("out", nd, type)
+            Tensor("out", nd, info.type)
         }
         val shape = data.shape.zip(other.data.shape).map { min(it.first, it.second) }.toIntArray()
         return resMatrices.concatenate(0).reshape(shape)
@@ -73,16 +78,16 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
 
     fun mapElements(func: (Any) -> Any): Tensor {
         val newData = BufferNDStructure(TensorStrides(data.shape), data.buffer.asIterable().map(func).asBuffer())
-        return Tensor(name, newData, type)
+        return Tensor(info.name, newData, info.type)
     }
 
     operator fun times(other: Tensor): Tensor {
         require(data.shape.contentEquals(other.data.shape))
-        require(type != DataType.STRING) { "Available only for numeric tensors" }
+        require(info.type != DataType.STRING) { "Available only for numeric tensors" }
         data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
 
         val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
-        return Tensor(name, result as BufferNDStructure<Any>, type)
+        return Tensor(info.name, result as BufferNDStructure<Any>, info.type)
     }
 
     fun transpose(perm: List<Long>? = null): Tensor {
@@ -102,7 +107,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
             }
             newBuffer[newIndices] = data[indices]
         }
-        return Tensor(name, newBuffer as NDBuffer<Any>, type)
+        return Tensor(info.name, newBuffer as NDBuffer<Any>, info.type)
     }
 
     fun splitWithAxis(split: IntArray, axis: Int = 0): List<Tensor> {
@@ -117,7 +122,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
                 data[indices]
             }
             val newStructure = BufferNDStructure(newStrides, newBuffer)
-            Tensor(null, newStructure, type)
+            Tensor(null, newStructure, info.type)
         }
     }
 
@@ -128,7 +133,7 @@ data class Tensor(val name: String?, val data: NDBuffer<Any>, val type: DataType
 
         val newBuffer = BufferNDStructure(newStrides, data.buffer)
 
-        return Tensor(name, newBuffer, type)
+        return Tensor(info.name, newBuffer, info.type)
     }
 
     fun reshape(tensorShape: Tensor): Tensor {

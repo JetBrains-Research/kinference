@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.graph
 
 import NodeProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorFactory
 
 class Node(proto: NodeProto, graph: Graph) {
@@ -10,9 +11,9 @@ class Node(proto: NodeProto, graph: Graph) {
     private val operator = OperatorFactory.create(proto.op_type, proto.attribute.map { Attribute.create(it, graph) }.associateBy(Attribute<Any>::name))
 
     fun execute(context: Context) {
-        operator.applyWithCheck(outputs.size, inputs.map { input -> context.getValue(input) }).zip(outputs) { tensor, output ->
+        operator.applyWithCheck(outputs.size, inputs.map { input -> context.getValue(input) }).zip(outputs) { data, output ->
             if (output.isNotBlank()) {
-                context.putValue(output, tensor.copy(name = output))
+                context.putValue(output, data.clone(newName = output))
             }
         }
     }

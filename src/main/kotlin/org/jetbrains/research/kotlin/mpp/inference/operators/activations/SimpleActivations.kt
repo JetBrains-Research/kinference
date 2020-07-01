@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import kotlin.math.exp
 
 class Identity(attributes: Map<String, Attribute<Any>> = emptyMap()) : Activation("Identity", TYPE_CONSTRAINTS, attributes) {

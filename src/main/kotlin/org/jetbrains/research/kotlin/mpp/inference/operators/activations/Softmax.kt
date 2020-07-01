@@ -4,8 +4,8 @@ import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.AttributeInfo
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.linear.VirtualMatrix
 import scientifik.kmath.structures.*
 import kotlin.math.exp
@@ -53,6 +53,6 @@ class Softmax(attributes: Map<String, Attribute<Any>>) : Activation("Softmax", T
         val resultElements = rows.mapIndexed { i, buf -> buf.asSequence().map { it / rowSums[i] }.toList() }
 
         val buf = BufferNDStructure(TensorStrides(input.data.shape), resultElements.flatten().asBuffer()) as BufferNDStructure<Any>
-        return Tensor("output", buf, input.type)
+        return Tensor("output", buf, input.info.type)
     }
 }

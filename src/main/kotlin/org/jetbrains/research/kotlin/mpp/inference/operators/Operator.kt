@@ -3,8 +3,6 @@ package org.jetbrains.research.kotlin.mpp.inference.operators
 import AttributeProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
-
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) {
     init {
@@ -26,7 +24,7 @@ class OutputInfo(val index: Int, val types: Set<DataType>, val name: String? = n
 
 
 @Suppress("UNCHECKED_CAST")
-abstract class Operator(val name: String,
+abstract class Operator<in T, out U>(val name: String,
                         val attributes: Map<String, Attribute<Any>>,
                         val attributesInfo: Collection<AttributeInfo>,
                         val inputsInfo: Collection<InputInfo>,
@@ -36,7 +34,7 @@ abstract class Operator(val name: String,
         // TODO check attributes
     }
 
-    fun applyWithCheck(numOutputs: Int, inputs: Collection<Tensor>): Collection<Tensor> {
+    fun applyWithCheck(numOutputs: Int, inputs: Collection<T>): Collection<U> {
         // TODO check inputs
         val outputs = apply(inputs, numOutputs)
         // TODO check outputs
@@ -52,6 +50,10 @@ abstract class Operator(val name: String,
         return value
     }
 
-    abstract fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor>
-    open fun apply(vararg inputs: Tensor, numOutputs: Int = 1): Collection<Tensor> = apply(inputs.toList(), numOutputs)
+    abstract fun apply(inputs: Collection<T>, numOutputs: Int): Collection<U>
+    open fun apply(vararg inputs: T, numOutputs: Int = 1): Collection<U> = apply(inputs.toList(), numOutputs)
+
+    companion object {
+        val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED
+    }
 }

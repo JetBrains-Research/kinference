@@ -3,9 +3,9 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.math
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
-import org.jetbrains.research.kotlin.mpp.inference.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 
-class Add(attributes: Map<String, Attribute<Any>>) : Operator("Add", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
+class Add(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("Add", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,

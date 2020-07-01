@@ -8,11 +8,11 @@ class SqueezeTest {
 
     @Test
     fun test_squeeze() {
-        Utils.singleTestHelper(getTargetPath("test_squeeze"))
+        Utils.tensorTestRunner(getTargetPath("test_squeeze"))
     }
 
     @Test
     fun test_squeeze_negative_axes() {
-        Utils.singleTestHelper(getTargetPath("test_squeeze_negative_axes"))
+        Utils.tensorTestRunner(getTargetPath("test_squeeze_negative_axes"))
     }
 }

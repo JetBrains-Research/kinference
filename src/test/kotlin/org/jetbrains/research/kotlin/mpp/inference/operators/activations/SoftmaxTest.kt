@@ -8,31 +8,31 @@ class SoftmaxTest {
 
     @Test
     fun test_softmax_axis_0() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_axis_0"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_axis_0"))
     }
 
     @Test
     fun test_softmax_axis_1() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_axis_1"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_axis_1"))
     }
 
     @Test
     fun test_softmax_axis_2() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_axis_2"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_axis_2"))
     }
 
     @Test
     fun test_softmax_default_axis() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_default_axis"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_default_axis"))
     }
 
     @Test
     fun test_softmax_large_number() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_large_number"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_large_number"))
     }
 
     @Test
     fun test_softmax_negative_axis() {
-        Utils.singleTestHelper(getTargetPath("test_softmax_negative_axis"))
+        Utils.tensorTestRunner(getTargetPath("test_softmax_negative_axis"))
     }
 }
