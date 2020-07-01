@@ -193,7 +193,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : ONNXData(ONNXDataType.
         }
 
         operator fun invoke(value: List<Any>, type: DataType): Tensor {
-            val dims = intArrayOf(value.size, 1)
+            val dims = intArrayOf(value.size)
             val data = BufferNDStructure(TensorStrides(dims), value.asBuffer())
             return Tensor(null, data, type)
         }
