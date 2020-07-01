@@ -7,7 +7,7 @@ import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 
 class LSTM(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
-    val layer: LSTMLayer<Number> = when (attributes["direction"]?.value) {
+    val layer: LSTMLayer<Number> = when (getAttributeValue("direction")) {
         "forward" -> LSTMLayer()
         "bidirectional" -> BiLSTMLayer()
         else -> LSTMLayer()

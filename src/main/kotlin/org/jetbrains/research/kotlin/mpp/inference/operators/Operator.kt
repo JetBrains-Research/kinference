@@ -42,12 +42,16 @@ abstract class Operator<in T, out U>(val name: String,
     }
 
     fun getAttributeValue(key: String): Any {
+        val value = getAttributeValueOrNull(key)
+        require(value != null) { "Attribute '$key' not found or don't have a default value" }
+        return value
+    }
+
+    fun getAttributeValueOrNull(key: String): Any? {
         val info = attributesInfo.find { it.name == key }
         require(info != null) { "Attribute '$key' not specified in the '$name' operator" }
 
-        val value = attributes[key]?.value ?: if (!info.required) info.default else null
-        require(value != null) { "Attribute '$key' not found or don't have a default value" }
-        return value
+        return attributes[key]?.value ?: if (!info.required) info.default else null
     }
 
     abstract fun apply(inputs: Collection<T>, numOutputs: Int): Collection<U>
