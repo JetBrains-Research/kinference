@@ -187,12 +187,13 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     }
 
     companion object {
-        //TODO: complex, uint32/64 tensors, strings
+        //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): Tensor = when (val type = DataType.fromValue(proto.data_type ?: 0)) {
             DataType.DOUBLE -> Tensor(proto.dims, proto.double_data, type, proto.name)
             DataType.FLOAT -> Tensor(proto.dims, proto.float_data, type, proto.name)
             DataType.INT64 -> Tensor(proto.dims, proto.int64_data, type, proto.name)
             DataType.INT32 -> Tensor(proto.dims, proto.int32_data, type, proto.name)
+            DataType.STRING -> Tensor(proto.dims, proto.string_data.map { it.utf8() }, type, proto.name)
             else -> error("Unsupported data type")
         }
 
