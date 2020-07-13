@@ -3,10 +3,8 @@ package org.jetbrains.research.kotlin.mpp.inference
 import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.model.Model
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.toIntArray
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import scientifik.kmath.structures.BufferNDStructure
@@ -19,7 +17,7 @@ import kotlin.math.pow
 object Utils {
     private val delta = (10.0).pow(-6)
 
-    fun getTensor(path: File): Tensor {
+    fun getTensor(path: File): BaseTensor {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
         return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
@@ -28,20 +26,34 @@ object Utils {
         }
     }
 
-    private fun getTensorFloat(tensorProto: TensorProto): Tensor {
-        val rawFloatData = tensorProto.raw_data!!.toByteArray()
-        val chunkedRawFloatData = rawFloatData.asIterable().chunked(4)
-        val floatData = chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
-        val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), floatData) as BufferNDStructure<Any>
-        return Tensor(tensorProto.name, structure, DataType.FLOAT)
+    private fun getTensorFloat(tensorProto: TensorProto): BaseTensor {
+        val floatData = if (tensorProto.raw_data != null) {
+            val rawFloatData = tensorProto.raw_data!!.toByteArray()
+            val chunkedRawFloatData = rawFloatData.asIterable().chunked(4)
+            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
+        } else tensorProto.float_data.asBuffer()
+
+        return if (tensorProto.dims.isEmpty()) {
+            ScalarTensor.create(tensorProto)
+        } else {
+            val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), floatData) as BufferNDStructure<Any>
+            Tensor(tensorProto.name, structure, DataType.FLOAT)
+        }
     }
 
-    private fun getTensorLong(tensorProto: TensorProto): Tensor {
-        val rawLongData = tensorProto.raw_data!!.toByteArray()
-        val chunkedRawLongData = rawLongData.asIterable().chunked(8)
-        val longData = chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.asBuffer()
-        val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), longData) as BufferNDStructure<Any>
-        return Tensor(tensorProto.name, structure, DataType.INT64)
+    private fun getTensorLong(tensorProto: TensorProto): BaseTensor {
+        val longData = if (tensorProto.raw_data != null) {
+            val rawLongData = tensorProto.raw_data!!.toByteArray()
+            val chunkedRawLongData = rawLongData.asIterable().chunked(8)
+            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.asBuffer()
+        } else tensorProto.int64_data.asBuffer()
+
+        return if (tensorProto.dims.isEmpty()) {
+            ScalarTensor.create(tensorProto)
+        } else {
+            val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), longData) as BufferNDStructure<Any>
+            Tensor(tensorProto.name, structure, DataType.INT64)
+        }
     }
 
     fun assertTensors(expected: Tensor, actual: Tensor) {

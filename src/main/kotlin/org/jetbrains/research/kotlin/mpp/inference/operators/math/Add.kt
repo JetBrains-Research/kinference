@@ -2,10 +2,13 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.math
 
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.operators.*
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.BaseTensor
+import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
+import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
 
-class Add(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("Add", attributes, emptyList(), INPUTS_INFO, OUTPUTS_INFO) {
+class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -26,9 +29,11 @@ class Add(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("A
         private val OUTPUTS_INFO = listOf(
             OutputInfo(0, TYPE_CONSTRAINTS, "C")
         )
+
+        private val INFO = OperatorInfo("Add", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
+    override fun apply(inputs: List<BaseTensor>): List<BaseTensor> {
         return listOf(inputs.first() + inputs.last())
     }
 }

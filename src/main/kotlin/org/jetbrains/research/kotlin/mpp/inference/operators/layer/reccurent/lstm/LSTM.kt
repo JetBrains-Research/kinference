@@ -3,11 +3,11 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.ls
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
-class LSTM(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("LSTM", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
-    val layer: LSTMLayer<Number> = when (getAttributeValue("direction")) {
+class LSTM(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
+    private val layer: LSTMLayer<Number> = when (getAttributeValue("direction")) {
         "forward" -> LSTMLayer()
         "bidirectional" -> BiLSTMLayer()
         else -> LSTMLayer()
@@ -34,12 +34,12 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("
             InputInfo(0, TYPE_CONSTRAINTS, "X", true),
             InputInfo(1, TYPE_CONSTRAINTS, "W", true),
             InputInfo(2, TYPE_CONSTRAINTS, "R", true),
-            InputInfo(3, TYPE_CONSTRAINTS, "B", false, 0),
+            InputInfo(3, TYPE_CONSTRAINTS, "B", false),
 
-            InputInfo(4, setOf(TensorProto.DataType.INT32), "sequence_lens", false, emptyList<Int>()),
-            InputInfo(5, TYPE_CONSTRAINTS, "initial_h", false, 0),
-            InputInfo(6, TYPE_CONSTRAINTS, "initial_c", false, 0),
-            InputInfo(7, TYPE_CONSTRAINTS, "P", false, 0)
+            InputInfo(4, setOf(TensorProto.DataType.INT32), "sequence_lens", false),
+            InputInfo(5, TYPE_CONSTRAINTS, "initial_h", false),
+            InputInfo(6, TYPE_CONSTRAINTS, "initial_c", false),
+            InputInfo(7, TYPE_CONSTRAINTS, "P", false)
         )
 
         private val OUTPUTS_INFO = listOf(
@@ -47,9 +47,11 @@ class LSTM(attributes: Map<String, Attribute<Any>>) : Operator<Tensor, Tensor>("
             OutputInfo(1, TYPE_CONSTRAINTS, "Y_h"),
             OutputInfo(2, TYPE_CONSTRAINTS, "Y_c")
         )
+
+        private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<Tensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         // TODO: use attributes to set up layer
         return layer.apply(inputs)
     }

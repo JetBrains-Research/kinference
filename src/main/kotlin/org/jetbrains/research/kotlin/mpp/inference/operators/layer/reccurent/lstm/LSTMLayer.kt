@@ -1,13 +1,18 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
 import TensorProto
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.VirtualBuffer
+import scientifik.kmath.structures.get
 
 open class LSTMLayer<T : Number> {
-    open fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    open fun apply(inputs: List<Tensor>): List<Tensor> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
         val inputList = inputs.toList()
@@ -61,17 +66,17 @@ open class LSTMLayer<T : Number> {
         }
 
         fun addBiases(weightsBiasesData: BiasesData, recursiveWeightsBiasesData: BiasesData): GatesData {
-            val inputGateWithBiases = inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases
-            val outputGateWithBiases = outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases
-            val forgetGateWithBiases = forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases
-            val cellGateWithBiases = cellGate + weightsBiasesData.cellGateBiases + recursiveWeightsBiasesData.forgetGateBiases
+            val inputGateWithBiases = (inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases) as Tensor
+            val outputGateWithBiases = (outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases) as Tensor
+            val forgetGateWithBiases = (forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases) as Tensor
+            val cellGateWithBiases = (cellGate + weightsBiasesData.cellGateBiases + recursiveWeightsBiasesData.forgetGateBiases) as Tensor
 
             return GatesData(inputGateWithBiases, outputGateWithBiases, forgetGateWithBiases, cellGateWithBiases)
         }
 
         companion object {
             fun create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor, prevState: State): GatesData {
-                val gates = inputMatrix.matmul(weights.transpose()) + prevState.output.matmul(recWeights.transpose())
+                val gates = (inputMatrix.matmul(weights.transpose()) + prevState.output.matmul(recWeights.transpose())) as Tensor
                 val gatesList = gates.splitWithAxis(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
             }
@@ -88,8 +93,8 @@ open class LSTMLayer<T : Number> {
             }
 
             fun create(gatesData: GatesData, prevState: State): State {
-                val newCellGate = gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate
-                val newOutput = gatesData.outputGate * Tanh().apply(newCellGate).first()
+                val newCellGate = (gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate) as Tensor
+                val newOutput = (gatesData.outputGate * Tanh().apply(newCellGate).first()) as Tensor
                 return State(newOutput, newCellGate)
             }
         }

@@ -2,19 +2,29 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
 import AttributeProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.toDoubleList
 import org.jetbrains.research.kotlin.mpp.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
 import scientifik.kmath.linear.VirtualMatrix
 import scientifik.kmath.structures.*
 import kotlin.math.exp
 
 //only for float and double types
-class Softmax(attributes: Map<String, Attribute<Any>>) : Activation("Softmax", TYPE_CONSTRAINTS, attributes, ATTRIBUTES_INFO) {
+class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1L)
+        )
+
+        private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO,
+            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
+            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
     }
 

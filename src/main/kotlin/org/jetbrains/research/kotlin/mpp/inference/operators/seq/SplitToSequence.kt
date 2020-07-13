@@ -1,13 +1,16 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.seq
 
+import AttributeProto
+import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.seq.TensorSeq
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import org.jetbrains.research.kotlin.mpp.inference.types.SequenceInfo
 
-class SplitToSequence(attributes: Map<String, Attribute<Any>>)
-    : Operator<Tensor, TensorSeq>("SplitToSequence", attributes, ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO) {
+class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
+    : Operator<Tensor, TensorSeq>(INFO, usedOutputsNum, attributes) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -23,9 +26,11 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>)
         )
 
         private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output_sequence"))
+
+        private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: Collection<Tensor>, numOutputs: Int): Collection<TensorSeq> {
+    override fun apply(inputs: List<Tensor>): List<TensorSeq> {
         val axis = getAttributeValue("axis") as Long
         val keepDims = getAttributeValue("keepdims") as Long
         val parts = inputs.elementAtOrNull(1)

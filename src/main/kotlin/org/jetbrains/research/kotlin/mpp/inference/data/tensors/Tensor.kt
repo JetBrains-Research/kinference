@@ -22,21 +22,21 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
     override fun clone(newName: String) = Tensor(newName, data, info.type)
 
-    override fun plus(other: Tensor): Tensor {
-        require(info.type != DataType.STRING) { "Available only for numeric tensors" }
-        if (!data.shape.contentEquals(other.data.shape)) {
-            return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
+    override fun plus(other: BaseTensor): BaseTensor {
+        return when (other) {
+            is Tensor -> {
+                require(info.type != DataType.STRING) { "Available only for numeric tensors" }
+                if (!data.shape.contentEquals(other.data.shape)) {
+                    return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
+                }
+
+                data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
+                val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
+                Tensor("output", result as BufferNDStructure<Any>, info.type)
+            }
+            is ScalarTensor -> this.mapElements { add(it as Number, other.value as Number) }
+            else -> error("Unsupported tensor type")
         }
-
-        data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
-        val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
-        return Tensor("output", result as BufferNDStructure<Any>, info.type)
-    }
-
-    override fun plus(other: ScalarTensor): BaseTensor {
-        other.value as Number
-
-        return this.mapElements { add(it as Number, other.value)  }
     }
 
     fun indexAxis(axis: Int): Int {
@@ -62,50 +62,51 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         return Tensor("rows", BufferNDStructure(TensorStrides(newShape), resultBuffer), info.type)
     }
 
-    override fun matmul(other: ScalarTensor): BaseTensor {
-        return this * other
+    override fun matmul(other: BaseTensor): BaseTensor {
+        return when (other) {
+            is Tensor -> {
+                val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
+
+                if (data.dimension <= 2 && other.data.dimension <= 2) {
+                    val matrix = with(context) { data.as2D() dot other.data.as2D() }
+                    return Tensor("result", matrix, info.type)
+                }
+
+                val thisMatrices = this.as2DList()
+                val otherMatrices = other.as2DList()
+                val resMatrices = thisMatrices.mapIndexed { i, tensor ->
+                    with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
+                }.map { matrix ->
+                    val buffer = matrix.elements().map { it.second }.toList().asBuffer()
+                    val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
+                    Tensor("out", nd, info.type)
+                }
+                val shape = data.shape.zip(other.data.shape).map { min(it.first, it.second) }.toIntArray()
+                resMatrices.concatenate(0).reshape(shape)
+            }
+            is ScalarTensor -> this * other
+            else -> error("Unsupported tensor type")
+        }
     }
 
-    override fun matmul(other: Tensor): Tensor {
-        val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
-
-        if (data.dimension <= 2 && other.data.dimension <= 2) {
-            val matrix = with(context) { data.as2D() dot other.data.as2D() }
-            return Tensor("result", matrix, info.type)
-        }
-
-        val thisMatrices = this.as2DList()
-        val otherMatrices = other.as2DList()
-        val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-            with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
-        }.map { matrix ->
-            val buffer = matrix.elements().map { it.second }.toList().asBuffer()
-            val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
-            Tensor("out", nd, info.type)
-        }
-        val shape = data.shape.zip(other.data.shape).map { min(it.first, it.second) }.toIntArray()
-        return resMatrices.concatenate(0).reshape(shape)
-    }
-
-
-    fun mapElements(func: (Any) -> Any): Tensor {
+    fun mapElements(type: DataType = info.type, func: (Any) -> Any): Tensor {
         val newData = BufferNDStructure(TensorStrides(data.shape), data.buffer.asIterable().map(func).asBuffer())
-        return Tensor(info.name, newData, info.type)
+        return Tensor(info.name, newData, type)
     }
 
-    override fun times(other: Tensor): Tensor {
-        require(data.shape.contentEquals(other.data.shape))
-        require(info.type != DataType.STRING) { "Available only for numeric tensors" }
-        data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
+    override fun times(other: BaseTensor): BaseTensor {
+        return when (other) {
+            is Tensor -> {
+                require(data.shape.contentEquals(other.data.shape))
+                require(info.type != DataType.STRING) { "Available only for numeric tensors" }
+                data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
 
-        val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
-        return Tensor(info.name, result as BufferNDStructure<Any>, info.type)
-    }
-
-    override fun times(other: ScalarTensor): BaseTensor {
-        other.value as Number
-
-        return this.mapElements { times(it as Number, other.value)  }
+                val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
+                Tensor(info.name, result as BufferNDStructure<Any>, info.type)
+            }
+            is ScalarTensor -> this.mapElements { times(it as Number, other.value as Number) }
+            else -> error("Unsupported tensor type")
+        }
     }
 
     fun transpose(permutations: List<Long>? = null): Tensor {
@@ -184,6 +185,22 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         val newShape = data.shape.slice(shapeIndices).toIntArray()
 
         return reshape(newShape)
+    }
+
+    // TODO: better equals
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Tensor
+
+        if (data != other.data) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return data.hashCode()
     }
 
     companion object {

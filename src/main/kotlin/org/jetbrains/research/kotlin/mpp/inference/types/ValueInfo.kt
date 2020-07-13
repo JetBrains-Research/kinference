@@ -11,7 +11,7 @@ abstract class ValueInfo(val name: String, val type: DataType) {
             return when {
                 type.tensor_type != null -> {
                     val dataType = DataType.fromValue(type.tensor_type.elem_type!!)!!
-                    val shape = TensorShape(type.tensor_type.shape!!)
+                    val shape = if (type.tensor_type.shape == null) TensorShape.empty() else TensorShape(type.tensor_type.shape)
                     TensorInfo(proto.name!!, dataType, shape)
                 }
                 type.sequence_type != null -> {

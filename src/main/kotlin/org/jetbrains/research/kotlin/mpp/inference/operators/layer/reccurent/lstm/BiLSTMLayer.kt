@@ -1,10 +1,15 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
 
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
-import scientifik.kmath.structures.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.VirtualBuffer
+import scientifik.kmath.structures.get
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
-    override fun apply(inputs: Collection<Tensor>): Collection<Tensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
 
         val inputList = inputs.toList()
