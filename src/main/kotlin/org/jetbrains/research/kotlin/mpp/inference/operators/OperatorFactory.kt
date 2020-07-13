@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.*
+import org.jetbrains.research.kotlin.mpp.inference.operators.flow.Loop
 import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm.LSTM
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.Add
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.MatMul
@@ -21,6 +22,7 @@ object OperatorFactory {
         "Gather" -> Gather(attributes, usedOutputsNum)
         "Identity" -> Identity(attributes, usedOutputsNum)
         "LSTM" -> LSTM(attributes, usedOutputsNum)
+        "Loop" -> Loop(attributes, usedOutputsNum)
         "MatMul" -> MatMul(attributes, usedOutputsNum)
         "Relu" -> Relu(attributes, usedOutputsNum)
         "Reshape" -> Reshape(attributes, usedOutputsNum)
