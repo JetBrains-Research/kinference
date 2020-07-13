@@ -1,20 +1,39 @@
 package org.jetbrains.research.kotlin.mpp.inference.types
 
-import TensorShapeProto
 import TensorProto.DataType
+import TensorShapeProto
 import TypeProto
+import org.jetbrains.research.kotlin.mpp.inference.graph.Context
 
-class TensorShape(val dims: IntArray) {
+class TensorShape(private val dims: List<Dimension>) {
+    constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })
 
-    //TODO: support params dimensions
-    //class Dimension(val value: Int?, val param: String?)
+    open class Dimension
+    class StaticDimension(val value: Int) : Dimension()
+    class DynamicDimension(val value: String) : Dimension()
+
+    fun getDimensions(context: Context? = null): IntArray {
+        if (context == null) require(dims.all { it is StaticDimension })
+        return dims.map {
+            when (it) {
+                is StaticDimension -> it.value
+                is DynamicDimension -> context!!.getShape(it.value)
+                else -> error("Unsupported dimension type")
+            }
+        }.toIntArray()
+    }
 
     companion object {
-        fun empty() = TensorShape(IntArray(0))
+        fun empty() = TensorShape(emptyList())
 
         operator fun invoke(proto: TensorShapeProto): TensorShape {
-            val dims = proto.dim.map { it.dim_value!!.toInt() }
-            return TensorShape(dims.toIntArray())
+            return TensorShape(proto.dim.map {
+                when {
+                    it.dim_value != null -> StaticDimension(it.dim_value.toInt())
+                    it.dim_param != null -> DynamicDimension(it.dim_param)
+                    else -> error("Incorrect TensorShapeProto")
+                }
+            })
         }
     }
 }
