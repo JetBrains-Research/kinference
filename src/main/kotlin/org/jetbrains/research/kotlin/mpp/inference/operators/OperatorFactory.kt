@@ -14,6 +14,7 @@ object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) = when (name) {
         "Add" -> Add(attributes, usedOutputsNum)
+        "Cast" -> Cast(attributes, usedOutputsNum)
         "Concat" -> Concat(attributes, usedOutputsNum)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, usedOutputsNum)
         "Constant" -> Constant(attributes, usedOutputsNum)
