@@ -18,6 +18,7 @@ object OperatorFactory {
         "Concat" -> Concat(attributes, usedOutputsNum)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, usedOutputsNum)
         "Constant" -> Constant(attributes, usedOutputsNum)
+        "Gather" -> Gather(attributes, usedOutputsNum)
         "Identity" -> Identity(attributes, usedOutputsNum)
         "LSTM" -> LSTM(attributes, usedOutputsNum)
         "MatMul" -> MatMul(attributes, usedOutputsNum)

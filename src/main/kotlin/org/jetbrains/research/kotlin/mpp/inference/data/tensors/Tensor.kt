@@ -2,7 +2,9 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.mpp.inference.types.*
+import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
+import org.jetbrains.research.kotlin.mpp.inference.types.TensorShape
+import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
@@ -145,6 +147,25 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             val newStructure = BufferNDStructure(newStrides, newBuffer)
             Tensor(null, newStructure, info.type)
         }
+    }
+
+    fun gather(indices: Tensor, axis: Int = 0): Tensor {
+        val addedShape = data.shape.toMutableList().also { it.removeAt(axis) }
+        val newShape = addedShape.toMutableList().also { it.addAll(axis, indices.data.shape.toList()) }
+        val newStrides = TensorStrides(newShape.toIntArray())
+        val blockSize = newStrides.linearSize
+
+        val newBuffer = ListBuffer(blockSize) { i ->
+            val current = newStrides.index(i)
+            val indicesIndices = current.sliceArray(axis until indices.data.shape.size + axis)
+            val gatherIndices = (current.take(axis) + current.takeLast(data.shape.size - 1 - axis)).toMutableList().also { it.add(axis, (indices.data[indicesIndices] as Long).toInt()) }
+            val positiveGatherIndices = gatherIndices.zip(data.shape.toList()) { index, shape ->
+                if (index < 0) shape + index else index
+            }.toIntArray()
+            data[positiveGatherIndices]
+        }
+        val newStructure = BufferNDStructure(newStrides, newBuffer)
+        return Tensor(null, newStructure, info.type)
     }
 
     fun reshape(shape: IntArray): Tensor {
