@@ -1,0 +1,33 @@
+:Å
+`
+input
+W_char
+R_char
+B_charoutput"LSTM*
+	direction"bidirectional†*
+hidden_size@†graphZ
+input
+
+@
+
+ Z
+W_char
+
+
+Ä
+ Z
+R_char
+
+
+Ä
+@Z
+B_char
+	
+
+Äb 
+output
+
+@
+
+
+@B

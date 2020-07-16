@@ -20,4 +20,9 @@ class LSTMLayerTest {
     fun test_bilstm_defaults() {
         Utils.tensorTestRunner(getTargetPath("test_bilstm_defaults"))
     }
+
+    @Test
+    fun test_bilstm_with_bias() {
+        Utils.tensorTestRunner(getTargetPath("test_bilstm_with_bias"))
+    }
 }
