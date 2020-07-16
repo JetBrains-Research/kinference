@@ -36,7 +36,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: I
         val parts = inputs.elementAtOrNull(1)
 
         val tensors = if (parts == null) {
-            inputs.first().splitWithAxis(DEFAULT_SPLIT_LENGTH, axis.toInt(), keepDims == 1L)
+            inputs.first().splitWithAxis(inputs.first().data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
         } else {
             inputs.first().splitWithAxis(parts, axis.toInt())
         }

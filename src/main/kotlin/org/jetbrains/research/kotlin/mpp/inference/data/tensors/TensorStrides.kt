@@ -36,7 +36,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         return res
     }
 
-    override val linearSize = strides[0] * shape[0]
+    override val linearSize = if (shape.isEmpty()) 1 else strides[0] * shape[0]
 
 
     override fun equals(other: Any?): Boolean {

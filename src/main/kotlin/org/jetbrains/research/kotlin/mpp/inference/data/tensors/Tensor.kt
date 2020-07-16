@@ -8,7 +8,6 @@ import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
-import kotlin.math.min
 
 //TODO: support segments
 //TODO: support external and raw data
@@ -142,9 +141,10 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             val newStrides = TensorStrides(newShape.toIntArray())
             val blockSize = newStrides.linearSize
             val newBuffer = ListBuffer(blockSize) { i ->
-                val indices = newStrides.index(i)
-                indices[axis] += num * (split.getOrNull(num - 1) ?: 0)
-                data[indices]
+                val indices = newStrides.index(i).toMutableList()
+                if (keepDims) indices[axis] += num * (split.getOrNull(num - 1) ?: 0)
+                else indices.add(axis, num) // FIXME hack for keepDims=false
+                data[indices.toIntArray()]
             }
             val newStructure = BufferNDStructure(newStrides, newBuffer)
             Tensor(null, newStructure, info.type)

@@ -62,6 +62,7 @@ tasks.withType<KotlinJvmCompile> {
 
 tasks.test {
     useJUnitPlatform()
+    maxHeapSize = "2048m"
 
     testLogging {
         events("passed", "skipped", "failed")

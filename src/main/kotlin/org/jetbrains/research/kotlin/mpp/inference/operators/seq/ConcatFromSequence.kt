@@ -27,7 +27,7 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum
 
     override fun apply(inputs: List<TensorSeq>): List<Tensor> {
         val axis = getAttributeValue("axis") as Long
-        val newAxis = getAttributeValue("newAxis") as Long
+        val newAxis = getAttributeValue("new_axis") as Long
 
         val srcTensors = inputs.first().data
         val tensor = if (newAxis == 1L) srcTensors.stack(axis.toInt()) else srcTensors.concatenate(axis.toInt())

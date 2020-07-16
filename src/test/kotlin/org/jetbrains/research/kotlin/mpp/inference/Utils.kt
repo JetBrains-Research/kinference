@@ -59,6 +59,7 @@ object Utils {
     fun assertTensors(expected: Tensor, actual: Tensor) {
         assertEquals(expected.type, actual.type, "Types of tensors ${expected.info.name} do not match")
         assertArrayEquals(expected.data.shape, actual.data.shape)
+
         @Suppress("UNCHECKED_CAST")
         when (expected.info.type) {
             DataType.FLOAT -> {
