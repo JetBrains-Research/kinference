@@ -26,11 +26,7 @@ class ScalarTensor(val value: Any, info: TensorInfo) : BaseTensor(info) {
     }
 
     override fun matmul(other: BaseTensor): BaseTensor {
-        return when (other) {
-            is ScalarTensor -> this * other
-            is Tensor -> other matmul this
-            else -> error("Unknown tensor type")
-        }
+        error("Matmul is not available for scalars")
     }
 
     override fun clone(newName: String): ONNXData = ScalarTensor(value, TensorInfo(newName, info.type, (info as TensorInfo).shape))

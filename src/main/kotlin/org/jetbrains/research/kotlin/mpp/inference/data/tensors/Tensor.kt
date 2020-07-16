@@ -65,30 +65,32 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     }
 
     override fun matmul(other: BaseTensor): BaseTensor {
-        return when (other) {
-            is Tensor -> {
-                val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
+        other as Tensor
+        val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
 
-                if (data.dimension <= 2 && other.data.dimension <= 2) {
-                    val matrix = with(context) { data.as2D() dot other.data.as2D() }
-                    return Tensor("result", matrix, info.type)
-                }
-
-                val thisMatrices = this.as2DList()
-                val otherMatrices = other.as2DList()
-                val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-                    with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
-                }.map { matrix ->
-                    val buffer = matrix.elements().map { it.second }.toList().asBuffer()
-                    val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
-                    Tensor("out", nd, info.type)
-                }
-                val shape = data.shape.zip(other.data.shape).map { min(it.first, it.second) }.toIntArray()
-                resMatrices.concatenate(0).reshape(shape)
-            }
-            is ScalarTensor -> this * other
-            else -> error("Unsupported tensor type")
+        if (data.dimension <= 2 && other.data.dimension <= 2) {
+            val actualThis = if (data.dimension == 1) this.reshape(intArrayOf(1, *data.shape)) else this
+            val actualOther = if (other.data.dimension == 1) this.reshape(intArrayOf(*other.data.shape, 1)) else other
+            val matrix = with(context) { actualThis.data.as2D() dot actualOther.data.as2D() }
+            return Tensor("result", matrix, info.type)
         }
+
+        val (fstShape, sndShape) = broadcastMatrixElementsShape(data.shape, other.data.shape)
+        val thisMatrices = this.broadcast(fstShape, asMatrixStack = true).as2DList()
+        val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
+
+        val resMatrices = thisMatrices.mapIndexed { i, tensor ->
+            with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
+        }.map { matrix ->
+            val buffer = matrix.elements().map { it.second }.toList().asBuffer()
+            val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
+            Tensor("out", nd, info.type)
+        }
+
+        val lastDims = resMatrices.first().data.shape
+
+        val shape = data.shape.dropLast(2).toIntArray() + lastDims
+        return resMatrices.concatenate(0).reshape(shape)
     }
 
     fun mapElements(type: DataType = info.type, func: (Any) -> Any): Tensor {

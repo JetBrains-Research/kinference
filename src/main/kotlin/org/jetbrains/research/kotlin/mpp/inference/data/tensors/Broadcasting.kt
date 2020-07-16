@@ -21,8 +21,20 @@ fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
     return resultShape.reversed().toIntArray()
 }
 
-private fun Tensor.innerBroadcast(newShape: IntArray): Tensor {
-    if (this.data.shape.contentEquals(newShape)) return this
+fun broadcastShape(currentShape: List<Int>, newShape: List<Int>): IntArray {
+    return broadcastShape(currentShape.toIntArray(), newShape.toIntArray())
+}
+
+fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<IntArray, IntArray> {
+    val base = broadcastShape(fstShape.dropLast(2), sndShape.dropLast(2))
+
+    val fst = base + fstShape.takeLast(2)
+    val snd = base + sndShape.takeLast(2)
+    return fst to snd
+}
+
+private fun Tensor.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor {
+    if (this.data.shape.contentEquals(newShape) || asMatrixStack && this.data.dimension <= 2) return this
 
     val castShape = newShape.copyOfRange(1, newShape.size)
 
@@ -37,8 +49,9 @@ private fun Tensor.innerBroadcast(newShape: IntArray): Tensor {
     }
 }
 
-fun Tensor.broadcast(newShape: IntArray): Tensor {
+fun Tensor.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor {
     if (this.data.shape.contentEquals(newShape)) return this
+
     val newDims = this.data.shape.copyOf().toMutableList()
 
     if (newShape.size > this.data.dimension)
@@ -46,8 +59,9 @@ fun Tensor.broadcast(newShape: IntArray): Tensor {
 
     val preResult = this.reshape(newDims.toIntArray())
 
-    return preResult.innerBroadcast(newShape)
+    return preResult.innerBroadcast(newShape, asMatrixStack)
 }
+
 
 fun Tensor.elementWiseWithBroadcast(other: Tensor, op: (Any, Any) -> Any): Tensor {
     val newShape = broadcastShape(this.data.shape, other.data.shape)
