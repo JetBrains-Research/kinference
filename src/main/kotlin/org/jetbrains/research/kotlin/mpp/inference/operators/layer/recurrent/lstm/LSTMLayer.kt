@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm
+package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor

@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.flow.Loop
-import org.jetbrains.research.kotlin.mpp.inference.operators.layer.reccurent.lstm.LSTM
+import org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.Add
 import org.jetbrains.research.kotlin.mpp.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.mpp.inference.operators.seq.ConcatFromSequence
