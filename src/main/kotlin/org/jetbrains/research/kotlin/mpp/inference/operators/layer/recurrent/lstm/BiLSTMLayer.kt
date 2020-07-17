@@ -35,7 +35,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     @Suppress("UNCHECKED_CAST")
     private fun mainOutputHelper(mainForwardOutput: List<Tensor>, mainBackwardOutput: List<Tensor>): Tensor {
         val (batchSize, hiddenSize) = mainBackwardOutput.first().data.shape
-        val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput)
+        val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput.reversed())
 
         val newShape = intArrayOf(mainForwardOutput.size, 2, batchSize, hiddenSize)
         val newStrides = TensorStrides(newShape)

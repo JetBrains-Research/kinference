@@ -69,7 +69,7 @@ open class LSTMLayer<T : Number> {
             val inputGateWithBiases = (inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases) as Tensor
             val outputGateWithBiases = (outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases) as Tensor
             val forgetGateWithBiases = (forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases) as Tensor
-            val cellGateWithBiases = (cellGate + weightsBiasesData.cellGateBiases + recursiveWeightsBiasesData.forgetGateBiases) as Tensor
+            val cellGateWithBiases = (cellGate + weightsBiasesData.cellGateBiases + recursiveWeightsBiasesData.cellGateBiases) as Tensor
 
             return GatesData(inputGateWithBiases, outputGateWithBiases, forgetGateWithBiases, cellGateWithBiases)
         }
@@ -116,8 +116,8 @@ open class LSTMLayer<T : Number> {
                 val parsedBiases = List(8) { index ->
                     val newBuffer = VirtualBuffer(blockSize) { i ->
                         val indices = newStrides.index(i)
-                        val rowNum = indices[0]
-                        biases.data.buffer[hiddenSize * index + rowNum]
+                        val colNum = indices[1]
+                        biases.data.buffer[hiddenSize * index + colNum]
                     }
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
                     Tensor(null, newStructure, biases.info.type)

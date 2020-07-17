@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
 import kotlin.math.pow
 
 object Utils {
-    private val delta = (10.0).pow(-6)
+    private val delta = (10.0).pow(-5)
 
     fun getTensor(path: File): BaseTensor {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
