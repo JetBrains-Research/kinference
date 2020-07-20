@@ -247,6 +247,10 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         }
 
         private operator fun invoke(name: String?, matrix: Matrix<*>, type: DataType): Tensor {
+            if (matrix is BufferMatrix) {
+                return Tensor(name, BufferNDStructure(TensorStrides(matrix.shape), matrix.buffer as Buffer<Any>), type)
+            }
+
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
             return Tensor(name, BufferNDStructure(TensorStrides(matrix.shape), buffer as Buffer<Any>), type)
         }
