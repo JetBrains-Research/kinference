@@ -5,7 +5,9 @@ import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorShape
 import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
+import scientifik.kmath.linear.BufferMatrix
 import scientifik.kmath.linear.GenericMatrixContext
+import scientifik.kmath.linear.dot
 import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
@@ -70,7 +72,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         if (data.dimension <= 2 && other.data.dimension <= 2) {
             val actualThis = if (data.dimension == 1) this.reshape(intArrayOf(1, *data.shape)) else this
             val actualOther = if (other.data.dimension == 1) this.reshape(intArrayOf(*other.data.shape, 1)) else other
-            val matrix = with(context) { actualThis.data.as2D() dot actualOther.data.as2D() }
+            val matrix = //with(context) {
+                BufferMatrix<Double>(actualThis.data.as2D().rowNum, actualThis.data.as2D().colNum, actualThis.data.buffer as Buffer<out Double>)
+                    .dot(
+                        BufferMatrix<Double>(actualOther.data.as2D().rowNum, actualOther.data.as2D().colNum, actualOther.data.buffer as Buffer<out Double>))
+            //}
             return Tensor("result", matrix, info.type)
         }
 
@@ -79,10 +85,13 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
 
         val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-            with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
+//            with(context) { tensor.data.as2D() dot otherMatrices[i].data.as2D() }
+            BufferMatrix<Double>(tensor.data.as2D().rowNum, tensor.data.as2D().colNum, tensor.data.buffer as Buffer<out Double>)
+                .dot(
+                    BufferMatrix<Double>(otherMatrices[i].data.as2D().rowNum, otherMatrices[i].data.as2D().colNum, otherMatrices[i].data.buffer as Buffer<out Double>))
         }.map { matrix ->
             val buffer = matrix.elements().map { it.second }.toList().asBuffer()
-            val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer)
+            val nd = BufferNDStructure(TensorStrides(matrix.shape), buffer) as BufferNDStructure<Any>
             Tensor("out", nd, info.type)
         }
 
