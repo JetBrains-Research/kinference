@@ -1,13 +1,11 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
 import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.ListBuffer
 import scientifik.kmath.structures.VirtualBuffer
 import scientifik.kmath.structures.get
 
@@ -36,9 +34,11 @@ open class LSTMLayer<T : Number> {
 
         var currentState = State.initialize<T>(batchSize, hiddenSize, inputMatrices.first().info.type)
         val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
+        val weightsTranspose = weights.transpose()
+        val recWeightsTranspose = recWeights.transpose()
 
         val mainOutput = inputMatrices.map { inputMatrix ->
-            val gatesData = GatesData.create(inputMatrix, weights, recWeights, currentState)
+            val gatesData = GatesData.create(inputMatrix, weightsTranspose, recWeightsTranspose, currentState)
 
             val gatesDataWithBiases = if (biasesData != null) gatesData.addBiases(biasesData.first, biasesData.second) else gatesData
             val activatedGatesData = gatesDataWithBiases.activate()
@@ -76,7 +76,7 @@ open class LSTMLayer<T : Number> {
 
         companion object {
             fun create(inputMatrix: Tensor, weights: Tensor, recWeights: Tensor, prevState: State): GatesData {
-                val gates = (inputMatrix.matmul(weights.transpose()) + prevState.output.matmul(recWeights.transpose())) as Tensor
+                val gates = (inputMatrix.matmul(weights) + prevState.output.matmul(recWeights)) as Tensor
                 val gatesList = gates.splitWithAxis(4, 1)
                 return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
             }
@@ -114,7 +114,7 @@ open class LSTMLayer<T : Number> {
 
                 @Suppress("UNCHECKED_CAST")
                 val parsedBiases = List(8) { index ->
-                    val newBuffer = VirtualBuffer(blockSize) { i ->
+                    val newBuffer = ListBuffer(blockSize) { i ->
                         val indices = newStrides.index(i)
                         val colNum = indices[1]
                         biases.data.buffer[hiddenSize * index + colNum]
@@ -133,7 +133,7 @@ open class LSTMLayer<T : Number> {
     private fun List<Tensor>.toOutput(): Tensor {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
         val newStrides = TensorStrides(newShape)
-        val newData = VirtualBuffer(newStrides.linearSize) { i ->
+        val newData = ListBuffer(newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
             val (inputNum, _, rowNum, colNum) = indices
             this[inputNum].data[rowNum, colNum]

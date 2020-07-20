@@ -4,22 +4,36 @@ import scientifik.kmath.structures.Strides
 import java.util.concurrent.ConcurrentHashMap
 
 class TensorStrides private constructor(override val shape: IntArray) : Strides {
-    override val strides = ArrayList<Int>(shape.size)
+//    val strides = ArrayList<Int>(shape.size)
+//
+//    init {
+//        shape.foldRight(1) { i, acc ->
+//            strides.add(acc)
+//            acc * i
+//        }
+//        strides.reverse()
+//    }
+
+    val normalStrides = IntArray(shape.size)
 
     init {
-        shape.foldRight(1) { i, acc ->
-            strides.add(acc)
+        shape.foldRightIndexed(1) { index, i, acc ->
+            normalStrides[index] = acc
             acc * i
         }
-        strides.reverse()
     }
 
-    override fun offset(index: IntArray): Int {
+    override val strides = normalStrides.asList()
+    /*override fun offset(index: IntArray): Int {
         return index.mapIndexed { i, value ->
             require(value in 0 until shape[i]) { "Index $value out of shape bound: (0, ${shape[i]})" }
 
             value * strides[i]
         }.sum()
+    }*/
+
+    override fun offset(index: IntArray): Int {
+        return index.foldIndexed(0) { ind, acc, i -> acc + i * normalStrides[ind] }
     }
 
     override fun index(offset: Int): IntArray {
@@ -28,7 +42,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         val res = IntArray(shape.size)
         var current = offset
 
-        for ((index, stride) in strides.withIndex()) {
+        for ((index, stride) in normalStrides.withIndex()) {
             res[index] = current / stride
             current %= stride
         }
@@ -36,7 +50,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         return res
     }
 
-    override val linearSize = if (shape.isEmpty()) 1 else strides[0] * shape[0]
+    override val linearSize = if (shape.isEmpty()) 1 else normalStrides[0] * shape[0]
 
 
     override fun equals(other: Any?): Boolean {
