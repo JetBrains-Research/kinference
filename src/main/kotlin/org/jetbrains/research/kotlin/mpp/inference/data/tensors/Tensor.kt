@@ -2,13 +2,11 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
+import org.jetbrains.research.kotlin.mpp.inference.asBuffer
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorShape
-import org.jetbrains.research.kotlin.mpp.inference.types.resolveKClass
 import scientifik.kmath.linear.BufferMatrix
-import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.dot
-import scientifik.kmath.operations.Ring
 import scientifik.kmath.structures.*
 
 //TODO: support segments
@@ -67,7 +65,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
     override fun matmul(other: BaseTensor): BaseTensor {
         other as Tensor
-        val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
+        //val context = resolveMatrixContext(info.type.resolveKClass()) as GenericMatrixContext<Any, Ring<Any>>
 
         if (data.dimension <= 2 && other.data.dimension <= 2) {
             val actualThis = if (data.dimension == 1) this.reshape(intArrayOf(1, *data.shape)) else this
@@ -238,10 +236,10 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     companion object {
         //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): Tensor = when (val type = DataType.fromValue(proto.data_type ?: 0)) {
-            DataType.DOUBLE -> Tensor(proto.dims, proto.double_data, type, proto.name)
-            DataType.FLOAT -> Tensor(proto.dims, proto.float_data, type, proto.name)
-            DataType.INT64 -> Tensor(proto.dims, proto.int64_data, type, proto.name)
-            DataType.INT32 -> Tensor(proto.dims, proto.int32_data, type, proto.name)
+            DataType.DOUBLE -> Tensor(proto.dims, proto.double_data.toDoubleArray().asBuffer(), type, proto.name)
+            DataType.FLOAT -> Tensor(proto.dims, proto.float_data.toFloatArray().asBuffer(), type, proto.name)
+            DataType.INT64 -> Tensor(proto.dims, proto.int64_data.toLongArray().asBuffer(), type, proto.name)
+            DataType.INT32 -> Tensor(proto.dims, proto.int32_data.toIntArray().asBuffer(), type, proto.name)
             DataType.STRING -> Tensor(proto.dims, proto.string_data.map { it.utf8() }, type, proto.name)
             else -> error("Unsupported data type")
         }
@@ -251,12 +249,17 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
                 return Tensor(name, BufferNDStructure(TensorStrides(matrix.shape), matrix.buffer as Buffer<Any>), type)
             }
 
-            val buffer = matrix.elements().map { it.second }.toList().asBuffer()
+            val buffer = matrix.elements().map { it.second }.toList().toTypedArray().asBuffer()
             return Tensor(name, BufferNDStructure(TensorStrides(matrix.shape), buffer as Buffer<Any>), type)
         }
 
         operator fun invoke(dims: List<Long>, value: List<*>, type: DataType, name: String?): Tensor {
-            val data = BufferNDStructure(TensorStrides(dims.toIntArray()), value.asBuffer() as Buffer<Any>)
+            val data = BufferNDStructure(TensorStrides(dims.toIntArray()), value.toTypedArray().asBuffer() as Buffer<Any>)
+            return Tensor(name, data, type)
+        }
+
+        operator fun invoke(dims: List<Long>, value: Buffer<*>, type: DataType, name: String?): Tensor {
+            val data = BufferNDStructure(TensorStrides(dims.toIntArray()), value as Buffer<Any>)
             return Tensor(name, data, type)
         }
 

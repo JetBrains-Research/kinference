@@ -1,13 +1,13 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.ListBuffer
-import scientifik.kmath.structures.VirtualBuffer
-import scientifik.kmath.structures.get
+import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> {
     open fun apply(inputs: List<Tensor>): List<Tensor> {
@@ -114,11 +114,11 @@ open class LSTMLayer<T : Number> {
 
                 @Suppress("UNCHECKED_CAST")
                 val parsedBiases = List(8) { index ->
-                    val newBuffer = ListBuffer(blockSize) { i ->
+                    val newBuffer = DoubleArray(blockSize) { i ->
                         val indices = newStrides.index(i)
                         val colNum = indices[1]
-                        biases.data.buffer[hiddenSize * index + colNum]
-                    }
+                        (biases.data.buffer[hiddenSize * index + colNum] as Number).toDouble()
+                    }.asBuffer() as Buffer<Any>
                     val newStructure = BufferNDStructure(newStrides, newBuffer)
                     Tensor(null, newStructure, biases.info.type)
                 }
