@@ -32,8 +32,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
                 }
 
                 data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
-                val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
-                Tensor("output", result as BufferNDStructure<Any>, info.type)
+                val buffer = DoubleBuffer(data.strides.linearSize) {
+                    data.buffer[it].toDouble() + other.data.buffer[it].toDouble()
+                }
+//                val result = data.ndCombine(other.data) { fst, snd -> add(fst, snd) }
+                Tensor("output", BufferNDStructure(data.strides, buffer) as NDBuffer<Any>, info.type)
             }
             is ScalarTensor -> this.mapElements { add(it as Number, other.value as Number) }
             else -> error("Unsupported tensor type")
@@ -111,8 +114,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
                 require(info.type != DataType.STRING) { "Available only for numeric tensors" }
                 data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
 
-                val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
-                Tensor(info.name, result as BufferNDStructure<Any>, info.type)
+                val buffer = DoubleBuffer(data.strides.linearSize) {
+                    data.buffer[it].toDouble() * other.data.buffer[it].toDouble()
+                }
+//                val result = data.ndCombine(other.data) { fst, snd -> times(fst, snd) }
+                Tensor(info.name, BufferNDStructure(data.strides, buffer) as NDBuffer<Any>, info.type)
             }
             is ScalarTensor -> this.mapElements { times(it as Number, other.value as Number) }
             else -> error("Unsupported tensor type")
