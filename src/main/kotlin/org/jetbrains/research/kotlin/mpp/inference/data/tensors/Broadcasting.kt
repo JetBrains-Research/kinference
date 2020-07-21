@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
-import scientifik.kmath.structures.BufferNDStructure
+import org.jetbrains.research.kotlin.mpp.inference.createInferredTypeBuffer
+import scientifik.kmath.structures.*
 import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
@@ -64,10 +65,11 @@ fun Tensor.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor
 
 
 fun Tensor.elementWiseWithBroadcast(other: Tensor, op: (Any, Any) -> Any): Tensor {
-    val newShape = broadcastShape(this.data.shape, other.data.shape)
-    val castedThis = this.broadcast(newShape).data as BufferNDStructure<Any>
-    val castedOther = other.broadcast(newShape).data as BufferNDStructure<Any>
+    val newShape = broadcastShape(data.shape, other.data.shape)
+    val castedThis = this.broadcast(newShape).data.buffer
+    val castedOther = other.broadcast(newShape).data.buffer
+    val strides = TensorStrides(newShape)
 
-    val res = castedThis.ndCombine(castedOther) { fst, snd -> op(fst, snd) }
-    return Tensor(this.info.name, res, this.info.type)
+    val (res, type) = createInferredTypeBuffer(info.type, other.info.type, strides.linearSize) { op(castedThis[it], castedOther[it]) }
+    return Tensor(this.info.name, BufferNDStructure(TensorStrides(newShape), res), type)
 }

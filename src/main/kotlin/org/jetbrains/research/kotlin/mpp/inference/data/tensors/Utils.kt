@@ -39,11 +39,3 @@ inline fun times(x: Number, y: Number): Number = when (x) {
     is Long -> x * y.toLong()
     else -> error("Unsupported data type")
 }
-
-inline fun <reified T : Any> BufferNDStructure<T>.ndCombine(
-    struct: BufferNDStructure<T>,
-    crossinline block: (T, T) -> T
-): BufferNDStructure<T> {
-    if (!this.shape.contentEquals(struct.shape)) error("Shape mismatch in structure combination")
-    return NDStructure.build(this.strides) { block(this[it], struct[it]) }
-}
