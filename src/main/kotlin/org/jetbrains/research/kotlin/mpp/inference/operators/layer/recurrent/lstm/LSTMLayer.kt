@@ -1,13 +1,14 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
+import org.jetbrains.research.kotlin.mpp.inference.createInferredTypeBuffer
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.Buffer
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.VirtualBuffer
+import scientifik.kmath.structures.get
 
 open class LSTMLayer<T : Number> {
     open fun apply(inputs: List<Tensor>): List<Tensor> {
@@ -40,8 +41,8 @@ open class LSTMLayer<T : Number> {
         val mainOutput = inputMatrices.map { inputMatrix ->
             val gatesData = GatesData.create(inputMatrix, weightsTranspose, recWeightsTranspose, currentState)
 
-            val gatesDataWithBiases = if (biasesData != null) gatesData.addBiases(biasesData.first, biasesData.second) else gatesData
-            val activatedGatesData = gatesDataWithBiases.activate()
+            val activatedGatesData = if (biasesData != null) gatesData.addBiases(biasesData.first, biasesData.second, true) else gatesData.activate()
+//            val activatedGatesData = gatesDataWithBiases.activate()
 
             currentState = State.create(activatedGatesData, currentState)
 
@@ -65,11 +66,25 @@ open class LSTMLayer<T : Number> {
             return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
         }
 
-        fun addBiases(weightsBiasesData: BiasesData, recursiveWeightsBiasesData: BiasesData): GatesData {
-            val inputGateWithBiases = (inputGate + weightsBiasesData.inputGateBiases + recursiveWeightsBiasesData.inputGateBiases) as Tensor
-            val outputGateWithBiases = (outputGate + weightsBiasesData.outputGateBiases + recursiveWeightsBiasesData.outputGateBiases) as Tensor
-            val forgetGateWithBiases = (forgetGate + weightsBiasesData.forgetGateBiases + recursiveWeightsBiasesData.forgetGateBiases) as Tensor
-            val cellGateWithBiases = (cellGate + weightsBiasesData.cellGateBiases + recursiveWeightsBiasesData.cellGateBiases) as Tensor
+        private fun calcGates(tensor1: Tensor, tensor2: Tensor, tensor3: Tensor, activate: ((Number) -> Number)? = null): Tensor {
+            val (buffer, type) = if (activate == null) {
+                createInferredTypeBuffer(tensor1.info.type, tensor1.info.type, tensor1.data.strides.linearSize) {
+                    add(tensor1.data.buffer[it] as Number, tensor2.data.buffer[it] as Number, tensor3.data.buffer[it] as Number)
+                }
+            } else {
+                createInferredTypeBuffer(tensor1.info.type, tensor1.info.type, tensor1.data.strides.linearSize) {
+                    activate(add(tensor1.data.buffer[it] as Number, tensor2.data.buffer[it] as Number, tensor3.data.buffer[it] as Number))
+                }
+            }
+
+            return Tensor(null, BufferNDStructure(tensor1.data.strides, buffer as Buffer<Any>), type)
+        }
+
+        fun addBiases(weightsBiasesData: BiasesData, recursiveWeightsBiasesData: BiasesData, activation: Boolean = false): GatesData {
+            val inputGateWithBiases = calcGates(inputGate, weightsBiasesData.inputGateBiases, recursiveWeightsBiasesData.inputGateBiases, if (activation) (Sigmoid)::activate else null)
+            val outputGateWithBiases = calcGates(outputGate, weightsBiasesData.outputGateBiases, recursiveWeightsBiasesData.outputGateBiases, if (activation) (Sigmoid)::activate else null)
+            val forgetGateWithBiases = calcGates(forgetGate, weightsBiasesData.forgetGateBiases, recursiveWeightsBiasesData.forgetGateBiases, if (activation) (Sigmoid)::activate else null)
+            val cellGateWithBiases = calcGates(cellGate, weightsBiasesData.cellGateBiases, recursiveWeightsBiasesData.cellGateBiases, if (activation) (Tanh)::activate else null)
 
             return GatesData(inputGateWithBiases, outputGateWithBiases, forgetGateWithBiases, cellGateWithBiases)
         }
@@ -93,8 +108,22 @@ open class LSTMLayer<T : Number> {
             }
 
             fun create(gatesData: GatesData, prevState: State): State {
-                val newCellGate = (gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate) as Tensor
-                val newOutput = (gatesData.outputGate * Tanh().apply(newCellGate).first()) as Tensor
+                val (cellGateBuffer, cellGateType) = createInferredTypeBuffer(gatesData.forgetGate.info.type, gatesData.cellGate.info.type, gatesData.forgetGate.data.strides.linearSize) {
+                    add(
+                        times(gatesData.forgetGate.data.buffer[it] as Number, prevState.cellGate.data.buffer[it] as Number),
+                        times(gatesData.inputGate.data.buffer[it] as Number, gatesData.cellGate.data.buffer[it] as Number)
+                    )
+                }
+
+                val (outputBuffer, outputType) = createInferredTypeBuffer(gatesData.outputGate.info.type, cellGateType, gatesData.outputGate.data.strides.linearSize) {
+                    times(
+                        gatesData.outputGate.data.buffer[it] as Number,
+                        Tanh.activate(cellGateBuffer[it])
+                    )
+                }
+
+                val newOutput = Tensor(null, BufferNDStructure(gatesData.outputGate.data.strides, outputBuffer as Buffer<Any>), outputType)
+                val newCellGate = Tensor(null, BufferNDStructure(gatesData.forgetGate.data.strides, cellGateBuffer as Buffer<Any>), cellGateType)
                 return State(newOutput, newCellGate)
             }
         }
@@ -114,12 +143,12 @@ open class LSTMLayer<T : Number> {
 
                 @Suppress("UNCHECKED_CAST")
                 val parsedBiases = List(8) { index ->
-                    val newBuffer = DoubleArray(blockSize) { i ->
+                    val (buffer, _) = createInferredTypeBuffer(biases.info.type, biases.info.type, newStrides.linearSize) { i ->
                         val indices = newStrides.index(i)
                         val colNum = indices[1]
-                        (biases.data.buffer[hiddenSize * index + colNum] as Number).toDouble()
-                    }.asBuffer() as Buffer<Any>
-                    val newStructure = BufferNDStructure(newStrides, newBuffer)
+                        biases.data.buffer[hiddenSize * index + colNum]
+                    }
+                    val newStructure = BufferNDStructure(newStrides, buffer)
                     Tensor(null, newStructure, biases.info.type)
                 }
                 val weightsBiasesData = BiasesData(parsedBiases[0], parsedBiases[1], parsedBiases[2], parsedBiases[3])
@@ -133,12 +162,15 @@ open class LSTMLayer<T : Number> {
     private fun List<Tensor>.toOutput(): Tensor {
         val newShape = intArrayOf(this.size, 1, this.first().data.shape[0], this.first().data.shape[1])
         val newStrides = TensorStrides(newShape)
-        val newData = ListBuffer(newStrides.linearSize) { i ->
+
+        val type = this.first().info.type
+        val (buffer, _) = createInferredTypeBuffer(type, type, newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
             val (inputNum, _, rowNum, colNum) = indices
             this[inputNum].data[rowNum, colNum]
         }
-        val newBuffer = BufferNDStructure(newStrides, newData)
-        return Tensor(null, newBuffer, this.first().info.type)
+
+        val newBuffer = BufferNDStructure(newStrides, buffer)
+        return Tensor(null, newBuffer, type)
     }
 }

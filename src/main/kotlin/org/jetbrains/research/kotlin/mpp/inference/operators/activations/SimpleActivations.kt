@@ -28,9 +28,13 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
+
+        inline fun activate(value: Number): Number {
+            return max(0, value)
+        }
     }
 
-    override fun activate(input: Tensor): Tensor = input.mapElements { x -> max(0, x as Number) }
+    override fun activate(input: Tensor): Tensor = input.mapElements { x -> activate(x as Number) }
 }
 
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -41,10 +45,14 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
             listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
+
+        inline fun activate(value: Number): Double {
+            return 1.0 / (1.0 + exp(-(value).toDouble()))
+        }
     }
 
     override fun activate(input: Tensor): Tensor = input.mapElements { x ->
-        1.0 / (1.0 + exp(-(x as Number).toDouble()))
+        activate(x as Number)
     }
 }
 
@@ -56,10 +64,13 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
+
+        inline fun activate(value: Number): Double {
+            return (exp(2.0 * value.toDouble()) - 1.0) / (exp(2.0 * value.toDouble()) + 1.0)
+        }
     }
 
     override fun activate(input: Tensor): Tensor = input.mapElements { x ->
-        x as Number
-        (exp(2.0 * x.toDouble()) - 1.0) / (exp(2.0 * x.toDouble()) + 1.0)
+        activate(x as Number)
     }
 }

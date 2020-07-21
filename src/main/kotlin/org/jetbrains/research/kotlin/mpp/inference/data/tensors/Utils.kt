@@ -24,11 +24,11 @@ fun <T : Any> resolveMatrixContext(kClass: KClass<T>) = when (kClass) {
     else -> error("Unsupported data type")
 } as GenericMatrixContext<T, Ring<T>>
 
-inline fun add(x: Number, y: Number): Number = when (x) {
-    is Float -> x + y.toFloat()
-    is Double -> x + y.toDouble()
-    is Int -> x + y.toInt()
-    is Long -> x + y.toLong()
+inline fun add(vararg terms: Number): Number = when (terms.first()) {
+    is Float -> terms.reduce { acc, number -> acc.toFloat() + number.toFloat() }
+    is Double -> terms.reduce { acc, number -> acc.toDouble() + number.toDouble() }
+    is Int -> terms.reduce { acc, number -> acc.toInt() + number.toInt() }
+    is Long -> terms.reduce { acc, number -> acc.toLong() + number.toLong() }
     else -> error("Unsupported data type")
 }
 
