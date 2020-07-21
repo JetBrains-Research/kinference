@@ -171,15 +171,15 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             val newShape = data.shape.copyOf()
             newShape[axis] = split[num]
             val newStrides = TensorStrides(newShape)
-
-            val (newBuffer, type) = createInferredTypeBuffer(info.type, info.type, newStrides.linearSize) { i ->
+            val factor = num * (split.getOrNull(num - 1) ?: 0)
+            val newBuffer = VirtualBuffer(newStrides.linearSize) { i ->
                 val indices = newStrides.index(i)
-                indices[axis] += num * (split.getOrNull(num - 1) ?: 0)
+                indices[axis] += factor
                 data[indices]
             }
 
             val newStructure = BufferNDStructure(newStrides, newBuffer)
-            val ans = Tensor(null, newStructure, type)
+            val ans = Tensor(null, newStructure, info.type)
             if (!keepDims) ans.squeeze(axis) else ans
         }
     }
