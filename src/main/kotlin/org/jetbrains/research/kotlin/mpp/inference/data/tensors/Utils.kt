@@ -3,9 +3,10 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.MatrixContext
 import scientifik.kmath.operations.*
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.Buffer
+import scientifik.kmath.structures.BufferNDStructure
+import scientifik.kmath.structures.NDStructure
 import kotlin.reflect.KClass
-import kotlin.collections.*
 
 fun Collection<Long>.toIntArray(): IntArray = this.map { it.toInt() }.toIntArray()
 fun Collection<Number>.toDoubleList(): List<Double> = this.map { it.toDouble() }
@@ -23,7 +24,7 @@ fun <T : Any> resolveMatrixContext(kClass: KClass<T>) = when (kClass) {
     else -> error("Unsupported data type")
 } as GenericMatrixContext<T, Ring<T>>
 
-fun add(x: Number, y: Number): Number = when (x) {
+inline fun add(x: Number, y: Number): Number = when (x) {
     is Float -> x + y.toFloat()
     is Double -> x + y.toDouble()
     is Int -> x + y.toInt()
@@ -31,7 +32,7 @@ fun add(x: Number, y: Number): Number = when (x) {
     else -> error("Unsupported data type")
 }
 
-fun times(x: Number, y: Number): Number = when (x) {
+inline fun times(x: Number, y: Number): Number = when (x) {
     is Float -> x * y.toFloat()
     is Double -> x * y.toDouble()
     is Int -> x * y.toInt()
