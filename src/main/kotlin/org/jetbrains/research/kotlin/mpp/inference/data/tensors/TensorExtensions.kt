@@ -1,5 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
+import org.jetbrains.research.kotlin.mpp.inference.FloatBuffer
 import scientifik.kmath.structures.*
 
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
@@ -77,5 +78,15 @@ fun Tensor.as2DList(): List<Tensor> {
     if (this.data.dimension == 2) return listOf(this)
     if (this.data.dimension == 1) return listOf(this.wrapOneDim())
 
-    return this.rows().map { it.as2DList() }.flatten()
+    val matrixShape = intArrayOf(data.shape[indexAxis(-2)], data.shape[indexAxis(-1)])
+    val matrixStrides = TensorStrides(matrixShape)
+    val ans = List(data.strides.linearSize / matrixStrides.linearSize) { index ->
+        val newBuffer = FloatBuffer(matrixStrides.linearSize) {
+            (data.buffer[it + index * matrixStrides.linearSize] as Number).toFloat()
+        } as Buffer<Any>
+        val newStructure = BufferNDStructure(matrixStrides, newBuffer)
+        Tensor(null, newStructure, info.type)
+    }
+    return ans
+    //return this.rows().map { it.as2DList() }.flatten()
 }

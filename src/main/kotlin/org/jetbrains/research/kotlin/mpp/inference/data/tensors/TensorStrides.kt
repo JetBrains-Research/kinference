@@ -23,7 +23,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         }
     }
 
-    override val strides = normalStrides.asList()
+    override val strides = emptyList<Int>()
     /*override fun offset(index: IntArray): Int {
         return index.mapIndexed { i, value ->
             require(value in 0 until shape[i]) { "Index $value out of shape bound: (0, ${shape[i]})" }
