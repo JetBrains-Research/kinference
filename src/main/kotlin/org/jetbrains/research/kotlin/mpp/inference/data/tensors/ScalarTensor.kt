@@ -2,11 +2,11 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
+import org.jetbrains.research.kotlin.mpp.inference.createBuffer
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorShape
 import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.asBuffer
 
 class ScalarTensor(val value: Any, info: TensorInfo) : BaseTensor(info) {
     constructor(name: String?, value: Any, type: DataType) : this(value, TensorInfo(name ?: "", type, TensorShape.empty()))
@@ -35,7 +35,7 @@ class ScalarTensor(val value: Any, info: TensorInfo) : BaseTensor(info) {
 
     fun toTensor(): Tensor {
         val strides = TensorStrides(intArrayOf())
-        return Tensor(info.name, BufferNDStructure(strides, listOf(value).asBuffer()), info.type)
+        return Tensor(info.name, BufferNDStructure(strides, createBuffer(info.type, 1) { value }), info.type)
     }
 
     companion object {

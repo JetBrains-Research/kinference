@@ -1,14 +1,14 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import org.jetbrains.research.kotlin.mpp.inference.createInferredTypeBuffer
-import scientifik.kmath.structures.*
+import scientifik.kmath.structures.BufferNDStructure
 import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
     val totalShapeLength = max(currentShape.size, newShape.size)
-    val resultShape = MutableList(totalShapeLength) { -1 }
-    val revCurrentShape = currentShape.reversed()
-    val revNewShape = newShape.reversed()
+    val resultShape = IntArray(totalShapeLength) { -1 }
+    val revCurrentShape = currentShape.reversedArray()
+    val revNewShape = newShape.reversedArray()
 
     for (i in 0 until totalShapeLength) {
         val currentDim = revCurrentShape.getOrNull(i) ?: 1
@@ -19,7 +19,7 @@ fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
         resultShape[i] = max(currentDim, newDim)
     }
 
-    return resultShape.reversed().toIntArray()
+    return resultShape.reversedArray()
 }
 
 fun broadcastShape(currentShape: List<Int>, newShape: List<Int>): IntArray {
@@ -45,7 +45,7 @@ private fun Tensor.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = f
             val rows = this.row(0).innerBroadcast(castShape)
             rows.reshape(intArrayOf(1, *castShape)).repeatRow(newShape[0])
         }
-        newShape[0] -> this.rows().map { it.innerBroadcast(castShape) }.concatenate(axis = 0)
+        newShape[0] -> this.rows.map { it.innerBroadcast(castShape) }.concatenate(axis = 0)
         else -> error("Cannot broadcast tensors")
     }
 }

@@ -4,7 +4,6 @@ import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
 import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
-import java.math.BigDecimal
 
 @Suppress("UNCHECKED_CAST")
 abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
@@ -17,10 +16,12 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     }
 
     companion object {
-        fun <T : Number> max(x: Number, y: T): T {
-            val a = BigDecimal(x.toString())
-            val b = BigDecimal(y.toString())
-            return a.max(b) as T
+        fun <T : Number> max(x: Number, y: T): Number = when (y) {
+            is Float -> kotlin.math.max(x.toFloat(), y)
+            is Double -> kotlin.math.max(x.toDouble(), y)
+            is Int -> kotlin.math.max(x.toInt(), y)
+            is Long -> kotlin.math.max(x.toLong(), y)
+            else -> error("Unsupported data type")
         }
     }
 }

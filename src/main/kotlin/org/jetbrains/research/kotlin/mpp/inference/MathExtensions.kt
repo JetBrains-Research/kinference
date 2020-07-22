@@ -28,6 +28,13 @@ val Buffer<out Float>.array: FloatArray
         FloatArray(size) { get(it) }
     }
 
+val Buffer<out Long>.array: LongArray
+    get() = if (this is LongBuffer) {
+        array
+    } else {
+        LongArray(size) { get(it) }
+    }
+
 infix fun BufferMatrix<Float>.dot(other: BufferMatrix<Float>): BufferMatrix<Float> {
     if (this.colNum != other.rowNum) error("Matrix dot operation dimension mismatch: ($rowNum, $colNum) x (${other.rowNum}, ${other.colNum})")
 
@@ -49,6 +56,11 @@ infix fun BufferMatrix<Float>.dot(other: BufferMatrix<Float>): BufferMatrix<Floa
     return BufferMatrix(rowNum, other.colNum, buffer)
 }
 
+val BufferMatrix<Float>.arrayRows: Array<FloatArray>
+    get()= Array(rowNum) { i ->
+        FloatArray(colNum) { j -> get(i, j) }
+    }
+
 @Suppress("FunctionName")
 inline fun FloatBuffer(size: Int, init: (Int) -> Float) = FloatBuffer(FloatArray(size) { init(it) })
 
@@ -67,12 +79,32 @@ fun inferType(type1: TensorProto.DataType, type2: TensorProto.DataType): TensorP
 
 inline fun <reified T> createInferredTypeBuffer(type1: TensorProto.DataType, type2: TensorProto.DataType, size: Int, noinline init: (Int) -> T): Pair<Buffer<T>, TensorProto.DataType> {
     val inferred = inferType(type1, type2)
-    return when (inferred) {
+    return createBuffer(inferred, size, init) to inferred
+}
+
+inline fun <reified T> createBuffer(type: TensorProto.DataType, size: Int, noinline init: (Int) -> T): Buffer<T> {
+    return when (type) {
         TensorProto.DataType.DOUBLE -> DoubleBuffer(DoubleArray(size) { (init(it) as Number).toDouble() })
         TensorProto.DataType.FLOAT -> FloatBuffer(FloatArray(size) { (init(it) as Number).toFloat() })
         TensorProto.DataType.INT64 -> LongBuffer(LongArray(size) { (init(it) as Number).toLong() })
         TensorProto.DataType.INT32 -> IntBuffer(IntArray(size) { (init(it) as Number).toInt() })
         TensorProto.DataType.INT16 -> ShortBuffer(ShortArray(size) { (init(it) as Number).toShort() })
         else -> ArrayBuffer(Array(size, init))
-    } as Buffer<T> to inferred
+    } as Buffer<T>
+}
+
+inline fun allocateMutableBuffer(type: TensorProto.DataType, size: Int): MutableBuffer<Any> {
+    return when (type) {
+        TensorProto.DataType.DOUBLE -> DoubleBuffer(DoubleArray(size))
+        TensorProto.DataType.FLOAT -> FloatBuffer(FloatArray(size))
+        TensorProto.DataType.INT64 -> LongBuffer(LongArray(size))
+        TensorProto.DataType.INT32 -> IntBuffer(IntArray(size))
+        TensorProto.DataType.INT16 -> ShortBuffer(ShortArray(size))
+        else -> ArrayBuffer(Array(size) { Any() }) //FIXME: workaround other cases
+    } as MutableBuffer<Any>
+}
+
+inline fun <reified T> MutableBuffer<T>.placeAll(buffer: Buffer<T>, index: Int = 0) {
+    for (i in 0 until buffer.size)
+        this[i + index] = buffer[i]
 }

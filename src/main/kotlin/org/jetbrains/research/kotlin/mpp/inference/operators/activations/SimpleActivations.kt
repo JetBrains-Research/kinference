@@ -2,9 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import kotlin.math.exp
 
 class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -46,8 +44,8 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
-        inline fun activate(value: Number): Double {
-            return 1.0 / (1.0 + exp(-(value).toDouble()))
+        inline fun activate(value: Number): Number {
+            return 1.0 / (1.0 + exp(-value.toDouble()))
         }
     }
 
@@ -65,7 +63,7 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
-        inline fun activate(value: Number): Double {
+        inline fun activate(value: Number): Number {
             return (exp(2.0 * value.toDouble()) - 1.0) / (exp(2.0 * value.toDouble()) + 1.0)
         }
     }

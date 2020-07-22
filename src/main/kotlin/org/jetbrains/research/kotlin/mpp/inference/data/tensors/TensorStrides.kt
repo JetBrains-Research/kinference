@@ -14,7 +14,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
 //        strides.reverse()
 //    }
 
-    val normalStrides = IntArray(shape.size)
+    private val normalStrides = IntArray(shape.size)
 
     init {
         shape.foldRightIndexed(1) { index, i, acc ->
