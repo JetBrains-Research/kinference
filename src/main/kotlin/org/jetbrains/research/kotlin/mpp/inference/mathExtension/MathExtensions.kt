@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference
+package org.jetbrains.research.kotlin.mpp.inference.mathExtension
 
 import TensorProto
 import scientifik.kmath.linear.BufferMatrix
@@ -33,6 +33,12 @@ val Buffer<out Long>.array: LongArray
         array
     } else {
         LongArray(size) { get(it) }
+    }
+val Buffer<out Short>.array: ShortArray
+    get() = if (this is ShortBuffer) {
+        array
+    } else {
+        ShortArray(size) { get(it) }
     }
 
 infix fun BufferMatrix<Float>.dot(other: BufferMatrix<Float>): BufferMatrix<Float> {
@@ -108,3 +114,4 @@ inline fun <reified T> MutableBuffer<T?>.placeAll(buffer: Buffer<Any>, index: In
     for (i in 0 until buffer.size)
         this[i + index] = buffer[i] as T
 }
+

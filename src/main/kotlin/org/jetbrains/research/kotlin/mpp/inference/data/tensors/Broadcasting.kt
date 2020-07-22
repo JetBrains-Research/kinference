@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
-import org.jetbrains.research.kotlin.mpp.inference.createInferredTypeBuffer
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.createInferredTypeBuffer
 import scientifik.kmath.structures.BufferNDStructure
 import kotlin.math.max
 

@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.activations
 
 import AttributeProto
-import org.jetbrains.research.kotlin.mpp.inference.FloatBuffer
-import org.jetbrains.research.kotlin.mpp.inference.arrayRows
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.FloatBuffer
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.arrayRows
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides

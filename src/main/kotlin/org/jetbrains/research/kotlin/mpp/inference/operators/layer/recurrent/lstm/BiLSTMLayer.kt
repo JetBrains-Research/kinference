@@ -1,11 +1,11 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.createBuffer
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.as2DList
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
 import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.VirtualBuffer
 import scientifik.kmath.structures.get
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
@@ -40,7 +40,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val newShape = intArrayOf(mainForwardOutput.size, 2, batchSize, hiddenSize)
         val newStrides = TensorStrides(newShape)
 
-        val newData = VirtualBuffer(newStrides.linearSize) { i ->
+        val newData = createBuffer(mainForwardOutput.first().info.type, newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
             val (inputNum, numDirection, rowNum, colNum) = indices
             mainOutputs[numDirection][inputNum].data[rowNum, colNum]
@@ -69,7 +69,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     private fun extractActualStates(states: List<Tensor>, strides: TensorStrides): BufferNDStructure<Any> {
-        val newOutputData = VirtualBuffer(strides.linearSize) { i ->
+        val newOutputData = createBuffer(states.first().info.type, strides.linearSize) { i ->
             val indices = strides.index(i)
             val (numDirection, rowNum, colNum) = indices
             states[numDirection].data[rowNum, colNum]

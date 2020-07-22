@@ -1,9 +1,10 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
+import com.squareup.wire.get
 import scientifik.kmath.structures.Strides
 import java.util.concurrent.ConcurrentHashMap
 
-class TensorStrides private constructor(override val shape: IntArray) : Strides {
+class TensorStrides /*private constructor*/(override val shape: IntArray) : Strides {
 //    val strides = ArrayList<Int>(shape.size)
 //
 //    init {
@@ -23,7 +24,7 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
         }
     }
 
-    override val strides = emptyList<Int>()
+    override val strides = normalStrides.asList()
     /*override fun offset(index: IntArray): Int {
         return index.mapIndexed { i, value ->
             require(value in 0 until shape[i]) { "Index $value out of shape bound: (0, ${shape[i]})" }
@@ -62,9 +63,9 @@ class TensorStrides private constructor(override val shape: IntArray) : Strides 
 
     override fun hashCode() = shape.contentHashCode()
 
-    companion object {
-        private val spaceStridesCache = ConcurrentHashMap<IntArray, TensorStrides>()
-
-        operator fun invoke(shape: IntArray): TensorStrides = spaceStridesCache.getOrPut(shape) { TensorStrides(shape) }
-    }
+//    companion object {
+//        private val spaceStridesCache = ConcurrentHashMap<IntArray, TensorStrides>()
+//
+//        operator fun invoke(shape: IntArray): TensorStrides = spaceStridesCache.getOrPut(shape) { TensorStrides(shape) }
+//    }
 }
