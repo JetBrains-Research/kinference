@@ -1,6 +1,8 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
-import org.jetbrains.research.kotlin.mpp.inference.*
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.allocateMutableBuffer
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.createBuffer
+import org.jetbrains.research.kotlin.mpp.inference.mathExtension.placeAll
 import scientifik.kmath.structures.*
 
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
