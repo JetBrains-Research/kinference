@@ -171,8 +171,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
     fun splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
         return List(split.size) { num ->
-            val newShape = data.shape.copyOf()
-            newShape[axis] = split[num]
+            val newShape = data.shape.copyOf().apply { set(axis, split[num]) }
             val newStrides = TensorStrides(newShape)
             val factor = num * (split.getOrNull(num - 1) ?: 0)
             val newBuffer = createBuffer(info.type, newStrides.linearSize) { i ->

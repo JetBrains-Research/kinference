@@ -41,10 +41,10 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val columns = resolveDims(shape.slice(columnIdx))
 
         val matrixRows = BufferMatrix(rows, columns, input.data.buffer as Buffer<out Float>).arrayRows
-        val localMax = FloatArray(matrixRows.size) { i -> matrixRows[i].max() ?: 0.0f }
 
         return Array(matrixRows.size) { i ->
-            FloatArray(columns) { j -> exp(matrixRows[i][j] - localMax[i]) }
+            val max = matrixRows[i].max() ?: 0.0f
+            FloatArray(columns) { j -> exp(matrixRows[i][j] - max) }
         }
     }
 
@@ -52,9 +52,9 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val axis = getAttributeValue("axis") as? Long
         val matrix = expMatrixRows(input, axis?.toInt() ?: 0)
 
-        val rowSums = FloatArray(matrix.size) { i -> matrix[i].sum() }
         val resArray = Array(matrix.size) { i ->
-            FloatArray(matrix[0].size) { j -> matrix[i][j] / rowSums[i] }
+            val sum = matrix[i].sum()
+            FloatArray(matrix[0].size) { j -> matrix[i][j] / sum }
         }.reduce(FloatArray::plus)
         val buf = BufferNDStructure(TensorStrides(input.data.shape), FloatBuffer(resArray)) as BufferNDStructure<Any>
         return Tensor("output", buf, input.info.type)
