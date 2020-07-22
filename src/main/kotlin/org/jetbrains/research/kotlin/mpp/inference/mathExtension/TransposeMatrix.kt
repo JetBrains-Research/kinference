@@ -1,6 +1,5 @@
 package org.jetbrains.research.kotlin.mpp.inference.mathExtension
 
-import com.sun.jdi.ShortType
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
 
