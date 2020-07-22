@@ -60,7 +60,7 @@ fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
     val allElements = allocateMutableBuffer(this.info.type, this.data.buffer.size + other.data.buffer.size).apply {
         placeAll(data.buffer)
         placeAll(other.data.buffer, index = data.buffer.size)
-    }
+    } as Buffer<Any>
 
     val buffer = BufferNDStructure(TensorStrides(newShape), allElements)
     return Tensor("out", buffer, this.info.type)

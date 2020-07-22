@@ -72,7 +72,7 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             result.placeAll(data.buffer, i * data.buffer.size)
         }
         val newShape = data.shape.copyOf().apply { set(0, times) }
-        return Tensor("rows", BufferNDStructure(TensorStrides(newShape), result), info.type)
+        return Tensor("rows", BufferNDStructure(TensorStrides(newShape), result) as NDBuffer<Any>, info.type)
     }
 
     override fun matmul(other: BaseTensor): BaseTensor {

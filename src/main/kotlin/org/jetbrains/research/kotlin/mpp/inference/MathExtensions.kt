@@ -93,18 +93,18 @@ inline fun <reified T> createBuffer(type: TensorProto.DataType, size: Int, noinl
     } as Buffer<T>
 }
 
-inline fun allocateMutableBuffer(type: TensorProto.DataType, size: Int): MutableBuffer<Any> {
+inline fun allocateMutableBuffer(type: TensorProto.DataType, size: Int): MutableBuffer<Any?> {
     return when (type) {
         TensorProto.DataType.DOUBLE -> DoubleBuffer(DoubleArray(size))
         TensorProto.DataType.FLOAT -> FloatBuffer(FloatArray(size))
         TensorProto.DataType.INT64 -> LongBuffer(LongArray(size))
         TensorProto.DataType.INT32 -> IntBuffer(IntArray(size))
         TensorProto.DataType.INT16 -> ShortBuffer(ShortArray(size))
-        else -> ArrayBuffer(Array(size) { Any() }) //FIXME: workaround other cases
-    } as MutableBuffer<Any>
+        else -> ArrayBuffer(Array<Any?>(size) { null }) //FIXME: workaround other cases
+    } as MutableBuffer<Any?>
 }
 
-inline fun <reified T> MutableBuffer<T>.placeAll(buffer: Buffer<T>, index: Int = 0) {
+inline fun <reified T> MutableBuffer<T?>.placeAll(buffer: Buffer<Any>, index: Int = 0) {
     for (i in 0 until buffer.size)
-        this[i + index] = buffer[i]
+        this[i + index] = buffer[i] as T
 }
