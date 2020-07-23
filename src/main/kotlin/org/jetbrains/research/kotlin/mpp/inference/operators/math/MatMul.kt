@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.math
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.BaseTensor
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
-import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
 class MatMul(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
     companion object {

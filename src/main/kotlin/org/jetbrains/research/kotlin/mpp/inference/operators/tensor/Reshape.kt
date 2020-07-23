@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.operators.InputInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.Operator
-import org.jetbrains.research.kotlin.mpp.inference.operators.OperatorInfo
-import org.jetbrains.research.kotlin.mpp.inference.operators.OutputInfo
+import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
 class Reshape(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {

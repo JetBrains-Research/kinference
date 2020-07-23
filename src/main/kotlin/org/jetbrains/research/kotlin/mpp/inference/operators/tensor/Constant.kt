@@ -3,9 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 import AttributeProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.BaseTensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.ScalarTensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
 class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)

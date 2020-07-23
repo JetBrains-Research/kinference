@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference
 
 import TensorProto
 import TensorProto.DataType
+import org.jetbrains.research.kotlin.mpp.inference.math.extensions.asBuffer
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.model.Model
@@ -30,8 +31,8 @@ object Utils {
         val floatData = if (tensorProto.raw_data != null) {
             val rawFloatData = tensorProto.raw_data!!.toByteArray()
             val chunkedRawFloatData = rawFloatData.asIterable().chunked(4)
-            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.asBuffer()
-        } else tensorProto.float_data.asBuffer()
+            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.toFloatArray().asBuffer()
+        } else tensorProto.float_data.toFloatArray().asBuffer()
 
         return if (tensorProto.dims.isEmpty()) {
             ScalarTensor.create(tensorProto)
@@ -45,8 +46,8 @@ object Utils {
         val longData = if (tensorProto.raw_data != null) {
             val rawLongData = tensorProto.raw_data!!.toByteArray()
             val chunkedRawLongData = rawLongData.asIterable().chunked(8)
-            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.asBuffer()
-        } else tensorProto.int64_data.asBuffer()
+            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.toLongArray().asBuffer()
+        } else tensorProto.int64_data.toLongArray().asBuffer()
 
         return if (tensorProto.dims.isEmpty()) {
             ScalarTensor.create(tensorProto)
