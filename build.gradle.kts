@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
-import org.jetbrains.research.kotlin.mpp.inference.kotlin
+import org.jetbrains.research.kotlin.inference.kotlin
 
-group = "org.jetbrains.research.kotlin.mpp.inference"
+group = "org.jetbrains.research.kotlin.inference"
 version = "0.1.0"
 
 plugins {
