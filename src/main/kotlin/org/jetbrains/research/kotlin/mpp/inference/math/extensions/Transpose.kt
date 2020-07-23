@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
@@ -14,7 +14,7 @@ fun transpose(buffer: FloatBuffer, strides: Strides, permutation: IntArray): NDB
     val newStrides = TensorStrides(newShape)
 
 
-    for (i in array.indices){
+    for (i in array.indices) {
         val indices = newStrides.index(i)
         val newIndices = IntArray(indices.size)
         for ((id, axis) in permutation.withIndex()) {
@@ -38,7 +38,7 @@ fun transpose(buffer: DoubleBuffer, strides: Strides, permutation: IntArray): ND
     val newStrides = TensorStrides(newShape)
 
 
-    for (i in array.indices){
+    for (i in array.indices) {
         val indices = newStrides.index(i)
         val newIndices = IntArray(indices.size)
         for ((id, axis) in permutation.withIndex()) {
@@ -62,7 +62,7 @@ fun transpose(buffer: IntBuffer, strides: Strides, permutation: IntArray): NDBuf
     val newStrides = TensorStrides(newShape)
 
 
-    for (i in array.indices){
+    for (i in array.indices) {
         val indices = newStrides.index(i)
         val newIndices = IntArray(indices.size)
         for ((id, axis) in permutation.withIndex()) {
@@ -86,7 +86,7 @@ fun transpose(buffer: LongBuffer, strides: Strides, permutation: IntArray): NDBu
     val newStrides = TensorStrides(newShape)
 
 
-    for (i in array.indices){
+    for (i in array.indices) {
         val indices = newStrides.index(i)
         val newIndices = IntArray(indices.size)
         for ((id, axis) in permutation.withIndex()) {
@@ -110,7 +110,7 @@ fun transpose(buffer: ShortBuffer, strides: Strides, permutation: IntArray): NDB
     val newStrides = TensorStrides(newShape)
 
 
-    for (i in array.indices){
+    for (i in array.indices) {
         val indices = newStrides.index(i)
         val newIndices = IntArray(indices.size)
         for ((id, axis) in permutation.withIndex()) {
@@ -124,7 +124,7 @@ fun transpose(buffer: ShortBuffer, strides: Strides, permutation: IntArray): NDB
 }
 
 fun <T : Any> NDBuffer<T>.transpose(permutation: IntArray): NDBuffer<T> {
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> transpose(buffer as IntBuffer, strides, permutation)
         is FloatBuffer -> transpose(buffer as FloatBuffer, strides, permutation)
         is ShortBuffer -> transpose(buffer as ShortBuffer, strides, permutation)

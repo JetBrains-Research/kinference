@@ -1,20 +1,8 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
-import com.squareup.wire.get
 import scientifik.kmath.structures.Strides
-import java.util.concurrent.ConcurrentHashMap
 
-class TensorStrides /*private constructor*/(override val shape: IntArray) : Strides {
-//    val strides = ArrayList<Int>(shape.size)
-//
-//    init {
-//        shape.foldRight(1) { i, acc ->
-//            strides.add(acc)
-//            acc * i
-//        }
-//        strides.reverse()
-//    }
-
+class TensorStrides(override val shape: IntArray) : Strides {
     private val normalStrides = IntArray(shape.size)
 
     init {

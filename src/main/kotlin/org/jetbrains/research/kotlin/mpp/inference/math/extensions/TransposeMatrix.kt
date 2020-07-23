@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
@@ -8,8 +8,8 @@ fun transpose(buffer: FloatBuffer, rowNum: Int, colNum: Int): FloatBuffer {
 
     val arr = buffer.array
 
-    for (i in (0 until rowNum)){
-        for (j in (0 until colNum)){
+    for (i in (0 until rowNum)) {
+        for (j in (0 until colNum)) {
             result[j * rowNum + i] = arr[i * colNum + j]
         }
     }
@@ -22,8 +22,8 @@ fun transpose(buffer: DoubleBuffer, rowNum: Int, colNum: Int): DoubleBuffer {
 
     val arr = buffer.array
 
-    for (i in (0 until rowNum)){
-        for (j in (0 until colNum)){
+    for (i in (0 until rowNum)) {
+        for (j in (0 until colNum)) {
             result[j * rowNum + i] = arr[i * colNum + j]
         }
     }
@@ -36,8 +36,8 @@ fun transpose(buffer: IntBuffer, rowNum: Int, colNum: Int): IntBuffer {
 
     val arr = buffer.array
 
-    for (i in (0 until rowNum)){
-        for (j in (0 until colNum)){
+    for (i in (0 until rowNum)) {
+        for (j in (0 until colNum)) {
             result[j * rowNum + i] = arr[i * colNum + j]
         }
     }
@@ -50,8 +50,8 @@ fun transpose(buffer: LongBuffer, rowNum: Int, colNum: Int): LongBuffer {
 
     val arr = buffer.array
 
-    for (i in (0 until rowNum)){
-        for (j in (0 until colNum)){
+    for (i in (0 until rowNum)) {
+        for (j in (0 until colNum)) {
             result[j * rowNum + i] = arr[i * colNum + j]
         }
     }
@@ -64,8 +64,8 @@ fun transpose(buffer: ShortBuffer, rowNum: Int, colNum: Int): ShortBuffer {
 
     val arr = buffer.array
 
-    for (i in (0 until rowNum)){
-        for (j in (0 until colNum)){
+    for (i in (0 until rowNum)) {
+        for (j in (0 until colNum)) {
             result[j * rowNum + i] = arr[i * colNum + j]
         }
     }
@@ -78,7 +78,7 @@ fun <T : Any> NDBuffer<T>.matrixTranspose(): NDBuffer<T> {
     val newShape = shape.reversedArray()
     val newStrides = TensorStrides(newShape)
 
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> BufferNDStructure(newStrides, transpose(this.buffer as IntBuffer, shape[0], shape[1]))
         is FloatBuffer -> BufferNDStructure(newStrides, transpose(this.buffer as FloatBuffer, shape[0], shape[1]))
         is ShortBuffer -> BufferNDStructure(newStrides, transpose(this.buffer as ShortBuffer, shape[0], shape[1]))

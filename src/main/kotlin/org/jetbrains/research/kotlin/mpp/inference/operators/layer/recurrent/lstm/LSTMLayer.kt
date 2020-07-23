@@ -1,12 +1,11 @@
 package org.jetbrains.research.kotlin.mpp.inference.operators.layer.recurrent.lstm
 
 import TensorProto
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.*
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
+import org.jetbrains.research.kotlin.mpp.inference.math.extensions.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.mpp.inference.operators.activations.Tanh
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.get
+import scientifik.kmath.structures.*
 
 open class LSTMLayer<T : Number> {
     open fun apply(inputs: List<Tensor>): List<Tensor> {
@@ -108,7 +107,7 @@ open class LSTMLayer<T : Number> {
             @Suppress("UNCHECKED_CAST")
             fun initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State {
                 val newShape = intArrayOf(batchSize, hiddenSize)
-                val zeros = BufferNDStructure(TensorStrides(newShape), createBuffer(type, batchSize * hiddenSize) { 0.0f }) as BufferNDStructure<Any>
+                val zeros = BufferNDStructure(TensorStrides(newShape), zerosBuffer(type, batchSize * hiddenSize) as Buffer<Any>)
                 return State(Tensor(null, zeros, type), Tensor(null, zeros, type))
             }
 

@@ -2,9 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.tensor
 
 import AttributeProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.splitWithAxis
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.toIntArray
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
 class Split(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {

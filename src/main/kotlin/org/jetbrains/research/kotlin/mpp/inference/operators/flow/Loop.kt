@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.flow
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.BaseTensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.ScalarTensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.stack
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.graph.Graph
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 

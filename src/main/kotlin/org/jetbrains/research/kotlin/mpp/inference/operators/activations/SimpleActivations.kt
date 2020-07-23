@@ -4,6 +4,7 @@ import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 import kotlin.math.exp
+import kotlin.math.max
 
 class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
     companion object {
@@ -28,7 +29,11 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         )
 
         inline fun activate(value: Number): Number {
-            return max(0, value)
+            return when (value) {
+                is Float -> max(0.0f, value)
+                is Double -> max(0.0, value)
+                else -> error("Unsupported operation")
+            }
         }
     }
 
@@ -45,7 +50,11 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
         )
 
         inline fun activate(value: Number): Number {
-            return 1.0 / (1.0 + exp(-value.toDouble()))
+            return when (value) {
+                is Float -> (1.0 / (1.0 + exp(-value))).toFloat()
+                is Double -> 1.0 / (1.0 + exp(-value))
+                else -> error("Unsupported operation")
+            }
         }
     }
 
@@ -64,7 +73,11 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         )
 
         inline fun activate(value: Number): Number {
-            return (exp(2.0 * value.toDouble()) - 1.0) / (exp(2.0 * value.toDouble()) + 1.0)
+            return when (value) {
+                is Float -> ((exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)).toFloat()
+                is Double -> (exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)
+                else -> error("Unsupported operation")
+            }
         }
     }
 

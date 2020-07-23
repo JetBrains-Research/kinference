@@ -3,9 +3,7 @@ package org.jetbrains.research.kotlin.mpp.inference.operators.seq
 import AttributeProto
 import org.jetbrains.research.kotlin.mpp.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.mpp.inference.data.seq.TensorSeq
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.concatenate
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.stack
+import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.operators.*
 
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)

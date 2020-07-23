@@ -1,9 +1,8 @@
 package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.allocateMutableBuffer
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.createBuffer
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.placeAll
-import scientifik.kmath.structures.*
+import org.jetbrains.research.kotlin.mpp.inference.math.extensions.*
+import scientifik.kmath.structures.Buffer
+import scientifik.kmath.structures.BufferNDStructure
 
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
     require(axis in data.shape.indices) { "Index $axis out of shape bound: (0, ${data.dimension - 1}" }

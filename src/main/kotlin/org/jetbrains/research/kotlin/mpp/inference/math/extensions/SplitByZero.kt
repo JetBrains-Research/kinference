@@ -1,10 +1,9 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
-import org.jetbrains.research.kotlin.mpp.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
 
-fun splitByZero(buffer: FloatBuffer, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Float>> {
+fun splitByZero(buffer: FloatBuffer, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Float>> {
     val array = buffer.array
     val splitSize = strides.strides[0]
     var offset = 0
@@ -24,7 +23,7 @@ fun splitByZero(buffer: FloatBuffer, strides: Strides, split: IntArray, keepDims
     }
 }
 
-fun splitByZero(buffer: DoubleBuffer, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Double>> {
+fun splitByZero(buffer: DoubleBuffer, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Double>> {
     val array = buffer.array
     val splitSize = strides.strides[0]
     var offset = 0
@@ -44,7 +43,7 @@ fun splitByZero(buffer: DoubleBuffer, strides: Strides, split: IntArray, keepDim
     }
 }
 
-fun splitByZero(buffer: IntBuffer, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Int>> {
+fun splitByZero(buffer: IntBuffer, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Int>> {
     val array = buffer.array
     val splitSize = strides.strides[0]
     var offset = 0
@@ -64,7 +63,7 @@ fun splitByZero(buffer: IntBuffer, strides: Strides, split: IntArray, keepDims: 
     }
 }
 
-fun splitByZero(buffer: LongBuffer, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Long>> {
+fun splitByZero(buffer: LongBuffer, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Long>> {
     val array = buffer.array
     val splitSize = strides.strides[0]
     var offset = 0
@@ -84,7 +83,7 @@ fun splitByZero(buffer: LongBuffer, strides: Strides, split: IntArray, keepDims:
     }
 }
 
-fun splitByZero(buffer: ShortBuffer, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Short>> {
+fun splitByZero(buffer: ShortBuffer, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Short>> {
     val array = buffer.array
     val splitSize = strides.strides[0]
     var offset = 0
@@ -106,7 +105,7 @@ fun splitByZero(buffer: ShortBuffer, strides: Strides, split: IntArray, keepDims
 
 fun <T : Any> NDBuffer<T>.splitByZero(split: IntArray, keepDims: Boolean): Array<NDBuffer<T>> {
     require(shape.size >= 2)
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> splitByZero(buffer as IntBuffer, strides, split, keepDims)
         is FloatBuffer -> splitByZero(buffer as FloatBuffer, strides, split, keepDims)
         is ShortBuffer -> splitByZero(buffer as ShortBuffer, strides, split, keepDims)

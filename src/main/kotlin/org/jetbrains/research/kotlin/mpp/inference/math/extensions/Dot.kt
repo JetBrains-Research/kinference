@@ -1,9 +1,9 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
 
-fun dot(left: FloatBuffer, right: FloatBuffer, leftShape: IntArray, rightShape: IntArray) : FloatBuffer {
+fun dot(left: FloatBuffer, right: FloatBuffer, leftShape: IntArray, rightShape: IntArray): FloatBuffer {
     require(leftShape.size == 2 && rightShape.size == 2)
     require(leftShape[1] == rightShape[0])
 
@@ -23,7 +23,7 @@ fun dot(left: FloatBuffer, right: FloatBuffer, leftShape: IntArray, rightShape: 
     return array.asBuffer()
 }
 
-fun dot(left: DoubleBuffer, right: DoubleBuffer, leftShape: IntArray, rightShape: IntArray) : DoubleBuffer {
+fun dot(left: DoubleBuffer, right: DoubleBuffer, leftShape: IntArray, rightShape: IntArray): DoubleBuffer {
     require(leftShape.size == 2 && rightShape.size == 2)
     require(leftShape[1] == rightShape[0])
 
@@ -43,7 +43,7 @@ fun dot(left: DoubleBuffer, right: DoubleBuffer, leftShape: IntArray, rightShape
     return array.asBuffer()
 }
 
-fun dot(left: IntBuffer, right: IntBuffer, leftShape: IntArray, rightShape: IntArray) : IntBuffer {
+fun dot(left: IntBuffer, right: IntBuffer, leftShape: IntArray, rightShape: IntArray): IntBuffer {
     require(leftShape.size == 2 && rightShape.size == 2)
     require(leftShape[1] == rightShape[0])
 
@@ -63,7 +63,7 @@ fun dot(left: IntBuffer, right: IntBuffer, leftShape: IntArray, rightShape: IntA
     return array.asBuffer()
 }
 
-fun dot(left: LongBuffer, right: LongBuffer, leftShape: IntArray, rightShape: IntArray) : LongBuffer {
+fun dot(left: LongBuffer, right: LongBuffer, leftShape: IntArray, rightShape: IntArray): LongBuffer {
     require(leftShape.size == 2 && rightShape.size == 2)
     require(leftShape[1] == rightShape[0])
 
@@ -83,7 +83,7 @@ fun dot(left: LongBuffer, right: LongBuffer, leftShape: IntArray, rightShape: In
     return array.asBuffer()
 }
 
-fun dot(left: ShortBuffer, right: ShortBuffer, leftShape: IntArray, rightShape: IntArray) : ShortBuffer {
+fun dot(left: ShortBuffer, right: ShortBuffer, leftShape: IntArray, rightShape: IntArray): ShortBuffer {
     require(leftShape.size == 2 && rightShape.size == 2)
     require(leftShape[1] == rightShape[0])
 
@@ -110,7 +110,7 @@ fun <T : Any> NDBuffer<T>.dot(other: NDBuffer<T>): NDBuffer<T> {
 
     val newStrides = TensorStrides(intArrayOf(shape[0], other.shape[1]))
 
-    return when(buffer) {
+    return when (buffer) {
         is FloatBuffer -> BufferNDStructure(newStrides, dot(this.buffer as FloatBuffer, other.buffer as FloatBuffer, this.shape, other.shape))
         is IntBuffer -> BufferNDStructure(newStrides, dot(this.buffer as IntBuffer, other.buffer as IntBuffer, this.shape, other.shape))
         is DoubleBuffer -> BufferNDStructure(newStrides, dot(this.buffer as DoubleBuffer, other.buffer as DoubleBuffer, this.shape, other.shape))

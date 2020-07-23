@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.*
+import org.jetbrains.research.kotlin.mpp.inference.math.extensions.*
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.mpp.inference.types.TensorShape
 import scientifik.kmath.linear.BufferMatrix
@@ -22,7 +22,15 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             val rowLength: Int = data.strides.linearSize / data.shape[0]
             val dims = data.shape.copyOfRange(1, rank)
 
-            return Array(data.shape[0]) { row -> sliceRow(rowLength, row * rowLength, dims)}
+            return Array(data.shape[0]) { row -> sliceRow(rowLength, row * rowLength, dims) }
+        }
+
+    val bufferRows: Array<NDBuffer<Any>>
+        get() {
+            val rowLength: Int = data.strides.linearSize / data.shape[0]
+            val dims = data.shape.copyOfRange(1, rank)
+
+            return Array(data.shape[0]) { row -> sliceBuffer(rowLength, row * rowLength, dims) }
         }
 
     override fun clone(newName: String) = Tensor(newName, data, info.type)
@@ -32,13 +40,13 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             is Tensor -> {
                 require(info.type != DataType.STRING) { "Available only for numeric tensors" }
                 if (!data.shape.contentEquals(other.data.shape)) {
-                    return elementWiseWithBroadcast(other) { fst, snd -> add(fst as Number, snd as Number) }
+                    return applyWithBroadcast(other, NDBuffer<Any>::plus)
                 }
-                val sum = data.plus(other.data)
+                val sum = data + other.data
 
                 Tensor("output", sum, info.type)
             }
-            is ScalarTensor -> this.mapElements { add(it as Number, other.value as Number) }
+            is ScalarTensor -> Tensor("output", this.data.plusScalar(other.value), info.type)
             else -> error("Unsupported tensor type")
         }
     }
@@ -56,9 +64,13 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     }
 
     private fun sliceRow(rowLength: Int, start: Int, dims: IntArray): Tensor {
-        val rowData = createBuffer(info.type, rowLength) { i -> data.buffer[start + i] }
-        val buffer = BufferNDStructure(TensorStrides(dims), rowData)
-        return Tensor("row", buffer, info.type)
+        val row = sliceBuffer(rowLength, start, dims)
+        return Tensor("row", row, info.type)
+    }
+
+    private fun sliceBuffer(bufferLength: Int, start: Int, dims: IntArray): BufferNDStructure<Any> {
+        val bufferData = createBuffer(info.type, bufferLength) { i -> data.buffer[start + i] }
+        return BufferNDStructure(TensorStrides(dims), bufferData)
     }
 
     fun repeatRow(times: Int): Tensor {
@@ -78,8 +90,6 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
             val actualThis = if (data.dimension == 1) this.reshape(intArrayOf(1, *data.shape)) else this
             val actualOther = if (other.data.dimension == 1) this.reshape(intArrayOf(*other.data.shape, 1)) else other
             val result = actualThis.data.dot(actualOther.data)
-//            val matrix = BufferMatrix(actualThis.data.shape[0], actualThis.data.shape[1], actualThis.data.buffer as Buffer<out Float>)
-//                .dot(BufferMatrix(actualOther.data.shape[0], actualOther.data.shape[1], actualOther.data.buffer as Buffer<out Float>))
             return Tensor("result", result, info.type)
         }
 
@@ -88,8 +98,6 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
         val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
 
         val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-//            BufferMatrix(tensor.data.shape[0], tensor.data.shape[1], tensor.data.buffer as Buffer<out Float>)
-//                .dot(BufferMatrix(otherMatrices[i].data.shape[0], otherMatrices[i].data.shape[1], otherMatrices[i].data.buffer as Buffer<out Float>))
             tensor.data.dot(otherMatrices[i].data)
         }.map { matrix -> Tensor("out", matrix, info.type) }
 
@@ -107,40 +115,20 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     override fun times(other: BaseTensor): BaseTensor {
         return when (other) {
             is Tensor -> {
-                require(data.shape.contentEquals(other.data.shape))
                 require(info.type != DataType.STRING) { "Available only for numeric tensors" }
-                data as BufferNDStructure<Number>; other.data as BufferNDStructure<Number>
+
+                if (!data.shape.contentEquals(other.data.shape)) {
+                    return applyWithBroadcast(other, NDBuffer<Any>::times)
+                }
 
                 val buffer = data.times(other.data)
 
                 Tensor(info.name, buffer, info.type)
             }
-            is ScalarTensor -> this.mapElements { times(it as Number, other.value as Number) }
+            is ScalarTensor -> Tensor("output", this.data.timesScalar(other.value), info.type)
             else -> error("Unsupported tensor type")
         }
     }
-
-    /*fun transpose(permutations: List<Long>? = null): Tensor {
-        require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
-        val actualPerm = if (permutations.isNullOrEmpty()) data.shape.indices.reversed() else permutations.toIntArray()
-
-        val newShape = IntArray(rank)
-        for ((i, axis) in actualPerm.withIndex()) {
-            newShape[i] = data.shape[axis]
-        }
-        val newStrides = TensorStrides(newShape)
-
-        val newBuffer = MutableBufferNDStructure<Any?>(newStrides, MutableBuffer.boxing(newStrides.linearSize) { null })
-        for (i in 0 until data.strides.linearSize) {
-            val indices = data.strides.index(i)
-            val newIndices = IntArray(indices.size)
-            for ((id, axis) in actualPerm.withIndex()) {
-                newIndices[id] = indices[axis]
-            }
-            newBuffer[newIndices] = data[indices]
-        }
-        return Tensor(info.name, newBuffer as NDBuffer<Any>, info.type)
-    }*/
 
     fun transpose(permutations: List<Long>? = null): Tensor {
         if (rank == 2) return Tensor(info.name, data.matrixTranspose(), info.type)

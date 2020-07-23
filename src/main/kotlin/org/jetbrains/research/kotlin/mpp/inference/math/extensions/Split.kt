@@ -1,9 +1,9 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
 
-fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Float>> {
+fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Float>> {
     val array = buffer.array
 
     return Array(split.size) { num ->
@@ -31,7 +31,7 @@ fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, kee
     }
 }
 
-fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Double>> {
+fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Double>> {
     val array = buffer.array
 
     return Array(split.size) { num ->
@@ -59,7 +59,7 @@ fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, ke
     }
 }
 
-fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Int>> {
+fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Int>> {
     val array = buffer.array
 
     return Array(split.size) { num ->
@@ -87,7 +87,7 @@ fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepD
     }
 }
 
-fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Long>> {
+fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Long>> {
     val array = buffer.array
 
     return Array(split.size) { num ->
@@ -115,7 +115,7 @@ fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keep
     }
 }
 
-fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean) : Array<NDBuffer<Short>> {
+fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Short>> {
     val array = buffer.array
 
     return Array(split.size) { num ->
@@ -144,7 +144,7 @@ fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, kee
 }
 
 fun <T : Any> NDBuffer<T>.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDBuffer<T>> {
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> split(buffer as IntBuffer, axis, strides, split, keepDims)
         is FloatBuffer -> split(buffer as FloatBuffer, axis, strides, split, keepDims)
         is ShortBuffer -> split(buffer as ShortBuffer, axis, strides, split, keepDims)

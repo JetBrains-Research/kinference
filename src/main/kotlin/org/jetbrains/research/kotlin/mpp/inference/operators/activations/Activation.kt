@@ -14,14 +14,4 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     override fun apply(inputs: List<Tensor>): List<Tensor> {
         return listOf(activate(inputs.first()))
     }
-
-    companion object {
-        fun <T : Number> max(x: Number, y: T): Number = when (y) {
-            is Float -> kotlin.math.max(x.toFloat(), y)
-            is Double -> kotlin.math.max(x.toDouble(), y)
-            is Int -> kotlin.math.max(x.toInt(), y)
-            is Long -> kotlin.math.max(x.toLong(), y)
-            else -> error("Unsupported data type")
-        }
-    }
 }

@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import scientifik.kmath.structures.*
 
@@ -71,7 +71,7 @@ fun times(left: ShortBuffer, right: ShortBuffer): ShortBuffer {
 fun <T : Any> NDBuffer<T>.times(other: NDBuffer<T>): NDBuffer<T> {
     require(this::class == other::class)
     require(this.shape.contentEquals(other.shape))
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> BufferNDStructure(strides, times(this.buffer as IntBuffer, other.buffer as IntBuffer))
         is FloatBuffer -> BufferNDStructure(strides, times(this.buffer as FloatBuffer, other.buffer as FloatBuffer))
         is ShortBuffer -> BufferNDStructure(strides, times((buffer as ShortBuffer), other.buffer as ShortBuffer))
@@ -79,4 +79,15 @@ fun <T : Any> NDBuffer<T>.times(other: NDBuffer<T>): NDBuffer<T> {
         is LongBuffer -> BufferNDStructure(strides, times(this.buffer as LongBuffer, other.buffer as LongBuffer))
         else -> throw UnsupportedOperationException()
     } as BufferNDStructure<T>
+}
+
+fun <T : Any> NDBuffer<T>.timesScalar(x: T): NDBuffer<T> {
+    return when (buffer) {
+        is IntBuffer -> BufferNDStructure(strides, times(this.buffer as IntBuffer, IntArray(this.buffer.size) { x as Int }.asBuffer()))
+        is FloatBuffer -> BufferNDStructure(strides, times(this.buffer as FloatBuffer, FloatArray(this.buffer.size) { x as Float }.asBuffer()))
+        is ShortBuffer -> BufferNDStructure(strides, times((buffer as ShortBuffer), ShortArray(this.buffer.size) { x as Short }.asBuffer()))
+        is DoubleBuffer -> BufferNDStructure(strides, times(this.buffer as DoubleBuffer, DoubleArray(this.buffer.size) { x as Double }.asBuffer()))
+        is LongBuffer -> BufferNDStructure(strides, times(this.buffer as LongBuffer, LongArray(this.buffer.size) { x as Long }.asBuffer()))
+        else -> throw UnsupportedOperationException()
+    } as NDBuffer<T>
 }

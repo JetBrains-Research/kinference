@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.mpp.inference.mathExtension
+package org.jetbrains.research.kotlin.mpp.inference.math.extensions
 
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*
@@ -16,8 +16,8 @@ fun splitHorizontal(buffer: FloatBuffer, parts: Int, rowNum: Int, colNum: Int): 
     return Array(parts) { num ->
         val result = FloatArray(newCol * rowNum)
         val offset = num * newCol
-        for (i in (0 until rowNum)){
-            for (j in (0 until newCol)){
+        for (i in (0 until rowNum)) {
+            for (j in (0 until newCol)) {
                 result[i * newCol + j] = arr[i * colNum + j + offset]
             }
         }
@@ -37,8 +37,8 @@ fun splitHorizontal(buffer: DoubleBuffer, parts: Int, rowNum: Int, colNum: Int):
     return Array(parts) { num ->
         val result = DoubleArray(newCol * rowNum)
         val offset = num * newCol
-        for (i in (0 until rowNum)){
-            for (j in (0 until newCol)){
+        for (i in (0 until rowNum)) {
+            for (j in (0 until newCol)) {
                 result[i * newCol + j] = arr[i * colNum + j + offset]
             }
         }
@@ -58,8 +58,8 @@ fun splitHorizontal(buffer: IntBuffer, parts: Int, rowNum: Int, colNum: Int): Ar
     return Array(parts) { num ->
         val result = IntArray(newCol * rowNum)
         val offset = num * newCol
-        for (i in (0 until rowNum)){
-            for (j in (0 until newCol)){
+        for (i in (0 until rowNum)) {
+            for (j in (0 until newCol)) {
                 result[i * newCol + j] = arr[i * colNum + j + offset]
             }
         }
@@ -79,8 +79,8 @@ fun splitHorizontal(buffer: LongBuffer, parts: Int, rowNum: Int, colNum: Int): A
     return Array(parts) { num ->
         val result = LongArray(newCol * rowNum)
         val offset = num * newCol
-        for (i in (0 until rowNum)){
-            for (j in (0 until newCol)){
+        for (i in (0 until rowNum)) {
+            for (j in (0 until newCol)) {
                 result[i * newCol + j] = arr[i * colNum + j + offset]
             }
         }
@@ -100,8 +100,8 @@ fun splitHorizontal(buffer: ShortBuffer, parts: Int, rowNum: Int, colNum: Int): 
     return Array(parts) { num ->
         val result = ShortArray(newCol * rowNum)
         val offset = num * newCol
-        for (i in (0 until rowNum)){
-            for (j in (0 until newCol)){
+        for (i in (0 until rowNum)) {
+            for (j in (0 until newCol)) {
                 result[i * newCol + j] = arr[i * colNum + j + offset]
             }
         }
@@ -111,7 +111,7 @@ fun splitHorizontal(buffer: ShortBuffer, parts: Int, rowNum: Int, colNum: Int): 
 
 fun <T : Any> NDBuffer<T>.splitHorizontal(parts: Int): Array<NDBuffer<T>> {
     require(shape.size == 2)
-    return when(buffer) {
+    return when (buffer) {
         is IntBuffer -> splitHorizontal(buffer as IntBuffer, parts, shape[0], shape[1])
         is FloatBuffer -> splitHorizontal(buffer as FloatBuffer, parts, shape[0], shape[1])
         is ShortBuffer -> splitHorizontal(buffer as ShortBuffer, parts, shape[0], shape[1])

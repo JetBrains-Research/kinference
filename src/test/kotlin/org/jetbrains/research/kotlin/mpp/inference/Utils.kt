@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.mpp.inference
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.mpp.inference.mathExtension.asBuffer
+import org.jetbrains.research.kotlin.mpp.inference.math.extensions.asBuffer
 import org.jetbrains.research.kotlin.mpp.inference.data.ONNXData
 import org.jetbrains.research.kotlin.mpp.inference.data.tensors.*
 import org.jetbrains.research.kotlin.mpp.inference.model.Model
