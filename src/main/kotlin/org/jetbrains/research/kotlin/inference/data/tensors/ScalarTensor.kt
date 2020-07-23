@@ -3,7 +3,8 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ONNXData
-import org.jetbrains.research.kotlin.inference.extensions.createBuffer
+import org.jetbrains.research.kotlin.inference.extensions.add
+import org.jetbrains.research.kotlin.inference.extensions.buffer.createBuffer
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import scientifik.kmath.structures.BufferNDStructure
@@ -12,6 +13,7 @@ class ScalarTensor(val value: Any, info: TensorInfo) : BaseTensor(info) {
     constructor(name: String?, value: Any, type: DataType) : this(value, TensorInfo(name ?: "", type, TensorShape.empty()))
 
     override fun plus(other: BaseTensor): BaseTensor {
+        println("SCALAR")
         return when (other) {
             is ScalarTensor -> ScalarTensor(add(value as Number, other.value as Number), info as TensorInfo)
             is Tensor -> other + this
@@ -20,8 +22,9 @@ class ScalarTensor(val value: Any, info: TensorInfo) : BaseTensor(info) {
     }
 
     override fun times(other: BaseTensor): BaseTensor {
+        println("SCALAR")
         return when (other) {
-            is ScalarTensor -> ScalarTensor(times(value as Number, other.value as Number), info as TensorInfo)
+            is ScalarTensor -> ScalarTensor(org.jetbrains.research.kotlin.inference.extensions.times(value as Number, other.value as Number), info as TensorInfo)
             is Tensor -> other * this
             else -> error("Unknown tensor type")
         }

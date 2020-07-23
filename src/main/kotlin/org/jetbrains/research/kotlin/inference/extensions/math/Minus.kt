@@ -1,11 +1,12 @@
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.math
 
+import org.jetbrains.research.kotlin.inference.extensions.buffer.FloatBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
 import scientifik.kmath.structures.*
 
 fun minus(left: FloatBuffer, right: FloatBuffer): FloatBuffer {
     return plus(left, -right)
 }
-
 
 fun minus(left: IntBuffer, right: IntBuffer): IntBuffer {
     return plus(left, -right)

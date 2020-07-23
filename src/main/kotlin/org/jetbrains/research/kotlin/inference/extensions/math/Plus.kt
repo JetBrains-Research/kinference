@@ -1,5 +1,7 @@
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.math
 
+import org.jetbrains.research.kotlin.inference.extensions.buffer.FloatBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
 import scientifik.kmath.structures.*
 
 fun plus(left: FloatBuffer, right: FloatBuffer): FloatBuffer {
@@ -78,7 +80,7 @@ operator fun <T : Any> NDBuffer<T>.plus(other: NDBuffer<T>): NDBuffer<T> {
         is DoubleBuffer -> BufferNDStructure(strides, plus(this.buffer as DoubleBuffer, other.buffer as DoubleBuffer))
         is LongBuffer -> BufferNDStructure(strides, plus(this.buffer as LongBuffer, other.buffer as LongBuffer))
         else -> throw UnsupportedOperationException()
-    } as BufferNDStructure<T>
+    } as NDBuffer<T>
 }
 
 fun <T : Any> NDBuffer<T>.plusScalar(x: T): NDBuffer<T> {

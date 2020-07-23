@@ -1,7 +1,9 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.math
 
+import org.jetbrains.research.kotlin.inference.extensions.buffer.FloatBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
 import scientifik.kmath.structures.*
 
 fun div(left: FloatBuffer, right: FloatBuffer): FloatBuffer {
@@ -16,7 +18,6 @@ fun div(left: FloatBuffer, right: FloatBuffer): FloatBuffer {
 
     return array.asBuffer()
 }
-
 
 fun div(left: IntBuffer, right: IntBuffer): IntBuffer {
     require(left.size == right.size)

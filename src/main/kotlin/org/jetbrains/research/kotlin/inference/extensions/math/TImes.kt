@@ -1,5 +1,7 @@
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.math
 
+import org.jetbrains.research.kotlin.inference.extensions.buffer.FloatBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
 import scientifik.kmath.structures.*
 
 
@@ -78,7 +80,7 @@ fun <T : Any> NDBuffer<T>.times(other: NDBuffer<T>): NDBuffer<T> {
         is DoubleBuffer -> BufferNDStructure(strides, times(this.buffer as DoubleBuffer, other.buffer as DoubleBuffer))
         is LongBuffer -> BufferNDStructure(strides, times(this.buffer as LongBuffer, other.buffer as LongBuffer))
         else -> throw UnsupportedOperationException()
-    } as BufferNDStructure<T>
+    } as NDBuffer<T>
 }
 
 fun <T : Any> NDBuffer<T>.timesScalar(x: T): NDBuffer<T> {

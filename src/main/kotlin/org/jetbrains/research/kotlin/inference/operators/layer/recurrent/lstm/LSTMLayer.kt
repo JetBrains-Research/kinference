@@ -2,7 +2,9 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import TensorProto
 import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.*
+import org.jetbrains.research.kotlin.inference.extensions.buffer.*
+import org.jetbrains.research.kotlin.inference.extensions.math.plus
+import org.jetbrains.research.kotlin.inference.extensions.tensor.as2DList
 import org.jetbrains.research.kotlin.inference.operators.activations.Sigmoid
 import org.jetbrains.research.kotlin.inference.operators.activations.Tanh
 import scientifik.kmath.structures.*

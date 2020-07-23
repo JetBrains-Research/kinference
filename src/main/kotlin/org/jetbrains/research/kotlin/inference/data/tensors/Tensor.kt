@@ -2,11 +2,17 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 
 import TensorProto
 import TensorProto.DataType
-import org.jetbrains.research.kotlin.inference.extensions.*
+import org.jetbrains.research.kotlin.inference.extensions.buffer.*
+import org.jetbrains.research.kotlin.inference.extensions.math.*
+import org.jetbrains.research.kotlin.inference.extensions.reversed
+import org.jetbrains.research.kotlin.inference.extensions.tensor.as2DList
+import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
+import org.jetbrains.research.kotlin.inference.extensions.toIntArray
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import scientifik.kmath.linear.BufferMatrix
 import scientifik.kmath.structures.*
+import kotlin.math.sign
 
 //TODO: support segments
 //TODO: support external and raw data
@@ -16,6 +22,9 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
     val rank: Int
         get() = data.dimension
+
+    val linearSize: Int
+        get() = data.buffer.size
 
     val rows: Array<Tensor>
         get() {
@@ -52,11 +61,11 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
     }
 
     fun indexAxis(axis: Int): Int {
-        return if (axis < 0) data.shape.size + axis else axis
+        return if (axis < 0) rank + axis else axis
     }
 
     fun row(row: Int): Tensor {
-        val rowLength: Int = data.strides.linearSize / data.shape[0]
+        val rowLength: Int = linearSize / data.shape[0]
         val start = row * rowLength
         val dims = data.shape.copyOfRange(1, rank)
 
@@ -75,9 +84,9 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
     fun repeatRow(times: Int): Tensor {
         require(data.shape[0] == 1) { "First dimension should be 1" }
-        val result = allocateMutableBuffer(info.type, data.buffer.size * times)
+        val result = allocateMutableBuffer(info.type, linearSize * times)
         for (i in 0 until times) {
-            result.placeAll(data.buffer, i * data.buffer.size)
+            result.placeAll(data.buffer, i * linearSize)
         }
         val newShape = data.shape.copyOf().apply { set(0, times) }
         return Tensor("rows", BufferNDStructure(TensorStrides(newShape), result) as NDBuffer<Any>, info.type)
@@ -156,8 +165,8 @@ class Tensor(val data: NDBuffer<Any>, info: TensorInfo) : BaseTensor(info) {
 
         val newBuffer = createBuffer(info.type, newStrides.linearSize) { i ->
             val current = newStrides.index(i)
-            val indicesIndices = current.sliceArray(axis until indices.data.shape.size + axis)
-            val gatherIndices = (current.take(axis) + current.takeLast(data.shape.size - 1 - axis)).toMutableList().also { it.add(axis, (indices.data[indicesIndices] as Long).toInt()) }
+            val indicesIndices = current.sliceArray(axis until indices.rank + axis)
+            val gatherIndices = (current.take(axis) + current.takeLast(rank - 1 - axis)).toMutableList().also { it.add(axis, (indices.data[indicesIndices] as Long).toInt()) }
             val positiveGatherIndices = gatherIndices.zip(data.shape.toList()) { index, shape ->
                 if (index < 0) shape + index else index
             }.toIntArray()

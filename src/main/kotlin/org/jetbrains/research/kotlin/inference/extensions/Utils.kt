@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.data.tensors
+package org.jetbrains.research.kotlin.inference.extensions
 
 import scientifik.kmath.linear.GenericMatrixContext
 import scientifik.kmath.linear.MatrixContext

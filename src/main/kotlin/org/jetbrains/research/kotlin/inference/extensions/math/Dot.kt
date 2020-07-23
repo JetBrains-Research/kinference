@@ -1,6 +1,8 @@
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.math
 
 import org.jetbrains.research.kotlin.inference.data.tensors.TensorStrides
+import org.jetbrains.research.kotlin.inference.extensions.buffer.FloatBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
 import scientifik.kmath.structures.*
 
 fun dot(left: FloatBuffer, right: FloatBuffer, leftShape: IntArray, rightShape: IntArray): FloatBuffer {
@@ -117,5 +119,5 @@ fun <T : Any> NDBuffer<T>.dot(other: NDBuffer<T>): NDBuffer<T> {
         is ShortBuffer -> BufferNDStructure(newStrides, dot(this.buffer as ShortBuffer, other.buffer as ShortBuffer, this.shape, other.shape))
         is LongBuffer -> BufferNDStructure(newStrides, dot(this.buffer as LongBuffer, other.buffer as LongBuffer, this.shape, other.shape))
         else -> throw UnsupportedOperationException()
-    } as BufferNDStructure<T>
+    } as NDBuffer<T>
 }

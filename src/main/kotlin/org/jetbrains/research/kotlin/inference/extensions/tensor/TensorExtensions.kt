@@ -1,6 +1,8 @@
-package org.jetbrains.research.kotlin.inference.data.tensors
+package org.jetbrains.research.kotlin.inference.extensions.tensor
 
-import org.jetbrains.research.kotlin.inference.extensions.*
+import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.extensions.buffer.*
+import org.jetbrains.research.kotlin.inference.extensions.toIntArray
 import scientifik.kmath.structures.Buffer
 import scientifik.kmath.structures.BufferNDStructure
 
@@ -9,10 +11,10 @@ fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): L
 
     val elementsByIndex = data.shape[axis]
     val mainSplit = elementsByIndex / parts
-    val split = MutableList(parts) { mainSplit }
+    val split = MutableList(parts - 1) { mainSplit }
 
-    val tail = elementsByIndex % parts
-    if (tail != 0) split.add(tail)
+    val tail = elementsByIndex - mainSplit * (parts - 1)
+    split.add(tail)
 
     return this.splitWithAxis(split.toIntArray(), axis, keepDims)
 }
@@ -58,9 +60,9 @@ fun Tensor.concatenate(other: Tensor, axis: Int = 0): Tensor {
         fstDim.copyOf(fstDim.size).apply { set(0, fstDim[0] + sndDim[0]) }
     }
 
-    val allElements = allocateMutableBuffer(this.info.type, this.data.buffer.size + other.data.buffer.size).apply {
+    val allElements = allocateMutableBuffer(this.info.type, this.linearSize + other.linearSize).apply {
         placeAll(data.buffer)
-        placeAll(other.data.buffer, index = data.buffer.size)
+        placeAll(other.data.buffer, index = linearSize)
     } as Buffer<Any>
 
     val buffer = BufferNDStructure(TensorStrides(newShape), allElements)
@@ -85,14 +87,14 @@ fun Tensor.as2DList(): List<Tensor> {
 
     val matrixShape = intArrayOf(data.shape[indexAxis(-2)], data.shape[indexAxis(-1)])
     val matrixStrides = TensorStrides(matrixShape)
-    val ans = List(data.strides.linearSize / matrixStrides.linearSize) { index ->
+
+    return List(data.strides.linearSize / matrixStrides.linearSize) { index ->
         val newBuffer = createBuffer(info.type, matrixStrides.linearSize) {
-            (data.buffer[it + index * matrixStrides.linearSize] as Number).toFloat()
-        } as Buffer<Any>
+            data.buffer[it + index * matrixStrides.linearSize]
+        }
         val newStructure = BufferNDStructure(matrixStrides, newBuffer)
         Tensor(null, newStructure, info.type)
     }
-    return ans
     //return this.rows().map { it.as2DList() }.flatten()
 }
 

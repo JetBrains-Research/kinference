@@ -1,9 +1,8 @@
 @file:Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
 
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.buffer
 
 import TensorProto
-import scientifik.kmath.linear.BufferMatrix
 import scientifik.kmath.structures.*
 import kotlin.math.exp
 
@@ -23,6 +22,8 @@ inline class FloatBuffer(val array: FloatArray) : MutableBuffer<Float> {
     override fun copy(): MutableBuffer<Float> = FloatBuffer(array.copyOf())
 }
 
+@Suppress("FunctionName")
+inline fun FloatBuffer(size: Int, init: (Int) -> Float) = FloatBuffer(FloatArray(size) { init(it) })
 
 val Buffer<out Float>.array: FloatArray
     get() = if (this is FloatBuffer) {
@@ -37,6 +38,7 @@ val Buffer<out Long>.array: LongArray
     } else {
         LongArray(size) { get(it) }
     }
+
 val Buffer<out Short>.array: ShortArray
     get() = if (this is ShortBuffer) {
         array
@@ -44,34 +46,6 @@ val Buffer<out Short>.array: ShortArray
         ShortArray(size) { get(it) }
     }
 
-infix fun BufferMatrix<Float>.dot(other: BufferMatrix<Float>): BufferMatrix<Float> {
-    if (this.colNum != other.rowNum) error("Matrix dot operation dimension mismatch: ($rowNum, $colNum) x (${other.rowNum}, ${other.colNum})")
-
-    val array = FloatArray(this.rowNum * other.colNum)
-
-    val a = this.buffer.array
-    val b = other.buffer.array
-
-
-    for (i in (0 until rowNum)) {
-        for (j in (0 until other.colNum)) {
-            for (k in (0 until colNum)) {
-                array[i * other.colNum + j] += a[i * colNum + k] * b[k * other.colNum + j]
-            }
-        }
-    }
-
-    val buffer = FloatBuffer(array)
-    return BufferMatrix(rowNum, other.colNum, buffer)
-}
-
-val BufferMatrix<Float>.arrayRows: Array<FloatArray>
-    get() = Array(rowNum) { i ->
-        FloatArray(colNum) { j -> get(i, j) }
-    }
-
-@Suppress("FunctionName")
-inline fun FloatBuffer(size: Int, init: (Int) -> Float) = FloatBuffer(FloatArray(size) { init(it) })
 
 val SUPPORTED_TYPES = setOf(TensorProto.DataType.DOUBLE, TensorProto.DataType.FLOAT, TensorProto.DataType.INT64, TensorProto.DataType.INT32, TensorProto.DataType.INT16)
 fun inferType(type1: TensorProto.DataType, type2: TensorProto.DataType): TensorProto.DataType {

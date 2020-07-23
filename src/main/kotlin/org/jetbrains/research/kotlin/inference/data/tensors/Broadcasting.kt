@@ -1,25 +1,23 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.extensions.inferType
+import org.jetbrains.research.kotlin.inference.extensions.buffer.inferType
+import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
 import scientifik.kmath.structures.NDBuffer
 import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
     val totalShapeLength = max(currentShape.size, newShape.size)
-    val resultShape = IntArray(totalShapeLength) { -1 }
     val revCurrentShape = currentShape.reversedArray()
     val revNewShape = newShape.reversedArray()
 
-    for (i in 0 until totalShapeLength) {
+    return IntArray(totalShapeLength) { i ->
         val currentDim = revCurrentShape.getOrNull(i) ?: 1
         val newDim = revNewShape.getOrNull(i) ?: 1
 
         if (currentDim != newDim && currentDim != 1 && newDim != 1) error("Cannot broadcast shapes")
 
-        resultShape[i] = max(currentDim, newDim)
-    }
-
-    return resultShape.reversedArray()
+        max(currentDim, newDim)
+    }.reversedArray()
 }
 
 fun broadcastShape(currentShape: List<Int>, newShape: List<Int>): IntArray {

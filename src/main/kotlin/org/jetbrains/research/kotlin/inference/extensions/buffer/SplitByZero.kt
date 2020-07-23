@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.extensions
+package org.jetbrains.research.kotlin.inference.extensions.buffer
 
 import org.jetbrains.research.kotlin.inference.data.tensors.TensorStrides
 import scientifik.kmath.structures.*

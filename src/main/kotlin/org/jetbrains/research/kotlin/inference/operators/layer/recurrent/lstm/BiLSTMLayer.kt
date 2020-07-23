@@ -1,7 +1,9 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.createBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.createBuffer
+import org.jetbrains.research.kotlin.inference.extensions.tensor.as2DList
+import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
 import scientifik.kmath.structures.BufferNDStructure
 import scientifik.kmath.structures.get
 

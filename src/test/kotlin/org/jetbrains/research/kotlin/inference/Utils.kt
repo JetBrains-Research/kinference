@@ -4,7 +4,8 @@ import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.asBuffer
+import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
+import org.jetbrains.research.kotlin.inference.extensions.toIntArray
 import org.jetbrains.research.kotlin.inference.model.Model
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals

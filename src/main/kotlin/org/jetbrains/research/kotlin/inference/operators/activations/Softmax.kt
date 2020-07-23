@@ -3,7 +3,9 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.*
+import org.jetbrains.research.kotlin.inference.extensions.buffer.*
+import org.jetbrains.research.kotlin.inference.extensions.math.divScalar
+import org.jetbrains.research.kotlin.inference.extensions.math.minusScalar
 import org.jetbrains.research.kotlin.inference.operators.*
 import scientifik.kmath.structures.*
 
@@ -46,7 +48,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val axis = getAttributeValue("axis") as? Long
         val matrixRows = expMatrixRows(input, axis?.toInt() ?: 0)
 
-        val buffer = allocateMutableBuffer(input.info.type, input.data.buffer.size)
+        val buffer = allocateMutableBuffer(input.info.type, input.linearSize)
         val step = matrixRows[0].buffer.size
         repeat(matrixRows.size) { i ->
             val sum = matrixRows[i].sum()

@@ -4,6 +4,7 @@ import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.extensions.tensor.stack
 import org.jetbrains.research.kotlin.inference.graph.Graph
 import org.jetbrains.research.kotlin.inference.operators.*
 
