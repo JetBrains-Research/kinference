@@ -4,6 +4,7 @@ import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.operators.*
 
@@ -38,7 +39,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
 
         return Array(matrixRows.size) { i ->
             val max = matrixRows[i].max()!!
-            matrixRows[i].minus(max).exp()
+            matrixRows[i].minus(createScalarNDArray(input.type, max)).exp()
         }
     }
 
@@ -50,7 +51,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val array = allocateNDArray(input.type, input.strides)
         repeat(matrixRows.size) { i ->
             val sum = matrixRows[i].sum()
-            val row = matrixRows[i].div(sum)
+            val row = matrixRows[i].div(createScalarNDArray(input.type, sum))
             array.placeAll(i * step, row.array)
         }
         return array

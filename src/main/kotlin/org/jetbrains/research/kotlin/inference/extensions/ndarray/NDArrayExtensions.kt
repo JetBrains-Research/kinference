@@ -2,6 +2,8 @@ package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
+import org.jetbrains.research.kotlin.inference.extensions.primitives.scalarOp
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 
 fun NDArray.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray> {
@@ -18,7 +20,6 @@ fun NDArray.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): 
 }
 
 fun NDArray.splitWithAxis(splitTensor: NDArray, axis: Int = 0, keepDims: Boolean = true): List<NDArray> {
-    val split = splitTensor.array
     return if (splitTensor.linearSize == 1) {
         splitWithAxis((splitTensor[0] as Number).toInt(), axis, keepDims)
     } else {
@@ -34,10 +35,12 @@ fun NDArray.wrapOneDim(): NDArray {
 //if axis not 0
 private fun NDArray.mergeOnAxis(other: NDArray, axis: Int): NDArray {
     val dim = this.shape
-    val rows = this.rows.zip(other.rows).map { (fst, snd) -> fst.concatenate(snd, axis - 1) }
+    val rows = this.rows.zip(other.rows).map { (fst, snd) -> fst.concatenate(snd, axis - 1) }.toMutableList()
     var result = rows[0]
 
-    if (dim[0] > 1) result = rows.map { row -> row.wrapOneDim() }.reduce { acc, tensor -> acc.concatenate(tensor) }
+    if (dim[0] > 1) {
+        result = rows.apply { set(0, rows[0].wrapOneDim()) }.reduce { acc, tensor -> acc.concatenate(tensor.wrapOneDim()) }
+    }
     if (dim[0] == 1 && axis > 0) result = result.wrapOneDim()
 
     return result
@@ -82,29 +85,61 @@ fun NDArray.as2DList(): List<NDArray> {
     val matrixStrides = Strides(matrixShape)
 
     return List(strides.linearSize / matrixStrides.linearSize) { index ->
-        val newData = createArray(type, matrixStrides.linearSize) {
+        createNDArray(type, matrixStrides) {
             this[it + index * matrixStrides.linearSize]
         }
-        NDArray(newData, type, matrixStrides.shape)
     }
     //return this.rows().map { it.as2DList() }.flatten()
 }
 
 fun NDArray.reshape(tensorShape: NDArray): NDArray {
     val requestedShape = tensorShape.array as LongArray
-    val requestedShapeArray = IntArray(requestedShape.size) { i -> requestedShape[i].toInt() }
-    require(requestedShapeArray.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
+    val newShape = IntArray(requestedShape.size) { i -> requestedShape[i].toInt() }
+    require(newShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
 
-    val newShape = requestedShapeArray.copyOf()
-    for ((i, axisShape) in requestedShapeArray.withIndex()) {
+    for ((i, axisShape) in newShape.withIndex()) {
         if (axisShape == 0) newShape[i] = shape[i]
     }
 
-    val negativeIdx = newShape.indexOf(-1)
+    val negativeIdx = requestedShape.indexOf(-1)
     if (negativeIdx != -1) {
         val elementsCount = newShape.filter { it != -1 }.reduce(Int::times)
         newShape[negativeIdx] = strides.linearSize / elementsCount
     }
 
     return reshape(newShape)
+}
+
+fun NDArray.combineWith(other: NDArray, transform: (Any, Any) -> Any): NDArray {
+    if (this.isScalar()) {
+        return other.scalarOp(this[0], transform)
+    } else if (other.isScalar()) {
+        return this.scalarOp(other[0], transform)
+    }
+
+    if (!shape.contentEquals(other.shape)) {
+        return applyWithBroadcast(other, transform)
+    }
+
+    val sum = transform(array, other.array)
+    return NDArray(sum, type, strides)
+}
+
+fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
+    val addedShape = shape.toMutableList().also { it.removeAt(axis) }
+    val newShape = addedShape.toMutableList().also { it.addAll(axis, indices.shape.toList()) }
+    val newStrides = Strides(newShape.toIntArray())
+
+    val newArray = createArray(type, newStrides.linearSize) { i ->
+        val current = newStrides.index(i)
+        val indicesIndices = current.sliceArray(axis until indices.rank + axis)
+        val gatherIndices = (current.take(axis) + current.takeLast(rank - 1 - axis)).toMutableList().also { it.add(axis, (indices[indicesIndices] as Long).toInt()) }
+        val positiveGatherIndices = gatherIndices.zip(shape.toList()) { index, shape ->
+            if (index < 0) shape + index else index
+        }.toIntArray()
+        val linear = strides.offset(positiveGatherIndices)
+        this[linear]
+    }
+
+    return NDArray(newArray, type, newStrides.shape)
 }

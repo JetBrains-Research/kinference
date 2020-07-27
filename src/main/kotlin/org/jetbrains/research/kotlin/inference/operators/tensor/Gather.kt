@@ -4,6 +4,7 @@ import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.gather
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Gather(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -26,7 +27,7 @@ class Gather(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) :
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
         val (data, indices) = inputs
-        val axis = (data).data.indexAxis((getAttributeValue("axis") as Number).toInt())
-        return listOf(data.data.gather(indices.data, axis).asTensor(""))
+        val axis = data.data.indexAxis((getAttributeValue("axis") as Number).toInt())
+        return listOf(data.data.gather(indices.data, axis).asTensor())
     }
 }

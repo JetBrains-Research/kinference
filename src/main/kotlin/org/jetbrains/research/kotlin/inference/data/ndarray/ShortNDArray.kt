@@ -1,10 +1,9 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
-import org.jetbrains.research.kotlin.inference.extensions.primitives.plus
-import org.jetbrains.research.kotlin.inference.extensions.primitives.times
 import TensorProto
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.INT16) {
     override fun clone(newStrides: Strides): ShortNDArray {
@@ -22,23 +21,41 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
     override fun plus(other: NDArray): NDArray {
         other as ShortNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> plus(left as ShortArray, right as ShortArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            ShortNDArray(shortArrayOf((this[0] + other[0]).toShort()))
+        } else {
+            this.combineWith(other) { fst, snd -> plus(fst as ShortArray, snd as ShortArray) }
         }
-
-        val sum = plus(array as ShortArray, other.array as ShortArray)
-        return ShortNDArray(sum, strides)
     }
 
     override fun times(other: NDArray): NDArray {
         other as ShortNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> times(left as ShortArray, right as ShortArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            ShortNDArray(shortArrayOf((this[0] * other[0]).toShort()))
+        } else {
+            this.combineWith(other) { fst, snd -> times(fst as ShortArray, snd as ShortArray) }
         }
+    }
 
-        val sum = times(array as ShortArray, other.array as ShortArray)
-        return ShortNDArray(sum, strides)
+    override fun div(other: NDArray): NDArray {
+        other as ShortNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            ShortNDArray(shortArrayOf((this[0] / other[0]).toShort()))
+        } else {
+            this.combineWith(other) { fst, snd -> div(fst as ShortArray, snd as ShortArray) }
+        }
+    }
+
+    override fun minus(other: NDArray): NDArray {
+        other as ShortNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            ShortNDArray(shortArrayOf((this[0] - other[0]).toShort()))
+        } else {
+            this.combineWith(other) { fst, snd -> minus(fst as ShortArray, snd as ShortArray) }
+        }
     }
 
     override fun placeAll(startOffset: Int, block: Any) {

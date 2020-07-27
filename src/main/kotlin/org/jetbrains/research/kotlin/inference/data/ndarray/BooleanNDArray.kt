@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import TensorProto
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.BOOL) {
     override fun clone(newStrides: Strides): BooleanNDArray {
@@ -21,6 +21,14 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
     }
 
     override fun times(other: NDArray): NDArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun div(other: NDArray): NDArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun minus(other: NDArray): NDArray {
         TODO("Not yet implemented")
     }
 

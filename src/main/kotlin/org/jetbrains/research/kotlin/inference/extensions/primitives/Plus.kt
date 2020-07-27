@@ -45,4 +45,3 @@ fun plus(left: ShortArray, right: ShortArray): ShortArray {
 
     return array
 }
-

@@ -23,7 +23,7 @@ class Concat(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
     }
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
-        val axis = getAttributeValue("axis") as Long
+        val axis = getAttributeValue("axis") as Number
 
         return listOf(inputs.concatenate(axis.toInt()))
     }

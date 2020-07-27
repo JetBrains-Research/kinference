@@ -1,10 +1,10 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
-import org.jetbrains.research.kotlin.inference.extensions.primitives.plus
-import org.jetbrains.research.kotlin.inference.extensions.primitives.times
 import TensorProto
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.primitives.minus
+import org.jetbrains.research.kotlin.inference.extensions.primitives.times
 
 class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.DOUBLE) {
     override fun clone(newStrides: Strides): DoubleNDArray {
@@ -22,25 +22,42 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
     override fun plus(other: NDArray): NDArray {
         other as DoubleNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> plus(left as DoubleArray, right as DoubleArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            DoubleNDArray(doubleArrayOf(this[0] + other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> times(fst as DoubleArray, snd as DoubleArray) }
         }
+    }
 
-        val sum = plus(array as DoubleArray, other.array as DoubleArray)
-        return DoubleNDArray(sum, strides)
+    override fun minus(other: NDArray): NDArray {
+        other as DoubleNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            DoubleNDArray(doubleArrayOf(this[0] - other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> minus(fst as DoubleArray, snd as DoubleArray) }
+        }
     }
 
     override fun times(other: NDArray): NDArray {
         other as DoubleNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> times(left as DoubleArray, right as DoubleArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            return DoubleNDArray(doubleArrayOf(this[0] * other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> times(fst as DoubleArray, snd as DoubleArray) }
         }
-
-        val sum = times(array as DoubleArray, other.array as DoubleArray)
-        return DoubleNDArray(sum, strides)
     }
 
+    override fun div(other: NDArray): NDArray {
+        other as DoubleNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            return DoubleNDArray(doubleArrayOf(this[0] / other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> times(fst as DoubleArray, snd as DoubleArray) }
+        }
+    }
 
     override fun placeAll(startOffset: Int, block: Any) {
         array as DoubleArray; block as DoubleArray

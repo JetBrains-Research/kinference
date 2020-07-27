@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
+import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import TensorProto.DataType
 
 inline fun createArray(type: DataType, size: Int, noinline init: (Int) -> Any): Any {
     return when (type) {
@@ -15,13 +15,25 @@ inline fun createArray(type: DataType, size: Int, noinline init: (Int) -> Any): 
     }
 }
 
-inline fun createNDArray(type: DataType, strides: Strides, noinline init: (Int) -> Any): NDArray {
+inline fun createNDArray(type: DataType, strides: Strides = Strides.empty(), noinline init: (Int) -> Any): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(createArray(type, strides.linearSize, init) as DoubleArray, strides)
         DataType.FLOAT -> FloatNDArray(createArray(type, strides.linearSize, init) as FloatArray, strides)
         DataType.INT64 -> LongNDArray(createArray(type, strides.linearSize, init) as LongArray, strides)
         DataType.INT32 -> IntNDArray(createArray(type, strides.linearSize, init) as IntArray, strides)
         DataType.INT16 -> ShortNDArray(createArray(type, strides.linearSize, init) as ShortArray, strides)
+        //else -> Array(size, init)
+        else -> error("Unsupported data type $type")
+    }
+}
+
+inline fun createScalarNDArray(type: DataType, value: Any): NDArray {
+    return when (type) {
+        DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(value as Double))
+        DataType.FLOAT -> FloatNDArray(floatArrayOf(value as Float))
+        DataType.INT64 -> LongNDArray(longArrayOf(value as Long))
+        DataType.INT32 -> IntNDArray(intArrayOf(value as Int))
+        DataType.INT16 -> ShortNDArray(shortArrayOf(value as Short))
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }

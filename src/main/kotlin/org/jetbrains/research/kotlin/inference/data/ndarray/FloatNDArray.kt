@@ -1,10 +1,9 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
-import org.jetbrains.research.kotlin.inference.extensions.primitives.plus
-import org.jetbrains.research.kotlin.inference.extensions.primitives.times
 import TensorProto
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.FLOAT) {
     override fun clone(newStrides: Strides): FloatNDArray {
@@ -22,23 +21,41 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
     override fun plus(other: NDArray): NDArray {
         other as FloatNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> plus(left as FloatArray, right as FloatArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            FloatNDArray(floatArrayOf(this[0] + other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> plus(fst as FloatArray, snd as FloatArray) }
         }
-
-        val sum = plus(array as FloatArray, other.array as FloatArray)
-        return FloatNDArray(sum, strides)
     }
 
     override fun times(other: NDArray): NDArray {
         other as FloatNDArray
 
-        if (!shape.contentEquals(other.shape)) {
-            return applyWithBroadcast(other) { left, right -> times(left as FloatArray, right as FloatArray) }
+        return if (this.isScalar() && other.isScalar()) {
+            FloatNDArray(floatArrayOf(this[0] * other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> times(fst as FloatArray, snd as FloatArray) }
         }
+    }
 
-        val sum = times(array as FloatArray, other.array as FloatArray)
-        return FloatNDArray(sum, strides)
+    override fun minus(other: NDArray): NDArray {
+        other as FloatNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            FloatNDArray(floatArrayOf(this[0] - other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> minus(fst as FloatArray, snd as FloatArray) }
+        }
+    }
+
+    override fun div(other: NDArray): NDArray {
+        other as FloatNDArray
+
+        return if (this.isScalar() && other.isScalar()) {
+            FloatNDArray(floatArrayOf(this[0] / other[0]))
+        } else {
+            this.combineWith(other) { fst, snd -> div(fst as FloatArray, snd as FloatArray) }
+        }
     }
 
     override fun placeAll(startOffset: Int, block: Any) {

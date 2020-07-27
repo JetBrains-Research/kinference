@@ -21,7 +21,7 @@ class Reshape(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Op
     }
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
-        val targetShape = inputs.elementAt(1).data
-        return listOf(inputs.first().data.reshape(targetShape).asTensor(""))
+        val targetShape = inputs[1].data
+        return listOf(inputs.first().data.reshape(targetShape).asTensor())
     }
 }

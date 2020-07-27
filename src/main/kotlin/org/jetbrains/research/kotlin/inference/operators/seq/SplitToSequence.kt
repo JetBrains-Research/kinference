@@ -5,7 +5,7 @@ import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
 import org.jetbrains.research.kotlin.inference.operators.*
 import org.jetbrains.research.kotlin.inference.types.SequenceInfo
 
@@ -36,11 +36,11 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: I
         val parts = inputs.elementAtOrNull(1)
 
         val tensors = if (parts == null) {
-            inputs.first().data.splitWithAxis(inputs.first().data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
+            inputs.first().splitWithAxis(inputs.first().data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
         } else {
-            inputs.first().data.splitWithAxis(parts.data, axis.toInt())
+            inputs.first().splitWithAxis(parts, axis.toInt())
         }
 
-        return listOf(TensorSeq(tensors.map { it.asTensor("") }, SequenceInfo("output_sequence", tensors.first().type)))
+        return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors.first().info.type)))
     }
 }

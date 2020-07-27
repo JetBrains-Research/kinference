@@ -1,12 +1,12 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
+import TensorProto
+import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
-import TensorProto
-import TensorProto.DataType
 
 abstract class NDArray protected constructor(val array: Any, val strides: Strides, val type: DataType) {
     val rank: Int
@@ -35,13 +35,16 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
     abstract fun placeAll(startOffset: Int, block: Any)
 
     abstract operator fun plus(other: NDArray): NDArray
+    abstract operator fun minus(other: NDArray): NDArray
     abstract operator fun times(other: NDArray): NDArray
+    abstract operator fun div(other: NDArray): NDArray
 
     fun indexAxis(axis: Int): Int {
         return if (axis < 0) rank + axis else axis
     }
 
     infix fun matmul(other: NDArray): NDArray {
+        require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
         if (rank <= 2 && other.rank <= 2) {
             val actualThis = if (rank == 1) this.reshape(intArrayOf(1, *shape)) else this
             val actualOther = if (other.rank == 1) this.reshape(intArrayOf(*other.shape, 1)) else other
@@ -104,25 +107,6 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed() else permutations.toIntArray()
 
         return this.transpose(actualPerm)
-    }
-
-    fun gather(indices: NDArray, axis: Int = 0): NDArray {
-        val addedShape = shape.toMutableList().also { it.removeAt(axis) }
-        val newShape = addedShape.toMutableList().also { it.addAll(axis, indices.shape.toList()) }
-        val newStrides = Strides(newShape.toIntArray())
-
-        val newArray = createArray(type, newStrides.linearSize) { i ->
-            val current = newStrides.index(i)
-            val indicesIndices = current.sliceArray(axis until indices.rank + axis)
-            val gatherIndices = (current.take(axis) + current.takeLast(rank - 1 - axis)).toMutableList().also { it.add(axis, (indices[indicesIndices] as Long).toInt()) }
-            val positiveGatherIndices = gatherIndices.zip(shape.toList()) { index, shape ->
-                if (index < 0) shape + index else index
-            }.toIntArray()
-            val linear = strides.offset(positiveGatherIndices)
-            this[linear]
-        }
-
-        return NDArray(newArray, type, newStrides.shape)
     }
 
     fun reshape(shape: IntArray): NDArray {
@@ -219,11 +203,11 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
 
             return if (array.isEmpty()) {
                 when (type) {
-                    DataType.DOUBLE -> DoubleNDArray(DoubleArray(1) { proto.raw_data!!.asByteBuffer().double })
-                    DataType.FLOAT -> FloatNDArray(FloatArray(1) { proto.raw_data!!.asByteBuffer().float })
-                    DataType.INT64 -> LongNDArray(LongArray(1) { proto.raw_data!!.asByteBuffer().long })
-                    DataType.INT32 -> IntNDArray(IntArray(1) { proto.raw_data!!.asByteBuffer().int })
-                    DataType.BOOL -> BooleanNDArray(BooleanArray(1) { proto.raw_data!!.asByteBuffer().int != 0 })
+                    DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(proto.raw_data!!.asByteBuffer().double))
+                    DataType.FLOAT -> FloatNDArray(floatArrayOf(proto.raw_data!!.asByteBuffer().float))
+                    DataType.INT64 -> LongNDArray(longArrayOf(proto.raw_data!!.asByteBuffer().long))
+                    DataType.INT32 -> IntNDArray(intArrayOf(proto.raw_data!!.asByteBuffer().int))
+                    DataType.BOOL -> BooleanNDArray(booleanArrayOf(proto.raw_data!!.asByteBuffer().int != 0))
                     else -> error("Unsupported data type")
                 }
             } else NDArray(array[0], type, IntArray(0))

@@ -1,7 +1,6 @@
 package org.jetbrains.research.kotlin.inference.operators
 
 import AttributeProto
-import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ONNXData
@@ -73,7 +72,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         }
 
         var variadicCounter = 0
-        var variadicType: TensorProto.DataType? = null
+        var variadicType: DataType? = null
         inputConstraints.zip(inputs.asSequence().plusElement(null)) { constraint, input ->
             if (input == null) {
                 require(constraint == null || !constraint.required || (constraint is VariadicInputInfo && variadicCounter > 0)) {
