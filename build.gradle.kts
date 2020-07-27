@@ -13,7 +13,6 @@ plugins {
 
 repositories {
     jcenter()
-    maven("https://dl.bintray.com/mipt-npm/scientifik")
 }
 
 val generatedDir = "src/main/kotlin-gen"
@@ -72,6 +71,5 @@ tasks.test {
 dependencies {
     implementation(kotlin("stdlib"))
     api("com.squareup.wire", "wire-runtime", "3.1.0")
-    api("scientifik", "kmath-core-jvm", "0.1.3")
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
 }

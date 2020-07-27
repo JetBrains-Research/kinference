@@ -3,7 +3,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.toIntArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Squeeze(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -23,6 +23,6 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Op
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
         val axes = (getAttributeValueOrNull("axes") as? List<Long>) ?: emptyList()
-        return listOf(inputs.first().squeeze(*axes.toIntArray()))
+        return listOf(inputs.first().data.squeeze(*axes.toIntArray()).asTensor(""))
     }
 }

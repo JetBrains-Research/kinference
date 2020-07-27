@@ -2,9 +2,9 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
-import org.jetbrains.research.kotlin.inference.extensions.toIntArray
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Split(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -27,9 +27,9 @@ class Split(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Oper
         val axis = getAttributeValue("axis") as Long
 
         return when (val parts = getAttributeValueOrNull("split")) {
-            null -> inputs.first().splitWithAxis(usedOutputsNum, axis.toInt())
-            is Number -> inputs.first().splitWithAxis(parts.toInt(), axis.toInt())
-            is List<*> -> inputs.first().splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
+            null -> inputs.first().data.splitWithAxis(usedOutputsNum, axis.toInt()).map { it.asTensor("") }
+            is Number -> inputs.first().data.splitWithAxis(parts.toInt(), axis.toInt()).map { it.asTensor("") }
+            is List<*> -> inputs.first().data.splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt()).toList().map { it.asTensor("") }
             else -> error("Unsupported value type")
         }
     }

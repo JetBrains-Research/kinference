@@ -10,3 +10,11 @@ fun DataType.resolveKClass(): KClass<*> = when (this) {
     DataType.INT32 -> Int::class
     else -> error("Unsupported data type")
 }
+
+inline fun <reified T : Any> KClass<T>.resolveDataType(): DataType = when (this) {
+    Float::class -> DataType.FLOAT
+    Double::class -> DataType.DOUBLE
+    Long::class -> DataType.INT64
+    Int::class -> DataType.INT32
+    else -> error("Unsupported data type")
+}

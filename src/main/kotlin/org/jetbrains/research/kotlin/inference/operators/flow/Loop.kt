@@ -3,12 +3,12 @@ package org.jetbrains.research.kotlin.inference.operators.flow
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.stack
 import org.jetbrains.research.kotlin.inference.graph.Graph
 import org.jetbrains.research.kotlin.inference.operators.*
 
-class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
+class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -28,9 +28,9 @@ class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Opera
         private val INFO = OperatorInfo("Loop", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<BaseTensor>): List<BaseTensor> {
-        val maxTripCount = (inputs[0] as ScalarTensor).value as Long
-        var keepgoing = (inputs[1] as ScalarTensor).value as Boolean
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
+        val maxTripCount = inputs[0].data[0] as Long
+        var keepgoing = inputs[1].data[0] as Boolean
 
         val body = getAttributeValue("body") as Graph
         require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
@@ -47,17 +47,17 @@ class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Opera
 
         repeat(maxTripCount.toInt()) { counter ->
             if (keepgoing) {
-                body.setInput(ScalarTensor(body.inputs[0].name, counter.toLong(), TensorProto.DataType.INT64))
-                body.setInput(ScalarTensor(body.inputs[1].name, keepgoing, TensorProto.DataType.BOOL))
+                body.setInput(Tensor(counter.toLong(), TensorProto.DataType.INT64, name = body.inputs[0].name))
+                body.setInput(Tensor(keepgoing, TensorProto.DataType.BOOL, name = body.inputs[1].name))
 
                 val outputs = body.execute()
                 val iterationOutputs = outputs.drop(body.inputs.size - 1)
-                keepgoing = (outputs[0] as ScalarTensor).value as Boolean
+                keepgoing = (outputs[0] as Tensor).data[0] as Boolean
 
                 modified.clear()
                 body.inputs.drop(2).zip(outputs.drop(1)) { input, value ->
                     body.setInput(value.clone(input.name))
-                    modified.add(value as BaseTensor)
+                    modified.add(value as Tensor)
                 }
 
                 require(iterationOutputs.size == scans.size) { "Loop subgraph didn't provide expected output count" }

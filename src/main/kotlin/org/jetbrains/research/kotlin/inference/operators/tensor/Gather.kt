@@ -3,10 +3,10 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.operators.*
 
-class Gather(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<BaseTensor, Tensor>(INFO, usedOutputsNum, attributes) {
+class Gather(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -24,9 +24,9 @@ class Gather(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) :
         private val INFO = OperatorInfo("Gather", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<BaseTensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         val (data, indices) = inputs
-        val axis = (data as Tensor).indexAxis((getAttributeValue("axis") as Number).toInt())
-        return listOf(data.gather(if (indices is ScalarTensor) indices.toTensor() else indices as Tensor, axis))
+        val axis = (data).data.indexAxis((getAttributeValue("axis") as Number).toInt())
+        return listOf(data.data.gather(indices.data, axis).asTensor(""))
     }
 }

@@ -2,12 +2,10 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.buffer.*
-import org.jetbrains.research.kotlin.inference.extensions.math.divScalar
-import org.jetbrains.research.kotlin.inference.extensions.math.minusScalar
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.operators.*
-import scientifik.kmath.structures.*
 
 //only for float and double types
 class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -28,33 +26,33 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         return if (dims.isNullOrEmpty()) 1 else dims.reduce(Int::times)
     }
 
-    private fun expMatrixRows(input: Tensor, axis: Int): Array<NDBuffer<Any>> {
+    private fun expMatrixRows(input: NDArray, axis: Int): Array<NDArray> {
         val actualAxis = input.indexAxis(axis)
-        val shape = input.data.shape
+        val shape = input.shape
         val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
 
         val rows = resolveDims(shape.slice(rowIdx))
         val columns = resolveDims(shape.slice(columnIdx))
 
-        val matrixRows = input.reshape(intArrayOf(rows, columns)).bufferRows
+        val matrixRows = input.reshape(intArrayOf(rows, columns)).rows
 
         return Array(matrixRows.size) { i ->
             val max = matrixRows[i].max()!!
-            matrixRows[i].minusScalar(max).exp()
+            matrixRows[i].minus(max).exp()
         }
     }
 
-    override fun activate(input: Tensor): Tensor {
+    override fun activate(input: NDArray): NDArray {
         val axis = getAttributeValue("axis") as? Long
         val matrixRows = expMatrixRows(input, axis?.toInt() ?: 0)
 
-        val buffer = allocateMutableBuffer(input.info.type, input.linearSize)
-        val step = matrixRows[0].buffer.size
+        val step = matrixRows[0].linearSize
+        val array = allocateNDArray(input.type, input.strides)
         repeat(matrixRows.size) { i ->
             val sum = matrixRows[i].sum()
-            val row = matrixRows[i].divScalar(sum)
-            buffer.placeAll(row.buffer, i * step)
+            val row = matrixRows[i].div(sum)
+            array.placeAll(i * step, row.array)
         }
-        return Tensor("output", BufferNDStructure(input.data.strides, buffer as Buffer<Any>), input.info.type)
+        return array
     }
 }

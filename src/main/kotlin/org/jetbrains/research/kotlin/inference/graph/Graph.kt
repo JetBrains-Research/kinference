@@ -1,9 +1,8 @@
 package org.jetbrains.research.kotlin.inference.graph
 
-import GraphProto
 import org.jetbrains.research.kotlin.inference.data.ONNXData
-import org.jetbrains.research.kotlin.inference.data.tensors.BaseTensor
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import GraphProto
 import org.jetbrains.research.kotlin.inference.types.ValueInfo
 
 //TODO: support general graphs
@@ -19,7 +18,7 @@ class Graph(proto: GraphProto, parent: Graph? = null) {
     val info: List<ValueInfo>
 
     init {
-        val initializers = proto.initializer.map { BaseTensor.create(it) }
+        val initializers = proto.initializer.map { Tensor.create(it) }
         for (tensor in initializers) {
             rootContext.putValue(tensor.info.name, tensor)
         }

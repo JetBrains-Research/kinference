@@ -1,12 +1,12 @@
 package org.jetbrains.research.kotlin.inference.operators.seq
 
-import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
 import org.jetbrains.research.kotlin.inference.extensions.tensor.stack
 import org.jetbrains.research.kotlin.inference.operators.*
+import AttributeProto
 
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
     : Operator<TensorSeq, Tensor>(INFO, usedOutputsNum, attributes) {

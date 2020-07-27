@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.reshape
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Reshape(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -20,7 +21,7 @@ class Reshape(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Op
     }
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
-        val targetShape = inputs.elementAt(1)
-        return listOf(inputs.first().reshape(targetShape))
+        val targetShape = inputs.elementAt(1).data
+        return listOf(inputs.first().data.reshape(targetShape).asTensor(""))
     }
 }

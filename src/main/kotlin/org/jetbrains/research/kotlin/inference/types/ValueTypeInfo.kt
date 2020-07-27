@@ -8,6 +8,9 @@ import org.jetbrains.research.kotlin.inference.graph.Context
 class TensorShape(private val dims: List<Dimension>) {
     constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })
 
+    val size: Int
+        get() = dims.size
+
     open class Dimension
     class StaticDimension(val value: Int) : Dimension()
     class DynamicDimension(val value: String) : Dimension()
