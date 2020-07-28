@@ -1,11 +1,9 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.buffer.createBuffer
-import org.jetbrains.research.kotlin.inference.extensions.tensor.as2DList
-import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
-import scientifik.kmath.structures.BufferNDStructure
-import scientifik.kmath.structures.get
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 
 class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     override fun apply(inputs: List<Tensor>): List<Tensor> {
@@ -14,11 +12,11 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val inputList = inputs.toList()
 
         val inputTensor = inputList[0]
-        val (forwardWeights, backwardWeights) = inputList[1].splitWithAxis(2)
-        val (forwardRecWeights, backwardRecWeights) = inputList[2].splitWithAxis(2)
-        val (forwardBias, backwardBias) = inputList.getOrNull(3)?.splitWithAxis(2) ?: listOf(null, null)
+        val (forwardWeights, backwardWeights) = inputList[1].data.splitWithAxis(2)
+        val (forwardRecWeights, backwardRecWeights) = inputList[2].data.splitWithAxis(2)
+        val (forwardBias, backwardBias) = inputList.getOrNull(3)?.data?.splitWithAxis(2) ?: listOf(null, null)
 
-        val inputMatrices = inputTensor.as2DList()
+        val inputMatrices = inputTensor.data.as2DList()
 
         val (mainForwardOutput, lastForwardState) =
             activate(inputMatrices, forwardWeights.squeeze(0), forwardRecWeights.squeeze(0), forwardBias)
@@ -32,29 +30,27 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun mainOutputHelper(mainForwardOutput: List<Tensor>, mainBackwardOutput: List<Tensor>): Tensor {
-        val (batchSize, hiddenSize) = mainBackwardOutput.first().data.shape
+    private fun mainOutputHelper(mainForwardOutput: List<NDArray>, mainBackwardOutput: List<NDArray>): Tensor {
+        val (batchSize, hiddenSize) = mainBackwardOutput.first().shape
         val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput.reversed())
 
         val newShape = intArrayOf(mainForwardOutput.size, 2, batchSize, hiddenSize)
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
-        val newData = createBuffer(mainForwardOutput.first().info.type, newStrides.linearSize) { i ->
+        val newData = createArray(mainForwardOutput.first().type, newStrides.linearSize) { i ->
             val indices = newStrides.index(i)
             val (inputNum, numDirection, rowNum, colNum) = indices
-            mainOutputs[numDirection][inputNum].data[rowNum, colNum]
+            mainOutputs[numDirection][inputNum].get(intArrayOf(rowNum, colNum))
         }
-        val newBuffer = BufferNDStructure(newStrides, newData)
-        return Tensor(null, newBuffer, mainForwardOutput.first().info.type)
+        return NDArray(newData, mainForwardOutput.first().type, newStrides).asTensor()
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun stateOutputHelper(lastForwardState: State, lastBackwardState: State): List<Tensor> {
-        val (batchSize, hiddenSize) = lastForwardState.output.data.shape
-        val type = lastForwardState.output.info.type
+        val (batchSize, hiddenSize) = lastForwardState.output.shape
 
         val newShape = intArrayOf(2, batchSize, hiddenSize)
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val lastOutputs = listOf(lastForwardState.output, lastBackwardState.output)
         val newOutputBuffer = extractActualStates(lastOutputs, newStrides)
@@ -62,17 +58,15 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         val lastCellGates = listOf(lastForwardState.cellGate, lastBackwardState.cellGate)
         val newCellGateBuffer = extractActualStates(lastCellGates, newStrides)
 
-        val outputTensor = Tensor(null, newOutputBuffer, type)
-        val cellGateTensor = Tensor(null, newCellGateBuffer, type)
-        return listOf(outputTensor, cellGateTensor)
+        return listOf(newOutputBuffer.asTensor(), newCellGateBuffer.asTensor())
     }
 
-    private fun extractActualStates(states: List<Tensor>, strides: TensorStrides): BufferNDStructure<Any> {
-        val newOutputData = createBuffer(states.first().info.type, strides.linearSize) { i ->
+    private fun extractActualStates(states: List<NDArray>, strides: Strides): NDArray {
+        val array = createArray(states.first().type, strides.linearSize) { i ->
             val indices = strides.index(i)
             val (numDirection, rowNum, colNum) = indices
-            states[numDirection].data[rowNum, colNum]
+            states[numDirection].get(intArrayOf(rowNum, colNum))
         }
-        return BufferNDStructure(strides, newOutputData)
+        return NDArray(array, states.first().type, strides)
     }
 }

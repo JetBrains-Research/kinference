@@ -3,11 +3,11 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import AttributeProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
-    : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
+    : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -29,20 +29,20 @@ class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
         private val INFO = OperatorInfo("Constant", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<BaseTensor>): List<BaseTensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         //only one of all attributes is not null
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeValueOrNull(it.name) }.single { it.second != null }
 
         val result = when (name) {
             "value" -> value
-            "value_float" -> ScalarTensor("output", value!!, DataType.FLOAT)
+            "value_float" -> Tensor(value!!, DataType.FLOAT)
             "value_floats" -> Tensor(value!! as List<Any>, DataType.FLOAT)
-            "value_int" -> ScalarTensor("output", value!!, DataType.INT64)
+            "value_int" -> Tensor(value!!, DataType.INT64)
             "value_ints" -> Tensor(value!! as List<Any>, DataType.INT64)
-            "value_string" -> ScalarTensor("output", value!!, DataType.STRING)
+            "value_string" -> Tensor(value!!, DataType.STRING)
             "value_strings" -> Tensor(value!! as List<Any>, DataType.STRING)
             else -> error("Unsupported data type")
-        } as BaseTensor
+        } as Tensor
         return listOf(result)
     }
 }

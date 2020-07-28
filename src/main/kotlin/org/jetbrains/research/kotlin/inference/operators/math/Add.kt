@@ -2,10 +2,10 @@ package org.jetbrains.research.kotlin.inference.operators.math
 
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.BaseTensor
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.operators.*
 
-class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
+class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -30,7 +30,7 @@ class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Op
         private val INFO = OperatorInfo("Add", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<BaseTensor>): List<BaseTensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         return listOf(inputs.first() + inputs.last())
     }
 }

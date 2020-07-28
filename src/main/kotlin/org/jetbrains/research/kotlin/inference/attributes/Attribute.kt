@@ -2,7 +2,6 @@ package org.jetbrains.research.kotlin.inference.attributes
 
 import AttributeProto
 import AttributeProto.AttributeType
-import org.jetbrains.research.kotlin.inference.data.tensors.ScalarTensor
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Graph
 
@@ -17,10 +16,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
             AttributeType.FLOAT -> Attribute(proto, proto.f!!)
             AttributeType.INT -> Attribute(proto, proto.i!!)
             AttributeType.STRING -> Attribute(proto, proto.s!!.utf8())
-            AttributeType.TENSOR -> when {
-                proto.t!!.dims.isEmpty() -> Attribute(proto, ScalarTensor.create(proto.t))
-                else -> Attribute(proto, Tensor.create(proto.t))
-            } as Attribute<Any>
+            AttributeType.TENSOR -> Attribute(proto, Tensor.create(proto.t!!))
             AttributeType.GRAPH -> Attribute(proto, Graph(proto.g!!, parent))
             AttributeType.SPARSE_TENSOR -> TODO("Not supported in current version of MPP Inference")
             AttributeType.FLOATS -> Attribute(proto, proto.floats)

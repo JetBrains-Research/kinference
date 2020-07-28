@@ -1,11 +1,9 @@
-package org.jetbrains.research.kotlin.inference.extensions.buffer
+package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.TensorStrides
-import scientifik.kmath.structures.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
-fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Float>> {
-    val array = buffer.array
-
+fun split(array: FloatArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<FloatNDArray> {
     return Array(split.size) { num ->
         val newShape: IntArray
         if (keepDims) {
@@ -16,7 +14,7 @@ fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, kee
             strides.shape.copyInto(newShape, 0, 0, axis)
             strides.shape.copyInto(newShape, axis, axis + 1)
         }
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val newArray = FloatArray(newStrides.linearSize)
         val factor = num * (split.getOrNull(num - 1) ?: 0)
@@ -27,13 +25,11 @@ fun split(buffer: FloatBuffer, axis: Int, strides: Strides, split: IntArray, kee
             newArray[i] = array[strides.offset(indices)]
         }
 
-        BufferNDStructure(newStrides, newArray.asBuffer())
+        FloatNDArray(newArray, newStrides)
     }
 }
 
-fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Double>> {
-    val array = buffer.array
-
+fun split(array: DoubleArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<DoubleNDArray> {
     return Array(split.size) { num ->
         val newShape: IntArray
         if (keepDims) {
@@ -44,7 +40,7 @@ fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, ke
             strides.shape.copyInto(newShape, 0, 0, axis)
             strides.shape.copyInto(newShape, axis, axis + 1)
         }
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val newArray = DoubleArray(newStrides.linearSize)
         val factor = num * (split.getOrNull(num - 1) ?: 0)
@@ -54,14 +50,11 @@ fun split(buffer: DoubleBuffer, axis: Int, strides: Strides, split: IntArray, ke
             indices[axis] += factor
             newArray[i] = array[strides.offset(indices)]
         }
-
-        BufferNDStructure(newStrides, newArray.asBuffer())
+        DoubleNDArray(newArray, newStrides)
     }
 }
 
-fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Int>> {
-    val array = buffer.array
-
+fun split(array: IntArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<IntNDArray> {
     return Array(split.size) { num ->
         val newShape: IntArray
         if (keepDims) {
@@ -72,7 +65,7 @@ fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepD
             strides.shape.copyInto(newShape, 0, 0, axis)
             strides.shape.copyInto(newShape, axis, axis + 1)
         }
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val newArray = IntArray(newStrides.linearSize)
         val factor = num * (split.getOrNull(num - 1) ?: 0)
@@ -83,13 +76,11 @@ fun split(buffer: IntBuffer, axis: Int, strides: Strides, split: IntArray, keepD
             newArray[i] = array[strides.offset(indices)]
         }
 
-        BufferNDStructure(newStrides, newArray.asBuffer())
+        IntNDArray(newArray, newStrides)
     }
 }
 
-fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Long>> {
-    val array = buffer.array
-
+fun split(array: LongArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<LongNDArray> {
     return Array(split.size) { num ->
         val newShape: IntArray
         if (keepDims) {
@@ -100,7 +91,7 @@ fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keep
             strides.shape.copyInto(newShape, 0, 0, axis)
             strides.shape.copyInto(newShape, axis, axis + 1)
         }
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val newArray = LongArray(newStrides.linearSize)
         val factor = num * (split.getOrNull(num - 1) ?: 0)
@@ -111,13 +102,11 @@ fun split(buffer: LongBuffer, axis: Int, strides: Strides, split: IntArray, keep
             newArray[i] = array[strides.offset(indices)]
         }
 
-        BufferNDStructure(newStrides, newArray.asBuffer())
+        LongNDArray(newArray, newStrides)
     }
 }
 
-fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<NDBuffer<Short>> {
-    val array = buffer.array
-
+fun split(array: ShortArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<ShortNDArray> {
     return Array(split.size) { num ->
         val newShape: IntArray
         if (keepDims) {
@@ -128,7 +117,7 @@ fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, kee
             strides.shape.copyInto(newShape, 0, 0, axis)
             strides.shape.copyInto(newShape, axis, axis + 1)
         }
-        val newStrides = TensorStrides(newShape)
+        val newStrides = Strides(newShape)
 
         val newArray = ShortArray(newStrides.linearSize)
         val factor = num * (split.getOrNull(num - 1) ?: 0)
@@ -139,17 +128,22 @@ fun split(buffer: ShortBuffer, axis: Int, strides: Strides, split: IntArray, kee
             newArray[i] = array[strides.offset(indices)]
         }
 
-        BufferNDStructure(newStrides, newArray.asBuffer())
+        ShortNDArray(newArray, newStrides)
     }
 }
 
-fun <T : Any> NDBuffer<T>.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDBuffer<T>> {
-    return when (buffer) {
-        is IntBuffer -> split(buffer as IntBuffer, axis, strides, split, keepDims)
-        is FloatBuffer -> split(buffer as FloatBuffer, axis, strides, split, keepDims)
-        is ShortBuffer -> split(buffer as ShortBuffer, axis, strides, split, keepDims)
-        is DoubleBuffer -> split(buffer as DoubleBuffer, axis, strides, split, keepDims)
-        is LongBuffer -> split(buffer as LongBuffer, axis, strides, split, keepDims)
+fun NDArray.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDArray> {
+    return when (array) {
+        is IntArray -> split(array, axis, strides, split, keepDims)
+        is FloatArray -> split(array, axis, strides, split, keepDims)
+        is ShortArray -> split(array, axis, strides, split, keepDims)
+        is DoubleArray -> split(array, axis, strides, split, keepDims)
+        is LongArray -> split(array, axis, strides, split, keepDims)
         else -> throw UnsupportedOperationException()
-    } as Array<NDBuffer<T>>
+    } as Array<NDArray>
+}
+
+fun NDArray.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): Array<NDArray> {
+    if (axis == 0 && rank >= 2) return splitByZero(split, keepDims)
+    return split(axis, split, keepDims)
 }

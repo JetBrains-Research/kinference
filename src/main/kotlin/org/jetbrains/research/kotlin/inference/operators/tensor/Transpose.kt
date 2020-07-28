@@ -21,6 +21,6 @@ class Transpose(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : 
     }
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
-        return listOf(inputs.first().transpose(getAttributeValueOrNull("perm") as? List<Long>))
+        return listOf(inputs.first().data.transpose(getAttributeValueOrNull("perm") as? List<Long>).asTensor(""))
     }
 }

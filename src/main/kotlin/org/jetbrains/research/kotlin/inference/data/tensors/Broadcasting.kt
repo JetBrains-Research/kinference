@@ -1,8 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.extensions.buffer.inferType
-import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
-import scientifik.kmath.structures.NDBuffer
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
 import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
@@ -32,13 +31,13 @@ fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<I
     return fst to snd
 }
 
-private fun Tensor.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor {
-    if (this.data.shape.contentEquals(newShape) || asMatrixStack && this.data.dimension <= 2) return this
+private fun NDArray.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray {
+    if (this.shape.contentEquals(newShape) || asMatrixStack && this.rank <= 2) return this
 
     val castShape = newShape.copyOfRange(1, newShape.size)
 
     //broadcast is available only if corresponding dims are equal or at least one of them is 1
-    return when (this.data.shape[0]) {
+    return when (this.shape[0]) {
         1 -> {
             val rows = this.row(0).innerBroadcast(castShape)
             rows.reshape(intArrayOf(1, *castShape)).repeatRow(newShape[0])
@@ -48,13 +47,13 @@ private fun Tensor.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = f
     }
 }
 
-fun Tensor.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor {
-    if (this.data.shape.contentEquals(newShape)) return this
+fun NDArray.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray {
+    if (this.shape.contentEquals(newShape)) return this
 
-    val newDims = this.data.shape.copyOf().toMutableList()
+    val newDims = this.shape.copyOf().toMutableList()
 
-    if (newShape.size > this.data.dimension)
-        repeat(newShape.size - this.data.dimension) { newDims.add(0, 1) }
+    if (newShape.size > this.rank)
+        repeat(newShape.size - this.rank) { newDims.add(0, 1) }
 
     val preResult = this.reshape(newDims.toIntArray())
 
@@ -62,10 +61,10 @@ fun Tensor.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): Tensor
 }
 
 
-fun Tensor.applyWithBroadcast(other: Tensor, op: (NDBuffer<Any>, NDBuffer<Any>) -> NDBuffer<Any>): Tensor {
-    val newShape = broadcastShape(data.shape, other.data.shape)
-    val castedThis = this.broadcast(newShape).data
-    val castedOther = other.broadcast(newShape).data
+fun NDArray.applyWithBroadcast(other: NDArray, op: (Any, Any) -> Any): NDArray {
+    val newShape = broadcastShape(this.shape, other.shape)
+    val castedThis = this.broadcast(newShape).array
+    val castedOther = other.broadcast(newShape).array
 
-    return Tensor(this.info.name, op(castedThis, castedOther), inferType(this.info.type, other.info.type))
+    return NDArray(op(castedThis, castedOther), type, shape)
 }

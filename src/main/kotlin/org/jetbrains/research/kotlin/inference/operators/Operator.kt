@@ -1,11 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators
 
 import AttributeProto
-import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ONNXData
-import org.jetbrains.research.kotlin.inference.data.tensors.ScalarTensor
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) {
     init {
@@ -73,7 +72,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         }
 
         var variadicCounter = 0
-        var variadicType: TensorProto.DataType? = null
+        var variadicType: DataType? = null
         inputConstraints.zip(inputs.asSequence().plusElement(null)) { constraint, input ->
             if (input == null) {
                 require(constraint == null || !constraint.required || (constraint is VariadicInputInfo && variadicCounter > 0)) {
@@ -92,7 +91,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
             }
 
             require(input.info.type in constraint.types) { "Wrong input type '${input.info.name}' for '${info.name}' operator\nPresent: ${input.info.type}, Expected: ${constraint.types}" }
-            if (constraint.scalar) require(input is ScalarTensor) { "Input '${input.info.name}' must be a scalar for '${info.name}' operator" }
+            if (constraint.scalar) require((input as Tensor).data.isScalar()) { "Input '${input.info.name}' must be a scalar for '${info.name}' operator" }
         }
 
         val outputs = apply(inputs)

@@ -3,13 +3,13 @@ package org.jetbrains.research.kotlin.inference
 import TensorProto
 import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ONNXData
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.buffer.asBuffer
-import org.jetbrains.research.kotlin.inference.extensions.toIntArray
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.model.Model
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import scientifik.kmath.structures.*
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.pow
@@ -17,7 +17,7 @@ import kotlin.math.pow
 object Utils {
     private val delta = (10.0).pow(-5)
 
-    fun getTensor(path: File): BaseTensor {
+    fun getTensor(path: File): Tensor {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
         return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
@@ -26,34 +26,26 @@ object Utils {
         }
     }
 
-    private fun getTensorFloat(tensorProto: TensorProto): BaseTensor {
+    private fun getTensorFloat(tensorProto: TensorProto): Tensor {
         val floatData = if (tensorProto.raw_data != null) {
             val rawFloatData = tensorProto.raw_data!!.toByteArray()
             val chunkedRawFloatData = rawFloatData.asIterable().chunked(4)
-            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.toFloatArray().asBuffer()
-        } else tensorProto.float_data.toFloatArray().asBuffer()
+            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).float }.toFloatArray()
+        } else tensorProto.float_data.toFloatArray()
 
-        return if (tensorProto.dims.isEmpty()) {
-            ScalarTensor.create(tensorProto)
-        } else {
-            val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), floatData) as BufferNDStructure<Any>
-            Tensor(tensorProto.name, structure, DataType.FLOAT)
-        }
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return FloatNDArray(floatData, strides).asTensor(tensorProto.name!!)
     }
 
-    private fun getTensorLong(tensorProto: TensorProto): BaseTensor {
+    private fun getTensorLong(tensorProto: TensorProto): Tensor {
         val longData = if (tensorProto.raw_data != null) {
             val rawLongData = tensorProto.raw_data!!.toByteArray()
             val chunkedRawLongData = rawLongData.asIterable().chunked(8)
-            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.toLongArray().asBuffer()
-        } else tensorProto.int64_data.toLongArray().asBuffer()
+            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).long }.toLongArray()
+        } else tensorProto.int64_data.toLongArray()
 
-        return if (tensorProto.dims.isEmpty()) {
-            ScalarTensor.create(tensorProto)
-        } else {
-            val structure = BufferNDStructure(TensorStrides(tensorProto.dims.toIntArray()), longData) as BufferNDStructure<Any>
-            Tensor(tensorProto.name, structure, DataType.INT64)
-        }
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return LongNDArray(longData, strides).asTensor(tensorProto.name!!)
     }
 
     fun assertTensors(expected: Tensor, actual: Tensor) {
@@ -63,16 +55,20 @@ object Utils {
         @Suppress("UNCHECKED_CAST")
         when (expected.info.type) {
             DataType.FLOAT -> {
-                expected.data.buffer.asIterable().forEachIndexed { index, value ->
-                    value as Float
-                    assertEquals(value, (actual.data.buffer[index] as Number).toFloat(), delta.toFloat(), "Tensor ${expected.info.name} does not match")
+                ((expected.data as FloatNDArray).array as FloatArray).forEachIndexed { index, value ->
+                    assertEquals(value, (actual.data.array as FloatArray)[index], delta.toFloat(), "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.DOUBLE -> {
-                expected.data.buffer.asIterable().forEachIndexed { index, value ->
-                    value as Double
-                    assertEquals(value, (actual.data.buffer[index] as Number).toDouble(), delta, "Tensor ${expected.info.name} does not match")
+                ((expected.data as DoubleNDArray).array as DoubleArray).forEachIndexed { index, value ->
+                    assertEquals(value, (actual.data.array as DoubleArray)[index], delta, "Tensor ${expected.info.name} does not match")
+                }
+            }
+
+            DataType.INT64 -> {
+                ((expected.data as LongNDArray).array as LongArray).forEachIndexed { index, value ->
+                    assertEquals(value, (actual.data.array as LongArray)[index], "Tensor ${expected.info.name} does not match")
                 }
             }
 

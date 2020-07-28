@@ -3,11 +3,11 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import AttributeProto
 import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
-    : Operator<BaseTensor, BaseTensor>(INFO, usedOutputsNum, attributes) {
+    : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -41,13 +41,9 @@ class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
         return casted
     }
 
-    override fun apply(inputs: List<BaseTensor>): List<BaseTensor> {
+    override fun apply(inputs: List<Tensor>): List<Tensor> {
         val tensor = inputs.first()
         val to = TensorProto.DataType.fromValue(getAttributeValue("to") as Int)!!
-        return when (tensor) {
-            is ScalarTensor -> listOf(ScalarTensor(tensor.info.name, cast(tensor.value, tensor.info.type, to), to))
-            is Tensor -> listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })
-            else -> error("Unsupported operation")
-        }
+        return listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })
     }
 }
