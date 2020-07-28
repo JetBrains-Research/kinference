@@ -24,7 +24,7 @@ open class LSTMLayer<T : Number> {
 
         val (mainOutput, currentState) = activate(inputTensor.data.as2DList(), weights, recWeights, bias)
         val shapeForOutput = intArrayOf(1, batchSize, hiddenSize)
-        return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput).asTensor(""), currentState.cellGate.reshape(shapeForOutput).asTensor(""))
+        return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput).asTensor(), currentState.cellGate.reshape(shapeForOutput).asTensor())
     }
 
     protected fun activate(inputMatrices: Collection<NDArray>, weights: NDArray, recWeights: NDArray, bias: NDArray?): Pair<List<NDArray>, State> {

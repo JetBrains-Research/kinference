@@ -23,6 +23,6 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Op
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
         val axes = (getAttributeValueOrNull("axes") as? List<Long>) ?: emptyList()
-        return listOf(inputs.first().data.squeeze(*axes.toIntArray()).asTensor(""))
+        return listOf(inputs.first().data.squeeze(*axes.toIntArray()).asTensor())
     }
 }

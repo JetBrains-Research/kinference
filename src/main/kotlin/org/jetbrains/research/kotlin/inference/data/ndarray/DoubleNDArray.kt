@@ -3,8 +3,7 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 import TensorProto
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
-import org.jetbrains.research.kotlin.inference.extensions.primitives.minus
-import org.jetbrains.research.kotlin.inference.extensions.primitives.times
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.DOUBLE) {
     override fun clone(newStrides: Strides): DoubleNDArray {
@@ -25,7 +24,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this[0] + other[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst as DoubleArray, snd as DoubleArray) }
+            this.combineWith(other) { fst, snd -> plus(fst as DoubleArray, snd as DoubleArray) }
         }
     }
 
@@ -55,7 +54,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this[0] / other[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst as DoubleArray, snd as DoubleArray) }
+            this.combineWith(other) { fst, snd -> div(fst as DoubleArray, snd as DoubleArray) }
         }
     }
 
