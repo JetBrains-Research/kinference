@@ -187,10 +187,10 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
             } as NDArray<T>
         }
 
-        inline operator fun <reified T> invoke(value: List<T>, type: DataType): NDArray<T> {
+        operator fun invoke(value: List<*>, type: DataType): NDArray<Any> {
             val dims = intArrayOf(value.size)
             val data = createArray(type, value.size) { i -> value[i] }
-            return NDArray(data, type, dims) as NDArray<T>
+            return NDArray(data, type, dims)
         }
 
         private fun createScalar(proto: TensorProto): NDArray<out Any> {

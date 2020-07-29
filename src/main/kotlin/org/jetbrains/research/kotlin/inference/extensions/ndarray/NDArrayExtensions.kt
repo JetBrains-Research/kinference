@@ -110,7 +110,7 @@ fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
     return reshape(newShape)
 }
 
-inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: (T, T) -> T): NDArray<T> {
+inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, noinline transform: (T, T) -> T): NDArray<T> {
     if (this.isScalar()) {
         return other.scalarOp(this[0], transform)
     } else if (other.isScalar()) {

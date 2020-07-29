@@ -55,19 +55,19 @@ object Utils {
         @Suppress("UNCHECKED_CAST")
         when (expected.info.type) {
             DataType.FLOAT -> {
-                ((expected.data as FloatNDArray).array as FloatArray).forEachIndexed { index, value ->
+                ((expected.data as FloatNDArray).array).forEachIndexed { index, value ->
                     assertEquals(value, (actual.data.array as FloatArray)[index], delta.toFloat(), "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.DOUBLE -> {
-                ((expected.data as DoubleNDArray).array as DoubleArray).forEachIndexed { index, value ->
+                ((expected.data as DoubleNDArray).array).forEachIndexed { index, value ->
                     assertEquals(value, (actual.data.array as DoubleArray)[index], delta, "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.INT64 -> {
-                ((expected.data as LongNDArray).array as LongArray).forEachIndexed { index, value ->
+                ((expected.data as LongNDArray).array).forEachIndexed { index, value ->
                     assertEquals(value, (actual.data.array as LongArray)[index], "Tensor ${expected.info.name} does not match")
                 }
             }

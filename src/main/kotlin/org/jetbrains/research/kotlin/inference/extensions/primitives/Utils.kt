@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
-import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 
 fun Collection<Long>.toIntArray(): IntArray = this.map { it.toInt() }.toIntArray()
 fun Collection<Number>.toDoubleList(): List<Double> = this.map { it.toDouble() }
@@ -53,14 +53,7 @@ inline fun <reified T> NDArray<T>.exp(): NDArray<T> {
     } as NDArray<T>
 }
 
-inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, op: (T, T) -> T): NDArray<T> {
-    return when (type) {
-        DataType.INT32 -> IntNDArray(op(array, IntArray(this.linearSize) { x as Int } as T) as IntArray, strides)
-        DataType.FLOAT -> FloatNDArray(op(array, FloatArray(this.linearSize) { x as Float } as T) as FloatArray, strides)
-        DataType.INT16 -> ShortNDArray(op(array, ShortArray(this.linearSize) { x as Short } as T) as ShortArray, strides)
-        DataType.DOUBLE -> DoubleNDArray(op(array, DoubleArray(this.linearSize) { x as Double } as T) as DoubleArray, strides)
-        DataType.INT64 -> LongNDArray(op(array, LongArray(this.linearSize) { x as Long } as T) as LongArray, strides)
-        else -> throw UnsupportedOperationException()
-    } as NDArray<T>
+inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, noinline op: (T, T) -> T): NDArray<T> {
+    return NDArray(op(array, createArray(type, this.linearSize) { x } as T), type, strides)
 }
 
