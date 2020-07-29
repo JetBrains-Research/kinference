@@ -15,4 +15,9 @@ class TanhTest {
     fun test_tanh(){
         Utils.tensorTestRunner(getTargetPath("test_tanh"))
     }
+
+    @Test
+    fun test_tanh_scalar(){
+        Utils.tensorTestRunner(getTargetPath("test_tanh_scalar"))
+    }
 }

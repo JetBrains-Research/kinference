@@ -6,6 +6,7 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
@@ -38,7 +39,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
     companion object {
         //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): Tensor {
-            if (proto.dims.isNullOrEmpty()) return createScalar(proto)
+            if (proto.dims.isNullOrEmpty()) return parseScalar(proto)
 
             return when (val type = DataType.fromValue(proto.data_type ?: 0)) {
                 DataType.DOUBLE -> Tensor(proto.double_data.toDoubleArray(), type, proto.dims.toIntArray(), proto.name)
@@ -57,14 +58,15 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
 
 
         operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = ""): Tensor {
-            return when (value) {
-                is DoubleArray -> DoubleNDArray(value, Strides(dims)).asTensor(name!!)
-                is FloatArray -> FloatNDArray(value, Strides(dims)).asTensor(name!!)
-                is IntArray -> IntNDArray(value, Strides(dims)).asTensor(name!!)
-                is LongArray -> LongNDArray(value, Strides(dims)).asTensor(name!!)
-                is ShortArray -> ShortNDArray(value, Strides(dims)).asTensor(name!!)
-                is Boolean -> BooleanNDArray(BooleanArray(1) { value }, Strides(dims)).asTensor(name!!)
-                is Long -> LongNDArray(LongArray(1) { value }, Strides(dims)).asTensor(name!!)
+            if (dims.isEmpty()) return createScalarNDArray(type, value).asTensor(name)
+
+            return when (type) {
+                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, Strides(dims)).asTensor(name!!)
+                DataType.FLOAT -> FloatNDArray(value as FloatArray, Strides(dims)).asTensor(name!!)
+                DataType.INT32 -> IntNDArray(value as IntArray, Strides(dims)).asTensor(name!!)
+                DataType.INT64 -> LongNDArray(value as LongArray, Strides(dims)).asTensor(name!!)
+                DataType.INT16 -> ShortNDArray(value as ShortArray, Strides(dims)).asTensor(name!!)
+                DataType.BOOL -> BooleanNDArray(value as BooleanArray, Strides(dims)).asTensor(name!!)
                 else -> error("Unsupported data type $type")
             }
         }
@@ -75,7 +77,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             return Tensor(data, type, dims)
         }
 
-        private fun createScalar(proto: TensorProto): Tensor {
+        private fun parseScalar(proto: TensorProto): Tensor {
             val type = DataType.fromValue(proto.data_type ?: 0)
             val array = when (type) {
                 DataType.DOUBLE -> proto.double_data
@@ -85,13 +87,13 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 DataType.BOOL -> proto.int32_data.map { it != 0 }
                 else -> error("Unsupported data type")
             }
-
             return if (array.isEmpty()) {
                 when (type) {
                     DataType.DOUBLE -> Tensor(proto.raw_data!!.asByteBuffer().double, type, dims = IntArray(0), name = proto.name)
                     DataType.FLOAT -> Tensor(proto.raw_data!!.asByteBuffer().float, type, dims = IntArray(0), name = proto.name)
                     DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().long, type, dims = IntArray(0), name = proto.name)
                     DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().int, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().short, type, dims = IntArray(0), name = proto.name)
                     DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().int != 0, type, dims = IntArray(0), name = proto.name)
                     else -> error("Unsupported data type")
                 }

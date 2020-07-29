@@ -11,6 +11,7 @@ inline fun createArray(type: DataType, size: Int, noinline init: (Int) -> Any): 
         DataType.INT64 -> LongArray(size) { init(it) as Long }
         DataType.INT32 -> IntArray(size) { init(it) as Int }
         DataType.INT16 -> ShortArray(size) { init(it) as Short }
+        DataType.BOOL -> BooleanArray(size) { init(it) as Boolean }
         else -> Array(size, init)
     }
 }
@@ -22,6 +23,7 @@ inline fun createNDArray(type: DataType, strides: Strides = Strides.empty(), noi
         DataType.INT64 -> LongNDArray(createArray(type, strides.linearSize, init) as LongArray, strides)
         DataType.INT32 -> IntNDArray(createArray(type, strides.linearSize, init) as IntArray, strides)
         DataType.INT16 -> ShortNDArray(createArray(type, strides.linearSize, init) as ShortArray, strides)
+        DataType.BOOL -> BooleanNDArray(createArray(type, strides.linearSize, init) as BooleanArray, strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
@@ -34,6 +36,7 @@ inline fun createScalarNDArray(type: DataType, value: Any): NDArray {
         DataType.INT64 -> LongNDArray(longArrayOf(value as Long))
         DataType.INT32 -> IntNDArray(intArrayOf(value as Int))
         DataType.INT16 -> ShortNDArray(shortArrayOf(value as Short))
+        DataType.BOOL -> BooleanNDArray(booleanArrayOf(value as Boolean))
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
@@ -58,6 +61,7 @@ inline fun allocateNDArray(type: DataType, strides: Strides): NDArray {
         DataType.INT64 -> LongNDArray(LongArray(strides.linearSize), strides)
         DataType.INT32 -> IntNDArray(IntArray(strides.linearSize), strides)
         DataType.INT16 -> ShortNDArray(ShortArray(strides.linearSize), strides)
+        DataType.BOOL -> BooleanNDArray(BooleanArray(strides.linearSize), strides)
         else -> error("")
     }
 }

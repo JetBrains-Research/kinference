@@ -10,4 +10,9 @@ class ConstantTest {
     fun test_constant() {
         Utils.tensorTestRunner(getTargetPath("test_constant"))
     }
+
+    @Test
+    fun test_scalar_constant() {
+        Utils.tensorTestRunner(getTargetPath("test_scalar_constant"))
+    }
 }

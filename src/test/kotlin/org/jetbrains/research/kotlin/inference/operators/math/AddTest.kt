@@ -15,4 +15,9 @@ class AddTest {
     fun test_add_bcast(){
         Utils.tensorTestRunner(getTargetPath("test_add_bcast"))
     }
+
+    @Test
+    fun test_add_scalar(){
+        Utils.tensorTestRunner(getTargetPath("test_add_scalar"))
+    }
 }
