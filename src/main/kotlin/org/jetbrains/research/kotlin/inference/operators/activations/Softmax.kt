@@ -27,7 +27,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         return if (dims.isNullOrEmpty()) 1 else dims.reduce(Int::times)
     }
 
-    private fun expMatrixRows(input: NDArray, axis: Int): Array<NDArray> {
+    private fun expMatrixRows(input: NDArray<Any>, axis: Int): Array<NDArray<Any>> {
         val actualAxis = input.indexAxis(axis)
         val shape = input.shape
         val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -39,11 +39,11 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
 
         return Array(matrixRows.size) { i ->
             val max = matrixRows[i].max()!!
-            matrixRows[i].minus(createScalarNDArray(input.type, max)).exp()
+            matrixRows[i].minus(createScalarNDArray<Any>(input.type, max)).exp()
         }
     }
 
-    override fun activate(input: NDArray): NDArray {
+    override fun activate(input: NDArray<Any>): NDArray<Any> {
         val axis = getAttributeValue("axis") as? Long
         val matrixRows = expMatrixRows(input, axis?.toInt() ?: 0)
 

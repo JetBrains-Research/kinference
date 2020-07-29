@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 
-abstract class NDArray protected constructor(val array: Any, val strides: Strides, val type: DataType) {
+abstract class NDArray<T> protected constructor(val array: T, val strides: Strides, val type: DataType) {
     val rank: Int
         get() = strides.shape.size
 
@@ -18,7 +18,7 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
     val shape: IntArray
         get() = strides.shape
 
-    val rows: Array<NDArray>
+    val rows: Array<NDArray<T>>
         get() {
             val rowLength: Int = linearSize / shape[0]
             val dims = shape.copyOfRange(1, rank)
@@ -31,19 +31,19 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
     abstract operator fun get(i: Int): Any
     abstract operator fun get(indices: IntArray): Any
 
-    abstract fun clone(newStrides: Strides = strides): NDArray
-    abstract fun placeAll(startOffset: Int, block: Any)
+    abstract fun clone(newStrides: Strides = strides): NDArray<T>
+    abstract fun placeAll(startOffset: Int, block: Any?)
 
-    abstract operator fun plus(other: NDArray): NDArray
-    abstract operator fun minus(other: NDArray): NDArray
-    abstract operator fun times(other: NDArray): NDArray
-    abstract operator fun div(other: NDArray): NDArray
+    abstract operator fun plus(other: NDArray<T>): NDArray<T>
+    abstract operator fun minus(other: NDArray<T>): NDArray<T>
+    abstract operator fun times(other: NDArray<T>): NDArray<T>
+    abstract operator fun div(other: NDArray<T>): NDArray<T>
 
     fun indexAxis(axis: Int): Int {
         return if (axis < 0) rank + axis else axis
     }
 
-    infix fun matmul(other: NDArray): NDArray {
+    infix fun matmul(other: NDArray<T>): NDArray<T> {
         require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
         if (rank <= 2 && other.rank <= 2) {
             val actualThis = if (rank == 1) this.reshape(intArrayOf(1, *shape)) else this
@@ -65,7 +65,7 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         return resMatrices.concatenate(0).reshape(shape)
     }
 
-    fun row(row: Int): NDArray {
+    fun row(row: Int): NDArray<T> {
         val rowLength: Int = linearSize / shape[0]
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
@@ -73,16 +73,18 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         return sliceRow(rowLength, start, dims)
     }
 
-    private fun sliceRow(rowLength: Int, start: Int, dims: IntArray): NDArray {
+    @Suppress("UNCHECKED_CAST")
+    private fun sliceRow(rowLength: Int, start: Int, dims: IntArray): NDArray<T> {
         val row = slice(rowLength, start)
-        return NDArray(row, type, dims)
+        return NDArray(row, type, dims) as NDArray<T>
     }
 
     private fun slice(sliceLength: Int, start: Int): Any {
         return createArray(type, sliceLength) { i -> this[start + i] }
     }
 
-    fun repeatRow(times: Int): NDArray {
+    @Suppress("UNCHECKED_CAST")
+    fun repeatRow(times: Int): NDArray<T> {
         require(shape[0] == 1) { "First dimension should be 1" }
         val newShape = shape.copyOf().apply { set(0, times) }
 
@@ -91,16 +93,17 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
             result.placeAll(i * linearSize, array)
         }
 
-        return result
+        return result as NDArray<T>
     }
 
-    fun mapElements(func: (Any) -> Any): NDArray {
+    @Suppress("UNCHECKED_CAST")
+    fun mapElements(func: (Any) -> Any): NDArray<T> {
         val buffer = createArray(type, linearSize) { func(this[it]) }
 
-        return NDArray(buffer, type, shape)
+        return NDArray(buffer, type, shape) as NDArray<T>
     }
 
-    fun transpose(permutations: List<Long>? = null): NDArray {
+    fun transpose(permutations: List<Long>? = null): NDArray<T> {
         if (rank == 2) return this.matrixTranspose()
 
         require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
@@ -109,14 +112,14 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         return this.transpose(actualPerm)
     }
 
-    fun reshape(shape: IntArray): NDArray {
+    fun reshape(shape: IntArray): NDArray<T> {
         val newStrides = Strides(shape)
         require(linearSize == newStrides.linearSize) { "New shape is not compatible with the previous one" }
 
         return clone(newStrides)
     }
 
-    fun squeeze(vararg axes: Int): NDArray {
+    fun squeeze(vararg axes: Int): NDArray<T> {
         val actualAxes = if (axes.isNotEmpty()) {
             axes.map { indexAxis(it) }
         } else {
@@ -135,7 +138,7 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as NDArray
+        other as NDArray<T>
 
         if (array != other.array) return false
 
@@ -146,11 +149,11 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
         return array.hashCode()
     }
 
-    fun asTensor(name: String? = null) = Tensor(this, TensorInfo(name ?: "", type, TensorShape(this.shape)))
+    fun asTensor(name: String? = null) = Tensor(this as NDArray<Any>, TensorInfo(name ?: "", type, TensorShape(this.shape)))
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        fun create(proto: TensorProto): NDArray {
+        fun create(proto: TensorProto): NDArray<out Any> {
             if (proto.dims.isNullOrEmpty()) return createScalar(proto)
 
             return when (val type = DataType.fromValue(proto.data_type ?: 0)) {
@@ -163,17 +166,17 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
             }
         }
 
-        operator fun invoke(dims: List<Long>, value: List<*>, type: DataType): NDArray {
+        inline operator fun <reified T> invoke(dims: List<Long>, value: List<*>, type: DataType): NDArray<T> {
             val data = createArray(type, value.size) { i -> value[i]!! }
-            return NDArray(data, type, dims.toIntArray())
+            return NDArray(data, type, dims.toIntArray()) as NDArray<T>
         }
 
 
-        operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0)): NDArray {
+        inline operator fun <reified T> invoke(value: T, type: DataType, dims: IntArray = IntArray(0)): NDArray<T> {
             return NDArray(value, type, Strides(dims))
         }
 
-        operator fun invoke(value: Any, type: DataType, strides: Strides): NDArray {
+        inline operator fun <reified T> invoke(value: T, type: DataType, strides: Strides): NDArray<T> {
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
                 DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
@@ -181,16 +184,16 @@ abstract class NDArray protected constructor(val array: Any, val strides: Stride
                 DataType.INT32 -> IntNDArray(value as IntArray, strides)
                 //DataType.STRING -> TensorData(proto.string_data.map { it.utf8() }, type, proto.dims.toIntArray(), proto.name)
                 else -> error("Unsupported data type $type")
-            }
+            } as NDArray<T>
         }
 
-        operator fun invoke(value: List<Any>, type: DataType): NDArray {
+        inline operator fun <reified T> invoke(value: List<T>, type: DataType): NDArray<T> {
             val dims = intArrayOf(value.size)
             val data = createArray(type, value.size) { i -> value[i] }
-            return NDArray(data, type, dims)
+            return NDArray(data, type, dims) as NDArray<T>
         }
 
-        private fun createScalar(proto: TensorProto): NDArray {
+        private fun createScalar(proto: TensorProto): NDArray<out Any> {
             val type = DataType.fromValue(proto.data_type ?: 0)
             val array = when (type) {
                 DataType.DOUBLE -> proto.double_data

@@ -88,13 +88,14 @@ fun dot(left: ShortArray, right: ShortArray, leftShape: IntArray, rightShape: In
     return array
 }
 
-fun NDArray.matrixDot(other: NDArray): NDArray {
+fun <T> NDArray<T>.matrixDot(other: NDArray<T>): NDArray<T> {
     require(this::class == other::class)
     require(shape.size == 2 && other.shape.size == 2)
     require(shape[1] == other.shape[0])
 
     val newStrides = Strides(intArrayOf(shape[0], other.shape[1]))
 
+    @Suppress("UNCHECKED_CAST")
     return when (array) {
         is FloatArray -> FloatNDArray(dot(array, other.array as FloatArray, shape, other.shape), newStrides)
         is IntArray -> IntNDArray(dot(array, other.array as IntArray, shape, other.shape), newStrides)
@@ -102,5 +103,5 @@ fun NDArray.matrixDot(other: NDArray): NDArray {
         is ShortArray -> ShortNDArray(dot(array, other.array as ShortArray, shape, other.shape), newStrides)
         is LongArray -> LongNDArray(dot(array, other.array as LongArray, shape, other.shape), newStrides)
         else -> throw UnsupportedOperationException()
-    }
+    } as NDArray<T>
 }

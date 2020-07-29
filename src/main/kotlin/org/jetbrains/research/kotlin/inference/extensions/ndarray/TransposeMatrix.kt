@@ -63,7 +63,7 @@ fun transpose(array: ShortArray, rowNum: Int, colNum: Int): ShortArray {
     return result
 }
 
-fun NDArray.matrixTranspose(): NDArray {
+fun <T> NDArray<T>.matrixTranspose(): NDArray<T> {
     require(this.shape.size == 2)
     val newShape = shape.reversedArray()
     val newStrides = Strides(newShape)
@@ -75,5 +75,5 @@ fun NDArray.matrixTranspose(): NDArray {
         is DoubleArray -> DoubleNDArray(transpose(array, shape[0], shape[1]), newStrides)
         is LongArray -> LongNDArray(transpose(array, shape[0], shape[1]), newStrides)
         else -> throw UnsupportedOperationException()
-    }
+    } as NDArray<T>
 }

@@ -16,7 +16,7 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputs
         )
     }
 
-    override fun activate(input: NDArray): NDArray = input
+    override fun activate(input: NDArray<Any>): NDArray<Any> = input
 }
 
 class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -37,7 +37,7 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         }
     }
 
-    override fun activate(input: NDArray): NDArray = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
 }
 
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -58,7 +58,7 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
         }
     }
 
-    override fun activate(input: NDArray): NDArray = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
 }
 
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -79,5 +79,5 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         }
     }
 
-    override fun activate(input: NDArray): NDArray = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
 }

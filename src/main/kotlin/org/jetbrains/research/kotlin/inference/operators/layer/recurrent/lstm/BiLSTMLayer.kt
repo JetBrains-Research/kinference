@@ -30,7 +30,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun mainOutputHelper(mainForwardOutput: List<NDArray>, mainBackwardOutput: List<NDArray>): Tensor {
+    private fun mainOutputHelper(mainForwardOutput: List<NDArray<Any>>, mainBackwardOutput: List<NDArray<Any>>): Tensor {
         val (batchSize, hiddenSize) = mainBackwardOutput.first().shape
         val mainOutputs = listOf(mainForwardOutput, mainBackwardOutput.reversed())
 
@@ -61,7 +61,7 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         return listOf(newOutputBuffer.asTensor(), newCellGateBuffer.asTensor())
     }
 
-    private fun extractActualStates(states: List<NDArray>, strides: Strides): NDArray {
+    private fun extractActualStates(states: List<NDArray<Any>>, strides: Strides): NDArray<Any> {
         val array = createArray(states.first().type, strides.linearSize) { i ->
             val indices = strides.index(i)
             val (numDirection, rowNum, colNum) = indices

@@ -14,7 +14,7 @@ import org.jetbrains.research.kotlin.inference.types.TensorShape
 //TODO: support segments
 //TODO: support external and raw data
 @Suppress("UNCHECKED_CAST")
-class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
+class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
     override fun clone(newName: String): ONNXData {
         return Tensor(data.clone(), TensorInfo(newName, data.type, TensorShape(data.shape)))
     }
@@ -58,7 +58,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
 
 
         operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = ""): Tensor {
-            if (dims.isEmpty()) return createScalarNDArray(type, value).asTensor(name)
+            if (dims.isEmpty()) return createScalarNDArray<Any>(type, value).asTensor(name)
 
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, Strides(dims)).asTensor(name!!)

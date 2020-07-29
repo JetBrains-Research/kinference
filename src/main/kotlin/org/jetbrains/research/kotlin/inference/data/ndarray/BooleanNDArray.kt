@@ -3,37 +3,37 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 import TensorProto
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
-class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.BOOL) {
+class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL) {
     override fun clone(newStrides: Strides): BooleanNDArray {
-        return BooleanNDArray((array as BooleanArray).copyOf(), newStrides)
+        return BooleanNDArray(array.copyOf(), newStrides)
     }
 
     override fun get(i: Int): Boolean {
-        return (array as BooleanArray)[i]
+        return array[i]
     }
 
     override fun get(indices: IntArray): Boolean {
-        return (array as BooleanArray)[strides.offset(indices)]
+        return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray): NDArray {
+    override fun plus(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun times(other: NDArray): NDArray {
+    override fun times(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun div(other: NDArray): NDArray {
+    override fun div(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun minus(other: NDArray): NDArray {
+    override fun minus(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun placeAll(startOffset: Int, block: Any) {
-        array as BooleanArray; block as BooleanArray
+    override fun placeAll(startOffset: Int, block: Any?) {
+        block as BooleanArray
         block.copyInto(array, startOffset)
     }
 }

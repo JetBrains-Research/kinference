@@ -23,7 +23,7 @@ inline fun times(vararg terms: Number): Number = when (terms.first()) {
     else -> error("Unsupported data type")
 }
 
-inline fun NDArray.max(): Any? {
+inline fun <reified T> NDArray<T>.max(): Number? {
     return when (array) {
         is IntArray -> array.max()
         is FloatArray -> array.max()
@@ -34,7 +34,7 @@ inline fun NDArray.max(): Any? {
     }
 }
 
-fun NDArray.sum(): Any {
+inline fun <reified T> NDArray<T>.sum(): Number {
     return when (array) {
         is IntArray -> array.sum()
         is FloatArray -> array.sum()
@@ -45,21 +45,22 @@ fun NDArray.sum(): Any {
     }
 }
 
-inline fun NDArray.exp(): NDArray {
+inline fun <reified T> NDArray<T>.exp(): NDArray<T> {
     return when (array) {
-        is FloatArray -> FloatNDArray(array.apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
-        is DoubleArray -> DoubleNDArray(array.apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
+        is FloatArray -> FloatNDArray((array as FloatArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
+        is DoubleArray -> DoubleNDArray((array as DoubleArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
         else -> throw UnsupportedOperationException()
-    }
+    } as NDArray<T>
 }
 
-inline fun NDArray.scalarOp(x: Any, op: (Any, Any) -> Any): NDArray {
+inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, op: (T, T) -> T): NDArray<T> {
     return when (type) {
-        DataType.INT32 -> IntNDArray(op(array as IntArray, IntArray(this.linearSize) { x as Int }) as IntArray, strides)
-        DataType.FLOAT -> FloatNDArray(op(array, FloatArray(this.linearSize) { x as Float }) as FloatArray, strides)
-        DataType.INT16 -> ShortNDArray(op(array, ShortArray(this.linearSize) { x as Short }) as ShortArray, strides)
-        DataType.DOUBLE -> DoubleNDArray(op(array, DoubleArray(this.linearSize) { x as Double }) as DoubleArray, strides)
-        DataType.INT64 -> LongNDArray(op(array, LongArray(this.linearSize) { x as Long }) as LongArray, strides)
+        DataType.INT32 -> IntNDArray(op(array, IntArray(this.linearSize) { x as Int } as T) as IntArray, strides)
+        DataType.FLOAT -> FloatNDArray(op(array, FloatArray(this.linearSize) { x as Float } as T) as FloatArray, strides)
+        DataType.INT16 -> ShortNDArray(op(array, ShortArray(this.linearSize) { x as Short } as T) as ShortArray, strides)
+        DataType.DOUBLE -> DoubleNDArray(op(array, DoubleArray(this.linearSize) { x as Double } as T) as DoubleArray, strides)
+        DataType.INT64 -> LongNDArray(op(array, LongArray(this.linearSize) { x as Long } as T) as LongArray, strides)
         else -> throw UnsupportedOperationException()
-    }
+    } as NDArray<T>
 }
+

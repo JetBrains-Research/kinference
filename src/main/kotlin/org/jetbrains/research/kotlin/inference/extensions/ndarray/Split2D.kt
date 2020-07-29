@@ -104,7 +104,7 @@ fun splitHorizontal(array: ShortArray, parts: Int, rowNum: Int, colNum: Int): Ar
 }
 
 @Suppress("UNCHECKED_CAST")
-fun NDArray.splitHorizontal(parts: Int): Array<NDArray> {
+inline fun <reified T> NDArray<T>.splitHorizontal(parts: Int): Array<NDArray<T>> {
     require(shape.size == 2)
     return when (array) {
         is IntArray -> splitHorizontal(array, parts, shape[0], shape[1])
@@ -113,5 +113,5 @@ fun NDArray.splitHorizontal(parts: Int): Array<NDArray> {
         is DoubleArray -> splitHorizontal(array, parts, shape[0], shape[1])
         is LongArray -> splitHorizontal(array, parts, shape[0], shape[1])
         else -> throw UnsupportedOperationException()
-    } as Array<NDArray>
+    } as Array<NDArray<T>>
 }

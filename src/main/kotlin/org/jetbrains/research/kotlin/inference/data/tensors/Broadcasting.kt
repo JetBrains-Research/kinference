@@ -31,7 +31,7 @@ fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<I
     return fst to snd
 }
 
-private fun NDArray.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray {
+fun <T> NDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray<T> {
     if (this.shape.contentEquals(newShape) || asMatrixStack && this.rank <= 2) return this
 
     val castShape = newShape.copyOfRange(1, newShape.size)
@@ -47,7 +47,7 @@ private fun NDArray.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = 
     }
 }
 
-fun NDArray.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray {
+fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray<T> {
     if (this.shape.contentEquals(newShape)) return this
 
     val newDims = this.shape.copyOf().toMutableList()
@@ -61,7 +61,7 @@ fun NDArray.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArr
 }
 
 
-fun NDArray.applyWithBroadcast(other: NDArray, op: (Any, Any) -> Any): NDArray {
+inline fun <reified T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: (T, T) -> T): NDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array

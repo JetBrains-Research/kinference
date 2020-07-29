@@ -132,7 +132,8 @@ fun split(array: ShortArray, axis: Int, strides: Strides, split: IntArray, keepD
     }
 }
 
-fun NDArray.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDArray> {
+@Suppress("UNCHECKED_CAST")
+inline fun <reified T> NDArray<T>.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDArray<T>> {
     return when (array) {
         is IntArray -> split(array, axis, strides, split, keepDims)
         is FloatArray -> split(array, axis, strides, split, keepDims)
@@ -140,10 +141,10 @@ fun NDArray.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDArray>
         is DoubleArray -> split(array, axis, strides, split, keepDims)
         is LongArray -> split(array, axis, strides, split, keepDims)
         else -> throw UnsupportedOperationException()
-    } as Array<NDArray>
+    } as Array<NDArray<T>>
 }
 
-fun NDArray.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): Array<NDArray> {
+inline fun <reified T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): Array<NDArray<T>> {
     if (axis == 0 && rank >= 2) return splitByZero(split, keepDims)
     return split(axis, split, keepDims)
 }

@@ -118,7 +118,7 @@ fun transpose(array: ShortArray, strides: Strides, permutation: IntArray): Short
     return ShortNDArray(newArray, newStrides)
 }
 
-fun NDArray.transpose(permutation: IntArray): NDArray {
+fun <T> NDArray<T>.transpose(permutation: IntArray): NDArray<T> {
     return when (array) {
         is IntArray -> transpose(array, strides, permutation)
         is FloatArray -> transpose(array, strides, permutation)
@@ -126,5 +126,5 @@ fun NDArray.transpose(permutation: IntArray): NDArray {
         is DoubleArray -> transpose(array, strides, permutation)
         is LongArray -> transpose(array, strides, permutation)
         else -> throw UnsupportedOperationException()
-    }
+    } as NDArray<T>
 }

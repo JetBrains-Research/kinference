@@ -33,6 +33,7 @@ class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
         //only one of all attributes is not null
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeValueOrNull(it.name) }.single { it.second != null }
 
+        @Suppress("UNCHECKED_CAST")
         val result = when (name) {
             "value" -> value
             "value_float" -> Tensor(value!!, DataType.FLOAT)

@@ -98,7 +98,8 @@ fun splitByZero(array: ShortArray, strides: Strides, split: IntArray, keepDims: 
     }
 }
 
-fun NDArray.splitByZero(split: IntArray, keepDims: Boolean): Array<NDArray> {
+@Suppress("UNCHECKED_CAST")
+inline fun <reified T> NDArray<T>.splitByZero(split: IntArray, keepDims: Boolean): Array<NDArray<T>> {
     require(shape.size >= 2)
     return when (array) {
         is IntArray -> splitByZero(array, strides, split, keepDims)
@@ -107,5 +108,5 @@ fun NDArray.splitByZero(split: IntArray, keepDims: Boolean): Array<NDArray> {
         is DoubleArray -> splitByZero(array, strides, split, keepDims)
         is LongArray -> splitByZero(array, strides, split, keepDims)
         else -> throw UnsupportedOperationException()
-    } as Array<NDArray>
+    } as Array<NDArray<T>>
 }

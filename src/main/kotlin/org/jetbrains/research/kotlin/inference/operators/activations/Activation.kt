@@ -11,7 +11,7 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     : Operator<Tensor, Tensor>(info, usedOutputsNum, attributes) {
 
     open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
-    abstract fun activate(input: NDArray): NDArray
+    abstract fun activate(input: NDArray<Any>): NDArray<Any>
 
     override fun apply(inputs: List<Tensor>): List<Tensor> {
         return listOf(activate(inputs.first()))

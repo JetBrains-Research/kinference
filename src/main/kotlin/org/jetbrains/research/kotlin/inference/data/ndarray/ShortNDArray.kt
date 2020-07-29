@@ -5,61 +5,53 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
-class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.INT16) {
+class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray<ShortArray>(array, strides, TensorProto.DataType.INT16) {
     override fun clone(newStrides: Strides): ShortNDArray {
-        return ShortNDArray((array as ShortArray).copyOf(), newStrides)
+        return ShortNDArray(array.copyOf(), newStrides)
     }
 
     override fun get(i: Int): Short {
-        return (array as ShortArray)[i]
+        return array[i]
     }
 
     override fun get(indices: IntArray): Short {
-        return (array as ShortArray)[strides.offset(indices)]
+        return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray): NDArray {
-        other as ShortNDArray
-
+    override fun plus(other: NDArray<ShortArray>): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
-            ShortNDArray(shortArrayOf((this[0] + other[0]).toShort()))
+            ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst as ShortArray, snd as ShortArray) }
+            this.combineWith(other) { fst, snd -> plus(fst, snd) }
         }
     }
 
-    override fun times(other: NDArray): NDArray {
-        other as ShortNDArray
-
+    override fun times(other: NDArray<ShortArray>): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
-            ShortNDArray(shortArrayOf((this[0] * other[0]).toShort()))
+            ShortNDArray(shortArrayOf((this.array[0] * other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst as ShortArray, snd as ShortArray) }
+            this.combineWith(other) { fst, snd -> times(fst, snd) }
         }
     }
 
-    override fun div(other: NDArray): NDArray {
-        other as ShortNDArray
-
+    override fun div(other: NDArray<ShortArray>): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
-            ShortNDArray(shortArrayOf((this[0] / other[0]).toShort()))
+            ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> div(fst as ShortArray, snd as ShortArray) }
+            this.combineWith(other) { fst, snd -> div(fst, snd) }
         }
     }
 
-    override fun minus(other: NDArray): NDArray {
-        other as ShortNDArray
-
+    override fun minus(other: NDArray<ShortArray>): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
-            ShortNDArray(shortArrayOf((this[0] - other[0]).toShort()))
+            ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> minus(fst as ShortArray, snd as ShortArray) }
+            this.combineWith(other) { fst, snd -> minus(fst, snd) }
         }
     }
 
-    override fun placeAll(startOffset: Int, block: Any) {
-        array as ShortArray; block as ShortArray
+    override fun placeAll(startOffset: Int, block: Any?) {
+        block as ShortArray
         block.copyInto(array, startOffset)
     }
 }
