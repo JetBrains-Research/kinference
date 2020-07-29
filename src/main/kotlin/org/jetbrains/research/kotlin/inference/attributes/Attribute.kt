@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.inference.attributes
 
-import AttributeProto
-import AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Graph
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
 
 class Attribute<T>(proto: AttributeProto, val value: T) {
     val name: String = proto.name!!

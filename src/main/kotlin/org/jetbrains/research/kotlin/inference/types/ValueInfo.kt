@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.types
 
-import TensorProto.DataType
-import ValueInfoProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.onnx.ValueInfoProto
 
 //TODO: optionally support maps and sequences
 abstract class ValueInfo(val name: String, val type: DataType) {

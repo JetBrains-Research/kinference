@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.types
 
-import TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import kotlin.reflect.KClass
 
 fun DataType.resolveKClass(): KClass<*> = when (this) {

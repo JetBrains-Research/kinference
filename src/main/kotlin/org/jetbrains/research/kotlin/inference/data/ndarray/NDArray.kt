@@ -1,10 +1,10 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import TensorProto
-import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 

@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.graph
 
-import NodeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.inference.onnx.NodeProto
 import org.jetbrains.research.kotlin.inference.operators.OperatorFactory
 
 class Node(proto: NodeProto, graph: Graph) {

@@ -1,12 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.research.kotlin.inference.kotlin
+import tanvd.kosogor.proxy.publishJar
 
 group = "org.jetbrains.research.kotlin.inference"
 version = "0.1.0"
 
 plugins {
     idea
-    `maven-publish`
+    id("tanvd.kosogor") version "1.0.7" apply true
     kotlin("jvm") version "1.3.72" apply true
     id("com.squareup.wire") version "3.1.0" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
@@ -66,6 +67,12 @@ tasks.test {
 
     testLogging {
         events("passed", "skipped", "failed")
+    }
+}
+
+publishJar {
+    publication {
+        artifactId = "kotlin-inference"
     }
 }
 

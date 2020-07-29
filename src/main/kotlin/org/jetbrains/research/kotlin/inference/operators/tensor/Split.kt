@@ -1,10 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
-import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Split(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {

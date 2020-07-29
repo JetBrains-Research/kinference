@@ -1,13 +1,13 @@
 package org.jetbrains.research.kotlin.inference
 
-import TensorProto
-import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.model.Model
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File

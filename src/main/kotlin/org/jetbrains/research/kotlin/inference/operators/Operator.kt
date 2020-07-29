@@ -1,10 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators
 
-import AttributeProto
-import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) {
     init {

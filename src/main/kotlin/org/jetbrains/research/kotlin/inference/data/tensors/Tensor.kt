@@ -1,13 +1,14 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import TensorProto
-import TensorProto.DataType
+
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 

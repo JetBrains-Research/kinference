@@ -1,11 +1,11 @@
 package org.jetbrains.research.kotlin.inference.operators.seq
 
-import AttributeProto
-import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.*
 import org.jetbrains.research.kotlin.inference.types.SequenceInfo
 

@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 
 inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (Int) -> T): Any {
     return when (type) {

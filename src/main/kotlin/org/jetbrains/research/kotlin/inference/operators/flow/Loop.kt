@@ -1,11 +1,11 @@
 package org.jetbrains.research.kotlin.inference.operators.flow
 
-import AttributeProto
-import TensorProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.stack
 import org.jetbrains.research.kotlin.inference.graph.Graph
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {

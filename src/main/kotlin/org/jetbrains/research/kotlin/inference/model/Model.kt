@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.inference.model
 
-import ModelProto
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.graph.Graph
+import org.jetbrains.research.kotlin.inference.onnx.ModelProto
 import java.io.File
 
 class Model(proto: ModelProto) {

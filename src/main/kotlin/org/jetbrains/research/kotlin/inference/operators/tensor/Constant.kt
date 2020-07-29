@@ -1,9 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
-import AttributeProto
-import TensorProto.DataType
+
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)

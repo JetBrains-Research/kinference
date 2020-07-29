@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import TensorProto
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray<ShortArray>(array, strides, TensorProto.DataType.INT16) {
     override fun clone(newStrides: Strides): ShortNDArray {

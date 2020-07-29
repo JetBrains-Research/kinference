@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
-import AttributeProto
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
+import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class Concat(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)

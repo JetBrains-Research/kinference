@@ -1,9 +1,8 @@
 package org.jetbrains.research.kotlin.inference.types
 
-import TensorProto.DataType
-import TensorShapeProto
-import TypeProto
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.onnx.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 
 class TensorShape(private val dims: List<Dimension>) {
     constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })

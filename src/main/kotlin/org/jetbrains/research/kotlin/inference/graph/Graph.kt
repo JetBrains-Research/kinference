@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.inference.graph
 
-import GraphProto
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.onnx.GraphProto
 import org.jetbrains.research.kotlin.inference.types.ValueInfo
 
 //TODO: support general graphs

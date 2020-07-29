@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import TensorProto
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL) {
     override fun clone(newStrides: Strides): BooleanNDArray {
