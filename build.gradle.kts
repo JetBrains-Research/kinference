@@ -6,6 +6,7 @@ version = "0.1.0"
 
 plugins {
     idea
+    `maven-publish`
     kotlin("jvm") version "1.3.72" apply true
     id("com.squareup.wire") version "3.1.0" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
@@ -61,7 +62,7 @@ tasks.withType<KotlinJvmCompile> {
 
 tasks.test {
     useJUnitPlatform()
-    maxHeapSize = "2048m"
+    maxHeapSize = "20m"
 
     testLogging {
         events("passed", "skipped", "failed")
