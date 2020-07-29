@@ -18,11 +18,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray<DoubleArray>): NDArray<DoubleArray> {
+    override fun plus(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd) }
+            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
         }
     }
 
@@ -34,11 +34,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
-    override fun times(other: NDArray<DoubleArray>): NDArray<DoubleArray> {
+    override fun times(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd) }
+            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
         }
     }
 
@@ -53,5 +53,16 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
     override fun placeAll(startOffset: Int, block: Any?) {
         block as DoubleArray
         block.copyInto(array, startOffset)
+    }
+
+    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<DoubleArray> {
+        func as (Double) -> Double
+        return if (copy) DoubleNDArray(map(array, func, copy), strides) else {
+            map(array, func, copy); this
+        }
+    }
+
+    override fun clean() {
+        for (i in array.indices) array[i] = 0.0
     }
 }

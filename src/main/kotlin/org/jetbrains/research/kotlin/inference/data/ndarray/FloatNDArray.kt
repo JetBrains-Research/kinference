@@ -18,19 +18,19 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray<FloatArray>): NDArray<FloatArray> {
+    override fun plus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd) }
+            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
         }
     }
 
-    override fun times(other: NDArray<FloatArray>): NDArray<FloatArray> {
+    override fun times(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd) }
+            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
         }
     }
 
@@ -53,5 +53,16 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
     override fun placeAll(startOffset: Int, block: Any?) {
         block as FloatArray
         block.copyInto(array, startOffset)
+    }
+
+    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<FloatArray> {
+        func as (Float) -> Float
+        return if (copy) FloatNDArray(map(array, func, copy), strides) else {
+            map(array, func, copy); this
+        }
+    }
+
+    override fun clean() {
+        for (i in array.indices) array[i] = 0.0f
     }
 }

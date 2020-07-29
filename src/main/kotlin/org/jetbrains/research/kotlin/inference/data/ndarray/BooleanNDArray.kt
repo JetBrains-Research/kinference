@@ -16,11 +16,11 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
+    override fun plus(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun times(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
+    override fun times(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
@@ -29,6 +29,14 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
     }
 
     override fun minus(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
+        TODO("Not yet implemented")
+    }
+
+    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<BooleanArray> {
+        TODO("Not yet implemented")
+    }
+
+    override fun clean() {
         TODO("Not yet implemented")
     }
 

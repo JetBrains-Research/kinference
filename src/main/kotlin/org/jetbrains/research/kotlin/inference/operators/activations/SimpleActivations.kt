@@ -2,7 +2,9 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.InputInfo
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
+import org.jetbrains.research.kotlin.inference.operators.OutputInfo
 import kotlin.math.exp
 import kotlin.math.max
 
@@ -28,10 +30,13 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
+        inline fun activateFloat(value: Float) = max(0.0f, value)
+        inline fun activateDouble(value: Double) = max(0.0, value)
+
         inline fun activate(value: Any): Any {
             return when (value) {
-                is Float -> max(0.0f, value)
-                is Double -> max(0.0, value)
+                is Float -> activateFloat(value)
+                is Double -> activateDouble(value)
                 else -> error("Unsupported operation")
             }
         }
@@ -49,10 +54,13 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
+        inline fun activateFloat(value: Float) = (1.0f / (1.0f + exp(-value)))
+        inline fun activateDouble(value: Double) = 1.0 / (1.0 + exp(-value))
+
         inline fun activate(value: Any): Any {
             return when (value) {
-                is Float -> (1.0 / (1.0 + exp(-value))).toFloat()
-                is Double -> 1.0 / (1.0 + exp(-value))
+                is Float -> activateFloat(value)
+                is Double -> activateDouble(value)
                 else -> error("Unsupported operation")
             }
         }
@@ -70,10 +78,13 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
+        inline fun activateFloat(value: Float) = ((exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)).toFloat()
+        inline fun activateDouble(value: Double) = (exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)
+
         inline fun activate(value: Any): Any {
             return when (value) {
-                is Float -> ((exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)).toFloat()
-                is Double -> (exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)
+                is Float -> activateFloat(value)
+                is Double -> activateDouble(value)
                 else -> error("Unsupported operation")
             }
         }

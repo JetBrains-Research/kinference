@@ -1,3 +1,4 @@
+/*
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
@@ -108,7 +109,7 @@ open class LSTMLayer<T : Number> {
             @Suppress("UNCHECKED_CAST")
             fun initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State {
                 val newShape = intArrayOf(batchSize, hiddenSize)
-                val zeros = zerosNDArray<Any>(type, Strides(newShape))
+                val zeros = allocateNDArray(type, Strides(newShape))
                 return State(zeros, zeros)
             }
 
@@ -180,3 +181,4 @@ open class LSTMLayer<T : Number> {
         }.asTensor()
     }
 }
+*/

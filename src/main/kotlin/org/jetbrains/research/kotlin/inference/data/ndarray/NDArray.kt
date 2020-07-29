@@ -1,8 +1,13 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
+import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
@@ -34,10 +39,18 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     abstract fun clone(newStrides: Strides = strides): NDArray<T>
     abstract fun placeAll(startOffset: Int, block: Any?)
 
-    abstract operator fun plus(other: NDArray<T>): NDArray<T>
+    abstract fun plus(other: NDArray<T>, copy: Boolean = true): NDArray<T>
+    operator fun plus(other: NDArray<T>) = plus(other, true)
+
     abstract operator fun minus(other: NDArray<T>): NDArray<T>
-    abstract operator fun times(other: NDArray<T>): NDArray<T>
+
+    abstract fun times(other: NDArray<T>, copy: Boolean = true): NDArray<T>
+    operator fun times(other: NDArray<T>) = times(other, true)
+
     abstract operator fun div(other: NDArray<T>): NDArray<T>
+
+    abstract fun mapElements(func: (Any) -> Any, copy: Boolean = true): NDArray<T>
+    abstract fun clean(): Unit
 
     fun indexAxis(axis: Int): Int {
         return if (axis < 0) rank + axis else axis
@@ -96,12 +109,11 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return result as NDArray<T>
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun mapElements(func: (Any) -> Any): NDArray<T> {
-        val buffer = createArray(type, linearSize) { func(this[it]) }
-
-        return NDArray(buffer, type, shape) as NDArray<T>
-    }
+//    fun mapElements(func: (Any) -> Any): NDArray {
+//        val buffer = createArray(type, linearSize) { func(this[it]) }
+//
+//        return NDArray(buffer, type, shape)
+//    }
 
     fun transpose(permutations: List<Long>? = null): NDArray<T> {
         if (rank == 2) return this.matrixTranspose()

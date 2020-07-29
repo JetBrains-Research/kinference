@@ -18,19 +18,19 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray<LongArray>): NDArray<LongArray> {
+    override fun plus(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd) }
+            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
         }
     }
 
-    override fun times(other: NDArray<LongArray>): NDArray<LongArray> {
+    override fun times(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd) }
+            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
         }
     }
 
@@ -53,5 +53,16 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
     override fun placeAll(startOffset: Int, block: Any?) {
         block as LongArray
         block.copyInto(array, startOffset)
+    }
+
+    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<LongArray> {
+        func as (Long) -> Long
+        return if (copy) LongNDArray(map(array, func, copy), strides) else {
+            map(array, func, copy); this
+        }
+    }
+
+    override fun clean() {
+        for (i in array.indices) array[i] = 0
     }
 }

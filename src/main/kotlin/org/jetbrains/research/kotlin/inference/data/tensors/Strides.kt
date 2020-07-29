@@ -1,19 +1,18 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
 class Strides(val shape: IntArray) {
-    private val normalStrides = IntArray(shape.size)
+    val strides = IntArray(shape.size)
 
     init {
         shape.foldRightIndexed(1) { index, i, acc ->
-            normalStrides[index] = acc
+            strides[index] = acc
             acc * i
         }
     }
 
-    val strides = normalStrides.asList()
 
     fun offset(index: IntArray): Int {
-        return index.foldIndexed(0) { ind, acc, i -> acc + i * normalStrides[ind] }
+        return index.foldIndexed(0) { ind, acc, i -> acc + i * strides[ind] }
     }
 
     fun index(offset: Int): IntArray {
@@ -22,7 +21,7 @@ class Strides(val shape: IntArray) {
         val res = IntArray(shape.size)
         var current = offset
 
-        for ((index, stride) in normalStrides.withIndex()) {
+        for ((index, stride) in strides.withIndex()) {
             res[index] = current / stride
             current %= stride
         }
@@ -30,7 +29,7 @@ class Strides(val shape: IntArray) {
         return res
     }
 
-    val linearSize = if (shape.isEmpty()) 1 else normalStrides[0] * shape[0]
+    val linearSize = if (shape.isEmpty()) 1 else strides[0] * shape[0]
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

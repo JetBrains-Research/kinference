@@ -18,19 +18,19 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
-    override fun plus(other: NDArray<ShortArray>): NDArray<ShortArray> {
+    override fun plus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd) }
+            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
         }
     }
 
-    override fun times(other: NDArray<ShortArray>): NDArray<ShortArray> {
+    override fun times(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] * other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd) }
+            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
         }
     }
 
@@ -53,5 +53,16 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
     override fun placeAll(startOffset: Int, block: Any?) {
         block as ShortArray
         block.copyInto(array, startOffset)
+    }
+
+    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<ShortArray> {
+        func as (Short) -> Short
+        return if (copy) ShortNDArray(map(array, func, copy), strides) else {
+            map(array, func, copy); this
+        }
+    }
+
+    override fun clean() {
+        for (i in array.indices) array[i] = 0
     }
 }

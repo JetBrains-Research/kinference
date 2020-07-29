@@ -1,3 +1,4 @@
+/*
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
@@ -70,3 +71,4 @@ class BiLSTMLayer<T : Number> : LSTMLayer<T>() {
         return NDArray(array, states.first().type, strides)
     }
 }
+*/

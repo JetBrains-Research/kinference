@@ -7,11 +7,17 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
 class LSTM(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
-    private val layer: LSTMLayer<Number> = when (getAttributeValue("direction")) {
-        "forward" -> LSTMLayer()
-        "bidirectional" -> BiLSTMLayer()
-        else -> LSTMLayer()
+    // TODO: Support activation alpha and beta
+    private val activations = getAttributeValue("activations") as List<String>
+    private val direction = getAttributeValue("direction") as String
+    private val hiddenSize = getAttributeValue("hidden_size") as Long
+
+    private val layer = when (direction) {
+        "forward", "reverse" -> NewLSTM(hiddenSize.toInt(), activations, direction)
+        "bidirectional" -> NewBiLSTM(hiddenSize.toInt(), activations, direction)
+        else -> throw UnsupportedOperationException()
     }
+
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -23,7 +29,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : O
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("activation_alpha", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
             AttributeInfo("activation_beta", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
-            AttributeInfo("activations", setOf(AttributeProto.AttributeType.STRINGS), false, listOf("Sigmoid", "Tanh", "Tanh")),
+            AttributeInfo("activations", setOf(AttributeProto.AttributeType.STRINGS), false, listOf("Sigmoid", "Tanh", "Tanh", "Sigmoid", "Tanh", "Tanh")),
             AttributeInfo("clip", setOf(AttributeProto.AttributeType.FLOAT), false, Float.MAX_VALUE),
             AttributeInfo("direction", setOf(AttributeProto.AttributeType.STRING), false, "forward"),
             AttributeInfo("hidden_size", setOf(AttributeProto.AttributeType.INT), true),

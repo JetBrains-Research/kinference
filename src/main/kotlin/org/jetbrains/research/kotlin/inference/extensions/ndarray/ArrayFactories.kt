@@ -45,19 +45,6 @@ inline fun <reified T> createScalarNDArray(type: DataType, value: Any): NDArray<
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified T> zerosNDArray(type: DataType, strides: Strides): NDArray<T> {
-    return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(DoubleArray(strides.linearSize) { 0.0 }, strides)
-        DataType.FLOAT -> FloatNDArray(FloatArray(strides.linearSize) { 0.0f }, strides)
-        DataType.INT64 -> LongNDArray(LongArray(strides.linearSize) { 0L }, strides)
-        DataType.INT32 -> IntNDArray(IntArray(strides.linearSize) { 0 }, strides)
-        DataType.INT16 -> ShortNDArray(ShortArray(strides.linearSize) { (0).toShort() }, strides)
-        //else -> Array(size, init)
-        else -> error("Unsupported data type $type")
-    } as NDArray<T>
-}
-
-@Suppress("UNCHECKED_CAST")
 fun allocateNDArray(type: DataType, strides: Strides): NDArray<Any> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(DoubleArray(strides.linearSize), strides)

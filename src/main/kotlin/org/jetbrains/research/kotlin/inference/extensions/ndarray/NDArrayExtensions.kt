@@ -89,7 +89,6 @@ fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {
             this[it + index * matrixStrides.linearSize]
         }
     }
-    //return this.rows().map { it.as2DList() }.flatten()
 }
 
 fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
