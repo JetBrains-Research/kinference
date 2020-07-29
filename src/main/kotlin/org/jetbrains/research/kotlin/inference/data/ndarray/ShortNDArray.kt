@@ -7,7 +7,7 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.INT16) {
     override fun clone(newStrides: Strides): ShortNDArray {
-        return ShortNDArray(array as ShortArray, newStrides)
+        return ShortNDArray((array as ShortArray).copyOf(), newStrides)
     }
 
     override fun get(i: Int): Short {

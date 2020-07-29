@@ -7,7 +7,7 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.DOUBLE) {
     override fun clone(newStrides: Strides): DoubleNDArray {
-        return DoubleNDArray(array as DoubleArray, newStrides)
+        return DoubleNDArray((array as DoubleArray).copyOf(), newStrides)
     }
 
     override fun get(i: Int): Double {

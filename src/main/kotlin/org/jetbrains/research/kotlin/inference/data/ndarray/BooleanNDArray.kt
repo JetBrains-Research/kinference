@@ -5,7 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.BOOL) {
     override fun clone(newStrides: Strides): BooleanNDArray {
-        return BooleanNDArray(array as BooleanArray, newStrides)
+        return BooleanNDArray((array as BooleanArray).copyOf(), newStrides)
     }
 
     override fun get(i: Int): Boolean {

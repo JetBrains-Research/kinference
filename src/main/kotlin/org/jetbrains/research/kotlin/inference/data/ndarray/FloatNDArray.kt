@@ -7,7 +7,7 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray(array, strides, TensorProto.DataType.FLOAT) {
     override fun clone(newStrides: Strides): FloatNDArray {
-        return FloatNDArray(array as FloatArray, newStrides)
+        return FloatNDArray((array as FloatArray).copyOf(), newStrides)
     }
 
     override fun get(i: Int): Float {
