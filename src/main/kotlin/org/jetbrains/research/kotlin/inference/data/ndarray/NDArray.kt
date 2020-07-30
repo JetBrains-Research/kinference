@@ -92,7 +92,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return NDArray(row, type, dims) as NDArray<T>
     }
 
-    private fun slice(sliceLength: Int, start: Int): Any {
+    fun slice(sliceLength: Int, start: Int): Any {
         return createArray(type, sliceLength) { i -> this[start + i] }
     }
 

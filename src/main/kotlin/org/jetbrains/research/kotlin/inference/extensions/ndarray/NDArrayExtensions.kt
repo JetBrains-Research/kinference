@@ -1,10 +1,12 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
+import org.jetbrains.research.kotlin.inference.data.ndarray.LongNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
-import org.jetbrains.research.kotlin.inference.extensions.primitives.scalarOp
-import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import kotlin.math.min
 
 inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
@@ -120,25 +122,47 @@ inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, noinline 
         return applyWithBroadcast(other, transform)
     }
 
-    val sum = transform(array, other.array)
-    return NDArray(sum, type, strides)
+    return NDArray(transform(array, other.array), type, strides)
 }
 
-fun NDArray<Any>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<Any> {
+private fun NDArray<Any>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
+}
+
+private fun createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, type: TensorProto.DataType): NDArray<Any> {
     val addedShape = shape.toMutableList().also { it.removeAt(axis) }
     val newShape = addedShape.toMutableList().also { it.addAll(axis, indices.shape.toList()) }
     val newStrides = Strides(newShape.toIntArray())
+    return allocateNDArray(type, newStrides)
+}
 
-    val newArray = createArray(type, newStrides.linearSize) { i ->
-        val current = newStrides.index(i)
-        val indicesIndices = current.sliceArray(axis until indices.rank + axis)
-        val gatherIndices = (current.take(axis) + current.takeLast(rank - 1 - axis)).toMutableList().also { it.add(axis, (indices[indicesIndices] as Long).toInt()) }
-        val positiveGatherIndices = gatherIndices.zip(shape.toList()) { index, shape ->
-            if (index < 0) shape + index else index
-        }.toIntArray()
-        val linear = strides.offset(positiveGatherIndices)
-        this[linear]
+fun NDArray<Any>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<Any> {
+    val actualAxis = this.indexAxis(axis)
+    val dst = createGatherDstArray(actualAxis, indices as LongNDArray, shape, type)
+
+    val block = computeBlockSize(fromDim = actualAxis + 1)
+    val dataBatch = computeBlockSize(fromDim = actualAxis)
+    val indicesSize = indices.strides.linearSize
+    val gatheredBatch = indicesSize * block
+
+    val m = computeBlockSize(toDim = actualAxis)
+    val indicesArray = indices.array
+
+    repeat(m * indicesSize) { index ->
+        val batch = index / indicesSize
+        val i = index % indicesSize
+
+        val axisLim = this.shape[actualAxis]
+        var idx = indicesArray[i].toInt()
+        if (idx < 0) idx += axisLim
+
+        val srcOffsetBatch = batch * dataBatch
+        val dstOffsetBatch = batch * gatheredBatch
+
+        val srcOffset = srcOffsetBatch + idx * block
+        val dstOffset = dstOffsetBatch + i * block
+        val slice = this.slice(block, srcOffset)
+        dst.placeAll(dstOffset, slice)
     }
-
-    return NDArray(newArray, type, newStrides.shape)
+    return dst
 }
