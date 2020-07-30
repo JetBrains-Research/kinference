@@ -6,12 +6,10 @@ import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
     val totalShapeLength = max(currentShape.size, newShape.size)
-    val revCurrentShape = currentShape.reversedArray()
-    val revNewShape = newShape.reversedArray()
 
     return IntArray(totalShapeLength) { i ->
-        val currentDim = revCurrentShape.getOrNull(i) ?: 1
-        val newDim = revNewShape.getOrNull(i) ?: 1
+        val currentDim = currentShape.getOrNull(currentShape.size - i - 1) ?: 1
+        val newDim = newShape.getOrNull(newShape.size - i - 1) ?: 1
 
         if (currentDim != newDim && currentDim != 1 && newDim != 1) error("Cannot broadcast shapes")
 
@@ -19,15 +17,17 @@ fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
     }.reversedArray()
 }
 
-fun broadcastShape(currentShape: List<Int>, newShape: List<Int>): IntArray {
-    return broadcastShape(currentShape.toIntArray(), newShape.toIntArray())
-}
-
 fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<IntArray, IntArray> {
-    val base = broadcastShape(fstShape.dropLast(2), sndShape.dropLast(2))
+    val base = broadcastShape(fstShape.copyOfRange(0, fstShape.size - 2), sndShape.copyOfRange(0, sndShape.size - 2))
 
-    val fst = base + fstShape.takeLast(2)
-    val snd = base + sndShape.takeLast(2)
+    val fst = IntArray(base.size + 2).apply {
+        base.copyInto(this)
+        fstShape.copyInto(this, base.size, fstShape.size - 2)
+    }
+    val snd = IntArray(base.size + 2).apply {
+        base.copyInto(this)
+        sndShape.copyInto(this, base.size, sndShape.size - 2)
+    }
     return fst to snd
 }
 
@@ -50,12 +50,16 @@ fun <T> NDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = f
 fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray<T> {
     if (this.shape.contentEquals(newShape)) return this
 
-    val newDims = this.shape.copyOf().toMutableList()
-
-    if (newShape.size > this.rank)
-        repeat(newShape.size - this.rank) { newDims.add(0, 1) }
-
-    val preResult = this.reshape(newDims.toIntArray())
+    val newDims = if (newShape.size <= rank) {
+        this.shape.copyOf()
+    } else {
+        val offset = newShape.size - this.rank
+        IntArray(newShape.size).apply {
+            this@broadcast.shape.copyInto(this, offset)
+            fill(1, 0, offset)
+        }
+    }
+    val preResult = this.reshape(newDims)
 
     return preResult.innerBroadcast(newShape, asMatrixStack)
 }
