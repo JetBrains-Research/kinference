@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
@@ -55,8 +55,8 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         block.copyInto(array, startOffset)
     }
 
-    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<ShortArray> {
-        func as (Short) -> Short
+    override fun mapElements(func: PrimitiveArrayFunction, copy: Boolean): NDArray<ShortArray> {
+        func as ShortArrayToShortArray
         return if (copy) ShortNDArray(map(array, func, copy), strides) else {
             map(array, func, copy); this
         }

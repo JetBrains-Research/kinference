@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
@@ -55,8 +55,8 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         block.copyInto(array, startOffset)
     }
 
-    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<LongArray> {
-        func as (Long) -> Long
+    override fun mapElements(func: PrimitiveArrayFunction, copy: Boolean): NDArray<LongArray> {
+        func as LongArrayToLongArray
         return if (copy) LongNDArray(map(array, func, copy), strides) else {
             map(array, func, copy); this
         }

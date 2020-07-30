@@ -5,9 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
 import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
-import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
-import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
@@ -49,7 +47,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
 
     abstract operator fun div(other: NDArray<T>): NDArray<T>
 
-    abstract fun mapElements(func: (Any) -> Any, copy: Boolean = true): NDArray<T>
+    abstract fun mapElements(func: PrimitiveArrayFunction, copy: Boolean = true): NDArray<T>
     abstract fun clean(): Unit
     abstract fun slice(sliceLength: Int, start: Int): Any
 

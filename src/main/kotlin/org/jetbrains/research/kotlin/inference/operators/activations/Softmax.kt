@@ -39,7 +39,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
 
         return Array(matrixRows.size) { i ->
             val max = matrixRows[i].max()!!
-            matrixRows[i].minus(createScalarNDArray<Any>(input.type, max)).exp()
+            matrixRows[i].minus(createScalarNDArray(input.type, max)).exp()
         }
     }
 

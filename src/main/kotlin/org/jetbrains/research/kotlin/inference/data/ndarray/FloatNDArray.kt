@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
@@ -55,10 +55,11 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         block.copyInto(array, startOffset)
     }
 
-    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<FloatArray> {
-        func as (Float) -> Float
+    override fun mapElements(func: PrimitiveArrayFunction, copy: Boolean): NDArray<FloatArray> {
+        func as FloatArrayToFloatArray
         return if (copy) FloatNDArray(map(array, func, copy), strides) else {
-            map(array, func, copy); this
+            map(array, func, copy)
+            this
         }
     }
 

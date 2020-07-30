@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.primitives.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL) {
@@ -32,7 +33,7 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         TODO("Not yet implemented")
     }
 
-    override fun mapElements(func: (Any) -> Any, copy: Boolean): NDArray<BooleanArray> {
+    override fun mapElements(func: PrimitiveArrayFunction, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 

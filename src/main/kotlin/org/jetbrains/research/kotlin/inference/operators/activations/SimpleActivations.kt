@@ -2,6 +2,8 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.InputInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.operators.OutputInfo
@@ -30,19 +32,26 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
-        inline fun activateFloat(value: Float) = max(0.0f, value)
-        inline fun activateDouble(value: Double) = max(0.0, value)
+        inline fun activationFloat() = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = max(0.0f, array[i])
+                return array
+            }
+        }
 
-        inline fun activate(value: Any): Any {
-            return when (value) {
-                is Float -> activateFloat(value)
-                is Double -> activateDouble(value)
-                else -> error("Unsupported operation")
+        inline fun activationDouble() = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = max(0.0, array[i])
+                return array
             }
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
+        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        else -> error("Unsupported operation")
+    }
 }
 
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -54,19 +63,26 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
-        inline fun activateFloat(value: Float) = (1.0f / (1.0f + exp(-value)))
-        inline fun activateDouble(value: Double) = 1.0 / (1.0 + exp(-value))
+        inline fun activationFloat() = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
+                return array
+            }
+        }
 
-        inline fun activate(value: Any): Any {
-            return when (value) {
-                is Float -> activateFloat(value)
-                is Double -> activateDouble(value)
-                else -> error("Unsupported operation")
+        inline fun activationDouble() = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
+                return array
             }
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
+        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        else -> error("Unsupported operation")
+    }
 }
 
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -78,17 +94,24 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
             listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
         )
 
-        inline fun activateFloat(value: Float) = ((exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)).toFloat()
-        inline fun activateDouble(value: Double) = (exp(2.0 * value) - 1.0) / (exp(2.0 * value) + 1.0)
+        fun activationFloat() = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0)).toFloat()
+                return array
+            }
+        }
 
-        inline fun activate(value: Any): Any {
-            return when (value) {
-                is Float -> activateFloat(value)
-                is Double -> activateDouble(value)
-                else -> error("Unsupported operation")
+        fun activationDouble() = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0))
+                return array
             }
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = input.mapElements(Companion::activate)
+    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
+        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        else -> error("Unsupported operation")
+    }
 }
