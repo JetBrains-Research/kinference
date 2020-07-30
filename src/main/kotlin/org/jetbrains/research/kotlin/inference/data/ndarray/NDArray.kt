@@ -51,6 +51,8 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
 
     abstract fun mapElements(func: (Any) -> Any, copy: Boolean = true): NDArray<T>
     abstract fun clean(): Unit
+    abstract fun slice(sliceLength: Int, start: Int): Any
+
 
     fun indexAxis(axis: Int): Int {
         return if (axis < 0) rank + axis else axis
@@ -90,10 +92,6 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     private fun sliceRow(rowLength: Int, start: Int, dims: IntArray): NDArray<T> {
         val row = slice(rowLength, start)
         return NDArray(row, type, dims) as NDArray<T>
-    }
-
-    fun slice(sliceLength: Int, start: Int): Any {
-        return createArray(type, sliceLength) { i -> this[start + i] }
     }
 
     @Suppress("UNCHECKED_CAST")

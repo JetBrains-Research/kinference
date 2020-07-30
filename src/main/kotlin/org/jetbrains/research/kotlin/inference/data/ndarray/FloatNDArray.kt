@@ -62,6 +62,10 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
+    override fun slice(sliceLength: Int, start: Int): FloatArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun clean() {
         for (i in array.indices) array[i] = 0.0f
     }

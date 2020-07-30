@@ -62,6 +62,10 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
+    override fun slice(sliceLength: Int, start: Int): DoubleArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun clean() {
         for (i in array.indices) array[i] = 0.0
     }

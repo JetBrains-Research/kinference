@@ -40,6 +40,10 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         TODO("Not yet implemented")
     }
 
+    override fun slice(sliceLength: Int, start: Int): BooleanArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as BooleanArray
         block.copyInto(array, startOffset)

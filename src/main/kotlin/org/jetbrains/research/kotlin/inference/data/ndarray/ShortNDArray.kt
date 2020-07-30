@@ -62,6 +62,10 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
+    override fun slice(sliceLength: Int, start: Int): ShortArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun clean() {
         for (i in array.indices) array[i] = 0
     }

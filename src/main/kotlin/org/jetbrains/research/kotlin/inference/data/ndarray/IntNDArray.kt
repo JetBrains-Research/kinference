@@ -70,6 +70,10 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         }
     }
 
+    override fun slice(sliceLength: Int, start: Int): IntArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun clean() {
         for (i in array.indices) array[i] = 0
     }

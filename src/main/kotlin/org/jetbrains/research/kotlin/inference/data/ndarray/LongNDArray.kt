@@ -62,6 +62,10 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         }
     }
 
+    override fun slice(sliceLength: Int, start: Int): LongArray {
+        return array.sliceArray(start until start + sliceLength)
+    }
+
     override fun clean() {
         for (i in array.indices) array[i] = 0
     }
