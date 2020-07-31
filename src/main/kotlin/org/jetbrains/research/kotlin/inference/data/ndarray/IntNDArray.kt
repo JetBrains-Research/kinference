@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
@@ -24,7 +25,11 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
+            this.combineWith(other, object : IntArrayWithIntArray {
+                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
+                    return plus(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -34,7 +39,11 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
+            this.combineWith(other, object : IntArrayWithIntArray {
+                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
+                    return times(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -44,7 +53,11 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> minus(fst, snd) }
+            this.combineWith(other, object : IntArrayWithIntArray {
+                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
+                    return minus(array, otherArray)
+                }
+            })
         }
     }
 
@@ -54,7 +67,11 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> div(fst, snd) }
+            this.combineWith(other, object : IntArrayWithIntArray {
+                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
+                    return div(array, otherArray)
+                }
+            })
         }
     }
 

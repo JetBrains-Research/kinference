@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
@@ -22,7 +23,11 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
+            this.combineWith(other, object : ShortArrayWithShortArray {
+                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
+                    return plus(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -30,7 +35,11 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] * other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
+            this.combineWith(other, object : ShortArrayWithShortArray {
+                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
+                    return times(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -38,7 +47,11 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> div(fst, snd) }
+            this.combineWith(other, object : ShortArrayWithShortArray {
+                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
+                    return div(array, otherArray)
+                }
+            })
         }
     }
 
@@ -46,7 +59,11 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
         } else {
-            this.combineWith(other) { fst, snd -> minus(fst, snd) }
+            this.combineWith(other, object : ShortArrayWithShortArray {
+                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
+                    return minus(array, otherArray)
+                }
+            })
         }
     }
 

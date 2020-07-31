@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.extensions.primitives
+package org.jetbrains.research.kotlin.inference.extensions.functional
 
 interface PrimitiveArrayFunction
 

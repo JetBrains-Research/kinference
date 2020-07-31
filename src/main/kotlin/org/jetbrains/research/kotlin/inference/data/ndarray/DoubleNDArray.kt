@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
@@ -22,7 +23,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> plus(fst, snd, copy) }
+            this.combineWith(other, object : DoubleArrayWithDoubleArray {
+                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
+                    return plus(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -30,7 +35,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> minus(fst, snd) }
+            this.combineWith(other, object : DoubleArrayWithDoubleArray {
+                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
+                    return minus(array, otherArray)
+                }
+            })
         }
     }
 
@@ -38,7 +47,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> times(fst, snd, copy) }
+            this.combineWith(other, object : DoubleArrayWithDoubleArray {
+                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
+                    return times(array, otherArray, copy)
+                }
+            })
         }
     }
 
@@ -46,7 +59,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other) { fst, snd -> div(fst, snd) }
+            this.combineWith(other, object : DoubleArrayWithDoubleArray {
+                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
+                    return div(array, otherArray)
+                }
+            })
         }
     }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 
 fun Collection<Long>.toIntArray(): IntArray = this.map { it.toInt() }.toIntArray()
@@ -53,7 +54,7 @@ inline fun <reified T> NDArray<T>.exp(): NDArray<T> {
     } as NDArray<T>
 }
 
-inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, noinline op: (T, T) -> T): NDArray<T> {
-    return NDArray(op(array, createArray(type, this.linearSize) { x } as T), type, strides)
+inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveCombineFunction<T>): NDArray<T> {
+    return NDArray(op.apply(array, createArray(type, this.linearSize) { x } as T), type, strides)
 }
 

@@ -1,5 +1,7 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
+
 fun map(array: FloatArray, lambda: FloatArrayToFloatArray, copy: Boolean): FloatArray {
     val actual = if (copy) array.copyOf() else array
     return lambda.apply(actual)

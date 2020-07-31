@@ -1,12 +1,10 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.LongNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import kotlin.math.min
 
 inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
@@ -112,7 +110,7 @@ fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
     return reshape(newShape)
 }
 
-inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, noinline transform: (T, T) -> T): NDArray<T> {
+inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveCombineFunction<T>): NDArray<T> {
     if (this.isScalar()) {
         return other.scalarOp(this[0], transform)
     } else if (other.isScalar()) {
@@ -123,5 +121,5 @@ inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, noinline 
         return applyWithBroadcast(other, transform)
     }
 
-    return NDArray(transform(array, other.array), type, strides)
+    return NDArray(transform.apply(array, other.array), type, strides)
 }

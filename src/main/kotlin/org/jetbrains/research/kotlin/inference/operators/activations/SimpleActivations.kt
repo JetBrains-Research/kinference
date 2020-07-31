@@ -2,7 +2,8 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.InputInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
