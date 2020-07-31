@@ -5,10 +5,28 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 fun dotInto(left: FloatArray, right: FloatArray, leftShape: IntArray, rightShape: IntArray, destination: FloatArray, clean: Boolean): FloatArray {
     if (clean) for (i in destination.indices) destination[i] = 0.0f
+    /*val n = leftShape[0]
+    val m = rightShape[1]
+    val t = leftShape[1] // == rightShape[0]
+
+    val Bcolj = FloatArray(t)
+    for (j in 0 until m){
+        for (k in 0 until t){
+            Bcolj[k] = right[k * m + j]
+        }
+
+        for (i in 0 until n){
+            var s = 0.0f
+            for (k in 0 until t){
+                s += left[i * t + k] * Bcolj[k]
+            }
+            destination[j + i * m] += s
+        }
+    }*/
 
     for (i in 0 until leftShape[0]) {
-        for (j in 0 until rightShape[1]) {
-            for (k in 0 until leftShape[1]) {
+        for (k in 0 until leftShape[1]) {
+            for (j in 0 until rightShape[1]) {
                 destination[i * rightShape[1] + j] += left[i * leftShape[1] + k] * right[k * rightShape[1] + j]
             }
         }

@@ -32,7 +32,7 @@ fun splitByZero(array: DoubleArray, strides: Strides, split: IntArray, keepDims:
             newShape = strides.shape.copyOf()
             newShape[0] = split[it]
         } else {
-            newShape = strides.shape.copyOfRange(1, strides.shape.lastIndex)
+            newShape = strides.shape.copyOfRange(1, strides.shape.size)
         }
         val newStrides = Strides(newShape)
         array.copyInto(newArray, 0, offset, offset + splitSize * split[it])
@@ -51,7 +51,7 @@ fun splitByZero(array: IntArray, strides: Strides, split: IntArray, keepDims: Bo
             newShape = strides.shape.copyOf()
             newShape[0] = split[it]
         } else {
-            newShape = strides.shape.copyOfRange(1, strides.shape.lastIndex)
+            newShape = strides.shape.copyOfRange(1, strides.shape.size)
         }
         val newStrides = Strides(newShape)
         array.copyInto(newArray, 0, offset, offset + splitSize * split[it])
@@ -70,7 +70,7 @@ fun splitByZero(array: LongArray, strides: Strides, split: IntArray, keepDims: B
             newShape = strides.shape.copyOf()
             newShape[0] = split[it]
         } else {
-            newShape = strides.shape.copyOfRange(1, strides.shape.lastIndex)
+            newShape = strides.shape.copyOfRange(1, strides.shape.size)
         }
         val newStrides = Strides(newShape)
         array.copyInto(newArray, 0, offset, offset + splitSize * split[it])
@@ -89,7 +89,7 @@ fun splitByZero(array: ShortArray, strides: Strides, split: IntArray, keepDims: 
             newShape = strides.shape.copyOf()
             newShape[0] = split[it]
         } else {
-            newShape = strides.shape.copyOfRange(1, strides.shape.lastIndex)
+            newShape = strides.shape.copyOfRange(1, strides.shape.size)
         }
         val newStrides = Strides(newShape)
         array.copyInto(newArray, 0, offset, offset + splitSize * split[it])
