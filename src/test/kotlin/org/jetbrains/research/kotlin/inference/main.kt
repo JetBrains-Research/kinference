@@ -14,7 +14,7 @@ fun main(){
         inputTensors
     }.first()
 
-    val count = 20
+    val count = 100
     val times = LongArray(count)
     for (i in (0 until count)){
         val startTime = System.currentTimeMillis()

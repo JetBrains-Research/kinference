@@ -17,20 +17,6 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> createNDArray(type: DataType, strides: Strides = Strides.empty(), init: (Int) -> Any): NDArray<T> {
-    return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(createArray(type, strides.linearSize, init) as DoubleArray, strides)
-        DataType.FLOAT -> FloatNDArray(createArray(type, strides.linearSize, init) as FloatArray, strides)
-        DataType.INT64 -> LongNDArray(createArray(type, strides.linearSize, init) as LongArray, strides)
-        DataType.INT32 -> IntNDArray(createArray(type, strides.linearSize, init) as IntArray, strides)
-        DataType.INT16 -> ShortNDArray(createArray(type, strides.linearSize, init) as ShortArray, strides)
-        DataType.BOOL -> BooleanNDArray(createArray(type, strides.linearSize, init) as BooleanArray, strides)
-        //else -> Array(size, init)
-        else -> error("Unsupported data type $type")
-    } as NDArray<T>
-}
-
-@Suppress("UNCHECKED_CAST")
 inline fun <reified T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(value as Double))
