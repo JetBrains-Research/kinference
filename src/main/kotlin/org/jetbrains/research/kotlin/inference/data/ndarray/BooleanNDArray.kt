@@ -21,15 +21,15 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         TODO("Not yet implemented")
     }
 
+    override fun minus(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
+        TODO("Not yet implemented")
+    }
+
     override fun times(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun div(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
-        TODO("Not yet implemented")
-    }
-
-    override fun minus(other: NDArray<BooleanArray>): NDArray<BooleanArray> {
+    override fun div(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 

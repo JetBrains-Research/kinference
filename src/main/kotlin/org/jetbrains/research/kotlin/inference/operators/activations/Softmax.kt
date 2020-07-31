@@ -23,8 +23,8 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         )
     }
 
-    private fun resolveDims(dims: List<Int>?): Int {
-        return if (dims.isNullOrEmpty()) 1 else dims.reduce(Int::times)
+    private fun resolveDims(dims: IntArray?): Int {
+        return if (dims == null || dims.isEmpty()) 1 else dims.reduce(Int::times)
     }
 
     private fun expMatrixRows(input: NDArray<Any>, axis: Int): Array<NDArray<Any>> {
@@ -32,14 +32,14 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val shape = input.shape
         val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
 
-        val rows = resolveDims(shape.slice(rowIdx))
-        val columns = resolveDims(shape.slice(columnIdx))
+        val rows = resolveDims(shape.sliceArray(rowIdx))
+        val columns = resolveDims(shape.sliceArray(columnIdx))
 
         val matrixRows = input.reshape(intArrayOf(rows, columns)).rows
 
         return Array(matrixRows.size) { i ->
             val max = matrixRows[i].max()!!
-            matrixRows[i].minus(createScalarNDArray(input.type, max)).exp()
+            matrixRows[i].minus(createScalarNDArray(input.type, max), false).exp()
         }
     }
 
@@ -51,7 +51,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         val array = allocateNDArray(input.type, input.strides)
         repeat(matrixRows.size) { i ->
             val sum = matrixRows[i].sum()
-            val row = matrixRows[i].div(createScalarNDArray(input.type, sum))
+            val row = matrixRows[i].div(createScalarNDArray(input.type, sum), false)
             array.placeAll(i * step, row.array)
         }
         return array

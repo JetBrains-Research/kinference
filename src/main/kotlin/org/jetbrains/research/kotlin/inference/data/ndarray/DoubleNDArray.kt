@@ -31,13 +31,13 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
-    override fun minus(other: NDArray<DoubleArray>): NDArray<DoubleArray> {
+    override fun minus(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] - other.array[0]))
         } else {
             this.combineWith(other, object : DoubleArrayWithDoubleArray {
                 override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return minus(array, otherArray)
+                    return minus(array, otherArray, copy)
                 }
             })
         }
@@ -55,13 +55,13 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
-    override fun div(other: NDArray<DoubleArray>): NDArray<DoubleArray> {
+    override fun div(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] / other.array[0]))
         } else {
             this.combineWith(other, object : DoubleArrayWithDoubleArray {
                 override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return div(array, otherArray)
+                    return div(array, otherArray, copy)
                 }
             })
         }

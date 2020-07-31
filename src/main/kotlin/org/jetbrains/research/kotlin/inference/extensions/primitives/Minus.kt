@@ -1,21 +1,21 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
-fun minus(left: FloatArray, right: FloatArray): FloatArray {
-    return plus(left, -right, true)
+fun minus(left: FloatArray, right: FloatArray, copy: Boolean): FloatArray {
+    return plus(left, -right, copy)
 }
 
-fun minus(left: IntArray, right: IntArray): IntArray {
-    return plus(left, -right, true)
+fun minus(left: IntArray, right: IntArray, copy: Boolean): IntArray {
+    return plus(left, -right, copy)
 }
 
-fun minus(left: LongArray, right: LongArray): LongArray {
-    return plus(left, -right, true)
+fun minus(left: LongArray, right: LongArray, copy: Boolean): LongArray {
+    return plus(left, -right, copy)
 }
 
-fun minus(left: DoubleArray, right: DoubleArray): DoubleArray {
-    return plus(left, -right, true)
+fun minus(left: DoubleArray, right: DoubleArray, copy: Boolean): DoubleArray {
+    return plus(left, -right, copy)
 }
 
-fun minus(left: ShortArray, right: ShortArray): ShortArray {
-    return plus(left, -right, true)
+fun minus(left: ShortArray, right: ShortArray, copy: Boolean): ShortArray {
+    return plus(left, -right, copy)
 }

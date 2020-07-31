@@ -11,12 +11,12 @@ inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepD
 
     val elementsByIndex = shape[axis]
     val mainSplit = elementsByIndex / parts
-    val split = MutableList(parts - 1) { mainSplit }
+    val split = IntArray(parts) { mainSplit }
 
     val tail = elementsByIndex - mainSplit * (parts - 1)
-    split.add(tail)
+    split[parts - 1] = tail
 
-    return this.splitWithAxis(split.toIntArray(), axis, keepDims).toList()
+    return this.splitWithAxis(split, axis, keepDims).toList()
 }
 
 inline fun <reified T> NDArray<T>.splitWithAxis(splitTensor: NDArray<T>, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
@@ -34,14 +34,14 @@ fun <T> NDArray<T>.wrapOneDim(): NDArray<T> {
 
 //if axis not 0
 fun <T> NDArray<T>.mergeOnAxis(other: NDArray<T>, axis: Int): NDArray<T> {
-    val dim = this.shape
-    val rows = this.rows.zip(other.rows).map { (fst, snd) -> fst.concatenate(snd, axis - 1) }.toMutableList()
+    val rows = this.rows.zip(other.rows) { fst, snd -> fst.concatenate(snd, axis - 1) }.toTypedArray()
     var result = rows[0]
 
-    if (dim[0] > 1) {
+    val dim = this.shape[0]
+    if (dim > 1) {
         result = rows.apply { set(0, rows[0].wrapOneDim()) }.reduce { acc, tensor -> acc.concatenate(tensor.wrapOneDim()) }
     }
-    if (dim[0] == 1 && axis > 0) result = result.wrapOneDim()
+    if (dim == 1 && axis > 0) result = result.wrapOneDim()
 
     return result
 }
@@ -70,11 +70,12 @@ fun <T> Collection<NDArray<T>>.concatenate(axis: Int): NDArray<T> {
 }
 
 fun Array<NDArray<Any>>.stack(axis: Int): NDArray<Any> {
-    return this.map {
-        val newShape = this.first().shape.toMutableList()
-        newShape.add(axis, 1)
-        it.reshape(newShape.toIntArray())
-    }.concatenate(axis)
+    val fstShape = this.first().shape
+    val newShape = IntArray(fstShape.size + 1)
+    fstShape.copyInto(newShape, 0, 0, axis)
+    newShape[axis] = 1
+    fstShape.copyInto(newShape, axis + 1, axis)
+    return this.map { it.reshape(newShape) }.concatenate(axis)
 }
 
 fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {

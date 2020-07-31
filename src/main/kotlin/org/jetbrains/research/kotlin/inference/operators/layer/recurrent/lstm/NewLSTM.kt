@@ -7,8 +7,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArra
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.matrixTranspose
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.wrapOneDim
-import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
-import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.RecurrentLayer
@@ -88,7 +87,7 @@ open class NewLSTM(hiddenSize: Int, activations: List<String>, direction: String
         //val outputArray = allocateNDArray(type!!, Strides(intArrayOf(seqLength!!, 1, batchSize!!, hiddenSize)))
         val outputStrides = Strides(intArrayOf(1, batchSize, hiddenSize))
 
-        val actualIndices = if (direction == "forward") inputs.indices.toList().toIntArray() else inputs.indices.reversed()
+        val actualIndices = if (direction == "forward") inputs.indices.toIntArray() else inputs.indices.reversed()
 
         val out = actualIndices.map { batchNum ->
             val outputArray = allocateNDArray(type, outputStrides)

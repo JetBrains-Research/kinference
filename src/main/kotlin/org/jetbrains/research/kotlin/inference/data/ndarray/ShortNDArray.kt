@@ -43,25 +43,25 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
-    override fun div(other: NDArray<ShortArray>): NDArray<ShortArray> {
+    override fun div(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
         } else {
             this.combineWith(other, object : ShortArrayWithShortArray {
                 override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return div(array, otherArray)
+                    return div(array, otherArray, copy)
                 }
             })
         }
     }
 
-    override fun minus(other: NDArray<ShortArray>): NDArray<ShortArray> {
+    override fun minus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
         } else {
             this.combineWith(other, object : ShortArrayWithShortArray {
                 override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return minus(array, otherArray)
+                    return minus(array, otherArray, copy)
                 }
             })
         }

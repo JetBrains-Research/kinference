@@ -41,12 +41,14 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     abstract fun plus(other: NDArray<T>, copy: Boolean = true): NDArray<T>
     operator fun plus(other: NDArray<T>) = plus(other, true)
 
-    abstract operator fun minus(other: NDArray<T>): NDArray<T>
+    abstract fun minus(other: NDArray<T>, copy: Boolean = true): NDArray<T>
+    operator fun minus(other: NDArray<T>): NDArray<T> = minus(other, true)
 
     abstract fun times(other: NDArray<T>, copy: Boolean = true): NDArray<T>
     operator fun times(other: NDArray<T>) = times(other, true)
 
-    abstract operator fun div(other: NDArray<T>): NDArray<T>
+    abstract fun div(other: NDArray<T>, copy: Boolean = true): NDArray<T>
+    operator fun div(other: NDArray<T>): NDArray<T> = div(other, true)
 
     abstract fun mapElements(func: PrimitiveArrayFunction, copy: Boolean = true): NDArray<T>
     abstract fun clean(): Unit
@@ -105,12 +107,6 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
 
         return result as NDArray<T>
     }
-
-//    fun mapElements(func: (Any) -> Any): NDArray {
-//        val buffer = createArray(type, linearSize) { func(this[it]) }
-//
-//        return NDArray(buffer, type, shape)
-//    }
 
     fun transpose(permutations: List<Long>? = null): NDArray<T> {
         if (rank == 2) return this.matrixTranspose()

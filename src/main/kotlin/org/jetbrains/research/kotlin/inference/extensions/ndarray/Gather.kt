@@ -10,9 +10,11 @@ private fun NDArray<Any>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.sh
 }
 
 private fun createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, type: TensorProto.DataType): NDArray<Any> {
-    val addedShape = shape.toMutableList().also { it.removeAt(axis) }
-    val newShape = addedShape.toMutableList().also { it.addAll(axis, indices.shape.toList()) }
-    val newStrides = Strides(newShape.toIntArray())
+    val newShape = IntArray(shape.size + indices.rank - 1)
+    shape.copyInto(newShape, 0, 0, axis)
+    indices.shape.copyInto(newShape, axis)
+    shape.copyInto(newShape, axis + indices.rank, axis + 1)
+    val newStrides = Strides(newShape)
     return allocateNDArray(type, newStrides)
 }
 
@@ -26,7 +28,10 @@ fun NDArray<Any>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<Any> {
     val gatheredBatch = indicesSize * block
 
     val numBlocks = computeBlockSize(toDim = actualAxis)
-    val indicesArray = indices.array.map { if (it < 0) (it.toInt() + this.shape[actualAxis]) else it.toInt()}.toIntArray()
+
+    val indicesArray = IntArray(indices.array.size) { i ->
+        if (indices.array[i] < 0) (indices.array[i].toInt() + this.shape[actualAxis]) else indices.array[i].toInt()
+    }
 
     repeat(numBlocks * indicesSize) { index ->
         val numBatch = index / indicesSize

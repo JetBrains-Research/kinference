@@ -21,6 +21,15 @@ fun IntRange.reversed(): IntArray {
     return array
 }
 
+fun IntRange.toIntArray(): IntArray {
+    val size = this.last - this.first + 1
+    val array = IntArray(size)
+    for ((i, element) in this.withIndex()) {
+        array[i] = element
+    }
+    return array
+}
+
 inline fun add(vararg terms: Number): Number = when (terms.first()) {
     is Float -> terms.reduce { acc, number -> acc.toFloat() + number.toFloat() }
     is Double -> terms.reduce { acc, number -> acc.toDouble() + number.toDouble() }

@@ -47,7 +47,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         }
     }
 
-    override fun minus(other: NDArray<IntArray>): NDArray<IntArray> {
+    override fun minus(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
@@ -55,13 +55,13 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         } else {
             this.combineWith(other, object : IntArrayWithIntArray {
                 override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return minus(array, otherArray)
+                    return minus(array, otherArray, copy)
                 }
             })
         }
     }
 
-    override fun div(other: NDArray<IntArray>): NDArray<IntArray> {
+    override fun div(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
@@ -69,7 +69,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         } else {
             this.combineWith(other, object : IntArrayWithIntArray {
                 override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return div(array, otherArray)
+                    return div(array, otherArray, copy)
                 }
             })
         }

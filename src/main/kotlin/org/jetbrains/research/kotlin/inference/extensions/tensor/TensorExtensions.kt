@@ -4,11 +4,13 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
-    return this.map {
-        val newShape = this.first().data.shape.toMutableList()
-        newShape.add(axis, 1)
-        it.data.reshape(newShape.toIntArray())
-    }.concatenate(axis).asTensor()
+    val fstShape = this.first().data.shape
+    val newShape = IntArray(fstShape.size + 1)
+    fstShape.copyInto(newShape, 0, 0, axis)
+    newShape[axis] = 1
+    fstShape.copyInto(newShape, axis + 1, axis)
+
+    return this.map { it.data.reshape(newShape) }.concatenate(axis).asTensor()
 }
 
 fun Collection<Tensor>.concatenate(axis: Int): Tensor {
