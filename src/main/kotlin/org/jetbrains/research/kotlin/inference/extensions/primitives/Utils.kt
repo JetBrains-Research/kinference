@@ -4,9 +4,22 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 
-fun Collection<Long>.toIntArray(): IntArray = this.map { it.toInt() }.toIntArray()
-fun Collection<Number>.toDoubleList(): List<Double> = this.map { it.toDouble() }
-fun IntRange.reversed() = this.toList().reversed().toIntArray()
+fun Collection<Long>.toIntArray(): IntArray {
+    val array = IntArray(this.size)
+    for ((i, element) in this.withIndex()) {
+        array[i] = element.toInt()
+    }
+    return array
+}
+
+fun IntRange.reversed(): IntArray {
+    val size = this.last - this.first + 1
+    val array = IntArray(size)
+    for ((i, element) in this.withIndex()) {
+        array[size - i - 1] = element
+    }
+    return array
+}
 
 inline fun add(vararg terms: Number): Number = when (terms.first()) {
     is Float -> terms.reduce { acc, number -> acc.toFloat() + number.toFloat() }
