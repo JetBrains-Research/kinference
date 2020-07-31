@@ -5,7 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-private fun NDArray<Any>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+fun NDArray<Any>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 

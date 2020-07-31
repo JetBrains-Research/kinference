@@ -6,27 +6,6 @@ import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 
-inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
-    require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
-
-    val elementsByIndex = shape[axis]
-    val mainSplit = elementsByIndex / parts
-    val split = IntArray(parts) { mainSplit }
-
-    val tail = elementsByIndex - mainSplit * (parts - 1)
-    split[parts - 1] = tail
-
-    return this.splitWithAxis(split, axis, keepDims).toList()
-}
-
-inline fun <reified T> NDArray<T>.splitWithAxis(splitTensor: NDArray<T>, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
-    return if (splitTensor.linearSize == 1) {
-        splitWithAxis((splitTensor[0] as Number).toInt(), axis, keepDims)
-    } else {
-        this.splitWithAxis((splitTensor.array as List<Long>).toIntArray(), axis, keepDims).toList()
-    }
-}
-
 fun <T> NDArray<T>.wrapOneDim(): NDArray<T> {
     val newStrides = Strides(intArrayOf(1, *this.shape))
     return this.clone(newStrides)

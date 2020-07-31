@@ -22,10 +22,9 @@ fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): L
 }
 
 fun Tensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
-    if (axis == 0 && data.rank >= 2) return data.splitByZero(split, keepDims).map { it.asTensor() }
-    return data.split(axis, split, keepDims).map { it.asTensor() }
+    return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
 
 fun Tensor.splitWithAxis(splitTensor: Tensor, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
-    return this.splitWithAxis(splitTensor.data.array as IntArray, axis, keepDims)
+    return this.data.splitWithAxis(splitTensor.data.array as IntArray, axis, keepDims).map { it.asTensor() }
 }

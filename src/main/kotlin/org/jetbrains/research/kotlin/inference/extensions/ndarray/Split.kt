@@ -1,150 +1,61 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import kotlin.math.ceil
 
-fun split(array: FloatArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<FloatNDArray> {
-    return Array(split.size) { num ->
-        val newShape: IntArray
-        if (keepDims) {
-            newShape = strides.shape.copyOf()
-            newShape[axis] = split[num]
-        } else {
-            newShape = IntArray(strides.shape.size - 1)
-            strides.shape.copyInto(newShape, 0, 0, axis)
-            strides.shape.copyInto(newShape, axis, axis + 1)
-        }
-        val newStrides = Strides(newShape)
-
-        val newArray = FloatArray(newStrides.linearSize)
-        val factor = num * (split.getOrNull(num - 1) ?: 0)
-
-        for (i in newArray.indices) {
-            val indices = newStrides.index(i)
-            indices[axis] += factor
-            newArray[i] = array[strides.offset(indices)]
-        }
-
-        FloatNDArray(newArray, newStrides)
+private fun NDArray<Any>.computeSplitShape(axis: Int, split: Int, keepDims: Boolean): IntArray {
+    val newShape: IntArray
+    if (keepDims) {
+        newShape = strides.shape.copyOf()
+        newShape[axis] = split
+    } else {
+        newShape = IntArray(strides.shape.size - 1)
+        strides.shape.copyInto(newShape, 0, 0, axis)
+        strides.shape.copyInto(newShape, axis, axis + 1)
     }
+    return newShape
 }
 
-fun split(array: DoubleArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<DoubleNDArray> {
-    return Array(split.size) { num ->
-        val newShape: IntArray
-        if (keepDims) {
-            newShape = strides.shape.copyOf()
-            newShape[axis] = split[num]
-        } else {
-            newShape = IntArray(strides.shape.size - 1)
-            strides.shape.copyInto(newShape, 0, 0, axis)
-            strides.shape.copyInto(newShape, axis, axis + 1)
-        }
-        val newStrides = Strides(newShape)
-
-        val newArray = DoubleArray(newStrides.linearSize)
-        val factor = num * (split.getOrNull(num - 1) ?: 0)
-
-        for (i in newArray.indices) {
-            val indices = newStrides.index(i)
-            indices[axis] += factor
-            newArray[i] = array[strides.offset(indices)]
-        }
-        DoubleNDArray(newArray, newStrides)
+private fun NDArray<Any>.copySplitFragment(dst: NDArray<Any>, srcOffset: Int, numFragments: Int, sliceLen: Int, fragOffset: Int, fragSize: Int): NDArray<Any> {
+    if (fragOffset == sliceLen && fragSize == sliceLen) {
+        val slice = this.slice(numFragments * sliceLen, 0)
+        return dst.apply { placeAll(0, slice) }
     }
-}
 
-fun split(array: IntArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<IntNDArray> {
-    return Array(split.size) { num ->
-        val newShape: IntArray
-        if (keepDims) {
-            newShape = strides.shape.copyOf()
-            newShape[axis] = split[num]
-        } else {
-            newShape = IntArray(strides.shape.size - 1)
-            strides.shape.copyInto(newShape, 0, 0, axis)
-            strides.shape.copyInto(newShape, axis, axis + 1)
-        }
-        val newStrides = Strides(newShape)
-
-        val newArray = IntArray(newStrides.linearSize)
-        val factor = num * (split.getOrNull(num - 1) ?: 0)
-
-        for (i in newArray.indices) {
-            val indices = newStrides.index(i)
-            indices[axis] += factor
-            newArray[i] = array[strides.offset(indices)]
-        }
-
-        IntNDArray(newArray, newStrides)
+    repeat(numFragments) {
+        dst.placeAll(it * sliceLen, slice(sliceLen, srcOffset + fragOffset * it))
     }
+    return dst
 }
 
-fun split(array: LongArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<LongNDArray> {
-    return Array(split.size) { num ->
-        val newShape: IntArray
-        if (keepDims) {
-            newShape = strides.shape.copyOf()
-            newShape[axis] = split[num]
-        } else {
-            newShape = IntArray(strides.shape.size - 1)
-            strides.shape.copyInto(newShape, 0, 0, axis)
-            strides.shape.copyInto(newShape, axis, axis + 1)
-        }
-        val newStrides = Strides(newShape)
+fun NDArray<Any>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<Any>> {
+    require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
+    val actualAxis = indexAxis(axis)
+    val elementsByIndex = shape[actualAxis]
+    val mainSplit = ceil(elementsByIndex.toDouble() / parts).toInt()
+    val split = IntArray(parts) { mainSplit }
 
-        val newArray = LongArray(newStrides.linearSize)
-        val factor = num * (split.getOrNull(num - 1) ?: 0)
+    val tail = elementsByIndex % parts
+    if (tail != 0) split[parts - 1] = tail
 
-        for (i in newArray.indices) {
-            val indices = newStrides.index(i)
-            indices[axis] += factor
-            newArray[i] = array[strides.offset(indices)]
-        }
+    return splitWithAxis(split, actualAxis, keepDims).toList()
+}
 
-        LongNDArray(newArray, newStrides)
+fun NDArray<Any>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): Array<NDArray<Any>> {
+    val beforeAxisDims = computeBlockSize(toDim = axis)
+    val fromDimsAxis = computeBlockSize(fromDim = axis)
+    val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
+
+    var inputOffset = 0
+
+    return Array(split.size) { i ->
+        val splitSize = split[i]
+        val outputDims = computeSplitShape(axis, split[i], keepDims)
+        val dst = allocateNDArray(type, Strides(outputDims))
+        val fragmentSize = splitSize * afterAxisDims
+        copySplitFragment(dst, inputOffset, beforeAxisDims, fragmentSize, fromDimsAxis, fragmentSize)
+        inputOffset += fragmentSize
+        dst
     }
-}
-
-fun split(array: ShortArray, axis: Int, strides: Strides, split: IntArray, keepDims: Boolean): Array<ShortNDArray> {
-    return Array(split.size) { num ->
-        val newShape: IntArray
-        if (keepDims) {
-            newShape = strides.shape.copyOf()
-            newShape[axis] = split[num]
-        } else {
-            newShape = IntArray(strides.shape.size - 1)
-            strides.shape.copyInto(newShape, 0, 0, axis)
-            strides.shape.copyInto(newShape, axis, axis + 1)
-        }
-        val newStrides = Strides(newShape)
-
-        val newArray = ShortArray(newStrides.linearSize)
-        val factor = num * (split.getOrNull(num - 1) ?: 0)
-
-        for (i in newArray.indices) {
-            val indices = newStrides.index(i)
-            indices[axis] += factor
-            newArray[i] = array[strides.offset(indices)]
-        }
-
-        ShortNDArray(newArray, newStrides)
-    }
-}
-
-@Suppress("UNCHECKED_CAST")
-inline fun <reified T> NDArray<T>.split(axis: Int, split: IntArray, keepDims: Boolean): Array<NDArray<T>> {
-    return when (array) {
-        is IntArray -> split(array, axis, strides, split, keepDims)
-        is FloatArray -> split(array, axis, strides, split, keepDims)
-        is ShortArray -> split(array, axis, strides, split, keepDims)
-        is DoubleArray -> split(array, axis, strides, split, keepDims)
-        is LongArray -> split(array, axis, strides, split, keepDims)
-        else -> throw UnsupportedOperationException()
-    } as Array<NDArray<T>>
-}
-
-inline fun <reified T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): Array<NDArray<T>> {
-    if (axis == 0 && rank >= 2) return splitByZero(split, keepDims)
-    return split(axis, split, keepDims)
 }

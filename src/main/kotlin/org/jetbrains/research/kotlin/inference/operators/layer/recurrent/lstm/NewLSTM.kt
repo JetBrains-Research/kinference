@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.matrixTranspose
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.wrapOneDim
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
