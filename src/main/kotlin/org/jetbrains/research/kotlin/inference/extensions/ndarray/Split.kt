@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import kotlin.math.ceil
 
-private fun NDArray<Any>.computeSplitShape(axis: Int, split: Int, keepDims: Boolean): IntArray {
+inline fun <reified T> NDArray<T>.computeSplitShape(axis: Int, split: Int, keepDims: Boolean): IntArray {
     val newShape: IntArray
     if (keepDims) {
         newShape = strides.shape.copyOf()
@@ -17,7 +17,7 @@ private fun NDArray<Any>.computeSplitShape(axis: Int, split: Int, keepDims: Bool
     return newShape
 }
 
-private fun NDArray<Any>.copySplitFragment(dst: NDArray<Any>, srcOffset: Int, numFragments: Int, sliceLen: Int, fragOffset: Int, fragSize: Int): NDArray<Any> {
+inline fun <reified T> NDArray<T>.copySplitFragment(dst: NDArray<T>, srcOffset: Int, numFragments: Int, sliceLen: Int, fragOffset: Int, fragSize: Int): NDArray<T> {
     if (fragOffset == sliceLen && fragSize == sliceLen) {
         val slice = this.slice(numFragments * sliceLen, 0)
         return dst.apply { placeAll(0, slice) }
@@ -29,7 +29,7 @@ private fun NDArray<Any>.copySplitFragment(dst: NDArray<Any>, srcOffset: Int, nu
     return dst
 }
 
-fun NDArray<Any>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<Any>> {
+inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
     val actualAxis = indexAxis(axis)
     val elementsByIndex = shape[actualAxis]
@@ -42,7 +42,7 @@ fun NDArray<Any>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = tr
     return splitWithAxis(split, actualAxis, keepDims).toList()
 }
 
-fun NDArray<Any>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): Array<NDArray<Any>> {
+inline fun <reified T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): Array<NDArray<T>> {
     val beforeAxisDims = computeBlockSize(toDim = axis)
     val fromDimsAxis = computeBlockSize(fromDim = axis)
     val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
@@ -52,7 +52,7 @@ fun NDArray<Any>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = t
     return Array(split.size) { i ->
         val splitSize = split[i]
         val outputDims = computeSplitShape(axis, split[i], keepDims)
-        val dst = allocateNDArray(type, Strides(outputDims))
+        val dst = allocateNDArray(type, Strides(outputDims)) as NDArray<T>
         val fragmentSize = splitSize * afterAxisDims
         copySplitFragment(dst, inputOffset, beforeAxisDims, fragmentSize, fromDimsAxis, fragmentSize)
         inputOffset += fragmentSize
