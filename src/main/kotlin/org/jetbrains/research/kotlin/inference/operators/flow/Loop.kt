@@ -35,7 +35,7 @@ class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Opera
         val body = getAttributeValue("body") as Graph
         require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
         body.inputs.drop(2).zip(inputs.drop(2)) { input, value ->
-            body.setInput(value.clone(input.name))
+            body.setInput(value.rename(input.name))
         }
 
         // NOTE: works as ONNX Runtime (counter and condition are ignored and not returned to results of Loop)
@@ -56,7 +56,7 @@ class Loop(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Opera
 
                 modified.clear()
                 body.inputs.drop(2).zip(outputs.drop(1)) { input, value ->
-                    body.setInput(value.clone(input.name))
+                    body.setInput(value.rename(input.name))
                     modified.add(value as Tensor)
                 }
 

@@ -18,22 +18,22 @@ class NewBiLSTM(hiddenSize: Int, activations: List<String>, direction: String) :
     val forwardLayer = NewLSTM(hiddenSize, activations.subList(0, 3), "forward")
     val reverseLayer = NewLSTM(hiddenSize, activations.subList(3, 6), "reverse")
 
-    private var weights: Tensor? = null
+    private var weights: NDArray<Any>? = null
     private var parsedWeights: Pair<GatesData, GatesData>? = null
 
-    private var recurrentWeights: Tensor? = null
+    private var recurrentWeights: NDArray<Any>? = null
     private var parsedRecurrentWeights: Pair<GatesData, GatesData>? = null
 
-    private var bias: Tensor? = null
+    private var bias: NDArray<Any>? = null
     private var parsedBias: Pair<GatesData, GatesData>? = null
 
-    private var peepholes: Tensor? = null
+    private var peepholes: NDArray<Any>? = null
     private var parsedPeepholes: Pair<GatesData, GatesData>? = null
 
-    private var initialOutput: Tensor? = null
+    private var initialOutput: NDArray<Any>? = null
     private var parsedInitialOutput: Pair<List<NDArray<Any>>, List<NDArray<Any>>>? = null
 
-    private var initialCellState: Tensor? = null
+    private var initialCellState: NDArray<Any>? = null
     private var parsedInitialCellState: Pair<List<NDArray<Any>>, List<NDArray<Any>>>? = null
 
     private var seqLength: Int? = null
@@ -73,44 +73,50 @@ class NewBiLSTM(hiddenSize: Int, activations: List<String>, direction: String) :
     }
 
     private fun parseWeights(weights: Tensor) {
-        if (parsedWeights == null || weights !== this.weights) {
+        if (parsedWeights == null || weights.data !== this.weights) {
             val (forward, reverse) = weights.data.splitWithAxis(2)
             parsedWeights = Pair(GatesData.createWeights(forward), GatesData.createWeights(reverse))
+            this.weights = weights.data
         }
     }
 
     private fun parseRecurrentWeights(recurrentWeights: Tensor) {
-        if (parsedRecurrentWeights == null || recurrentWeights !== this.recurrentWeights) {
+        if (parsedRecurrentWeights == null || recurrentWeights.data !== this.recurrentWeights) {
             val (forward, reverse) = recurrentWeights.data.splitWithAxis(2)
             parsedRecurrentWeights = Pair(GatesData.createWeights(forward), GatesData.createWeights(reverse))
+            this.recurrentWeights = recurrentWeights.data
         }
     }
 
     private fun parseBias(bias: Tensor?) {
-        if (bias != null && (parsedBias == null || bias !== this.bias)) {
+        if (bias != null && (parsedBias == null || bias.data !== this.bias)) {
             val (forward, reverse) = bias.data.splitWithAxis(2)
             parsedBias = Pair(GatesData.createBias(forward), GatesData.createBias(reverse))
+            this.bias = bias.data
         }
     }
 
     private fun parsePeepholes(peepholes: Tensor?) {
-        if (peepholes != null && (parsedPeepholes == null || peepholes !== this.peepholes)) {
+        if (peepholes != null && (parsedPeepholes == null || peepholes.data !== this.peepholes)) {
             val (forward, reverse) = peepholes.data.splitWithAxis(2)
             parsedPeepholes = Pair(GatesData.createPeepholes(forward), GatesData.createPeepholes(reverse))
+            this.peepholes = peepholes.data
         }
     }
 
     private fun parseInitialOutput(initialOutput: Tensor?) {
-        if (initialOutput != null && (parsedInitialOutput == null || initialOutput !== this.initialOutput)) {
+        if (initialOutput != null && (parsedInitialOutput == null || initialOutput.data !== this.initialOutput)) {
             val (forward, reverse) = initialOutput.data.splitWithAxis(2).map { it.squeeze(0).splitWithAxis(batchSize!!) }
             parsedInitialOutput = Pair(forward, reverse)
+            this.initialOutput = initialOutput.data
         }
     }
 
     private fun parseInitialCellState(initialCellState: Tensor?) {
-        if (initialCellState != null && (parsedInitialCellState == null || initialCellState !== this.initialCellState)) {
+        if (initialCellState != null && (parsedInitialCellState == null || initialCellState.data !== this.initialCellState)) {
             val (forward, reverse) = initialCellState.data.splitWithAxis(2).map { it.squeeze(0).splitWithAxis(batchSize!!) }
             parsedInitialCellState = Pair(forward, reverse)
+            this.initialCellState = initialCellState.data
         }
     }
 

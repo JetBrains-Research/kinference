@@ -20,6 +20,10 @@ class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.O
         return Tensor(data.clone(), TensorInfo(newName, data.type, TensorShape(data.shape)))
     }
 
+    override fun rename(newName: String): ONNXData {
+        return Tensor(data, TensorInfo(newName, data.type, TensorShape(data.shape)))
+    }
+
     fun mapElements(type: DataType = this.data.type, func: (Any) -> Any): Tensor {
         val buffer = createArray(type, data.linearSize) { func(data[it]) }
         return NDArray(buffer, type, data.shape).asTensor()

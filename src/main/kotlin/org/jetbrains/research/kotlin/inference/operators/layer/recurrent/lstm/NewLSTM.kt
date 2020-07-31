@@ -3,7 +3,10 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.matrixTranspose
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.wrapOneDim
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
 import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -13,22 +16,22 @@ import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.Recurre
 open class NewLSTM(hiddenSize: Int, activations: List<String>, direction: String) : RecurrentLayer(hiddenSize, activations, direction) {
 
     private var parsedWeights: GatesData? = null
-    private var weights: Tensor? = null
+    private var weights: NDArray<Any>? = null
 
     private var parsedRecurrentWeights: GatesData? = null
-    private var recurrentWeights: Tensor? = null
+    private var recurrentWeights: NDArray<Any>? = null
 
     private var parsedBias: GatesData? = null
-    private var bias: Tensor? = null
+    private var bias: NDArray<Any>? = null
 
     private var parsedPeepholes: GatesData? = null
-    private var peepholes: Tensor? = null
+    private var peepholes: NDArray<Any>? = null
 
     private var parsedInitialOutput: List<NDArray<Any>>? = null
-    private var initialOutput: Tensor? = null
+    private var initialOutput: NDArray<Any>? = null
 
     private var parsedInitialCellState: List<NDArray<Any>>? = null
-    private var initialCellState: Tensor? = null
+    private var initialCellState: NDArray<Any>? = null
 
     private var seqLength: Int? = null
     private var batchSize: Int? = null
@@ -144,44 +147,44 @@ open class NewLSTM(hiddenSize: Int, activations: List<String>, direction: String
     }
 
     private fun parseWeights(weights: Tensor) {
-        if (parsedWeights == null || this.weights !== weights) {
+        if (parsedWeights == null || this.weights !== weights.data) {
             this.parsedWeights = GatesData.createWeights(weights.data)
-            this.weights = weights
+            this.weights = weights.data
         }
     }
 
     private fun parseRecurrentWeights(recWeights: Tensor) {
-        if (parsedRecurrentWeights == null || this.recurrentWeights !== recWeights) {
+        if (parsedRecurrentWeights == null || this.recurrentWeights !== recWeights.data) {
             this.parsedRecurrentWeights = GatesData.createWeights(recWeights.data)
-            this.recurrentWeights = recWeights
+            this.recurrentWeights = recWeights.data
         }
     }
 
     private fun parseBias(bias: Tensor?) {
-        if (bias != null && (parsedBias == null || this.bias !== bias)) {
+        if (bias != null && (parsedBias == null || this.bias !== bias.data)) {
             this.parsedBias = GatesData.createBias(bias.data)
-            this.bias = bias
+            this.bias = bias.data
         }
     }
 
     private fun parsePeepholes(peepholes: Tensor?) {
-        if (peepholes != null && (parsedPeepholes == null || this.peepholes !== peepholes)) {
+        if (peepholes != null && (parsedPeepholes == null || this.peepholes !== peepholes.data)) {
             this.parsedPeepholes = GatesData.createPeepholes(peepholes.data)
-            this.peepholes = peepholes
+            this.peepholes = peepholes.data
         }
     }
 
     private fun parseInitialOutput(initialOutput: Tensor?) {
-        if (initialOutput != null && (parsedInitialOutput == null || this.initialOutput !== initialOutput)) {
+        if (initialOutput != null && (parsedInitialOutput == null || this.initialOutput !== initialOutput.data)) {
             this.parsedInitialOutput = initialOutput.data.squeeze(0).splitWithAxis(batchSize!!)
-            this.initialOutput = initialOutput
+            this.initialOutput = initialOutput.data
         }
     }
 
     private fun parseInitialCellState(initialCellState: Tensor?) {
-        if (initialCellState != null && (parsedInitialCellState == null || this.initialCellState !== initialCellState)) {
+        if (initialCellState != null && (parsedInitialCellState == null || this.initialCellState !== initialCellState.data)) {
             this.parsedInitialCellState = initialCellState.data.squeeze(0).splitWithAxis(batchSize!!)
-            this.initialCellState = initialCellState
+            this.initialCellState = initialCellState.data
         }
     }
 
@@ -222,10 +225,10 @@ open class NewLSTM(hiddenSize: Int, activations: List<String>, direction: String
                 val biasList = linear.splitWithAxis(8)
 
                 return GatesData(
-                    biasList[0].plus(biasList[4]),
-                    biasList[1].plus(biasList[5]),
-                    biasList[2].plus(biasList[6]),
-                    biasList[3].plus(biasList[7])
+                    biasList[0].plus(biasList[4]).wrapOneDim(),
+                    biasList[1].plus(biasList[5]).wrapOneDim(),
+                    biasList[2].plus(biasList[6]).wrapOneDim(),
+                    biasList[3].plus(biasList[7]).wrapOneDim()
                 )
 
                 /*val newShape = intArrayOf(1, hiddenSize)
