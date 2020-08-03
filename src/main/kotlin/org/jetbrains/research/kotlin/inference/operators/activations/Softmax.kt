@@ -4,9 +4,13 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.exp
+import org.jetbrains.research.kotlin.inference.extensions.primitives.max
+import org.jetbrains.research.kotlin.inference.extensions.primitives.sum
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 //only for float and double types
 class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Activation(INFO, attributes, usedOutputsNum) {
@@ -18,8 +22,8 @@ class Softmax(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) 
         )
 
         private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO,
-            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
-            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
     }
 

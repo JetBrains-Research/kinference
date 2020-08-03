@@ -16,20 +16,21 @@ class Split(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Oper
             AttributeInfo("split", setOf(AttributeProto.AttributeType.INTS), false)
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true))
+        private val INPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false, differentiable = true))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "outputs"))
+        private val OUTPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "outputs", minimumArity = 1, differentiable = true))
 
         private val INFO = OperatorInfo("Split", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
         val axis = getAttributeValue("axis") as Long
 
+        val input = inputs.first()!!
         return when (val parts = getAttributeValueOrNull("split")) {
-            null -> inputs.first().splitWithAxis(usedOutputsNum, axis.toInt())
-            is Number -> inputs.first().splitWithAxis(parts.toInt(), axis.toInt())
-            is List<*> -> inputs.first().splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
+            null -> input.splitWithAxis(usedOutputsNum, axis.toInt())
+            is Number -> input.splitWithAxis(parts.toInt(), axis.toInt())
+            is List<*> -> input.splitWithAxis((parts as List<Long>).toIntArray(), axis.toInt())
             else -> error("Unsupported value type")
         }
     }

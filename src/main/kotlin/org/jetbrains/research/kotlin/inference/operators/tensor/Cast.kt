@@ -4,7 +4,10 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
     : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -15,9 +18,9 @@ class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
             AttributeInfo("to", setOf(AttributeProto.AttributeType.INT), true)
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "input"))
+        private val INPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
         private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
@@ -41,8 +44,8 @@ class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
         return casted
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
-        val tensor = inputs.first()
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
+        val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(getAttributeValue("to") as Int)!!
         return listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })
     }

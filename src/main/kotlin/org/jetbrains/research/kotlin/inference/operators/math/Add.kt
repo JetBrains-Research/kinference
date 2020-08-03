@@ -3,7 +3,9 @@ package org.jetbrains.research.kotlin.inference.operators.math
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
@@ -19,18 +21,18 @@ class Add(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1) : Op
         )
 
         private val INPUTS_INFO = listOf(
-            InputInfo(0, TYPE_CONSTRAINTS, "A", true),
-            InputInfo(1, TYPE_CONSTRAINTS, "B", true)
+            IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),
+            IOInfo(1, TYPE_CONSTRAINTS, "B", optional = false)
         )
 
         private val OUTPUTS_INFO = listOf(
-            OutputInfo(0, TYPE_CONSTRAINTS, "C")
+            IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
         private val INFO = OperatorInfo("Add", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
-        return listOf(inputs.first() + inputs.last())
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
+        return listOf(inputs.first()!! + inputs.last()!!)
     }
 }

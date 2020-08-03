@@ -2,6 +2,8 @@ package org.jetbrains.research.kotlin.inference.operators
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ONNXData
+import org.jetbrains.research.kotlin.inference.data.ONNXDataType
+import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -12,33 +14,28 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
     }
 }
 
-open class InputInfo(val index: Int, val types: Set<DataType>, val name: String? = null, val required: Boolean = false, val scalar: Boolean = false) {
+open class IOInfo(val index: Int, val types: Set<DataType>, val name: String,
+                  val optional: Boolean = false, val onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
+                  val scalar: Boolean = false, val differentiable: Boolean? = null /* null == undefined, TODO */) {
     init {
         require(types.isNotEmpty()) { "Input info must have at least one type constraint!" }
     }
 }
 
-class VariadicInputInfo(startIndex: Int, types: Set<DataType>, name: String? = null, requiredOne: Boolean = false, val heterogeneous: Boolean = true)
-    : InputInfo(startIndex, types, name, requiredOne)
+class VariadicIOInfo(startIndex: Int, types: Set<DataType>, name: String,
+                     val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
+                     scalar: Boolean = false, differentiable: Boolean? = null,
+                     val heterogeneous: Boolean = true) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
 
-open class OutputInfo(val index: Int, val types: Set<DataType>, val name: String? = null) {
-    init {
-        require(types.isNotEmpty()) { "Output info must have at least one type constraint!" }
-    }
-}
-
-class VariadicOutputInfo(startIndex: Int, types: Set<DataType>, name: String? = null, val heterogeneous: Boolean = true) : OutputInfo(startIndex, types, name)
-
-
-data class OperatorInfo(val name: String, val attributes: Map<String, AttributeInfo>, val inputs: List<InputInfo>, val outputs: List<OutputInfo>) {
-    constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<InputInfo>, outputs: List<OutputInfo>)
+data class OperatorInfo(val name: String, val attributes: Map<String, AttributeInfo>, val inputs: List<IOInfo>, val outputs: List<IOInfo>) {
+    constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>)
         : this(name, attributes.map { it.name to it }.toMap(), inputs, outputs)
 
     init {
-        val variadicInputIndex = inputs.indexOfFirst { it is VariadicInputInfo }
+        val variadicInputIndex = inputs.indexOfFirst { it is VariadicIOInfo }
         require(variadicInputIndex == -1 || variadicInputIndex == inputs.size - 1) { "Variadic input must be last" }
 
-        val variadicOutputIndex = outputs.indexOfFirst { it is VariadicOutputInfo }
+        val variadicOutputIndex = outputs.indexOfFirst { it is VariadicIOInfo }
         require(variadicOutputIndex == -1 || variadicOutputIndex == outputs.size - 1) { "Variadic output must be last" }
     }
 }
@@ -61,10 +58,10 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         }
     }
 
-    fun applyWithCheck(inputs: List<T>): List<U> {
-        val inputConstraints = sequence<InputInfo?> {
-            for (constraint in info.inputs) {
-                while (constraint is VariadicInputInfo) yield(constraint)
+    private fun check(constraints: List<IOInfo>, values: List<ONNXData?>, what: String) {
+        fun infos(constraints: List<IOInfo>) = sequence<IOInfo?> {
+            for (constraint in constraints) {
+                while (constraint is VariadicIOInfo) yield(constraint)
                 yield(constraint)
             }
 
@@ -73,55 +70,40 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
 
         var variadicCounter = 0
         var variadicType: DataType? = null
-        inputConstraints.zip(inputs.asSequence().plusElement(null)) { constraint, input ->
-            if (input == null) {
-                require(constraint == null || !constraint.required || (constraint is VariadicInputInfo && variadicCounter > 0)) {
-                    "Required input '${constraint!!.name}' for '${info.name}' operator not provided"
+        infos(constraints).zip(values.asSequence().plusElement(null)) { constraint, value ->
+            // TODO check for not null variadic
+            if (value == null) {
+                require(constraint == null || constraint.optional || (constraint is VariadicIOInfo && variadicCounter >= constraint.minimumArity)) {
+                    "Required $what '${constraint!!.name}' for '${info.name}' operator not provided"
                 }
                 return@zip
             }
 
-            require(constraint != null) { "Unexpected input '${input.info.name}' for '${info.name}' operator" }
+            require(constraint != null) { "Unexpected $what '${value.info.name}' for '${info.name}' operator" }
 
-            if (constraint is VariadicInputInfo) {
-                if (variadicCounter == 0) variadicType = input.info.type
+            if (constraint is VariadicIOInfo) {
+                if (variadicCounter == 0) variadicType = value.info.type
                 variadicCounter++
 
-                if (!constraint.heterogeneous) require(input.info.type == variadicType) { "All inputs for '${constraint.name}' must have same type\nPresent: ${input.info.type}, Expected: $variadicType" }
+                if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
             }
 
-            require(input.info.type in constraint.types) { "Wrong input type '${input.info.name}' for '${info.name}' operator\nPresent: ${input.info.type}, Expected: ${constraint.types}" }
-            if (constraint.scalar) require((input as Tensor).data.isScalar()) { "Input '${input.info.name}' must be a scalar for '${info.name}' operator" }
+            require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
+            require(value.info.type in constraint.types) { "Wrong $what type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.info.type}, Expected: ${constraint.types}" }
+            if (constraint.scalar) {
+                when (value.type) {
+                    ONNXDataType.ONNX_TENSOR -> require((value as Tensor).data.isScalar()) { "${what.capitalize()} '${value.info.name}' must be a scalar for '${info.name}' operator" }
+                    ONNXDataType.ONNX_SEQUENCE -> require((value as TensorSeq).data.all { it.data.isScalar() }) { "${what.capitalize()} '${value.info.name}' must be a list of scalars for '${info.name}' operator" }
+                }
+            }
         }
+    }
 
+    fun applyWithCheck(inputs: List<T?>): List<U?> {
+        check(info.inputs, inputs, "input")
         val outputs = apply(inputs)
-
         require(outputs.size >= usedOutputsNum) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least $usedOutputsNum" }
-
-        val outputConstraints = sequence<OutputInfo?> {
-            for (constraint in info.outputs) {
-                while (constraint is VariadicOutputInfo) yield(constraint)
-                yield(constraint)
-            }
-
-            yield(null)
-        }
-
-        variadicCounter = 0
-        variadicType = null
-        outputConstraints.zip(outputs.asSequence()) { constraint, output ->
-            require(constraint != null) { "Unexpected output '${output.info.name}' for '${info.name}' operator" }
-
-            if (constraint is VariadicOutputInfo) {
-                if (variadicCounter == 0) variadicType = output.info.type
-                variadicCounter++
-
-                if (!constraint.heterogeneous) require(output.info.type == variadicType) { "All outputs for '${constraint.name}' must have same type\nPresent: ${output.info.type}, Expected: $variadicType" }
-            }
-
-            require(output.info.type in constraint.types) { "Wrong output type '${output.info.name}' for '${info.name}' operator\nPresent: ${output.info.type}, Expected: ${constraint.types}" }
-        }
-
+        check(info.outputs, outputs, "output")
         return outputs
     }
 
@@ -138,8 +120,8 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         return attributes[key]?.value ?: if (!info.required) info.default else null
     }
 
-    abstract fun apply(inputs: List<T>): List<U>
-    open fun apply(vararg inputs: T): Collection<U> = apply(inputs.toList())
+    abstract fun apply(inputs: List<T?>): List<U?>
+    open fun apply(vararg inputs: T?): Collection<U?> = apply(inputs.toList())
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED

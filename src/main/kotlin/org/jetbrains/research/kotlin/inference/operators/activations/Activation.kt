@@ -3,7 +3,9 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.functional.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
@@ -15,8 +17,8 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray<Any>): NDArray<Any>
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
-        return listOf(activate(inputs.first()))
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
+        return listOf(activate(inputs.first()!!))
     }
 
     companion object {

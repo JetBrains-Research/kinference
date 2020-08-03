@@ -15,16 +15,16 @@ class Concat(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), true)
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "inputs", true))
+        private val INPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "inputs", minimumArity = 1, differentiable = true, heterogeneous = false))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "concat_result"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "concat_result", optional = false, differentiable = true))
 
         private val INFO = OperatorInfo("Concat", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
         val axis = getAttributeValue("axis") as Number
-
+        inputs as List<Tensor>
         return listOf(inputs.concatenate(axis.toInt()))
     }
 }

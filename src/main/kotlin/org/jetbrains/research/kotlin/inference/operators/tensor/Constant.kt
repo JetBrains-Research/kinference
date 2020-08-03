@@ -5,7 +5,10 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
     : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
@@ -23,14 +26,14 @@ class Constant(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
             //TODO: sparse tensor values
         )
 
-        private val INPUTS_INFO = emptyList<InputInfo>()
+        private val INPUTS_INFO = emptyList<IOInfo>()
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
         private val INFO = OperatorInfo("Constant", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
         //only one of all attributes is not null
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeValueOrNull(it.name) }.single { it.second != null }
 

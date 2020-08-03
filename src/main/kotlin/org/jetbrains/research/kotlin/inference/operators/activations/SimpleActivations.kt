@@ -5,9 +5,8 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.InputInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
-import org.jetbrains.research.kotlin.inference.operators.OutputInfo
 import kotlin.math.exp
 import kotlin.math.max
 
@@ -16,8 +15,8 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputs
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
         private val INFO = OperatorInfo("Identity", emptyMap(),
-            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
-            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
     }
 
@@ -29,8 +28,8 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val INFO = OperatorInfo("Relu", emptyMap(),
-            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
-            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
         inline fun activationFloat() = object : FloatArrayToFloatArray {
@@ -60,8 +59,8 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsN
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val INFO = OperatorInfo("Sigmoid", emptyMap(),
-            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
-            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
         inline fun activationFloat() = object : FloatArrayToFloatArray {
@@ -91,8 +90,8 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), usedOutputsNum:
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val INFO = OperatorInfo("Tanh", emptyMap(),
-            listOf(InputInfo(0, TYPE_CONSTRAINTS, "input", true)),
-            listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output"))
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
         fun activationFloat() = object : FloatArrayToFloatArray {

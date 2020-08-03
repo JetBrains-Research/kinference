@@ -1,12 +1,16 @@
 package org.jetbrains.research.kotlin.inference.operators.seq
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.types.SequenceInfo
 
 class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
@@ -21,24 +25,25 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: I
         )
 
         private val INPUTS_INFO = listOf(
-            InputInfo(0, TYPE_CONSTRAINTS, "input", true),
-            InputInfo(1, setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32), "split", false)
+            IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
+            IOInfo(1, setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32), "split", optional = true)
         )
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "output_sequence"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output_sequence", optional = false, onnxDataType = ONNXDataType.ONNX_SEQUENCE))
 
         private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<TensorSeq> {
+    override fun apply(inputs: List<Tensor?>): List<TensorSeq?> {
         val axis = getAttributeValue("axis") as Long
         val keepDims = getAttributeValue("keepdims") as Long
         val parts = inputs.elementAtOrNull(1)
 
+        val input = inputs.first()!!
         val tensors = if (parts == null) {
-            inputs.first().splitWithAxis(inputs.first().data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
+            input.splitWithAxis(input.data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
         } else {
-            inputs.first().splitWithAxis(parts, axis.toInt())
+            input.splitWithAxis(parts, axis.toInt())
         }
 
         return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors.first().info.type)))

@@ -4,7 +4,10 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class Squeeze(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
@@ -14,15 +17,15 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Op
             AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false)
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true))
+        private val INPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "data", optional = false))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "squeezed"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "squeezed", optional = false))
 
         private val INFO = OperatorInfo("Squeeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
         val axes = (getAttributeValueOrNull("axes") as? List<Long>) ?: emptyList()
-        return listOf(inputs.first().data.squeeze(*axes.toIntArray()).asTensor())
+        return listOf(inputs.first()!!.data.squeeze(*axes.toIntArray()).asTensor())
     }
 }

@@ -3,8 +3,13 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.matrixTranspose
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.wrapOneDim
+import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
+import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.RecurrentLayer
@@ -38,12 +43,12 @@ open class NewLSTM(hiddenSize: Int, activations: List<String>, direction: String
         require(direction == "forward" || direction == "reverse")
     }
 
-    override fun apply(inputList: List<Tensor>): List<Tensor> {
+    override fun apply(inputList: List<Tensor?>): List<Tensor?> {
         /*fun apply(input: Tensor, weights: Tensor, recurrentWeights: Tensor, bias: Tensor?, sequenceLens: Tensor?, initialOutput: Tensor?, initialCellState: Tensor?,
               peepholes: Tensor?): List<Tensor> {*/
-        val input = inputList[0]
-        val weights = inputList[1]
-        val recurrentWeights = inputList[2]
+        val input = inputList[0]!!
+        val weights = inputList[1]!!
+        val recurrentWeights = inputList[2]!!
         val bias = inputList.getOrNull(3)
         val sequenceLens = inputList.getOrNull(4)
         val initialOutput = inputList.getOrNull(5)

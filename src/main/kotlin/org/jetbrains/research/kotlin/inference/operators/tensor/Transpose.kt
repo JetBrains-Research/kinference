@@ -3,7 +3,10 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class Transpose(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
     companion object {
@@ -13,15 +16,15 @@ class Transpose(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int) : 
             AttributeInfo("perm", setOf(AttributeProto.AttributeType.INTS), false)
         )
 
-        private val INPUTS_INFO = listOf(InputInfo(0, TYPE_CONSTRAINTS, "data", true))
+        private val INPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "data", optional = false, differentiable = true))
 
-        private val OUTPUTS_INFO = listOf(OutputInfo(0, TYPE_CONSTRAINTS, "transposed"))
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "transposed", optional = false, differentiable = true))
 
         private val INFO = OperatorInfo("Transpose", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor>): List<Tensor> {
+    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
         val permutations = getAttributeValueOrNull("perm") as? List<Long>
-        return listOf(inputs.first().data.transpose(permutations).asTensor())
+        return listOf(inputs.first()!!.data.transpose(permutations).asTensor())
     }
 }
