@@ -6,18 +6,19 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 @Suppress("UNCHECKED_CAST")
-abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
-    : Operator<Tensor, Tensor>(info, usedOutputsNum, attributes) {
+abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
 
     open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray<Any>): NDArray<Any>
 
-    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         return listOf(activate(inputs.first()!!))
     }
 

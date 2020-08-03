@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -9,8 +10,8 @@ import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
-class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
-    : Operator<Tensor, Tensor>(INFO, usedOutputsNum, attributes) {
+class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -44,7 +45,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int = 1)
         return casted
     }
 
-    override fun apply(inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(getAttributeValue("to") as Int)!!
         return listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })

@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 
@@ -41,7 +42,7 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 }
 
 @Suppress("UNCHECKED_CAST")
-abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInfo, val usedOutputsNum: Int, val attributes: Map<String, Attribute<Any>> = emptyMap()) {
+abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInfo, val attributes: Map<String, Attribute<Any>> = emptyMap(), val inputs: List<String>, val outputs: List<String>) {
     init {
         for (info in info.attributes.values) {
             if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${info.name} operator" }
@@ -99,10 +100,10 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         }
     }
 
-    fun applyWithCheck(inputs: List<T?>): List<U?> {
+    fun applyWithCheck(context: Context, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = apply(inputs)
-        require(outputs.size >= usedOutputsNum) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least $usedOutputsNum" }
+        val outputs = apply(context, inputs)
+        require(outputs.size >= outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
     }
@@ -120,8 +121,8 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         return attributes[key]?.value ?: if (!info.required) info.default else null
     }
 
-    abstract fun apply(inputs: List<T?>): List<U?>
-    open fun apply(vararg inputs: T?): Collection<U?> = apply(inputs.toList())
+    abstract fun apply(context: Context, inputs: List<T?>): List<U?>
+    open fun apply(context: Context, vararg inputs: T?): Collection<U?> = apply(context, inputs.toList())
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED

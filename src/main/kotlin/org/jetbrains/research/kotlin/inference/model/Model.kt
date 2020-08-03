@@ -9,12 +9,12 @@ class Model(proto: ModelProto) {
     val graph = Graph(proto.graph!!)
 
     inline fun <reified T : Number> predict(input: List<T>): List<ONNXData> {
-        return graph.setInput(input).execute()
+        val inputs = listOf(graph.prepareInput(input))
+        return graph.execute(inputs)
     }
 
     fun predict(input: Collection<ONNXData>): List<ONNXData> {
-        input.forEach { graph.setInput(it) }
-        return graph.execute()
+        return graph.execute(input.toList())
     }
 
     companion object {

@@ -3,73 +3,58 @@ package org.jetbrains.research.kotlin.inference.graph
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.onnx.GraphProto
+import org.jetbrains.research.kotlin.inference.operators.OperatorFactory
 import org.jetbrains.research.kotlin.inference.types.ValueInfo
 
 //TODO: support general graphs
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
-class Graph(proto: GraphProto, parent: Graph? = null) {
-    private val rootContext: Context = Context(parent?.context)
-    private val context: Context = Context(rootContext)
+class Graph(proto: GraphProto) {
+    val operators = proto.node.map { OperatorFactory.create(it) }
+    val inputs = proto.input.map { ValueInfo.create(it) }
+    val outputs = proto.output.map { ValueInfo.create(it) }
+    val info = proto.value_info.map { ValueInfo.create(it) }
 
-    val nodes: List<Node>
-    val inputs: List<ValueInfo>
-    val outputs: List<ValueInfo>
-    val info: List<ValueInfo>
-
-    init {
-        val initializers = proto.initializer.map { Tensor.create(it) }
-        for (tensor in initializers) {
-            rootContext.putValue(tensor.info.name, tensor)
-        }
-
-        inputs = proto.input.map { ValueInfo.create(it) }
-        outputs = proto.output.map { ValueInfo.create(it) }
-
-        nodes = proto.node.map { Node(it, this) }
-
-        info = proto.value_info.map { ValueInfo.create(it) }
-    }
+    val initializers = proto.initializer.map { Tensor.create(it) }
 
     val availableInputs: List<String>
         get() = inputs.map { it.name }
 
-    fun setInput(name: String, value: List<Any>): Graph {
-        require(name in availableInputs) { "Required input node not found" }
-
-        val type = inputs.find { it.name == name }?.type
-        requireNotNull(type)
-
-        context.putValue(name, Tensor(value, type))
-        return this
+    fun prepareInput(name: String, value: List<Any>): Tensor {
+        val type = inputs.find { it.name == name }?.type!!
+        return Tensor(value, type)
     }
 
-    fun setInput(value: List<Any>): Graph {
+    fun prepareInput(value: List<Any>): Tensor {
         require(inputs.size == 1) { "Multiple input nodes found. Specify input name explicitly" }
         val name = inputs.single().name
-        return setInput(name, value)
-    }
-
-    fun setInput(tensor: ONNXData): Graph {
-        val name = tensor.info.name
-
-        require(name in availableInputs) { "Required input node not found" }
-
-        context.putValue(name, tensor)
-        return this
+        return prepareInput(name, value)
     }
 
     //only for sequential models
-    fun execute(): List<ONNXData> {
+    fun execute(inputs: List<ONNXData>, root: Context? = null): List<ONNXData> {
         //TODO: check that all inputs were set and not null
 
-        for (node in nodes) {
-            node.execute(context)
+        val context = Context(root)
+        for (tensor in initializers) {
+            context.putValue(tensor.info.name, tensor)
         }
 
-        val result = outputs.map { context.getValue(it.name) }
-        context.clear()
+        for (input in inputs) {
+            require(input.info.name in availableInputs) { "Input node '${input.info.name}' not found in Graph" }
+            context.putValue(input.info.name, input)
+        }
 
-        return result
+        for (operator in operators) {
+            val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
+            outputs.zip(operator.outputs) { output, variable ->
+                if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
+                if (variable.isNotEmpty()) {
+                    context.putValue(variable, output!!.clone(newName = variable))
+                }
+            }
+        }
+
+        return outputs.map { context.getValue(it.name) }
     }
 }

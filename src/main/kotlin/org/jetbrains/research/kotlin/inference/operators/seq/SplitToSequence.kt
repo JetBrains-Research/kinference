@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
+import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -13,8 +14,8 @@ import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.types.SequenceInfo
 
-class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: Int)
-    : Operator<Tensor, TensorSeq>(INFO, usedOutputsNum, attributes) {
+class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<Tensor, TensorSeq>(INFO, attributes, inputs, outputs) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -34,7 +35,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, usedOutputsNum: I
         private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(inputs: List<Tensor?>): List<TensorSeq?> {
+    override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
         val axis = getAttributeValue("axis") as Long
         val keepDims = getAttributeValue("keepdims") as Long
         val parts = inputs.elementAtOrNull(1)
