@@ -5,7 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import kotlin.math.ceil
 
-inline fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {
+fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {
     val newShape: IntArray
     if (keepDims) {
         newShape = shape.copyOf()
@@ -19,7 +19,7 @@ inline fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: B
 }
 
 
-inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
+fun <T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
     val actualAxis = indexAxis(axis)
     val elementsByIndex = shape[actualAxis]
@@ -32,7 +32,7 @@ inline fun <reified T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepD
     return splitWithAxis(split, actualAxis, keepDims)
 }
 
-inline fun <reified T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<NDArray<T>> {
+fun <T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<NDArray<T>> {
     val beforeAxisDims = computeBlockSize(toDim = axis)
     val fromAxisDims = computeBlockSize(fromDim = axis)
     val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
@@ -51,7 +51,7 @@ inline fun <reified T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keep
     }
 }
 
-inline fun <reified T> NDArray<T>.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): NDArray<T> {
+fun <T> NDArray<T>.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): NDArray<T> {
     return when (type) {
         TensorProto.DataType.DOUBLE -> DoubleNDArray((array as DoubleArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
         TensorProto.DataType.FLOAT -> FloatNDArray((array as FloatArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)

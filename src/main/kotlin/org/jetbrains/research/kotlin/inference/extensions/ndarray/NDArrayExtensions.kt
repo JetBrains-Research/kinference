@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.scalarOp
 
 fun <T> NDArray<T>.wrapOneDim(): NDArray<T> {
     val newStrides = Strides(intArrayOf(1, *this.shape))
@@ -90,7 +90,7 @@ fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
     return reshape(newShape)
 }
 
-inline fun <reified T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveCombineFunction<T>): NDArray<T> {
+fun <T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveCombineFunction<T>): NDArray<T> {
     if (this.isScalar()) {
         return other.scalarOp(this[0], transform)
     } else if (other.isScalar()) {

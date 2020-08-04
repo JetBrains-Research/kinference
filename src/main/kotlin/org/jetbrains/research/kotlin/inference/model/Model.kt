@@ -8,7 +8,7 @@ import java.io.File
 class Model(proto: ModelProto) {
     val graph = Graph(proto.graph!!)
 
-    inline fun <reified T : Number> predict(input: List<T>): List<ONNXData> {
+    fun <T : Number> predict(input: List<T>): List<ONNXData> {
         val inputs = listOf(graph.prepareInput(input))
         return graph.execute(inputs)
     }

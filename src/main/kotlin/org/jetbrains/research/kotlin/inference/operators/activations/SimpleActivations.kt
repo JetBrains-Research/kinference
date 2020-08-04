@@ -32,14 +32,14 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        inline fun activationFloat() = object : FloatArrayToFloatArray {
+        fun activationFloat() = object : FloatArrayToFloatArray {
             override fun apply(array: FloatArray): FloatArray {
                 for (i in array.indices) array[i] = max(0.0f, array[i])
                 return array
             }
         }
 
-        inline fun activationDouble() = object : DoubleArrayToDoubleArray {
+        fun activationDouble() = object : DoubleArrayToDoubleArray {
             override fun apply(array: DoubleArray): DoubleArray {
                 for (i in array.indices) array[i] = max(0.0, array[i])
                 return array
@@ -63,14 +63,14 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        inline fun activationFloat() = object : FloatArrayToFloatArray {
+        fun activationFloat() = object : FloatArrayToFloatArray {
             override fun apply(array: FloatArray): FloatArray {
                 for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
                 return array
             }
         }
 
-        inline fun activationDouble() = object : DoubleArrayToDoubleArray {
+        fun activationDouble() = object : DoubleArrayToDoubleArray {
             override fun apply(array: DoubleArray): DoubleArray {
                 for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
                 return array

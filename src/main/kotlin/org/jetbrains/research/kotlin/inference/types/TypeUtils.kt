@@ -11,7 +11,7 @@ fun DataType.resolveKClass(): KClass<*> = when (this) {
     else -> error("Unsupported data type")
 }
 
-inline fun <reified T : Any> KClass<T>.resolveDataType(): DataType = when (this) {
+fun <T : Any> KClass<T>.resolveDataType(): DataType = when (this) {
     Float::class -> DataType.FLOAT
     Double::class -> DataType.DOUBLE
     Long::class -> DataType.INT64

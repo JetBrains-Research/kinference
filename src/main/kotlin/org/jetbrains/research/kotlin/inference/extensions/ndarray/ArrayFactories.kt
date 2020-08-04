@@ -17,7 +17,7 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
+fun <T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(value as Double))
         DataType.FLOAT -> FloatNDArray(floatArrayOf(value as Float))

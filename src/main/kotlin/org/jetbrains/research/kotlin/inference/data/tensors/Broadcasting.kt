@@ -66,7 +66,7 @@ fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false)
 }
 
 
-inline fun <reified T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveCombineFunction<T>): NDArray<T> {
+fun <T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveCombineFunction<T>): NDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array

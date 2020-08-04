@@ -6,7 +6,9 @@ import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
 import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
+import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
@@ -171,17 +173,17 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
             }
         }
 
-        inline operator fun <reified T> invoke(dims: List<Long>, value: List<*>, type: DataType): NDArray<T> {
+        operator fun <T> invoke(dims: List<Long>, value: List<*>, type: DataType): NDArray<T> {
             val data = createArray(type, value.size) { i -> value[i]!! }
             return NDArray(data, type, dims.toIntArray()) as NDArray<T>
         }
 
 
-        inline operator fun <reified T> invoke(value: T, type: DataType, dims: IntArray = IntArray(0)): NDArray<T> {
+        operator fun <T> invoke(value: T, type: DataType, dims: IntArray = IntArray(0)): NDArray<T> {
             return NDArray(value, type, Strides(dims))
         }
 
-        inline operator fun <reified T> invoke(value: T, type: DataType, strides: Strides): NDArray<T> {
+        operator fun <T> invoke(value: T, type: DataType, strides: Strides): NDArray<T> {
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
                 DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)

@@ -1,6 +1,8 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 
@@ -30,7 +32,7 @@ fun IntRange.toIntArray(): IntArray {
     return array
 }
 
-inline fun add(vararg terms: Number): Number = when (terms.first()) {
+fun add(vararg terms: Number): Number = when (terms.first()) {
     is Float -> terms.reduce { acc, number -> acc.toFloat() + number.toFloat() }
     is Double -> terms.reduce { acc, number -> acc.toDouble() + number.toDouble() }
     is Int -> terms.reduce { acc, number -> acc.toInt() + number.toInt() }
@@ -38,7 +40,7 @@ inline fun add(vararg terms: Number): Number = when (terms.first()) {
     else -> error("Unsupported data type")
 }
 
-inline fun times(vararg terms: Number): Number = when (terms.first()) {
+fun times(vararg terms: Number): Number = when (terms.first()) {
     is Float -> terms.reduce { acc, number -> acc.toFloat() * number.toFloat() }
     is Double -> terms.reduce { acc, number -> acc.toDouble() * number.toDouble() }
     is Int -> terms.reduce { acc, number -> acc.toInt() * number.toInt() }
@@ -46,7 +48,7 @@ inline fun times(vararg terms: Number): Number = when (terms.first()) {
     else -> error("Unsupported data type")
 }
 
-inline fun <reified T> NDArray<T>.max(): Number? {
+fun <T> NDArray<T>.max(): Number? {
     return when (array) {
         is IntArray -> array.max()
         is FloatArray -> array.max()
@@ -57,7 +59,7 @@ inline fun <reified T> NDArray<T>.max(): Number? {
     }
 }
 
-inline fun <reified T> NDArray<T>.sum(): Number {
+fun <T> NDArray<T>.sum(): Number {
     return when (array) {
         is IntArray -> array.sum()
         is FloatArray -> array.sum()
@@ -68,7 +70,7 @@ inline fun <reified T> NDArray<T>.sum(): Number {
     }
 }
 
-inline fun <reified T> NDArray<T>.exp(): NDArray<T> {
+fun <T> NDArray<T>.exp(): NDArray<T> {
     return when (array) {
         is FloatArray -> FloatNDArray((array as FloatArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
         is DoubleArray -> DoubleNDArray((array as DoubleArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
@@ -76,7 +78,7 @@ inline fun <reified T> NDArray<T>.exp(): NDArray<T> {
     } as NDArray<T>
 }
 
-inline fun <reified T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveCombineFunction<T>): NDArray<T> {
+fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveCombineFunction<T>): NDArray<T> {
     return NDArray(op.apply(array, createArray(type, this.linearSize) { x } as T), type, strides)
 }
 
