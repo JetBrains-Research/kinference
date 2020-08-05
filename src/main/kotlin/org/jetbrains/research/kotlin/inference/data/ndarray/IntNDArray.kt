@@ -1,8 +1,10 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.functional.*
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.IntArrayToIntArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.IntArrayWithIntArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
@@ -91,7 +93,5 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return array.sliceArray(start until start + sliceLength)
     }
 
-    override fun clean() {
-        for (i in array.indices) array[i] = 0
-    }
+    override fun clean() = array.fill(0)
 }
