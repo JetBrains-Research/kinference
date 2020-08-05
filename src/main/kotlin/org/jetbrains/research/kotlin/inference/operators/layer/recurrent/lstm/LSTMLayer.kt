@@ -1,184 +1,158 @@
-/*
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.activations.Sigmoid
-import org.jetbrains.research.kotlin.inference.operators.activations.Tanh
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.operators.activations.Activation
 
-open class LSTMLayer<T : Number> {
-    open fun apply(inputs: List<Tensor>): List<Tensor> {
-        require(inputs.size in 3..4) { "Applicable only for three or four arguments" }
+open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
 
-        val inputList = inputs.toList()
+    private var lstmData: LSTMData? = null
 
-        val inputTensor = inputList[0]
-        val weights = inputList[1].data.squeeze(0)
-        val recWeights = inputList[2].data.squeeze(0)
-        val bias = inputList.getOrNull(3)?.data
-
-        val batchSize = inputTensor.data.shape[1]
-        val hiddenSize = recWeights.shape[1]
-
-        val (mainOutput, currentState) = activate(inputTensor.data.as2DList(), weights, recWeights, bias)
-        val shapeForOutput = intArrayOf(1, batchSize, hiddenSize)
-        return listOf(mainOutput.toOutput(), currentState.output.reshape(shapeForOutput).asTensor(), currentState.cellGate.reshape(shapeForOutput).asTensor())
+    init {
+        require(direction == "forward" || direction == "reverse")
+        require(activations.size >= 3)
     }
 
-    protected fun activate(inputMatrices: Collection<NDArray<Any>>, weights: NDArray<Any>, recWeights: NDArray<Any>, bias: NDArray<Any>?): Pair<List<NDArray<Any>>, State> {
-        val hiddenSize = recWeights.shape[1]
-        val batchSize = inputMatrices.first().shape[0]
+    override fun apply(inputs: List<List<NDArray<Any>>>, sequenceLens: IntArray, outputArray: NDArray<Any>, startOffset: Int): List<Tensor> {
+        val batchSize = batchSize!!
+        val seqLength = seqLength!!
+        val type = type!!
+        val lstmData = lstmData!!
 
-        var currentState = State.initialize(batchSize, hiddenSize, inputMatrices.first().type)
-        val biasesData = if (bias != null) BiasesData.create(bias, hiddenSize, batchSize) else null
-        val weightsTranspose = weights.transpose()
-        val recWeightsTranspose = recWeights.transpose()
+        val (f, g, h) = activations.map { Activation.create(it, type) }
 
-        val mainOutput = inputMatrices.map { inputMatrix ->
-            val gatesData = GatesData.create(inputMatrix, weightsTranspose, recWeightsTranspose, currentState, biasesData)
+        var currentOffset = if (direction == "forward") startOffset else outputArray.linearSize - startOffset
+        val stepOffset = outputArray.strides.strides[0]
 
-            val activatedGatesData = gatesData.activate()
+        val gatesData = GatesData.allocateGates(hiddenSize, type)
+        val lastStates = State.create(lstmData.initialOutput, lstmData.initialCellState, batchSize, hiddenSize, type)
 
-            currentState = State.create(activatedGatesData, currentState)
-
-            currentState.output
-        }
-
-        return Pair(mainOutput, currentState)
-    }
-
-    data class GatesData(
-        val inputGate: NDArray<Any>,
-        val outputGate: NDArray<Any>,
-        val forgetGate: NDArray<Any>,
-        val cellGate: NDArray<Any>
-    ) {
-        val sigmoid = Sigmoid()
-        val tanh = Tanh()
-
-        fun activate(): GatesData {
-            val activatedInputGate = sigmoid.activate(inputGate)
-            val activatedOutputGate = sigmoid.activate(outputGate)
-            val activatedForgetGate = sigmoid.activate(forgetGate)
-            val activatedCellGate = tanh.activate(cellGate)
-            return GatesData(activatedInputGate, activatedOutputGate, activatedForgetGate, activatedCellGate)
-        }
-
-//        private fun calcGates(tensor1: Tensor, tensor2: Tensor, tensor3: Tensor, activate: ((Number) -> Number)? = null): Tensor {
-//            val (buffer, type) = if (activate == null) {
-//                createInferredTypeBuffer(tensor1.info.type, tensor1.info.type, tensor1.data.strides.linearSize) {
-//                    add(tensor1.data.buffer[it] as Number, tensor2.data.buffer[it] as Number, tensor3.data.buffer[it] as Number)
-//                }
-//            } else {
-//                createInferredTypeBuffer(tensor1.info.type, tensor1.info.type, tensor1.data.strides.linearSize) {
-//                    activate(add(tensor1.data.buffer[it] as Number, tensor2.data.buffer[it] as Number, tensor3.data.buffer[it] as Number))
-//                }
-//            }
-//
-//            return Tensor(null, BufferNDStructure(tensor1.data.strides, buffer as Buffer<Any>), type)
-//        }
-
-//        fun addBiases(weightsBiasesData: BiasesData, recursiveWeightsBiasesData: BiasesData, activation: Boolean = false): GatesData {
-//            val inputGateWithBiases = calcGates(inputGate, weightsBiasesData.inputGateBiases, recursiveWeightsBiasesData.inputGateBiases, if (activation) (Sigmoid)::activate else null)
-//            val outputGateWithBiases = calcGates(outputGate, weightsBiasesData.outputGateBiases, recursiveWeightsBiasesData.outputGateBiases, if (activation) (Sigmoid)::activate else null)
-//            val forgetGateWithBiases = calcGates(forgetGate, weightsBiasesData.forgetGateBiases, recursiveWeightsBiasesData.forgetGateBiases, if (activation) (Sigmoid)::activate else null)
-//            val cellGateWithBiases = calcGates(cellGate, weightsBiasesData.cellGateBiases, recursiveWeightsBiasesData.cellGateBiases, if (activation) (Tanh)::activate else null)
-//
-//            return GatesData(inputGateWithBiases, outputGateWithBiases, forgetGateWithBiases, cellGateWithBiases)
-//        }
-
-
-        companion object {
-            fun create(inputMatrix: NDArray<Any>, weights: NDArray<Any>, recWeights: NDArray<Any>, prevState: State, bias: NDArray<Any>?): GatesData {
-                val gates = (inputMatrix.matmul(weights).plus(prevState.output.matmul(recWeights)))
-                val gatesWithBias = if (bias != null) (gates.plus(bias)) else gates
-                val gatesList = gatesWithBias.splitHorizontal(4)
-                return GatesData(gatesList[0], gatesList[1], gatesList[2], gatesList[3])
+        var batchNum = if (direction == "forward") 0 else seqLength - 1
+        for (i in 0 until seqLength) {
+            for (inputNum in inputs[batchNum].indices) {
+                if (batchNum >= sequenceLens[inputNum]) continue
+                step(lstmData, inputs[batchNum][inputNum], outputArray, currentOffset + hiddenSize * inputNum, gatesData, lastStates[inputNum], f, g, h)
+            }
+            if (direction == "forward") {
+                currentOffset += stepOffset
+                batchNum++
+            } else {
+                currentOffset -= stepOffset
+                batchNum--
             }
         }
+        val lastState = lastStates.toOutput()
+
+        return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
     }
 
-    data class State(val output: NDArray<Any>, val cellGate: NDArray<Any>) {
+    private fun step(lstmData: LSTMData, input: NDArray<Any>, output: NDArray<Any>, outputOffset: Int, gatesData: GatesData,
+                     lastState: State, f: PrimitiveArrayFunction, g: PrimitiveArrayFunction, h: PrimitiveArrayFunction) {
+        input.matrixDotInto(lstmData.weights.input, gatesData.input, true)
+        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.input, gatesData.input, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.input.plus(lstmData.peepholes.input * lastState.cellState, false)
+        if (lstmData.bias != null) gatesData.input.plus(lstmData.bias.input, false)
+        gatesData.input.mapElements(f, false)
 
-        companion object {
-            private val tanh = Tanh()
+        input.matrixDotInto(lstmData.weights.forget, gatesData.forget, true)
+        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.forget, gatesData.forget, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.forget.plus(lstmData.peepholes.forget * lastState.cellState, false)
+        if (lstmData.bias != null) gatesData.forget.plus(lstmData.bias.forget, false)
+        gatesData.forget.mapElements(f, false)
 
-            @Suppress("UNCHECKED_CAST")
-            fun initialize(batchSize: Int, hiddenSize: Int, type: TensorProto.DataType): State {
-                val newShape = intArrayOf(batchSize, hiddenSize)
-                val zeros = allocateNDArray(type, Strides(newShape))
-                return State(zeros, zeros)
-            }
+        input.matrixDotInto(lstmData.weights.cellGate, gatesData.cellGate, true)
+        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.cellGate, gatesData.cellGate, false)
+        if (lstmData.bias != null) gatesData.cellGate.plus(lstmData.bias.cellGate, false)
+        gatesData.cellGate.mapElements(g, false)
 
-            fun create(gatesData: GatesData, prevState: State): State {
-                val cellGateTensor = (gatesData.forgetGate * prevState.cellGate + gatesData.inputGate * gatesData.cellGate)
+        if (!lastState.isCellStateZero) lastState.cellState.times(gatesData.forget, false)
+        gatesData.input.times(gatesData.cellGate, false)
+        lastState.cellState.plus(gatesData.input, false)
 
-                val outputTensor = (gatesData.outputGate * tanh.activate(cellGateTensor))
+        input.matrixDotInto(lstmData.weights.output, gatesData.output, true)
+        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.output, gatesData.output, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.output.plus(lstmData.peepholes.output * lastState.cellState, false)
+        if (lstmData.bias != null) gatesData.output.plus(lstmData.bias.output, false)
+        gatesData.output.mapElements(f, false)
 
-                return State(outputTensor, cellGateTensor)
-            }
+        lastState.output = lastState.cellState.mapElements(h, true)
+        lastState.output.times(gatesData.output, false)
+
+        output.placeAll(outputOffset, lastState.output.array)
+
+        lastState.isOutputZero = false
+        lastState.isCellStateZero = false
+    }
+
+    override fun parseTempInputs(weights: Tensor, recurrentWeights: Tensor, bias: Tensor?, initialOutput: Tensor?, initialCellState: Tensor?, peepholes: Tensor?) {
+        if (lstmData == null) {
+            val parsedWeights = GatesData.createWeights(weights.data)
+            val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data)
+            lstmData = LSTMData(parsedWeights, parsedRecurrentWeights, null, null, null, null, type!!)
+
+            this.weights = weights.data
+            this.recurrentWeights = recurrentWeights.data
+            this.bias = null
+            this.initialOutput = null
+            this.initialCellState = null
+            this.peepholes = null
+        }
+        if (weights.data !== this.weights) {
+            lstmData = lstmData!!.updateWeights(GatesData.createWeights(weights.data))
+            this.weights = weights.data
+        }
+        if (recurrentWeights.data !== this.recurrentWeights) {
+            lstmData = lstmData!!.updateRecurrentWeights(GatesData.createWeights(recurrentWeights.data))
+            this.recurrentWeights = recurrentWeights.data
+        }
+        if (bias != null && bias.data !== this.bias) {
+            lstmData = lstmData!!.updateBias(GatesData.createBias(bias.data))
+            this.bias = bias.data
+        }
+        if (initialOutput != null && initialOutput.data !== this.initialOutput) {
+            lstmData = lstmData!!.updateInitialOutput(initialOutput.data.squeeze(0).splitWithAxis(batchSize!!))
+            this.initialOutput = initialOutput.data
+        }
+        if (initialCellState != null && initialCellState.data !== this.initialCellState) {
+            lstmData = lstmData!!.updateInitialCellGate(initialCellState.data.squeeze(0).splitWithAxis(batchSize!!))
+            this.initialCellState = initialCellState.data
+        }
+        if (peepholes != null && peepholes.data !== this.peepholes) {
+            lstmData = lstmData!!.updatePeepholes(GatesData.createPeepholes(peepholes.data))
+            this.peepholes = peepholes.data
         }
     }
 
-    data class BiasesData(
-        val inputGateBiases: NDArray<Any>,
-        val outputGateBiases: NDArray<Any>,
-        val forgetGateBiases: NDArray<Any>,
-        val cellGateBiases: NDArray<Any>
-    ) {
-        companion object {
-            fun create(biases: NDArray<Any>, hiddenSize: Int, batchSize: Int): NDArray<Any> {
-                val shape = intArrayOf(batchSize, 4 * hiddenSize)
-                val newStrides = Strides(shape)
+    protected fun Array<State>.toOutput(): State {
+        val strides = Strides(intArrayOf(1, batchSize!!, hiddenSize))
+        val outputArray = allocateNDArray(type!!, strides)
+        val cellStateArray = allocateNDArray(type!!, strides)
 
-                val leftTensor = createNDArray<Any>(biases.type, newStrides) { i ->
-                    val (_, colNum) = newStrides.index(i)
-                    biases[colNum]
-                }
-
-                val rightTensor = createNDArray<Any>(biases.type, newStrides) { i ->
-                    val (_, colNum) = newStrides.index(i)
-                    biases[colNum + shape[1]]
-                }
-
-                return leftTensor + rightTensor
-
-
-//                @Suppress("UNCHECKED_CAST")
-//                val parsedBiases = List(8) { index ->
-//                    val (buffer, _) = createInferredTypeBuffer(biases.info.type, biases.info.type, newStrides.linearSize) { i ->
-//                        val indices = newStrides.index(i)
-//                        val colNum = indices[1]
-//                        biases.data.buffer[hiddenSize * index + colNum]
-//                    }
-//                    val newStructure = BufferNDStructure(newStrides, buffer)
-//                    Tensor(null, newStructure, biases.info.type)
-//                }
-//
-//                return BiasesData(
-//                    (parsedBiases[0] + parsedBiases[4]) as Tensor,
-//                    (parsedBiases[1] + parsedBiases[5]) as Tensor,
-//                    (parsedBiases[2] + parsedBiases[6]) as Tensor,
-//                    (parsedBiases[3] + parsedBiases[7]) as Tensor
-//                )
-            }
+        for (i in this.indices) {
+            val offset = i * hiddenSize
+            outputArray.placeAll(offset, this[i].output.array)
+            cellStateArray.placeAll(offset, this[i].cellState.array)
         }
+
+        return State(outputArray, cellStateArray, false, false)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun List<NDArray<Any>>.toOutput(): Tensor {
-        val newShape = intArrayOf(this.size, 1, this.first().shape[0], this.first().shape[1])
-        val newStrides = Strides(newShape)
-
-        val type = this.first().type
-        return createNDArray<Any>(type, newStrides) { i ->
-            val indices = newStrides.index(i)
-            val (inputNum, _, rowNum, colNum) = indices
-            this[inputNum].get(intArrayOf(rowNum, colNum))
-        }.asTensor()
+    companion object {
+        fun create(hiddenSize: Int, activations: List<String>, direction: String, lstmData: LSTMData, seqLength: Int, batchSize: Int, type: DataType): LSTMLayer {
+            val lstm = LSTMLayer(hiddenSize, activations, direction)
+            lstm.lstmData = lstmData
+            lstm.seqLength = seqLength
+            lstm.batchSize = batchSize
+            lstm.type = type
+            return lstm
+        }
     }
 }
-*/
+
+
