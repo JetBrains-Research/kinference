@@ -5,9 +5,11 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 fun transposeRec(prevArray: FloatArray, newArray: FloatArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
     if (index != newStrides.shape.lastIndex) {
+        val temp = prevStrides.strides[permutation[index]]
+        val temp2 = newStrides.strides[index]
         for (i in 0 until newStrides.shape[index])
-            transposeRec(prevArray, newArray, prevStrides, newStrides, index + 1, prevOffset + prevStrides.strides[permutation[index]] * i,
-                newOffset + newStrides.strides[index] * i, permutation)
+            transposeRec(prevArray, newArray, prevStrides, newStrides, index + 1, prevOffset + temp * i,
+                newOffset + temp2 * i, permutation)
     } else {
         val temp = prevStrides.strides[permutation[index]]
         for (i in 0 until newStrides.shape[index]) {
