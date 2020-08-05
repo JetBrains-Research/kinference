@@ -6,9 +6,10 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 fun transpose(array: FloatArray, rowNum: Int, colNum: Int): FloatArray {
     val result = FloatArray(rowNum * colNum)
 
-    for (i in (0 until rowNum)) {
-        for (j in (0 until colNum)) {
-            result[j * rowNum + i] = array[i * colNum + j]
+    for (j in (0 until colNum)) {
+        val ind = j * rowNum
+        for (i in (0 until rowNum)) {
+            result[ind + i] = array[i * colNum + j]
         }
     }
 

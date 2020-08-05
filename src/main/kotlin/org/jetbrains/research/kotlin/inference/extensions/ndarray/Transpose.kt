@@ -3,6 +3,19 @@ package org.jetbrains.research.kotlin.inference.extensions.ndarray
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
+fun transposeRec(prevArray: FloatArray, newArray: FloatArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
+    if (index != newStrides.shape.lastIndex) {
+        for (i in 0 until newStrides.shape[index])
+            transposeRec(prevArray, newArray, prevStrides, newStrides, index + 1, prevOffset + prevStrides.strides[permutation[index]] * i,
+                newOffset + newStrides.strides[index] * i, permutation)
+    } else {
+        val temp = prevStrides.strides[permutation[index]]
+        for (i in 0 until newStrides.shape[index]) {
+            newArray[newOffset + i] = prevArray[prevOffset + i * temp]
+        }
+    }
+}
+
 fun transpose(array: FloatArray, strides: Strides, permutation: IntArray): FloatNDArray {
     val newArray = FloatArray(array.size)
 
@@ -12,16 +25,7 @@ fun transpose(array: FloatArray, strides: Strides, permutation: IntArray): Float
     }
     val newStrides = Strides(newShape)
 
-
-    for (i in newArray.indices) {
-        val indices = newStrides.index(i)
-        val newIndices = IntArray(indices.size)
-        for ((id, axis) in permutation.withIndex()) {
-            newIndices[axis] = indices[id]
-        }
-        newArray[i] = array[strides.offset(newIndices)]
-    }
-
+    transposeRec(array, newArray, strides, newStrides, 0, 0, 0, permutation)
 
     return FloatNDArray(newArray, newStrides)
 }
