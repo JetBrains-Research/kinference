@@ -1,8 +1,9 @@
 package org.jetbrains.research.kotlin.inference.types
 
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.onnx.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.onnx.TensorShapeProto
+import org.jetbrains.research.kotlin.inference.onnx.TypeProto
 
 class TensorShape(private val dims: List<Dimension>) {
     constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })
@@ -13,6 +14,7 @@ class TensorShape(private val dims: List<Dimension>) {
     open class Dimension
     class StaticDimension(val value: Int) : Dimension()
     class DynamicDimension(val value: String) : Dimension()
+    object UnknownDimension : Dimension()
 
     fun getDimensions(context: Context? = null): IntArray {
         if (context == null) require(dims.all { it is StaticDimension })
@@ -20,6 +22,7 @@ class TensorShape(private val dims: List<Dimension>) {
             when (it) {
                 is StaticDimension -> it.value
                 is DynamicDimension -> context!!.getShape(it.value)
+                is UnknownDimension -> -1
                 else -> error("Unsupported dimension type")
             }
         }.toIntArray()
@@ -33,7 +36,7 @@ class TensorShape(private val dims: List<Dimension>) {
                 when {
                     it.dim_value != null -> StaticDimension(it.dim_value.toInt())
                     it.dim_param != null -> DynamicDimension(it.dim_param)
-                    else -> error("Incorrect TensorShapeProto")
+                    else -> UnknownDimension
                 }
             })
         }
