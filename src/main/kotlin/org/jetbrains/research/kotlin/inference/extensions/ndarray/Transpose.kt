@@ -12,8 +12,12 @@ fun transposeRec(prevArray: FloatArray, newArray: FloatArray, prevStrides: Strid
                 newOffset + temp2 * i, permutation)
     } else {
         val temp = prevStrides.strides[permutation[index]]
-        for (i in 0 until newStrides.shape[index]) {
-            newArray[newOffset + i] = prevArray[prevOffset + i * temp]
+        if (temp == 1) {
+            prevArray.copyInto(newArray, newOffset, prevOffset, prevOffset + newStrides.shape[index])
+        } else {
+            for (i in 0 until newStrides.shape[index]) {
+                newArray[newOffset + i] = prevArray[prevOffset + i * temp]
+            }
         }
     }
 }
