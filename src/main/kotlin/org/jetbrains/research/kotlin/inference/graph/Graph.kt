@@ -24,7 +24,7 @@ class Graph(proto: GraphProto) {
 
     val initializers = proto.initializer.map { Tensor.create(it) }
 
-    private data class Node(val proto: NodeProto?, var visited: Boolean = false) {
+    private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
             for (variable in input) {
                 if (variable.isNotEmpty()) add(variable)
@@ -45,12 +45,11 @@ class Graph(proto: GraphProto) {
             }
         }
 
-        val dependencies by lazy { proto?.collectRequiredInputs() ?: emptySet() }
+        val dependencies by lazy { proto.collectRequiredInputs() }
     }
-    
+
     init {
         operators = ArrayList(proto.node.size)
-        val EMPTY = Node(null, true)
         val nodes = HashMap<String, Node>().apply {
             for (nodeProto in proto.node) {
                 val node = Node(nodeProto)
@@ -58,13 +57,6 @@ class Graph(proto: GraphProto) {
                     put(output, node)
                 }
             }
-
-            for (input in proto.input) {
-                val name = input.name!!
-                if (name.isNotEmpty()) put(name, EMPTY)
-            }
-
-            put("", EMPTY)
         }
 
         val stack = Stack<Node>().apply {
@@ -92,7 +84,7 @@ class Graph(proto: GraphProto) {
                 if (ready) {
                     node.visited = true
                     stack.pop()
-                    operators.add(OperatorFactory.create(node.proto!!))
+                    operators.add(OperatorFactory.create(node.proto))
                 }
             } else stack.pop()
         }
