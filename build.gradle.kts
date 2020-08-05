@@ -8,13 +8,15 @@ version = "0.1.0"
 plugins {
     idea
     id("tanvd.kosogor") version "1.0.7" apply true
-    kotlin("jvm") version "1.3.72" apply true
+    kotlin("jvm") version "1.4.0-rc" apply true
     id("com.squareup.wire") version "3.1.0" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
 }
 
 repositories {
     jcenter()
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    maven("https://kotlin.bintray.com/kotlinx")
 }
 
 val generatedDir = "src/main/kotlin-gen"
