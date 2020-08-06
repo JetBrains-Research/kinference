@@ -62,8 +62,24 @@ tasks.withType<KotlinJvmCompile> {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("heavy")
+    }
     maxHeapSize = "20m"
+
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+tasks.create("testHeavy", Test::class.java) {
+    group = "verification"
+
+    useJUnitPlatform {
+        includeTags("heavy")
+    }
+
+    maxHeapSize = "1024m"
 
     testLogging {
         events("passed", "skipped", "failed")

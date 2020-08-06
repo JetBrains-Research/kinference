@@ -7,17 +7,17 @@ class TanhTest {
     private fun getTargetPath(dirName: String) = "/tanh/$dirName/"
 
     @Test
-    fun test_tanh_example() {
+    fun `test tanh example`() {
         Utils.tensorTestRunner(getTargetPath("test_tanh_example"))
     }
 
     @Test
-    fun test_tanh() {
+    fun `test tanh`() {
         Utils.tensorTestRunner(getTargetPath("test_tanh"))
     }
 
     @Test
-    fun test_tanh_scalar() {
+    fun `test tanh scalar`() {
         Utils.tensorTestRunner(getTargetPath("test_tanh_scalar"))
     }
 }

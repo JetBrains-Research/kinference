@@ -7,12 +7,12 @@ class SqueezeTest {
     private fun getTargetPath(dirName: String) = "/squeeze/$dirName/"
 
     @Test
-    fun test_squeeze() {
+    fun `test squeeze`() {
         Utils.tensorTestRunner(getTargetPath("test_squeeze"))
     }
 
     @Test
-    fun test_squeeze_negative_axes() {
+    fun `test squeeze with negative axes`() {
         Utils.tensorTestRunner(getTargetPath("test_squeeze_negative_axes"))
     }
 }

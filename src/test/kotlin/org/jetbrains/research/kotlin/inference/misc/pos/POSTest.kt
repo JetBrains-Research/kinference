@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.inference.misc.pos
 
 import org.jetbrains.research.kotlin.inference.Utils
 import org.jetbrains.research.kotlin.inference.model.Model
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -10,13 +10,13 @@ class POSTest {
     private fun getTargetPath(dirName: String) = "/pos/$dirName/"
 
     @Test
-    fun test_pos_tagger() {
+    fun `test POS-tagger`() {
         Utils.tensorTestRunner(getTargetPath("test_pos_tagger"))
     }
 
     @Test
-    @Disabled
-    fun test_performance_for_pos_model() {
+    @Tag("heavy")
+    fun `test POS-tagger performance`() {
         val path = object {}.javaClass.getResource("/pos/test_pos_tagger/").path
         val model = Model.load(path + "model.onnx")
         val dataSet = File(path).list()!!.filter { "test" in it }.map {
