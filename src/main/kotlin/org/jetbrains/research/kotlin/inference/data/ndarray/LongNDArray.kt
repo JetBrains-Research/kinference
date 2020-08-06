@@ -53,6 +53,11 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         }
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as LongArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as LongArray
         block.copyInto(array, startOffset)

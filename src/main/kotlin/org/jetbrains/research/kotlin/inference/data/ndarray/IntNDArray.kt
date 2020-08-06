@@ -61,6 +61,11 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         }
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as IntArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as IntArray
         block.copyInto(array, startOffset)

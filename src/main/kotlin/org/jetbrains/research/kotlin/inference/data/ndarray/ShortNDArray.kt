@@ -53,6 +53,11 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as ShortArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as ShortArray
         block.copyInto(array, startOffset)

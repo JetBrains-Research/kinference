@@ -53,6 +53,11 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as FloatArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as FloatArray
         block.copyInto(array, startOffset)

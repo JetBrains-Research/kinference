@@ -67,7 +67,8 @@ fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {
 
     return List(strides.linearSize / matrixSize) { index ->
         allocateNDArray(type, matrixStrides).apply {
-            placeAll(0, this@as2DList.slice(matrixSize, matrixSize * index))
+            val start = matrixSize * index
+            place(0, this@as2DList.array, start, start + matrixSize)
         } as NDArray<T>
     }
 }

@@ -41,8 +41,7 @@ fun <T> NDArray<T>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<T> {
         val srcOffset = numBatch * dataBatch + idx * block
         val dstOffset = numBatch * gatheredBatch + i * block
 
-        val slice = this.slice(block, srcOffset)
-        dst.placeAll(dstOffset, slice)
+        dst.place(dstOffset, this.array, srcOffset, srcOffset + block)
     }
     return dst
 }

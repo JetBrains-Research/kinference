@@ -38,6 +38,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     abstract operator fun get(indices: IntArray): Any
 
     abstract fun clone(newStrides: Strides = strides): NDArray<T>
+    abstract fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int)
     abstract fun placeAll(startOffset: Int, block: Any?)
 
     abstract fun plus(other: NDArray<T>, copy: Boolean = true): NDArray<T>

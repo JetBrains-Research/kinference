@@ -127,7 +127,7 @@ fun <T> NDArray<T>.matrixDot(other: NDArray<T>): NDArray<T> {
 }
 
 fun <T> NDArray<T>.matrixDotInto(other: NDArray<T>, destination: NDArray<T>, clean: Boolean = true): NDArray<T> {
-    require(this::class == other::class)
+//    require(this::class == other::class)
     require(shape.size == 2 && other.shape.size == 2)
     require(shape[1] == other.shape[0])
     require(destination.shape[0] == shape[0] && destination.shape[1] == other.shape[1])

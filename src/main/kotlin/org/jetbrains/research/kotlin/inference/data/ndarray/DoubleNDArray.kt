@@ -53,6 +53,11 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as DoubleArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as DoubleArray
         block.copyInto(array, startOffset)

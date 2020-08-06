@@ -45,6 +45,11 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         return array.sliceArray(start until start + sliceLength)
     }
 
+    override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
+        block as BooleanArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
+    }
+
     override fun placeAll(startOffset: Int, block: Any?) {
         block as BooleanArray
         block.copyInto(array, startOffset)
