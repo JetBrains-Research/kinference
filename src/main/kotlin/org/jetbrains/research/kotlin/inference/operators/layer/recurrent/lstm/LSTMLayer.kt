@@ -19,7 +19,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         require(activations.size >= 3)
     }
 
-    override fun apply(inputs: List<List<NDArray<Any>>>, sequenceLens: IntArray, outputArray: NDArray<Any>, startOffset: Int): List<Tensor> {
+    override fun apply(inputs: List<NDArray<Any>>, sequenceLens: IntArray, outputArray: NDArray<Any>, startOffset: Int): List<Tensor> {
         val batchSize = batchSize!!
         val seqLength = seqLength!!
         val type = type!!
@@ -35,9 +35,10 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
         var batchNum = if (direction == "forward") 0 else seqLength - 1
         for (i in 0 until seqLength) {
-            for (inputNum in inputs[batchNum].indices) {
+            val temp = batchNum * batchSize
+            for (inputNum in 0 until batchSize) {
                 if (batchNum >= sequenceLens[inputNum]) continue
-                step(lstmData, inputs[batchNum][inputNum], outputArray, currentOffset + hiddenSize * inputNum, gatesData, lastStates[inputNum], f, g, h)
+                step(lstmData, inputs[temp + inputNum], outputArray, currentOffset + hiddenSize * inputNum, gatesData, lastStates[inputNum], f, g, h)
             }
             if (direction == "forward") {
                 currentOffset += stepOffset

@@ -61,3 +61,10 @@ fun <T> NDArray<T>.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmen
         else -> error("")
     } as NDArray<T>
 }
+
+fun <T> NDArray<T>.splitArray(parts: Int, strides: Strides): List<NDArray<T>> {
+    return when (array) {
+        is FloatArray -> splitParts(array, parts, strides)
+        else -> throw UnsupportedOperationException()
+    } as List<NDArray<T>>
+}
