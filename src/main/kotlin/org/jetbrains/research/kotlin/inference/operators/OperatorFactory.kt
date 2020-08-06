@@ -28,6 +28,7 @@ object OperatorFactory {
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
+        "Shape" -> Shape(attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(attributes, inputs, outputs)
         "Softmax" -> Softmax(attributes, inputs, outputs)
         "Split" -> Split(attributes, inputs, outputs)
