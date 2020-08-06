@@ -77,6 +77,11 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
     }
 }
 
+fun fexp(x: Double): Double {
+    val tmp = (1512775 * x + 1072632447).toLong()
+    return java.lang.Double.longBitsToDouble(tmp shl 32)
+}
+
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -88,8 +93,9 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
 
         fun activationFloat() = FloatArrayToFloatArray { array ->
             for (i in array.indices) {
-                val temp = exp(2.0 * array[i])
-                array[i] = ((temp - 1.0) / (temp + 1.0)).toFloat()
+                var temp = exp(2.0f * array[i])
+                if (temp.isInfinite()) temp = Float.MAX_VALUE
+                array[i] = ((temp - 1.0f) / (temp + 1.0f))
             }
             array
         }
