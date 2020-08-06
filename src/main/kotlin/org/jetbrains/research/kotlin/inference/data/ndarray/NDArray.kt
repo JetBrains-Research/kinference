@@ -141,6 +141,15 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return reshape(newShape)
     }
 
+    fun unsqueeze(vararg axes: Int): NDArray<T> {
+        val actualAxes = axes.map { indexAxis(it) }.sorted()
+        val newShape = shape.toMutableList()
+        for (axis in actualAxes) {
+            newShape.add(axis, 1)
+        }
+        return reshape(newShape.toIntArray())
+    }
+
     // TODO: better equals
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

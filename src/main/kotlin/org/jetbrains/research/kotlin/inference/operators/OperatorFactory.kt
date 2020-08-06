@@ -36,6 +36,7 @@ object OperatorFactory {
         "Squeeze" -> Squeeze(attributes, inputs, outputs)
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
+        "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         else -> error("Unsupported operator $name")
     } as Operator<ONNXData, ONNXData>
 
