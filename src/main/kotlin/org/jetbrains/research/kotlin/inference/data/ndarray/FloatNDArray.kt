@@ -9,6 +9,13 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
+    private companion object {
+        val plusWithCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
+        val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
+        val timesWithCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
+        val timesWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
+    }
+
     override fun clone(newStrides: Strides): FloatNDArray {
         return FloatNDArray(array.copyOf(), newStrides)
     }
@@ -25,7 +32,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, copy) })
+            this.combineWith(other, if (copy) plusWithCopy else plusWithoutCopy)
         }
     }
 
@@ -33,7 +40,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, copy) })
+            this.combineWith(other, if (copy) timesWithCopy else timesWithoutCopy)
         }
     }
 
