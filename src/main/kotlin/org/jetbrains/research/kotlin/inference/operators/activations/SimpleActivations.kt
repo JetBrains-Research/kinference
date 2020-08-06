@@ -32,20 +32,20 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = FloatArrayToFloatArray { array ->
+        val activateFloat = FloatArrayToFloatArray { array ->
             for (i in array.indices) array[i] = max(0.0f, array[i])
             array
         }
 
-        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+        val activateDouble = DoubleArrayToDoubleArray { array ->
             for (i in array.indices) array[i] = max(0.0, array[i])
             array
         }
     }
 
     override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
-        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
+        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")
     }
 }
@@ -59,20 +59,20 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = FloatArrayToFloatArray { array ->
+        val activateFloat = FloatArrayToFloatArray { array ->
             for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
             array
         }
 
-        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+        val activateDouble = DoubleArrayToDoubleArray { array ->
             for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
             array
         }
     }
 
     override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
-        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
+        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")
     }
 }
@@ -86,7 +86,7 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = FloatArrayToFloatArray { array ->
+        val activateFloat = FloatArrayToFloatArray { array ->
             for (i in array.indices) {
                 var temp = exp(2.0f * array[i])
                 if (temp.isInfinite()) temp = Float.MAX_VALUE
@@ -95,15 +95,15 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             array
         }
 
-        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+        val activateDouble = DoubleArrayToDoubleArray { array ->
             for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0))
             array
         }
     }
 
     override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activationFloat())
-        TensorProto.DataType.DOUBLE -> input.mapElements(activationDouble())
+        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
+        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")
     }
 }

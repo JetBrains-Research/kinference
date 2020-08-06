@@ -25,16 +25,16 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     companion object {
         // TODO: Add activations with alpha and beta
         fun createFloat(name: String): FloatArrayToFloatArray = when (name) {
-            "Sigmoid" -> Sigmoid.activationFloat()
-            "Tanh" -> Tanh.activationFloat()
-            "Relu" -> Relu.activationFloat()
+            "Sigmoid" -> Sigmoid.activateFloat
+            "Tanh" -> Tanh.activateFloat
+            "Relu" -> Relu.activateFloat
             else -> throw UnsupportedOperationException()
         }
 
         fun createDouble(name: String): DoubleArrayToDoubleArray = when (name) {
-            "Sigmoid" -> Sigmoid.activationDouble()
-            "Tanh" -> Tanh.activationDouble()
-            "Relu" -> Relu.activationDouble()
+            "Sigmoid" -> Sigmoid.activateDouble
+            "Tanh" -> Tanh.activateDouble
+            "Relu" -> Relu.activateDouble
             else -> throw UnsupportedOperationException()
         }
 
