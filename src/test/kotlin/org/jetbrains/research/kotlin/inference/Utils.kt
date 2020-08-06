@@ -102,7 +102,7 @@ object Utils {
 
             val mappedActualOutputTensors = actualOutputTensors.associateBy { it.info.name }
 
-            for (expectedOutputTensor in expectedOutputTensors){
+            for (expectedOutputTensor in expectedOutputTensors) {
                 val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.info.name] ?: error("Required tensor not found")
                 assertTensors(expectedOutputTensor as Tensor, actualOutputTensor as Tensor)
             }

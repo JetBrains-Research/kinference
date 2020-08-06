@@ -7,7 +7,7 @@ class ReluTest {
     private fun getTargetPath(dirName: String) = "/relu/$dirName/"
 
     @Test
-    fun test_relu(){
+    fun test_relu() {
         Utils.tensorTestRunner(getTargetPath("test_relu"))
     }
 }

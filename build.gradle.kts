@@ -33,8 +33,8 @@ sourceSets {
     }
 }
 
-tasks.compileTestKotlin{
-    doFirst(){
+tasks.compileTestKotlin {
+    doFirst() {
         source = source.filter { "kotlin-gen" !in it.path }.asFileTree
     }
 }

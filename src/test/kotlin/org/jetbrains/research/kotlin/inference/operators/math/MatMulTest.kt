@@ -12,12 +12,12 @@ class MatMulTest {
     }
 
     @Test
-    fun test_matmul_3d(){
+    fun test_matmul_3d() {
         Utils.tensorTestRunner(getTargetPath("test_matmul_3d"))
     }
 
     @Test
-    fun test_matmul_4d(){
+    fun test_matmul_4d() {
         Utils.tensorTestRunner(getTargetPath("test_matmul_4d"))
     }
 }

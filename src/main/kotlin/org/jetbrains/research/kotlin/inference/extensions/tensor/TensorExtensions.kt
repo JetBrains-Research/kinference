@@ -1,7 +1,8 @@
 package org.jetbrains.research.kotlin.inference.extensions.tensor
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape

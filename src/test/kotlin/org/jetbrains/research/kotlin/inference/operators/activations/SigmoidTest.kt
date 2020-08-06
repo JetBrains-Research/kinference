@@ -7,12 +7,12 @@ class SigmoidTest {
     private fun getTargetPath(dirName: String) = "/sigmoid/$dirName/"
 
     @Test
-    fun test_sigmoid_example(){
+    fun test_sigmoid_example() {
         Utils.tensorTestRunner(getTargetPath("test_sigmoid_example"))
     }
 
     @Test
-    fun test_sigmoid(){
+    fun test_sigmoid() {
         Utils.tensorTestRunner(getTargetPath("test_sigmoid"))
     }
 }

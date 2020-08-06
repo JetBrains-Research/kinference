@@ -3,7 +3,7 @@ package org.jetbrains.research.kotlin.inference
 import org.jetbrains.research.kotlin.inference.model.Model
 import java.io.File
 
-fun main(){
+fun main() {
     //Thread.sleep(5000)
     val path = object {}.javaClass.getResource("/pos/test_pos_tagger/").path
     val model = Model.load(path + "model.onnx")
@@ -16,7 +16,7 @@ fun main(){
 
     val count = 100
     val times = LongArray(count)
-    for (i in (0 until count)){
+    for (i in (0 until count)) {
         val startTime = System.currentTimeMillis()
         model.predict(dataSet)
         val endTime = System.currentTimeMillis()
