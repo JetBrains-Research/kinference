@@ -25,11 +25,7 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, object : LongArrayWithLongArray {
-                override fun apply(array: LongArray, otherArray: LongArray): LongArray {
-                    return plus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> plus(array, otherArray, copy) })
         }
     }
 
@@ -37,11 +33,7 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, object : LongArrayWithLongArray {
-                override fun apply(array: LongArray, otherArray: LongArray): LongArray {
-                    return times(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> times(array, otherArray, copy) })
         }
     }
 
@@ -49,11 +41,7 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other, object : LongArrayWithLongArray {
-                override fun apply(array: LongArray, otherArray: LongArray): LongArray {
-                    return div(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> div(array, otherArray, copy) })
         }
     }
 
@@ -61,11 +49,7 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other, object : LongArrayWithLongArray {
-                override fun apply(array: LongArray, otherArray: LongArray): LongArray {
-                    return minus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> minus(array, otherArray, copy) })
         }
     }
 

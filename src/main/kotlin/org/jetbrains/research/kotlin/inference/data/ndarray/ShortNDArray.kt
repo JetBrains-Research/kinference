@@ -25,11 +25,7 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
         } else {
-            this.combineWith(other, object : ShortArrayWithShortArray {
-                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return plus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> plus(array, otherArray, copy) })
         }
     }
 
@@ -37,11 +33,7 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] * other.array[0]).toShort()))
         } else {
-            this.combineWith(other, object : ShortArrayWithShortArray {
-                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return times(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> times(array, otherArray, copy) })
         }
     }
 
@@ -49,11 +41,7 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
         } else {
-            this.combineWith(other, object : ShortArrayWithShortArray {
-                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return div(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> div(array, otherArray, copy) })
         }
     }
 
@@ -61,11 +49,7 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
         } else {
-            this.combineWith(other, object : ShortArrayWithShortArray {
-                override fun apply(array: ShortArray, otherArray: ShortArray): ShortArray {
-                    return minus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> minus(array, otherArray, copy) })
         }
     }
 

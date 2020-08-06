@@ -25,11 +25,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, object : DoubleArrayWithDoubleArray {
-                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return plus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> plus(array, otherArray, copy) })
         }
     }
 
@@ -37,11 +33,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other, object : DoubleArrayWithDoubleArray {
-                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return minus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> minus(array, otherArray, copy) })
         }
     }
 
@@ -49,11 +41,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, object : DoubleArrayWithDoubleArray {
-                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return times(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> times(array, otherArray, copy) })
         }
     }
 
@@ -61,11 +49,7 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other, object : DoubleArrayWithDoubleArray {
-                override fun apply(array: DoubleArray, otherArray: DoubleArray): DoubleArray {
-                    return div(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> div(array, otherArray, copy) })
         }
     }
 

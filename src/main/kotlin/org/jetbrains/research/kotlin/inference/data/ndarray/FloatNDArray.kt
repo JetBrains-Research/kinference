@@ -25,11 +25,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, object : FloatArrayWithFloatArray {
-                override fun apply(array: FloatArray, otherArray: FloatArray): FloatArray {
-                    return plus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, copy) })
         }
     }
 
@@ -37,11 +33,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, object : FloatArrayWithFloatArray {
-                override fun apply(array: FloatArray, otherArray: FloatArray): FloatArray {
-                    return times(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, copy) })
         }
     }
 
@@ -49,11 +41,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other, object : FloatArrayWithFloatArray {
-                override fun apply(array: FloatArray, otherArray: FloatArray): FloatArray {
-                    return minus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, copy) })
         }
     }
 
@@ -61,11 +49,7 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other, object : FloatArrayWithFloatArray {
-                override fun apply(array: FloatArray, otherArray: FloatArray): FloatArray {
-                    return div(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, copy) })
         }
     }
 

@@ -32,18 +32,14 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) array[i] = max(0.0f, array[i])
-                return array
-            }
+        fun activationFloat() = FloatArrayToFloatArray { array ->
+            for (i in array.indices) array[i] = max(0.0f, array[i])
+            array
         }
 
-        fun activationDouble() = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = max(0.0, array[i])
-                return array
-            }
+        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+            for (i in array.indices) array[i] = max(0.0, array[i])
+            array
         }
     }
 
@@ -63,18 +59,14 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
-                return array
-            }
+        fun activationFloat() = FloatArrayToFloatArray { array ->
+            for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
+            array
         }
 
-        fun activationDouble() = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
-                return array
-            }
+        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+            for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
+            array
         }
     }
 
@@ -94,21 +86,17 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        fun activationFloat() = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) {
-                    val temp = exp(2.0 * array[i])
-                    array[i] = ((temp - 1.0) / (temp + 1.0)).toFloat()
-                }
-                return array
+        fun activationFloat() = FloatArrayToFloatArray { array ->
+            for (i in array.indices) {
+                val temp = exp(2.0 * array[i])
+                array[i] = ((temp - 1.0) / (temp + 1.0)).toFloat()
             }
+            array
         }
 
-        fun activationDouble() = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0))
-                return array
-            }
+        fun activationDouble() = DoubleArrayToDoubleArray { array ->
+            for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0))
+            array
         }
     }
 

@@ -27,11 +27,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, object : IntArrayWithIntArray {
-                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return plus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> plus(array, otherArray, copy) })
         }
     }
 
@@ -41,11 +37,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, object : IntArrayWithIntArray {
-                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return times(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> times(array, otherArray, copy) })
         }
     }
 
@@ -55,11 +47,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] - other.array[0]))
         } else {
-            this.combineWith(other, object : IntArrayWithIntArray {
-                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return minus(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> minus(array, otherArray, copy) })
         }
     }
 
@@ -69,11 +57,7 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other, object : IntArrayWithIntArray {
-                override fun apply(array: IntArray, otherArray: IntArray): IntArray {
-                    return div(array, otherArray, copy)
-                }
-            })
+            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> div(array, otherArray, copy) })
         }
     }
 
