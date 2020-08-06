@@ -11,9 +11,9 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
     private companion object {
         val plusWithCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
-        val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
+        val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
         val timesWithCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
-        val timesWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
+        val timesWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, false) }
     }
 
     override fun clone(newStrides: Strides): FloatNDArray {
