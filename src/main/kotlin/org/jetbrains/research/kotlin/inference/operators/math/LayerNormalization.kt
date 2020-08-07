@@ -42,7 +42,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
             IOInfo(2, TYPE_CONSTRAINTS, "inv_std_var", true)
         )
 
-        private val INFO = OperatorInfo("LayerNormalizationд", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
