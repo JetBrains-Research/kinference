@@ -7,6 +7,7 @@ import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayT
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
+import org.jetbrains.research.kotlin.inference.operators.math.tanh
 import kotlin.math.exp
 import kotlin.math.max
 
@@ -87,16 +88,12 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         )
 
         val activateFloat = FloatArrayToFloatArray { array ->
-            for (i in array.indices) {
-                var temp = exp(2.0f * array[i])
-                if (temp.isInfinite()) temp = Float.MAX_VALUE
-                array[i] = ((temp - 1.0f) / (temp + 1.0f))
-            }
+            for (i in array.indices) array[i] = tanh(array[i])
             array
         }
 
         val activateDouble = DoubleArrayToDoubleArray { array ->
-            for (i in array.indices) array[i] = ((exp(2.0 * array[i]) - 1.0) / (exp(2.0 * array[i]) + 1.0))
+            for (i in array.indices) array[i] = tanh(array[i])
             array
         }
     }

@@ -5,9 +5,9 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.onnx.NodeProto
 import org.jetbrains.research.kotlin.inference.operators.activations.*
 import org.jetbrains.research.kotlin.inference.operators.flow.Loop
-//import org.jetbrains.research.kotlin.inference.operators.flow.Loop
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.inference.operators.math.Add
+import org.jetbrains.research.kotlin.inference.operators.math.FastGelu
 import org.jetbrains.research.kotlin.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.inference.operators.seq.ConcatFromSequence
 import org.jetbrains.research.kotlin.inference.operators.seq.SplitToSequence
@@ -21,6 +21,7 @@ object OperatorFactory {
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
         "Constant" -> Constant(attributes, inputs, outputs)
+        "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
