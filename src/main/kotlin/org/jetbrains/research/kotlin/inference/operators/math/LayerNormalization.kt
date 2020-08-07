@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.operators
+package org.jetbrains.research.kotlin.inference.operators.math
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
@@ -7,6 +7,10 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import kotlin.math.sqrt
 
 class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -53,19 +57,15 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
         var normCount = 1
         var normSize = 1
-        //val meanInvShape = IntArray(input.shape.size)
 
         for (i in input.shape.indices) {
             if (i < axis) {
-                //meanInvShape[i] = input.shape[i]
                 normCount *= input.shape[i]
             } else {
-                //meanInvShape[i] = 1
                 normSize *= input.shape[i]
             }
 
         }
-        //val meanInvStrides = Strides(meanInvShape)
 
         return when(type) {
             DataType.FLOAT -> {
@@ -74,8 +74,6 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                 val biasArray = bias.array as FloatArray
 
                 val outputArray = FloatArray(inputArray.size)
-                /*val meanArray = FloatArray(meanInvStrides.linearSize)
-                val invArray = FloatArray(meanInvStrides.linearSize)*/
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
@@ -92,14 +90,9 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     for (h in 0 until normSize) {
                         outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
                     }
-
-                    /*meanArray[i] = mean
-                    invArray[i] = 1 / meanSquare*/
                 }
                 listOf(
                     FloatNDArray(outputArray, input.strides).asTensor(),
-                    /*FloatNDArray(meanArray, meanInvStrides).asTensor(),
-                    FloatNDArray(invArray, meanInvStrides).asTensor()*/
                 )
             }
             DataType.DOUBLE -> {
@@ -108,8 +101,6 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                 val biasArray = bias.array as DoubleArray
 
                 val outputArray = DoubleArray(inputArray.size)
-                /*val meanArray = DoubleArray(meanInvStrides.linearSize)
-                val invArray = DoubleArray(meanInvStrides.linearSize)*/
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
@@ -126,14 +117,9 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     for (h in 0 until normSize) {
                         outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
                     }
-
-                    /*meanArray[i] = mean
-                    invArray[i] = 1 / meanSquare*/
                 }
                 listOf(
                     DoubleNDArray(outputArray, input.strides).asTensor(),
-                    /*DoubleNDArray(meanArray, meanInvStrides).asTensor(),
-                    DoubleNDArray(invArray, meanInvStrides).asTensor()*/
                 )
             }
             else -> throw UnsupportedOperationException()

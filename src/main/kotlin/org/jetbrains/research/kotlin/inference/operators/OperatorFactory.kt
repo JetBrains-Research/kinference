@@ -8,6 +8,7 @@ import org.jetbrains.research.kotlin.inference.operators.flow.Loop
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.inference.operators.math.Add
 import org.jetbrains.research.kotlin.inference.operators.math.FastGelu
+import org.jetbrains.research.kotlin.inference.operators.math.LayerNormalization
 import org.jetbrains.research.kotlin.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.inference.operators.seq.ConcatFromSequence
 import org.jetbrains.research.kotlin.inference.operators.seq.SplitToSequence

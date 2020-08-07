@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.operators
+package org.jetbrains.research.kotlin.inference.operators.math
 
 import org.jetbrains.research.kotlin.inference.Utils
 import org.junit.jupiter.api.Test
