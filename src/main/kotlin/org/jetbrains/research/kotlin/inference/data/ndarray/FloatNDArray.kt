@@ -28,6 +28,14 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
+    // TODO check if step == 1 and use Arrays.copy
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitFloatArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))

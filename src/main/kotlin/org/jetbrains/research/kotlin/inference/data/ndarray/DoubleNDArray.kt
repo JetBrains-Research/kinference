@@ -21,6 +21,13 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return array[strides.offset(indices)]
     }
 
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitDoubleArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] + other.array[0]))

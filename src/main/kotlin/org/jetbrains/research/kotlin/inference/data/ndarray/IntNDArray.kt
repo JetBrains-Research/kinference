@@ -21,6 +21,13 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return array[strides.offset(indices)]
     }
 
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitIntArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
         other as IntNDArray
 

@@ -21,6 +21,13 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitShortArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))

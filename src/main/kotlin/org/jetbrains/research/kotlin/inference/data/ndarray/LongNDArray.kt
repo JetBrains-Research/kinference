@@ -21,6 +21,13 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return array[strides.offset(indices)]
     }
 
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitLongArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] + other.array[0]))

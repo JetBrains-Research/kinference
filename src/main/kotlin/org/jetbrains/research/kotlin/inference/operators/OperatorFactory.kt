@@ -31,6 +31,7 @@ object OperatorFactory {
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "Shape" -> Shape(attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(attributes, inputs, outputs)
+        "Slice" -> Slice(attributes, inputs, outputs)
         "Softmax" -> Softmax(attributes, inputs, outputs)
         "Split" -> Split(attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(attributes, inputs, outputs)
