@@ -9,6 +9,10 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
+    init {
+        require(array.size == strides.linearSize)
+    }
+
     private companion object {
         val plusWithCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
         val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }

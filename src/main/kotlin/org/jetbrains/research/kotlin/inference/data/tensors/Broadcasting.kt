@@ -71,5 +71,5 @@ fun <T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveCombineFun
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array
 
-    return NDArray(op.apply(castedThis, castedOther), type, shape)
+    return NDArray(op.apply(castedThis, castedOther), type, newShape)
 }
