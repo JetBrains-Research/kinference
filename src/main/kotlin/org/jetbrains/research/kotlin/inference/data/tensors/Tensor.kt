@@ -139,12 +139,12 @@ class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.O
             }
             return if (array.isEmpty()) {
                 when (type) {
-                    DataType.DOUBLE -> Tensor(proto.raw_data!!.asByteBuffer().double, type, dims = IntArray(0), name = proto.name)
-                    DataType.FLOAT -> Tensor(proto.raw_data!!.asByteBuffer().float, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().long, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().int, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().short, type, dims = IntArray(0), name = proto.name)
-                    DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().int != 0, type, dims = IntArray(0), name = proto.name)
+                    DataType.DOUBLE -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).double, type, dims = IntArray(0), name = proto.name)
+                    DataType.FLOAT -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).float, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).long, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).short, type, dims = IntArray(0), name = proto.name)
+                    DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int != 0, type, dims = IntArray(0), name = proto.name)
                     else -> error("Unsupported data type")
                 }
             } else Tensor(array[0], type, IntArray(0), proto.name)
