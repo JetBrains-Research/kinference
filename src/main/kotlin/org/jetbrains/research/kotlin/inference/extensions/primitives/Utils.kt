@@ -6,7 +6,7 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
 
-fun Collection<Long>.toIntArray(): IntArray {
+fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
     for ((i, element) in this.withIndex()) {
         array[i] = element.toInt()

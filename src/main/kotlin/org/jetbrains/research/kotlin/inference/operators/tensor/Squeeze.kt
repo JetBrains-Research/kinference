@@ -26,7 +26,7 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val axes = (getAttributeValueOrNull("axes") as? List<Long>) ?: emptyList()
+        val axes = (getAttributeValueOrNull("axes") as? List<Number>) ?: emptyList()
         return listOf(inputs.first()!!.data.squeeze(*axes.toIntArray()).asTensor())
     }
 }

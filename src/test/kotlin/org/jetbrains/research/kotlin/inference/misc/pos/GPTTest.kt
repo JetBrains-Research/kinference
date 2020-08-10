@@ -11,7 +11,7 @@ class GPTTest {
 
     @Test
     @Tag("heavy")
-    fun `test POS-tagger performance`() {
+    fun `test GPT performance`() {
         val path = object {}.javaClass.getResource("/gpt/test_dummy_input/").path
         val model = Model.load(path + "model.onnx")
         val dataSet = File(path).list()!!.filter { "test" in it }.map {

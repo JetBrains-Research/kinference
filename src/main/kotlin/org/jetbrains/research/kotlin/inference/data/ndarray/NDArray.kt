@@ -116,7 +116,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return result as NDArray<T>
     }
 
-    fun transpose(permutations: List<Long>? = null): NDArray<T> {
+    fun transpose(permutations: List<Number>? = null): NDArray<T> {
         if (rank == 2) return this.matrixTranspose()
 
         require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
@@ -170,7 +170,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return createNDArrayFromLateInitArray(type, newArray, newStrides) as NDArray<T>
     }
 
-    private fun slice(dist: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
+    private fun slice(dest: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
         val start = starts[axis]
         val end = ends[axis]
         val step = steps[axis]
@@ -178,13 +178,13 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
 
         if (axis == shape.size - 1) {
-            appendToLateInitArray(dist, range, offset)
+            appendToLateInitArray(dest, range, offset)
         } else {
             var dim = 1
             for (ind in (axis + 1) until shape.size) dim *= shape[ind]
 
             for (index in range) {
-                slice(dist, offset + index * dim, axis + 1, shape, starts, ends, steps)
+                slice(dest, offset + index * dim, axis + 1, shape, starts, ends, steps)
             }
         }
     }

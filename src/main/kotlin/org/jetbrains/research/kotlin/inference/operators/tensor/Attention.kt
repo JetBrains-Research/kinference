@@ -80,7 +80,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                     if (this.rank == 2) {
                         val indicesOffset = i * fullSeqLen
                         for (j in 0 until fullSeqLen) {
-                            mask[maskOffset * i + j] = if (this[j + indicesOffset] as Int > 0) 0f else -10000f
+                            mask[maskOffset * i + j] = if ((this[j + indicesOffset] as Number).toInt() > 0) 0f else -10000f
                         }
                     } else {
                         //for left/right-side padding
@@ -90,7 +90,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                         }
 
                         if (this.rank == 1 && this.shape[0] == 2 * batchSize) {
-                            val startPos = min(this[i + batchSize] as Int, fullSeqLen)
+                            val startPos = min((this[i + batchSize] as Number).toInt(), fullSeqLen)
                             for (j in 0 until startPos) {
                                 mask[maskOffset * i + j] = -10000f
                             }
@@ -222,14 +222,14 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         val bias = inputs[2]!!.data
         val maskIndices = inputs.elementAtOrNull(3)?.data
         val past = inputs.elementAtOrNull(4)?.data
-        val numHeads = (getAttributeValue("num_heads") as Long).toInt()
-        val unidir = getAttributeValue("unidirectional") as Long
+        val numHeads = (getAttributeValue("num_heads") as Number).toInt()
+        val unidir = (getAttributeValue("unidirectional") as Number).toInt()
 
         val (batchSize, seqLen, hiddenSize) = input.shape
 
         val (queries, keys, values) = initQueryKeyValue(input, weights, bias, batchSize, seqLen, hiddenSize, numHeads)
 
-        val (scores, present) = getScores(unidir == 1L, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+        val (scores, present) = getScores(unidir == 1, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())
     }
 }
