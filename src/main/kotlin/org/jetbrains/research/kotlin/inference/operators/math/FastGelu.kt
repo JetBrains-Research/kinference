@@ -37,8 +37,8 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                     for (i in array.indices) array[i] = fgelu(array[i])
                 } else {
                     val biasArray = bias.data.array as FloatArray
-                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
-                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i])
+//                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
+                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
                 }
 
                 array
@@ -49,8 +49,8 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                     for (i in array.indices) array[i] = fgelu(array[i])
                 } else {
                     val biasArray = bias.data.array as DoubleArray
-                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
-                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i])
+//                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
+                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
                 }
 
                 array
