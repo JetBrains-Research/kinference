@@ -53,22 +53,22 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         val incompleteStarts = inputs[1]!!.data.let {
             require(it.linearSize == incompleteAxes.size) { "Input 'starts' must be same size as 'axes'" }
             IntArray(incompleteAxes.size) { index ->
-                var start = (it[index] as Number).toInt()
-                val dim = shape[incompleteAxes[index]]
+                var start = (it[index] as Number).toLong()
+                val dim = shape[incompleteAxes[index]].toLong()
                 start = if (start < 0) dim + start else start
                 start = if (start >= dim) (if (incompleteSteps[index] > 0) dim else dim - 1) else start
-                if (start < 0) 0 else start
+                if (start < 0) 0 else start.toInt()
             }
         }
 
         val incompleteEnds = inputs[2]!!.data.let {
             require(it.linearSize == incompleteAxes.size) { "Input 'ends' must be same size as 'axes'" }
             IntArray(incompleteAxes.size) { index ->
-                var end = (it[index] as Number).toInt()
-                val dim = shape[incompleteAxes[index]]
+                var end = (it[index] as Number).toLong()
+                val dim = shape[incompleteAxes[index]].toLong()
                 end = if (end < 0) dim + end else end
                 end = if (end > dim) dim else end
-                if (end < 0) (if (incompleteSteps[index] > 0) 0 else -1) else end
+                if (end < 0) (if (incompleteSteps[index] > 0) 0 else -1) else end.toInt()
             }
         }
 
