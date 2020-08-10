@@ -11,6 +11,12 @@ class GPTTest {
 
     @Test
     @Tag("heavy")
+    fun `test GPT model`() {
+        Utils.tensorTestRunner(getTargetPath("test_dummy_input"))
+    }
+
+    @Test
+    @Tag("heavy")
     fun `test GPT performance`() {
         val path = object {}.javaClass.getResource("/gpt/test_dummy_input/").path
         val model = Model.load(path + "model.onnx")
