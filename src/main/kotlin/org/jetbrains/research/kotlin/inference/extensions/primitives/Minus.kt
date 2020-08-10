@@ -1,21 +1,46 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
 fun minus(left: FloatArray, right: FloatArray, copy: Boolean): FloatArray {
-    return plus(left, -right, copy)
+    require(left.size == right.size)
+    val array = if (copy) FloatArray(left.size) else left
+
+    for (i in left.indices) array[i] = left[i] - right[i]
+
+    return array
 }
 
 fun minus(left: IntArray, right: IntArray, copy: Boolean): IntArray {
-    return plus(left, -right, copy)
+    require(left.size == right.size)
+    val array = if (copy) IntArray(left.size) else left
+
+    for (i in left.indices) array[i] = left[i] - right[i]
+
+    return array
 }
 
 fun minus(left: LongArray, right: LongArray, copy: Boolean): LongArray {
-    return plus(left, -right, copy)
+    require(left.size == right.size)
+    val array = if (copy) LongArray(left.size) else left
+
+    for (i in left.indices) array[i] = left[i] - right[i]
+
+    return array
 }
 
 fun minus(left: DoubleArray, right: DoubleArray, copy: Boolean): DoubleArray {
-    return plus(left, -right, copy)
+    require(left.size == right.size)
+    val array = if (copy) DoubleArray(left.size) else left
+
+    for (i in left.indices) array[i] = left[i] - right[i]
+
+    return array
 }
 
 fun minus(left: ShortArray, right: ShortArray, copy: Boolean): ShortArray {
-    return plus(left, -right, copy)
+    require(left.size == right.size)
+    val array = if (copy) ShortArray(left.size) else left
+
+    for (i in left.indices) array[i] = (left[i] - right[i]).toShort()
+
+    return array
 }

@@ -27,7 +27,7 @@ class GPTTest {
             inputTensors
         }.first()
 
-        val count = 1
+        val count = 100
         val times = LongArray(count)
         for (i in (0 until count)) {
             val startTime = System.currentTimeMillis()

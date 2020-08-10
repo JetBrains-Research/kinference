@@ -121,7 +121,7 @@ class Graph(proto: GraphProto) {
         }
 
         for (operator in operators) {
-            val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input).clone(input) })
+            val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
             outputs.zip(operator.outputs) { output, variable ->
                 if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                 if (variable.isNotEmpty()) {
