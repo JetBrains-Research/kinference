@@ -28,6 +28,10 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Float
+    }
+
     // TODO check if step == 1 and use Arrays.copy
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
         array as LateInitFloatArray

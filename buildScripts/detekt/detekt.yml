@@ -79,6 +79,7 @@ complexity:
     threshold: 60
   LongParameterList:
     active: true
+    excludes: "**/*Gemm.kt"
     threshold: 10
     ignoreDefaultParameters: false
   MethodOverloading:
@@ -87,6 +88,7 @@ complexity:
   NestedBlockDepth:
     active: true
     threshold: 4
+    excludes: "**/*Gemm.kt"
   StringLiteralDuplication:
     active: false
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"

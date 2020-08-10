@@ -45,13 +45,17 @@ fun allocateNDArray(type: DataType, strides: Strides): NDArray<Any> {
 
 @Suppress("UNCHECKED_CAST")
 fun createLateInitArray(type: DataType, strides: Strides): LateInitArray {
+    return createLateInitArray(type, strides.linearSize)
+}
+
+fun createLateInitArray(type: DataType, size: Int): LateInitArray {
     return when (type) {
-        DataType.DOUBLE -> LateInitDoubleArray(strides.linearSize)
-        DataType.FLOAT -> LateInitFloatArray(strides.linearSize)
-        DataType.INT64 -> LateInitLongArray(strides.linearSize)
-        DataType.INT32 -> LateInitIntArray(strides.linearSize)
-        DataType.INT16 -> LateInitShortArray(strides.linearSize)
-        DataType.BOOL -> LateInitBooleanArray(strides.linearSize)
+        DataType.DOUBLE -> LateInitDoubleArray(size)
+        DataType.FLOAT -> LateInitFloatArray(size)
+        DataType.INT64 -> LateInitLongArray(size)
+        DataType.INT32 -> LateInitIntArray(size)
+        DataType.INT16 -> LateInitShortArray(size)
+        DataType.BOOL -> LateInitBooleanArray(size)
         else -> error("Unsupported type")
     }
 }

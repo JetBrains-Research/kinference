@@ -21,6 +21,10 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Short
+    }
+
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
         array as LateInitShortArray
         for (index in range) {

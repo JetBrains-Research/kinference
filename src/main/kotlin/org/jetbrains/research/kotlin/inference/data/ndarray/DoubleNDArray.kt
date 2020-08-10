@@ -21,6 +21,10 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Double
+    }
+
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
         array as LateInitDoubleArray
         for (index in range) {

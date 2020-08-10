@@ -36,6 +36,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     fun isScalar(): Boolean = shape.isEmpty()
 
     abstract operator fun get(i: Int): Any
+    abstract operator fun set(i: Int, value: Any)
     abstract operator fun get(indices: IntArray): Any
 
     // TODO add similar method with IntRange and Arrays.copy

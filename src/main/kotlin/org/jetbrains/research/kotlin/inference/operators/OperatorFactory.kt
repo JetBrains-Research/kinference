@@ -41,6 +41,7 @@ object OperatorFactory {
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
+        "Attention" -> Attention(attributes, inputs, outputs)
         else -> error("Unsupported operator $name")
     } as Operator<ONNXData, ONNXData>
 

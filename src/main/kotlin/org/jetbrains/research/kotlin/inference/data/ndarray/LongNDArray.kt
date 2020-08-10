@@ -21,6 +21,10 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Long
+    }
+
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
         array as LateInitLongArray
         for (index in range) {
