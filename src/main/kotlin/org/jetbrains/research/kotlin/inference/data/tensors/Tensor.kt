@@ -12,6 +12,7 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 //TODO: support segments
 //TODO: support external and raw data
@@ -61,9 +62,8 @@ class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.O
 
             return if (array.isEmpty()) {
                 require(proto.raw_data != null) { "Tensor without data" }
-                val byteArray = proto.raw_data.toByteArray()
-                val buffer = ByteBuffer.wrap(byteArray)
-                val sizeInBytes = byteArray.size
+                val buffer = ByteBuffer.wrap(proto.raw_data.toByteArray()).order(ByteOrder.LITTLE_ENDIAN)
+                val sizeInBytes = proto.raw_data.size
 
                 when (type) {
                     DataType.DOUBLE -> {
