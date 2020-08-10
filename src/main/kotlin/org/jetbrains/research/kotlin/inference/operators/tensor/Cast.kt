@@ -47,7 +47,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
-        val to = TensorProto.DataType.fromValue(getAttributeValue("to") as Int)!!
+        val to = TensorProto.DataType.fromValue((getAttributeValue("to") as Number).toInt())!!
         return listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })
     }
 }

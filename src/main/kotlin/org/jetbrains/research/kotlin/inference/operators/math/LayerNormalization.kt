@@ -14,7 +14,7 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import kotlin.math.sqrt
 
 class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
-    private val axis_ = (getAttributeValue("axis") as Long).toInt()
+    private val axis_ = (getAttributeValue("axis") as Number).toInt()
     val epsilon_ = getAttributeValue("epsilon") as Float
 
     companion object {

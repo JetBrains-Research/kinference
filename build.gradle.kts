@@ -79,7 +79,7 @@ tasks.create("testHeavy", Test::class.java) {
         includeTags("heavy")
     }
 
-    maxHeapSize = "1024m"
+    maxHeapSize = "4096m"
 
     testLogging {
         events("passed", "skipped", "failed")
