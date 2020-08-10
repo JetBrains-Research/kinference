@@ -80,7 +80,7 @@ complexity:
   LongParameterList:
     active: true
     excludes: "**/*Gemm.kt"
-    threshold: 10
+    threshold: 12
     ignoreDefaultParameters: false
   MethodOverloading:
     active: false
