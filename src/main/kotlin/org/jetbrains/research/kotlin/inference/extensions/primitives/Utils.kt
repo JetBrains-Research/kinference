@@ -3,8 +3,8 @@ package org.jetbrains.research.kotlin.inference.extensions.primitives
 import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayCombineFunction
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
@@ -78,7 +78,17 @@ fun <T> NDArray<T>.exp(): NDArray<T> {
     } as NDArray<T>
 }
 
-fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveCombineFunction<T>): NDArray<T> {
-    return NDArray(op.apply(array, createArray(type, this.linearSize) { x } as T), type, strides)
+fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveArrayCombineFunction<T>): NDArray<T> {
+    val other = when (type) {
+        TensorProto.DataType.DOUBLE -> DoubleArray(linearSize) { x as Double }
+        TensorProto.DataType.FLOAT -> FloatArray(linearSize) { x as Float }
+        TensorProto.DataType.INT64 -> LongArray(linearSize) { x as Long }
+        TensorProto.DataType.INT32 -> IntArray(linearSize) { x as Int }
+        TensorProto.DataType.INT16 -> ShortArray(linearSize) { x as Short }
+        TensorProto.DataType.BOOL -> BooleanArray(linearSize) { x as Boolean }
+        else -> error("Unsupported operator")
+    }
+
+    return NDArray(op.apply(array, other as T), type, strides)
 }
 

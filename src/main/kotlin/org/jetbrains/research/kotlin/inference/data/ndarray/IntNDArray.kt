@@ -57,6 +57,8 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] - other.array[0]))
+        } else if (other.isScalar()) {
+            IntNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, IntArrayWithIntArray { array, otherArray -> minus(array, otherArray, copy) })
         }
@@ -67,6 +69,8 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] / other.array[0]))
+        } else if (other.isScalar()) {
+            IntNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, IntArrayWithIntArray { array, otherArray -> div(array, otherArray, copy) })
         }

@@ -51,6 +51,8 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
     override fun div(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] / other.array[0]))
+        } else if (other.isScalar()) {
+            LongNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, LongArrayWithLongArray { array, otherArray -> div(array, otherArray, copy) })
         }
@@ -59,6 +61,8 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
     override fun minus(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] - other.array[0]))
+        } else if (other.isScalar()) {
+            LongNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, LongArrayWithLongArray { array, otherArray -> minus(array, otherArray, copy) })
         }

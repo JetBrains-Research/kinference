@@ -36,8 +36,6 @@ class GPTTest {
             times[i] = endTime - startTime
         }
 
-        val time = times.average()
-        println(time)
-//        assert(time < 300f)
+        println("Avg: ${times.average()}, min: ${times.min()}, max: ${times.max()}")
     }
 }
