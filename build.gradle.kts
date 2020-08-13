@@ -7,7 +7,7 @@ version = "0.1.0"
 
 plugins {
     idea
-    id("tanvd.kosogor") version "1.0.7" apply true
+    id("tanvd.kosogor") version "1.0.9" apply true
     kotlin("jvm") version "1.4.0-rc" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.6.0") apply true
@@ -34,7 +34,7 @@ sourceSets {
 }
 
 tasks.compileTestKotlin {
-    doFirst() {
+    doFirst {
         source = source.filter { "kotlin-gen" !in it.path }.asFileTree
     }
 }
@@ -46,7 +46,7 @@ idea {
 detekt {
     parallel = true
     failFast = false
-    config = files(File(rootProject.projectDir, "buildScripts/detekt/detekt.yml"))
+    config = files(file("detekt.yml"))
     reports {
         xml.enabled = false
         html.enabled = false
