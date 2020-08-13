@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
+import java.util.*
 
 fun Collection<Long>.toIntArray(): IntArray {
     val array = IntArray(this.size)
@@ -82,3 +83,16 @@ fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveCombineFunction<T>): NDAr
     return NDArray(op.apply(array, createArray(type, this.linearSize) { x } as T), type, strides)
 }
 
+fun Int.concat(array: IntArray): IntArray {
+    val copy = IntArray(array.size + 1)
+    System.arraycopy(array, 0, copy, 1, array.size)
+    copy[0] = this
+    return copy
+}
+
+fun IntArray.concat(value: Int): IntArray {
+    val copy = IntArray(size + 1)
+    System.arraycopy(this, 0, copy, 0, size)
+    copy[size] = value
+    return copy
+}

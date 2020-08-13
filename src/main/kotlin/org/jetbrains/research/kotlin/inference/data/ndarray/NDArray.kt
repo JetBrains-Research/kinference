@@ -6,6 +6,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
 import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
 import org.jetbrains.research.kotlin.inference.extensions.primitives.reversed
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
@@ -65,8 +66,8 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     infix fun matmul(other: NDArray<T>): NDArray<T> {
         require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
         if (rank <= 2 && other.rank <= 2) {
-            val actualThis = if (rank == 1) this.reshape(intArrayOf(1, *shape)) else this
-            val actualOther = if (other.rank == 1) this.reshape(intArrayOf(*other.shape, 1)) else other
+            val actualThis = if (rank == 1) this.reshape(1.concat(shape)) else this
+            val actualOther = if (other.rank == 1) this.reshape(other.shape.concat(1)) else other
             return actualThis.matrixDot(actualOther)
         }
 

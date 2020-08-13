@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
+import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import kotlin.math.max
 
 fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
@@ -41,7 +42,7 @@ fun <T> NDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = f
     return when (this.shape[0]) {
         1 -> {
             val rows = this.row(0).innerBroadcast(castShape)
-            rows.reshape(intArrayOf(1, *castShape)).repeatRow(newShape[0])
+            rows.reshape(1.concat(castShape)).repeatRow(newShape[0])
         }
         newShape[0] -> this.rows.map { it.innerBroadcast(castShape) }.concatenate(axis = 0)
         else -> error("Cannot broadcast tensors")

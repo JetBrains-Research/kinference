@@ -4,10 +4,11 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
+import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import org.jetbrains.research.kotlin.inference.extensions.primitives.scalarOp
 
 fun <T> NDArray<T>.wrapOneDim(): NDArray<T> {
-    val newStrides = Strides(intArrayOf(1, *this.shape))
+    val newStrides = Strides(1.concat(this.shape))
     return this.clone(newStrides)
 }
 
