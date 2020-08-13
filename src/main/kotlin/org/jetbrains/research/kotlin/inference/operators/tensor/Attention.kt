@@ -1,17 +1,22 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.primitives.gemm
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
-import org.jetbrains.research.kotlin.inference.operators.*
+import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
+import org.jetbrains.research.kotlin.inference.operators.IOInfo
+import org.jetbrains.research.kotlin.inference.operators.Operator
+import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.operators.activations.Softmax
-import kotlin.math.*
+import kotlin.math.min
+import kotlin.math.sqrt
 
 class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -148,7 +153,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                     val start = batchIdx * seqLen * allSeqLen
                     scores.place(seqLen * allSeqLen * i, maskData.array, start, start + seqLen * allSeqLen)
                 }
-                val (k, kOffset) = present.updateState(past, keys, pastBlockSize, presentBlockSize, i,0 ,0, inputBlockSize * i)
+                val (k, kOffset) = present.updateState(past, keys, pastBlockSize, presentBlockSize, i, 0, 0, inputBlockSize * i)
 
                 //Q*K(transposed) / sqrt(d) where d is attention head size
                 gemm(queries, k, scores, inputBlockSize * i, kOffset,
@@ -216,14 +221,15 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
     }
 
+    private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
+    private val unidir: Int by attribute("unidirectional") { it: Number -> it.toInt() }
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data
         val weights = inputs[1]!!.data
         val bias = inputs[2]!!.data
         val maskIndices = inputs.elementAtOrNull(3)?.data
         val past = inputs.elementAtOrNull(4)?.data
-        val numHeads = (getAttributeValue("num_heads") as Number).toInt()
-        val unidir = (getAttributeValue("unidirectional") as Number).toInt()
 
         val (batchSize, seqLen, hiddenSize) = input.shape
 

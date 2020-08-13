@@ -35,9 +35,10 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val axis: Long by attribute()
+    private val keepDims: Long by attribute("keepdims")
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
-        val axis = getAttributeValue("axis") as Long
-        val keepDims = getAttributeValue("keepdims") as Long
         val parts = inputs.elementAtOrNull(1)
 
         val input = inputs.first()!!

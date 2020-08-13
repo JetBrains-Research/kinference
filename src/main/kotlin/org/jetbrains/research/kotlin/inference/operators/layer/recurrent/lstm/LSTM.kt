@@ -12,9 +12,9 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
 class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     // TODO: Support activation alpha and beta
-    private val activations = getAttributeValue("activations") as List<String>
-    private val direction = getAttributeValue("direction") as String
-    private val hiddenSize = getAttributeValue("hidden_size") as Long
+    private val activations: List<String> by attribute()
+    private val direction: String by attribute()
+    private val hiddenSize: Long by attribute("hidden_size")
 
     private val layer = when (direction) {
         "forward", "reverse" -> LSTMLayer(hiddenSize.toInt(), activations, direction)

@@ -8,6 +8,8 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) {
     init {
@@ -108,17 +110,47 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         return outputs
     }
 
-    fun getAttributeValue(key: String): Any {
-        val value = getAttributeValueOrNull(key)
+    class AttributeValueDelegate<Input, Output>(val name: String?, val transform: (Input) -> Output,
+                                                val getValue: Operator<*, *>.(String) -> Any?) : ReadOnlyProperty<Operator<*, *>, Output> {
+        private var initialized: Boolean = false
+        private var value: Output? = null
+
+        override fun getValue(thisRef: Operator<*, *>, property: KProperty<*>): Output {
+            if (!initialized) {
+                value = transform(thisRef.getValue(name ?: property.name) as Input)
+                initialized = true
+            }
+            return value as Output
+        }
+    }
+
+    fun <O> attribute(name: String? = null) = AttributeValueDelegate<O, O>(name, { it }, { getAttribute(it) })
+    fun <I, O> attribute(name: String? = null, transform: (I) -> O) = AttributeValueDelegate(name, transform, { getAttribute(it) })
+
+    /**
+     * Get attribute from operator info
+     *
+     * Consider using [attribute] that performs caching on delegate side.
+     */
+    fun <T> getAttribute(key: String): T {
+        val value = getAttributeOrNull<T>(key)
         require(value != null) { "Attribute '$key' not found or don't have a default value" }
         return value
     }
 
-    fun getAttributeValueOrNull(key: String): Any? {
+    fun <O> attributeOrNull(name: String? = null) = AttributeValueDelegate<O, O?>(name, { it }, { getAttributeOrNull(it) })
+    fun <I, O> attributeOrNull(name: String? = null, transform: (I?) -> O?) = AttributeValueDelegate(name, transform, { getAttributeOrNull(it) })
+
+    /**
+     * Get attribute from operator info or null if no default
+     *
+     * Consider using [attributeOrNull] that performs caching on delegate side
+     */
+    fun <T> getAttributeOrNull(key: String): T? {
         val info = info.attributes[key]
         require(info != null) { "Attribute '$key' not specified in the '${this.info.name}' operator" }
 
-        return attributes[key]?.value ?: if (!info.required) info.default else null
+        return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
     abstract fun apply(context: Context, inputs: List<T?>): List<U?>

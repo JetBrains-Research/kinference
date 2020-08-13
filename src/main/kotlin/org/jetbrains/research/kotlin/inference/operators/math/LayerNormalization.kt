@@ -14,8 +14,8 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import kotlin.math.sqrt
 
 class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
-    private val axis_ = (getAttributeValue("axis") as Number).toInt()
-    val epsilon_ = getAttributeValue("epsilon") as Float
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+    private val epsilon: Float by attribute()
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -53,7 +53,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
         require(input.type == scale.type && input.type == bias.type)
         val type = input.type
 
-        val axis = input.indexAxis(axis_)
+        val axis = input.indexAxis(axis)
 
         var normCount = 1
         var normSize = 1
@@ -67,7 +67,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
         }
 
-        return when(type) {
+        return when (type) {
             DataType.FLOAT -> {
                 val inputArray = input.array as FloatArray
                 val scaleArray = scale.array as FloatArray
@@ -86,7 +86,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     }
 
                     mean = mean / normSize
-                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon_)
+                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon)
                     for (h in 0 until normSize) {
                         outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
                     }
@@ -113,7 +113,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     }
 
                     mean = mean / normSize
-                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon_.toDouble())
+                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon.toDouble())
                     for (h in 0 until normSize) {
                         outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
                     }

@@ -24,14 +24,15 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         private val INFO = OperatorInfo("Split", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val axis = getAttributeValue("axis") as Number
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+    private val split: Any? by attributeOrNull()
 
+    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs.first()!!
-        return when (val parts = getAttributeValueOrNull("split")) {
-            null -> input.splitWithAxis(outputs.size, axis.toInt())
-            is Number -> input.splitWithAxis(parts.toInt(), axis.toInt())
-            is List<*> -> input.splitWithAxis((parts as List<Number>).toIntArray(), axis.toInt())
+        return when (split) {
+            null -> input.splitWithAxis(outputs.size, axis)
+            is Number -> input.splitWithAxis((split as Number).toInt(), axis)
+            is List<*> -> input.splitWithAxis((split as List<Number>).toIntArray(), axis)
             else -> error("Unsupported value type")
         }
     }

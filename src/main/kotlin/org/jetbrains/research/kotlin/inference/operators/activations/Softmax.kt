@@ -60,9 +60,9 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> {
-        val axis = getAttributeValue("axis") as? Long
+    private val axis: Int by attribute { it: Number -> it.toInt() }
 
-        return softmax(input, axis?.toInt() ?: 0)
+    override fun activate(input: NDArray<Any>): NDArray<Any> {
+        return softmax(input, axis)
     }
 }

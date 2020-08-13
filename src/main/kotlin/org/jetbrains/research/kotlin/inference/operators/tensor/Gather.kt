@@ -29,9 +29,11 @@ class Gather(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private val INFO = OperatorInfo("Gather", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val (data, indices) = inputs
-        val axis = data!!.data.indexAxis((getAttributeValue("axis") as Number).toInt())
+        val axis = data!!.data.indexAxis(axis)
         return listOf(data.data.gather(indices!!.data, axis).asTensor())
     }
 }

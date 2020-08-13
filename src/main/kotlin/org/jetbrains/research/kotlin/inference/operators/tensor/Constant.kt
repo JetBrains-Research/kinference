@@ -36,7 +36,7 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         //only one of all attributes is not null
-        val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeValueOrNull(it.name) }.single { it.second != null }
+        val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeOrNull<Any?>(it.name) }.single { it.second != null }
 
         @Suppress("UNCHECKED_CAST")
         val result = when (name) {

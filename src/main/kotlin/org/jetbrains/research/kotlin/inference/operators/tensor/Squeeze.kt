@@ -25,8 +25,9 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         private val INFO = OperatorInfo("Squeeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val axes: List<Number>? by attributeOrNull()
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val axes = (getAttributeValueOrNull("axes") as? List<Number>) ?: emptyList()
-        return listOf(inputs.first()!!.data.squeeze(*axes.toIntArray()).asTensor())
+        return listOf(inputs.first()!!.data.squeeze(*(axes ?: emptyList()).toIntArray()).asTensor())
     }
 }

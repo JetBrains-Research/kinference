@@ -29,6 +29,8 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         private val INFO = OperatorInfo("Loop", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val body: Graph by attribute()
+
     private fun inner(context: Context, body: Graph, counter: Long, condition: Boolean, modified: MutableList<Tensor>, scans: List<MutableList<Tensor>>): Boolean {
         val inputs = ArrayList<ONNXData>().apply {
             add(Tensor(counter, TensorProto.DataType.INT64, name = body.inputs[0].name))
@@ -59,7 +61,6 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         val maxTripCount = inputs[0]?.data?.get(0) as Long?
         val keepgoing = inputs[1]?.data?.get(0) as Boolean?
 
-        val body = getAttributeValue("body") as Graph
         require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
         // NOTE: works as ONNX Runtime (counter and condition are ignored and not returned to results of Loop)

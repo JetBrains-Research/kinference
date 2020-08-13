@@ -23,9 +23,10 @@ class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private val INFO = OperatorInfo("Concat", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val axis = getAttributeValue("axis") as Number
         inputs as List<Tensor>
-        return listOf(inputs.concatenate(axis.toInt()))
+        return listOf(inputs.concatenate(axis))
     }
 }

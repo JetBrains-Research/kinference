@@ -24,8 +24,9 @@ class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("Transpose", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    private val perm: List<Number>? by attributeOrNull()
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val permutations = getAttributeValueOrNull("perm") as? List<Number>
-        return listOf(inputs.first()!!.data.transpose(permutations).asTensor())
+        return listOf(inputs.first()!!.data.transpose(perm).asTensor())
     }
 }
