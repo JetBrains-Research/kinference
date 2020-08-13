@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.inference
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.IntNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.LongNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
@@ -17,13 +18,14 @@ import java.nio.ByteBuffer
 import kotlin.math.pow
 
 object Utils {
-    private val delta = (10.0).pow(-5)
+    private val delta = (10.0).pow(-3)
 
     fun getTensor(path: File): Tensor {
         val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
         return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
             DataType.INT64 -> getTensorLong(tensorProto)
+            DataType.INT32 -> getTensorInt(tensorProto)
             else -> throw UnsupportedOperationException()
         }
     }
@@ -48,6 +50,17 @@ object Utils {
 
         val strides = Strides(tensorProto.dims.toIntArray())
         return LongNDArray(longData, strides).asTensor(tensorProto.name!!)
+    }
+
+    private fun getTensorInt(tensorProto: TensorProto): Tensor {
+        val intData = if (tensorProto.raw_data != null) {
+            val rawLongData = tensorProto.raw_data!!.toByteArray()
+            val chunkedRawLongData = rawLongData.asIterable().chunked(4)
+            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).int }.toIntArray()
+        } else tensorProto.int32_data.toIntArray()
+
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return IntNDArray(intData, strides).asTensor(tensorProto.name!!)
     }
 
     fun assertTensors(expected: Tensor, actual: Tensor) {

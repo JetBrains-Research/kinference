@@ -7,7 +7,7 @@ class LoopTest {
     private fun getTargetPath(dirName: String) = "/loop/$dirName/"
 
     @Test
-    fun test_loop() {
+    fun `test loop`() {
         Utils.tensorTestRunner(getTargetPath("test_loop"))
     }
 }

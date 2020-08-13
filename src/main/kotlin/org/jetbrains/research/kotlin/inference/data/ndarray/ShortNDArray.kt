@@ -21,6 +21,17 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Short
+    }
+
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitShortArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
@@ -40,6 +51,8 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
     override fun div(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
+        } else if (other.isScalar()) {
+            ShortNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> div(array, otherArray, copy) })
         }
@@ -48,6 +61,8 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
     override fun minus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
+        } else if (other.isScalar()) {
+            ShortNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> minus(array, otherArray, copy) })
         }

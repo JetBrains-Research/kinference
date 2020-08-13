@@ -39,6 +39,37 @@ fun allocateNDArray(type: DataType, strides: Strides): NDArray<Any> {
         DataType.INT32 -> IntNDArray(IntArray(strides.linearSize), strides)
         DataType.INT16 -> ShortNDArray(ShortArray(strides.linearSize), strides)
         DataType.BOOL -> BooleanNDArray(BooleanArray(strides.linearSize), strides)
+        else -> error("Unsupported type")
+    } as NDArray<Any>
+}
+
+@Suppress("UNCHECKED_CAST")
+fun createLateInitArray(type: DataType, strides: Strides): LateInitArray {
+    return createLateInitArray(type, strides.linearSize)
+}
+
+fun createLateInitArray(type: DataType, size: Int): LateInitArray {
+    return when (type) {
+        DataType.DOUBLE -> LateInitDoubleArray(size)
+        DataType.FLOAT -> LateInitFloatArray(size)
+        DataType.INT64 -> LateInitLongArray(size)
+        DataType.INT32 -> LateInitIntArray(size)
+        DataType.INT16 -> LateInitShortArray(size)
+        DataType.BOOL -> LateInitBooleanArray(size)
+        else -> error("Unsupported type")
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+// TODO move into LateInitArray
+fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): NDArray<Any> {
+    return when (type) {
+        DataType.DOUBLE -> DoubleNDArray((array as LateInitDoubleArray).getArray(), strides)
+        DataType.FLOAT -> FloatNDArray((array as LateInitFloatArray).getArray(), strides)
+        DataType.INT64 -> LongNDArray((array as LateInitLongArray).getArray(), strides)
+        DataType.INT32 -> IntNDArray((array as LateInitIntArray).getArray(), strides)
+        DataType.INT16 -> ShortNDArray((array as LateInitShortArray).getArray(), strides)
+        DataType.BOOL -> BooleanNDArray((array as LateInitBooleanArray).getArray(), strides)
         else -> error("")
     } as NDArray<Any>
 }

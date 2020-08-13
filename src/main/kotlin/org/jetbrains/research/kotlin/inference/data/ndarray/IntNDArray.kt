@@ -21,6 +21,17 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Int
+    }
+
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitIntArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
         other as IntNDArray
 
@@ -46,6 +57,8 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] - other.array[0]))
+        } else if (other.isScalar()) {
+            IntNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, IntArrayWithIntArray { array, otherArray -> minus(array, otherArray, copy) })
         }
@@ -56,6 +69,8 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] / other.array[0]))
+        } else if (other.isScalar()) {
+            IntNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, IntArrayWithIntArray { array, otherArray -> div(array, otherArray, copy) })
         }

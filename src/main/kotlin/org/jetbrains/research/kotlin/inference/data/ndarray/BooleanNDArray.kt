@@ -17,6 +17,17 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         return array[strides.offset(indices)]
     }
 
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Boolean
+    }
+
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitBooleanArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
+    }
+
     override fun plus(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }

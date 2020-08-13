@@ -9,6 +9,10 @@ import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
+    init {
+        require(array.size == strides.linearSize)
+    }
+
     private companion object {
         val plusWithCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
         val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
@@ -26,6 +30,18 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
 
     override fun get(vararg indices: Int): Float {
         return array[strides.offset(indices)]
+    }
+
+    override fun set(i: Int, value: Any) {
+        array[i] = value as Float
+    }
+
+    // TODO check if step == 1 and use Arrays.copy
+    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int) {
+        array as LateInitFloatArray
+        for (index in range) {
+            array.putNext(this.array[offset + index])
+        }
     }
 
     override fun plus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
@@ -47,6 +63,8 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
     override fun minus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
+        } else if (other.isScalar()) {
+            FloatNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, copy) })
         }
@@ -55,6 +73,8 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
     override fun div(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
+        } else if (other.isScalar()) {
+            FloatNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
             this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, copy) })
         }

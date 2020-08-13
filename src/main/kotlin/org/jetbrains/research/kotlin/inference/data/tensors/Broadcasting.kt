@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveCombineFunction
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayCombineFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import kotlin.math.max
@@ -67,10 +67,10 @@ fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false)
 }
 
 
-fun <T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveCombineFunction<T>): NDArray<T> {
+fun <T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveArrayCombineFunction<T>): NDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array
 
-    return NDArray(op.apply(castedThis, castedOther), type, shape)
+    return NDArray(op.apply(castedThis, castedOther), type, newShape)
 }

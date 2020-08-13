@@ -7,7 +7,7 @@ class IdentityTest {
     private fun getTargetPath(dirName: String) = "/identity/$dirName/"
 
     @Test
-    fun test_identity() {
+    fun `test identity`() {
         Utils.tensorTestRunner(getTargetPath("test_identity"))
     }
 }

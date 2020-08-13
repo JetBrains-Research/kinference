@@ -11,6 +11,8 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 //TODO: support segments
 //TODO: support external and raw data
@@ -46,13 +48,56 @@ class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.O
         fun create(proto: TensorProto): Tensor {
             if (proto.dims.isNullOrEmpty()) return parseScalar(proto)
 
-            return when (val type = DataType.fromValue(proto.data_type ?: 0)) {
-                DataType.DOUBLE -> Tensor(proto.double_data.toDoubleArray(), type, proto.dims.toIntArray(), proto.name)
-                DataType.FLOAT -> Tensor(proto.float_data.toFloatArray(), type, proto.dims.toIntArray(), proto.name)
-                DataType.INT64 -> Tensor(proto.int64_data.toLongArray(), type, proto.dims.toIntArray(), proto.name)
-                DataType.INT32 -> Tensor(proto.int32_data.toIntArray(), type, proto.dims.toIntArray(), proto.name)
-                DataType.STRING -> Tensor(proto.string_data.map { it.utf8() }, type, proto.dims.toIntArray(), proto.name)
-                else -> error("Unsupported data type $type")
+            val shape = proto.dims.toIntArray()
+            val type = DataType.fromValue(proto.data_type ?: 0)
+            val array = when (type) {
+                DataType.DOUBLE -> proto.double_data
+                DataType.FLOAT -> proto.float_data
+                DataType.INT64 -> proto.int64_data
+                DataType.INT32 -> proto.int32_data
+                DataType.BOOL -> proto.int32_data.map { it != 0 }
+                DataType.STRING -> proto.string_data.map { it.utf8() }
+                else -> error("Unsupported data type")
+            }
+
+            return if (array.isEmpty()) {
+                require(proto.raw_data != null) { "Tensor without data" }
+                val buffer = ByteBuffer.wrap(proto.raw_data.toByteArray()).order(ByteOrder.LITTLE_ENDIAN)
+                val sizeInBytes = proto.raw_data.size
+
+                when (type) {
+                    DataType.DOUBLE -> {
+                        val array = DoubleArray(sizeInBytes / 8)
+                        buffer.asDoubleBuffer().get(array)
+                        Tensor(array, type, shape, proto.name)
+                    }
+                    DataType.FLOAT -> {
+                        val array = FloatArray(sizeInBytes / 4)
+                        buffer.asFloatBuffer().get(array)
+                        Tensor(array, type, shape, proto.name)
+                    }
+                    DataType.INT64 -> {
+                        val array = LongArray(sizeInBytes / 8)
+                        buffer.asLongBuffer().get(array)
+                        Tensor(array, type, shape, proto.name)
+                    }
+                    DataType.INT32 -> {
+                        val array = IntArray(sizeInBytes / 4)
+                        buffer.asIntBuffer().get(array)
+                        Tensor(array, type, shape, proto.name)
+                    }
+                    DataType.BOOL -> Tensor(BooleanArray(sizeInBytes) { buffer[it] != 0.toByte() }, type, shape, proto.name)
+                    DataType.STRING -> error("String data MUST not be present in raw_data field")
+                    else -> error("Unsupported data type")
+                }
+            } else when (type) {
+                DataType.DOUBLE -> Tensor((array as List<Double>).toDoubleArray(), type, shape, proto.name)
+                DataType.FLOAT -> Tensor((array as List<Float>).toFloatArray(), type, shape, proto.name)
+                DataType.INT64 -> Tensor((array as List<Long>).toLongArray(), type, shape, proto.name)
+                DataType.INT32 -> Tensor((array as List<Int>).toIntArray(), type, shape, proto.name)
+                DataType.BOOL -> Tensor((array as List<Boolean>).toBooleanArray(), type, shape, proto.name)
+                DataType.STRING -> Tensor((array as List<String>).toTypedArray(), type, shape, proto.name)
+                else -> error("Unsupported data type")
             }
         }
 
@@ -94,12 +139,12 @@ class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.O
             }
             return if (array.isEmpty()) {
                 when (type) {
-                    DataType.DOUBLE -> Tensor(proto.raw_data!!.asByteBuffer().double, type, dims = IntArray(0), name = proto.name)
-                    DataType.FLOAT -> Tensor(proto.raw_data!!.asByteBuffer().float, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().long, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().int, type, dims = IntArray(0), name = proto.name)
-                    DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().short, type, dims = IntArray(0), name = proto.name)
-                    DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().int != 0, type, dims = IntArray(0), name = proto.name)
+                    DataType.DOUBLE -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).double, type, dims = IntArray(0), name = proto.name)
+                    DataType.FLOAT -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).float, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).long, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).short, type, dims = IntArray(0), name = proto.name)
+                    DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int != 0, type, dims = IntArray(0), name = proto.name)
                     else -> error("Unsupported data type")
                 }
             } else Tensor(array[0], type, IntArray(0), proto.name)

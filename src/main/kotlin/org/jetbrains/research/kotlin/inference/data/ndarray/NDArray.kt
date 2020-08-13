@@ -14,6 +14,7 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
+import kotlin.math.abs
 
 abstract class NDArray<T> protected constructor(val array: T, val strides: Strides, val type: DataType) {
     val rank: Int
@@ -36,7 +37,11 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     fun isScalar(): Boolean = shape.isEmpty()
 
     abstract operator fun get(i: Int): Any
+    abstract operator fun set(i: Int, value: Any)
     abstract operator fun get(indices: IntArray): Any
+
+    // TODO add similar method with IntRange and Arrays.copy
+    abstract fun appendToLateInitArray(array: LateInitArray, range: IntProgression, offset: Int)
 
     abstract fun clone(newStrides: Strides = strides): NDArray<T>
     abstract fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int)
@@ -112,7 +117,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return result as NDArray<T>
     }
 
-    fun transpose(permutations: List<Long>? = null): NDArray<T> {
+    fun transpose(permutations: List<Number>? = null): NDArray<T> {
         if (rank == 2) return this.matrixTranspose()
 
         require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
@@ -140,6 +145,49 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         val newShape = shape.sliceArray(shapeIndices)
 
         return reshape(newShape)
+    }
+
+    fun unsqueeze(vararg axes: Int): NDArray<T> {
+        val actualAxes = axes.map { indexAxis(it) }.sorted()
+        val newShape = shape.toMutableList()
+        for (axis in actualAxes) {
+            newShape.add(axis, 1)
+        }
+        return reshape(newShape.toIntArray())
+    }
+
+    fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray<T> {
+        val newShape = IntArray(shape.size) {
+            val length = abs(ends[it] - starts[it])
+            val rest = length % abs(steps[it])
+            (length / abs(steps[it])) + if (rest != 0) 1 else 0
+        }
+
+        val newStrides = Strides(newShape)
+        val newArray = createLateInitArray(type, newStrides)
+
+        slice(newArray, 0, 0, shape, starts, ends, steps)
+
+        return createNDArrayFromLateInitArray(type, newArray, newStrides) as NDArray<T>
+    }
+
+    private fun slice(dest: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
+        val start = starts[axis]
+        val end = ends[axis]
+        val step = steps[axis]
+
+        val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
+
+        if (axis == shape.size - 1) {
+            appendToLateInitArray(dest, range, offset)
+        } else {
+            var dim = 1
+            for (ind in (axis + 1) until shape.size) dim *= shape[ind]
+
+            for (index in range) {
+                slice(dest, offset + index * dim, axis + 1, shape, starts, ends, steps)
+            }
+        }
     }
 
     // TODO: better equals

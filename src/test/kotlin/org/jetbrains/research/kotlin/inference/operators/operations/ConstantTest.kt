@@ -7,12 +7,12 @@ class ConstantTest {
     private fun getTargetPath(dirName: String) = "/constant/$dirName/"
 
     @Test
-    fun test_constant() {
+    fun `test constant`() {
         Utils.tensorTestRunner(getTargetPath("test_constant"))
     }
 
     @Test
-    fun test_scalar_constant() {
+    fun `test scalar constant`() {
         Utils.tensorTestRunner(getTargetPath("test_scalar_constant"))
     }
 }

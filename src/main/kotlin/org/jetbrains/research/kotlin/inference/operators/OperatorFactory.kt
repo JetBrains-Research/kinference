@@ -5,9 +5,10 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.onnx.NodeProto
 import org.jetbrains.research.kotlin.inference.operators.activations.*
 import org.jetbrains.research.kotlin.inference.operators.flow.Loop
-//import org.jetbrains.research.kotlin.inference.operators.flow.Loop
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.inference.operators.math.Add
+import org.jetbrains.research.kotlin.inference.operators.math.FastGelu
+import org.jetbrains.research.kotlin.inference.operators.math.LayerNormalization
 import org.jetbrains.research.kotlin.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.inference.operators.seq.ConcatFromSequence
 import org.jetbrains.research.kotlin.inference.operators.seq.SplitToSequence
@@ -21,6 +22,7 @@ object OperatorFactory {
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
         "Constant" -> Constant(attributes, inputs, outputs)
+        "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
@@ -28,13 +30,18 @@ object OperatorFactory {
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
+        "Shape" -> Shape(attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(attributes, inputs, outputs)
+        "Slice" -> Slice(attributes, inputs, outputs)
         "Softmax" -> Softmax(attributes, inputs, outputs)
         "Split" -> Split(attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(attributes, inputs, outputs)
         "Squeeze" -> Squeeze(attributes, inputs, outputs)
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
+        "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
+        "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
+        "Attention" -> Attention(attributes, inputs, outputs)
         else -> error("Unsupported operator $name")
     } as Operator<ONNXData, ONNXData>
 
