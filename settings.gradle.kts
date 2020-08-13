@@ -1,4 +1,4 @@
-rootProject.name = "kotlin-mpp-inference"
+rootProject.name = "kotlin-inference"
 
 pluginManagement {
     repositories {
