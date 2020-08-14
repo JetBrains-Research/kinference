@@ -1,19 +1,61 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
-import org.jetbrains.research.kotlin.inference.extensions.primitives.scalarOp
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.types.TensorInfo
+import org.jetbrains.research.kotlin.inference.types.TensorShape
+import kotlin.collections.toIntArray
 
-fun <T> NDArray<T>.wrapOneDim(): NDArray<T> {
-    val newStrides = Strides(1.concat(this.shape))
-    return this.clone(newStrides)
+fun <T> TypedNDArray<T>.shouldCopy() = this !is MutableTypedNDArray
+
+fun <T> MutableTypedNDArray<T>.wrapOneDim(): MutableTypedNDArray<T> {
+    return this.reshape(1.concat(this.shape))
+}
+
+fun <T> TypedNDArray<T>.isScalar() = shape.isEmpty()
+
+fun <T> TypedNDArray<T>.indexAxis(axis: Int): Int {
+    return if (axis < 0) rank + axis else axis
+}
+
+fun <T> TypedNDArray<T>.asTensor(name: String? = null) = Tensor(this as NDArray<Any>, TensorInfo(name ?: "", type, TensorShape(this.shape)))
+
+fun <T> MutableTypedNDArray<T>.squeeze(vararg axes: Int): MutableTypedNDArray<T> {
+    val actualAxes = if (axes.isNotEmpty()) {
+        axes.map { indexAxis(it) }
+    } else {
+        shape.withIndex().filter { it.value == 1 }.map { it.index }
+    }
+    require(actualAxes.all { shape[it] == 1 })
+
+    val shapeIndices = shape.indices - actualAxes
+    val newShape = shape.sliceArray(shapeIndices)
+
+    return reshape(newShape)
+}
+
+fun <T> MutableTypedNDArray<T>.unsqueeze(vararg axes: Int): TypedNDArray<T> {
+    val actualAxes = axes.map { indexAxis(it) }.sorted()
+    val newShape = shape.toMutableList()
+    for (axis in actualAxes) {
+        newShape.add(axis, 1)
+    }
+    return reshape(newShape.toIntArray())
+}
+
+fun <T> MutableTypedNDArray<T>.transpose(permutations: List<Number>? = null): MutableTypedNDArray<T> {
+    if (rank == 2) return this.matrixTranspose()
+
+    require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
+    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed() else permutations.toIntArray()
+
+    return this.transpose(actualPerm)
 }
 
 //if axis not 0
-fun <T> NDArray<T>.mergeOnAxis(other: NDArray<T>, axis: Int): NDArray<T> {
+fun <T> TypedNDArray<T>.mergeOnAxis(other: TypedNDArray<T>, axis: Int): MutableTypedNDArray<T> {
     val rows = this.rows.zip(other.rows) { fst, snd -> fst.concatenate(snd, axis - 1) }.toTypedArray()
     var result = rows[0]
 
@@ -26,7 +68,7 @@ fun <T> NDArray<T>.mergeOnAxis(other: NDArray<T>, axis: Int): NDArray<T> {
     return result
 }
 
-fun <T> NDArray<T>.concatenate(other: NDArray<T>, axis: Int = 0): NDArray<T> {
+fun <T> TypedNDArray<T>.concatenate(other: TypedNDArray<T>, axis: Int = 0): MutableTypedNDArray<T> {
     val actualAxis = this.indexAxis(axis)
     if (actualAxis != 0) return this.mergeOnAxis(other, actualAxis)
 
@@ -45,22 +87,22 @@ fun <T> NDArray<T>.concatenate(other: NDArray<T>, axis: Int = 0): NDArray<T> {
     }
 }
 
-fun <T> Collection<NDArray<T>>.concatenate(axis: Int): NDArray<T> {
+fun <T> Collection<TypedNDArray<T>>.concatenate(axis: Int): TypedNDArray<T> {
     return this.reduce { acc, tensor -> acc.concatenate(tensor, axis) }
 }
 
-fun Array<NDArray<Any>>.stack(axis: Int): NDArray<Any> {
+fun Array<NDArray<Any>>.stack(axis: Int): TypedNDArray<Any> {
     val fstShape = this.first().shape
     val newShape = IntArray(fstShape.size + 1)
     fstShape.copyInto(newShape, 0, 0, axis)
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
-    return this.map { it.reshape(newShape) }.concatenate(axis)
+    return this.map { it.toMutable().reshape(newShape) }.concatenate(axis)
 }
 
-fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {
-    if (this.rank == 2) return listOf(this)
-    if (this.rank == 1) return listOf(this.wrapOneDim())
+fun <T> TypedNDArray<T>.as2DList(): List<MutableTypedNDArray<T>> {
+    if (this.rank == 2) return listOf(this.toMutable())
+    if (this.rank == 1) return listOf(this.toMutable().wrapOneDim())
 
     val matrixShape = intArrayOf(shape[indexAxis(-2)], shape[indexAxis(-1)])
     val matrixStrides = Strides(matrixShape)
@@ -74,7 +116,7 @@ fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {
     }
 }
 
-fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
+fun <T> MutableTypedNDArray<T>.reshape(tensorShape: TypedNDArray<T>): MutableTypedNDArray<T> {
     val requestedShape = tensorShape.array as LongArray
     val newShape = IntArray(requestedShape.size) { i -> requestedShape[i].toInt() }
     require(newShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
@@ -92,16 +134,22 @@ fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
     return reshape(newShape)
 }
 
-fun <T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveArrayCombineFunction<T>): NDArray<T> {
+@Suppress("UNCHECKED_CAST")
+fun <T : Any, V : Any> TypedNDArray<T>.combineWith(other: TypedNDArray<T>, transform: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
     if (this.isScalar()) {
-        return other.scalarOp(this[0], transform)
+        return other.scalarOp(this[0] as V, transform)
     } else if (other.isScalar()) {
-        return this.scalarOp(other[0], transform)
+        return this.scalarOp(other[0] as V, transform)
     }
 
+    transform as PrimitiveArraysCombineFunction<T>
     if (!shape.contentEquals(other.shape)) {
-        return applyWithBroadcast(other, transform)
+        return this.applyWithBroadcast(other, transform)
     }
 
-    return NDArray(transform.apply(array, other.array), type, strides)
+    return if (shouldCopy()) {
+        transform.apply(array, other.array); this
+    } else {
+        NDArray(transform.apply(array, other.array), type, strides)
+    }
 }

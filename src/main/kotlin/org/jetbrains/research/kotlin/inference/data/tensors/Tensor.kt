@@ -4,8 +4,7 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -17,7 +16,7 @@ import java.nio.ByteOrder
 //TODO: support segments
 //TODO: support external and raw data
 @Suppress("UNCHECKED_CAST")
-class Tensor(val data: NDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
+class Tensor(val data: TypedNDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
     override fun clone(newName: String): ONNXData {
         return Tensor(data.clone(), TensorInfo(newName, data.type, TensorShape(data.shape)))
     }

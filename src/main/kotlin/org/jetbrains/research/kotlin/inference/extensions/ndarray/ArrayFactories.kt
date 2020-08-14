@@ -16,8 +16,20 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
     }
 }
 
+inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
+    return when (type) {
+        DataType.DOUBLE -> DoubleArray(size)
+        DataType.FLOAT -> FloatArray(size)
+        DataType.INT64 -> LongArray(size)
+        DataType.INT32 -> IntArray(size)
+        DataType.INT16 -> ShortArray(size)
+        DataType.BOOL -> BooleanArray(size)
+        else -> arrayOfNulls<T>(size)
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
-fun <T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
+fun <T> createScalarNDArray(type: DataType, value: Any): TypedNDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(value as Double))
         DataType.FLOAT -> FloatNDArray(floatArrayOf(value as Float))
@@ -31,16 +43,16 @@ fun <T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> allocateNDArray(type: DataType, strides: Strides): NDArray<T> {
+fun <T> allocateNDArray(type: DataType, strides: Strides): MutableTypedNDArray<T> {
     return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(DoubleArray(strides.linearSize), strides)
-        DataType.FLOAT -> FloatNDArray(FloatArray(strides.linearSize), strides)
-        DataType.INT64 -> LongNDArray(LongArray(strides.linearSize), strides)
-        DataType.INT32 -> IntNDArray(IntArray(strides.linearSize), strides)
-        DataType.INT16 -> ShortNDArray(ShortArray(strides.linearSize), strides)
-        DataType.BOOL -> BooleanNDArray(BooleanArray(strides.linearSize), strides)
+        DataType.DOUBLE -> MutableDoubleNDArray(DoubleArray(strides.linearSize), strides)
+        DataType.FLOAT -> MutableFloatNDArray(FloatArray(strides.linearSize), strides)
+        DataType.INT64 -> MutableLongNDArray(LongArray(strides.linearSize), strides)
+        DataType.INT32 -> MutableIntNDArray(IntArray(strides.linearSize), strides)
+        DataType.INT16 -> MutableShortNDArray(ShortArray(strides.linearSize), strides)
+        DataType.BOOL -> MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
         else -> error("Unsupported type")
-    } as NDArray<T>
+    } as MutableTypedNDArray<T>
 }
 
 @Suppress("UNCHECKED_CAST")

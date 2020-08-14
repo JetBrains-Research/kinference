@@ -1,11 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
@@ -19,7 +18,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         require(activations.size >= 3)
     }
 
-    override fun apply(inputs: List<NDArray<Any>>, sequenceLens: IntArray, outputArray: NDArray<Any>, startOffset: Int): List<Tensor> {
+    override fun apply(inputs: List<TypedNDArray<Any>>, sequenceLens: IntArray, outputArray: MutableTypedNDArray<Any>, startOffset: Int): List<Tensor> {
         val batchSize = batchSize!!
         val seqLength = seqLength!!
         val type = type!!
@@ -53,37 +52,37 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
     }
 
-    private fun step(lstmData: LSTMData, input: NDArray<Any>, output: NDArray<Any>, outputOffset: Int, gatesData: GatesData,
+    private fun step(lstmData: LSTMData, input: TypedNDArray<Any>, output: MutableTypedNDArray<Any>, outputOffset: Int, gatesData: GatesData,
                      lastState: State, f: PrimitiveArrayFunction, g: PrimitiveArrayFunction, h: PrimitiveArrayFunction) {
         input.matrixDotInto(lstmData.weights.input, gatesData.input, true)
         if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.input, gatesData.input, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.input.plus(lstmData.peepholes.input * lastState.cellState, false)
-        if (lstmData.bias != null) gatesData.input.plus(lstmData.bias.input, false)
-        gatesData.input.mapElements(f, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.input.plusAssign(lstmData.peepholes.input * lastState.cellState)
+        if (lstmData.bias != null) gatesData.input.plusAssign(lstmData.bias.input)
+        gatesData.input.mapElements(f)
 
         input.matrixDotInto(lstmData.weights.forget, gatesData.forget, true)
         if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.forget, gatesData.forget, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.forget.plus(lstmData.peepholes.forget * lastState.cellState, false)
-        if (lstmData.bias != null) gatesData.forget.plus(lstmData.bias.forget, false)
-        gatesData.forget.mapElements(f, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.forget.plusAssign(lstmData.peepholes.forget * lastState.cellState)
+        if (lstmData.bias != null) gatesData.forget.plusAssign(lstmData.bias.forget)
+        gatesData.forget.mapElements(f)
 
         input.matrixDotInto(lstmData.weights.cellGate, gatesData.cellGate, true)
         if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.cellGate, gatesData.cellGate, false)
-        if (lstmData.bias != null) gatesData.cellGate.plus(lstmData.bias.cellGate, false)
-        gatesData.cellGate.mapElements(g, false)
+        if (lstmData.bias != null) gatesData.cellGate.plusAssign(lstmData.bias.cellGate)
+        gatesData.cellGate.mapElements(g)
 
-        if (!lastState.isCellStateZero) lastState.cellState.times(gatesData.forget, false)
-        gatesData.input.times(gatesData.cellGate, false)
-        lastState.cellState.plus(gatesData.input, false)
+        if (!lastState.isCellStateZero) lastState.cellState.timesAssign(gatesData.forget)
+        gatesData.input.timesAssign(gatesData.cellGate)
+        lastState.cellState.plusAssign(gatesData.input)
 
         input.matrixDotInto(lstmData.weights.output, gatesData.output, true)
         if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.output, gatesData.output, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.output.plus(lstmData.peepholes.output * lastState.cellState, false)
-        if (lstmData.bias != null) gatesData.output.plus(lstmData.bias.output, false)
-        gatesData.output.mapElements(f, false)
+        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.output.plusAssign(lstmData.peepholes.output * lastState.cellState)
+        if (lstmData.bias != null) gatesData.output.plusAssign(lstmData.bias.output)
+        gatesData.output.mapElements(f)
 
-        lastState.output = lastState.cellState.mapElements(h, true)
-        lastState.output.times(gatesData.output, false)
+        lastState.output = (lastState.cellState.clone()).mapElements(h) as MutableTypedNDArray<Any>
+        lastState.output.timesAssign(gatesData.output)
 
         output.placeAll(outputOffset, lastState.output.array)
 
@@ -93,8 +92,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
     override fun parseTempInputs(weights: Tensor, recurrentWeights: Tensor, bias: Tensor?, initialOutput: Tensor?, initialCellState: Tensor?, peepholes: Tensor?) {
         if (lstmData == null) {
-            val parsedWeights = GatesData.createWeights(weights.data)
-            val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data)
+            val parsedWeights = GatesData.createWeights(weights.data.toMutable())
+            val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data.toMutable())
             lstmData = LSTMData(parsedWeights, parsedRecurrentWeights, null, null, null, null, type!!)
 
             this.weights = weights.data
@@ -105,27 +104,27 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
             this.peepholes = null
         }
         if (weights.data !== this.weights) {
-            lstmData = lstmData!!.updateWeights(GatesData.createWeights(weights.data))
+            lstmData = lstmData!!.updateWeights(GatesData.createWeights(weights.data.toMutable()))
             this.weights = weights.data
         }
         if (recurrentWeights.data !== this.recurrentWeights) {
-            lstmData = lstmData!!.updateRecurrentWeights(GatesData.createWeights(recurrentWeights.data))
+            lstmData = lstmData!!.updateRecurrentWeights(GatesData.createWeights(recurrentWeights.data.toMutable()))
             this.recurrentWeights = recurrentWeights.data
         }
         if (bias != null && bias.data !== this.bias) {
-            lstmData = lstmData!!.updateBias(GatesData.createBias(bias.data))
+            lstmData = lstmData!!.updateBias(GatesData.createBias(bias.data.toMutable()))
             this.bias = bias.data
         }
         if (initialOutput != null && initialOutput.data !== this.initialOutput) {
-            lstmData = lstmData!!.updateInitialOutput(initialOutput.data.squeeze(0).splitWithAxis(batchSize!!))
+            lstmData = lstmData!!.updateInitialOutput(initialOutput.data.toMutable().squeeze(0).splitWithAxis(batchSize!!))
             this.initialOutput = initialOutput.data
         }
         if (initialCellState != null && initialCellState.data !== this.initialCellState) {
-            lstmData = lstmData!!.updateInitialCellGate(initialCellState.data.squeeze(0).splitWithAxis(batchSize!!))
+            lstmData = lstmData!!.updateInitialCellGate(initialCellState.data.toMutable().squeeze(0).splitWithAxis(batchSize!!))
             this.initialCellState = initialCellState.data
         }
         if (peepholes != null && peepholes.data !== this.peepholes) {
-            lstmData = lstmData!!.updatePeepholes(GatesData.createPeepholes(peepholes.data))
+            lstmData = lstmData!!.updatePeepholes(GatesData.createPeepholes(peepholes.data.toMutable()))
             this.peepholes = peepholes.data
         }
     }

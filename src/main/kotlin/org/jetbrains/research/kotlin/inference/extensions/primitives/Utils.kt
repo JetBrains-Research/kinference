@@ -1,10 +1,7 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayCombineFunction
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.*
 
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
@@ -48,48 +45,40 @@ fun times(vararg terms: Number): Number = when (terms.first()) {
     else -> error("Unsupported data type")
 }
 
-fun <T> NDArray<T>.max(): Number? {
+fun <T> TypedNDArray<T>.max(): Number? {
     return when (array) {
-        is IntArray -> array.max()
-        is FloatArray -> array.max()
-        is ShortArray -> array.max()
-        is DoubleArray -> array.max()
-        is LongArray -> array.max()
+        is IntArray -> (array as IntArray).max()
+        is FloatArray -> (array as FloatArray).max()
+        is ShortArray -> (array as ShortArray).max()
+        is DoubleArray -> (array as DoubleArray).max()
+        is LongArray -> (array as LongArray).max()
         else -> throw UnsupportedOperationException()
     }
 }
 
-fun <T> NDArray<T>.sum(): Number {
+fun <T> TypedNDArray<T>.sum(): Number {
     return when (array) {
-        is IntArray -> array.sum()
-        is FloatArray -> array.sum()
-        is ShortArray -> array.sum()
-        is DoubleArray -> array.sum()
-        is LongArray -> array.sum()
+        is IntArray -> (array as IntArray).sum()
+        is FloatArray -> (array as FloatArray).sum()
+        is ShortArray -> (array as ShortArray).sum().toShort()
+        is DoubleArray -> (array as DoubleArray).sum()
+        is LongArray -> (array as LongArray).sum()
         else -> throw UnsupportedOperationException()
     }
 }
 
-fun <T> NDArray<T>.exp(): NDArray<T> {
-    return when (array) {
-        is FloatArray -> FloatNDArray((array as FloatArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
-        is DoubleArray -> DoubleNDArray((array as DoubleArray).apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }, strides)
+fun <T> MutableTypedNDArray<T>.exp(): MutableTypedNDArray<T> {
+    when (array) {
+        is FloatArray -> mapElements(FloatArrayToFloatArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
+        is DoubleArray -> mapElements(FloatArrayToFloatArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
         else -> throw UnsupportedOperationException()
     } as NDArray<T>
+    return this
 }
 
-fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveArrayCombineFunction<T>): NDArray<T> {
-    val other = when (type) {
-        TensorProto.DataType.DOUBLE -> DoubleArray(linearSize) { x as Double }
-        TensorProto.DataType.FLOAT -> FloatArray(linearSize) { x as Float }
-        TensorProto.DataType.INT64 -> LongArray(linearSize) { x as Long }
-        TensorProto.DataType.INT32 -> IntArray(linearSize) { x as Int }
-        TensorProto.DataType.INT16 -> ShortArray(linearSize) { x as Short }
-        TensorProto.DataType.BOOL -> BooleanArray(linearSize) { x as Boolean }
-        else -> error("Unsupported operator")
-    }
-
-    return NDArray(op.apply(array, other as T), type, strides)
+fun <T : Any, V : Any> TypedNDArray<T>.scalarOp(x: V, op: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
+    op.apply(array, x)
+    return this
 }
 
 fun Int.concat(array: IntArray): IntArray {

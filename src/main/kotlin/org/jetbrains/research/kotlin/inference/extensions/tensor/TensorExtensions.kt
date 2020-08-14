@@ -1,8 +1,7 @@
 package org.jetbrains.research.kotlin.inference.extensions.tensor
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.splitWithAxis
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape
@@ -11,7 +10,7 @@ fun Collection<Tensor>.stack(axis: Int): Tensor {
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
 
-    return this.map { it.data.reshape(newShape) }.concatenate(axis).asTensor()
+    return this.map { it.data.toMutable().reshape(newShape) }.concatenate(axis).asTensor()
 }
 
 fun Collection<Tensor>.concatenate(axis: Int): Tensor {

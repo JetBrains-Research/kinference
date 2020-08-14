@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
@@ -9,22 +9,21 @@ import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.RecurrentLayer
 
 abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: String) : RecurrentLayer(hiddenSize, activations, direction) {
-    protected var weights: NDArray<Any>? = null
-    protected var recurrentWeights: NDArray<Any>? = null
-    protected var bias: NDArray<Any>? = null
-    protected var peepholes: NDArray<Any>? = null
-    protected var initialOutput: NDArray<Any>? = null
-    protected var initialCellState: NDArray<Any>? = null
+    protected var weights: TypedNDArray<Any>? = null
+    protected var recurrentWeights: TypedNDArray<Any>? = null
+    protected var bias: TypedNDArray<Any>? = null
+    protected var peepholes: TypedNDArray<Any>? = null
+    protected var initialOutput: TypedNDArray<Any>? = null
+    protected var initialCellState: TypedNDArray<Any>? = null
 
     protected var seqLength: Int? = null
     protected var batchSize: Int? = null
     protected var type: TensorProto.DataType? = null
 
-    abstract fun apply(inputs: List<NDArray<Any>>, sequenceLens: IntArray, outputArray: NDArray<Any>, startOffset: Int): List<Tensor>
+    abstract fun apply(inputs: List<TypedNDArray<Any>>, sequenceLens: IntArray, outputArray: MutableTypedNDArray<Any>, startOffset: Int): List<Tensor>
 
     override fun apply(inputList: List<Tensor?>): List<Tensor?> {
         require(inputList.toMutableList().also { if (4 in it.indices) it.removeAt(4) }.all { it?.data?.type == inputList[0]!!.data.type })
-
 
         val input = inputList[0]!!
 
@@ -51,7 +50,7 @@ abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: S
         return apply(parseInput(input), parseSequenceLens(sequenceLens), outputArray, 0)
     }
 
-    private fun parseInput(input: Tensor): List<NDArray<Any>> =
+    private fun parseInput(input: Tensor): List<MutableTypedNDArray<Any>> =
         input.data.splitArray(input.data.shape[0] * input.data.shape[1], Strides(intArrayOf(1, input.data.shape[2])))
 
     private fun parseSequenceLens(input: Tensor?) = input?.data?.array as? IntArray ?: IntArray(batchSize!!) { seqLength!! }

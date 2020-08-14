@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.inference.operators.math
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.indexAxis
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType

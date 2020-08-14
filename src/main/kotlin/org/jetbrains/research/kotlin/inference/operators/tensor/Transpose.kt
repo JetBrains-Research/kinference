@@ -1,7 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.transpose
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -27,6 +30,6 @@ class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     private val perm: List<Number>? by attributeOrNull()
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        return listOf(inputs.first()!!.data.transpose(perm).asTensor())
+        return listOf(inputs.first()!!.data.toMutable().transpose(perm).asTensor())
     }
 }

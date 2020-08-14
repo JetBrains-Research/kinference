@@ -1,10 +1,9 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
-fun splitParts(array: FloatArray, parts: Int, strides: Strides): List<NDArray<FloatArray>> {
+fun splitParts(array: FloatArray, parts: Int, strides: Strides): List<TypedNDArray<FloatArray>> {
     require(array.size % parts == 0)
     require(strides.linearSize == array.size / parts)
     var offset = 0

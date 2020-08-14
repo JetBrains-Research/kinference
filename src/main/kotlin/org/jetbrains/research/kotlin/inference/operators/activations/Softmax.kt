@@ -1,9 +1,9 @@
 package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createScalarNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.exp
 import org.jetbrains.research.kotlin.inference.extensions.primitives.max
 import org.jetbrains.research.kotlin.inference.extensions.primitives.sum
@@ -30,7 +30,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             return if (dims == null || dims.isEmpty()) 1 else dims.reduce(Int::times)
         }
 
-        private fun expMatrixRows(input: NDArray<Any>, axis: Int): Array<NDArray<Any>> {
+        private fun expMatrixRows(input: MutableTypedNDArray<Any>, axis: Int): Array<MutableTypedNDArray<Any>> {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -38,23 +38,23 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val rows = resolveDims(shape.sliceArray(rowIdx))
             val columns = resolveDims(shape.sliceArray(columnIdx))
 
-            val matrixRows = input.reshape(intArrayOf(rows, columns)).rows
-
+            val matrixRows = input.reshape(intArrayOf(rows, columns)).rows.map { it.toMutable() }
             return Array(matrixRows.size) { i ->
                 val max = matrixRows[i].max()!!
-                matrixRows[i].minus(createScalarNDArray(input.type, max), false).exp()
+                matrixRows[i] -= createScalarNDArray(input.type, max)
+                matrixRows[i].exp()
             }
         }
 
-        fun softmax(input: NDArray<Any>, axis: Int = 0): NDArray<Any> {
+        fun softmax(input: MutableTypedNDArray<Any>, axis: Int = 0, strides: Strides = input.strides): MutableTypedNDArray<Any> {
             val matrixRows = expMatrixRows(input, axis)
 
             val step = matrixRows[0].linearSize
-            val array = allocateNDArray<Any>(input.type, input.strides)
+            val array = allocateNDArray<Any>(input.type, strides)
             repeat(matrixRows.size) { i ->
                 val sum = matrixRows[i].sum()
-                val row = matrixRows[i].div(createScalarNDArray(input.type, sum), false)
-                array.placeAll(i * step, row.array)
+                matrixRows[i].divAssign(createScalarNDArray(input.type, sum))
+                array.placeAll(i * step, matrixRows[i].array)
             }
             return array
         }
@@ -62,7 +62,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> {
-        return softmax(input, axis)
+    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> {
+        return softmax(input.toMutable(), axis, input.strides)
     }
 }

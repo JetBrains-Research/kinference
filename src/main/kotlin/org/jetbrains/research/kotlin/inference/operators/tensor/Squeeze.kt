@@ -1,7 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.squeeze
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
@@ -28,6 +31,6 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
     private val axes: List<Number>? by attributeOrNull()
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        return listOf(inputs.first()!!.data.squeeze(*(axes ?: emptyList()).toIntArray()).asTensor())
+        return listOf(inputs.first()!!.data.toMutable().squeeze(*(axes ?: emptyList()).toIntArray()).asTensor())
     }
 }

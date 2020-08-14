@@ -3,6 +3,23 @@ package org.jetbrains.research.kotlin.inference.extensions.ndarray
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
+private fun Strides.transpose(permutations: IntArray): Strides {
+    val newShape = IntArray(shape.size)
+    for ((i, axis) in permutations.withIndex()) {
+        newShape[i] = shape[axis]
+    }
+    return Strides(newShape)
+}
+
+private fun Strides.permuteIndicesAt(i: Int, permutation: IntArray): IntArray {
+    val indices = this.index(i)
+    val newIndices = IntArray(indices.size)
+    for ((id, axis) in permutation.withIndex()) {
+        newIndices[axis] = indices[id]
+    }
+    return newIndices
+}
+
 fun transposeRec(prevArray: FloatArray, newArray: FloatArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
     if (index != newStrides.shape.lastIndex) {
         val temp = prevStrides.strides[permutation[index]]
@@ -22,119 +39,67 @@ fun transposeRec(prevArray: FloatArray, newArray: FloatArray, prevStrides: Strid
     }
 }
 
-fun transpose(array: FloatArray, strides: Strides, permutation: IntArray): FloatNDArray {
-    val newArray = FloatArray(array.size)
+fun transpose(array: FloatArray, strides: Strides, newStrides: Strides, permutation: IntArray): FloatArray {
+    transposeRec(array.copyOf(), array, strides, newStrides, 0, 0, 0, permutation)
 
-    val newShape = IntArray(strides.shape.size)
-    for ((i, axis) in permutation.withIndex()) {
-        newShape[i] = strides.shape[axis]
-    }
-    val newStrides = Strides(newShape)
-
-    transposeRec(array, newArray, strides, newStrides, 0, 0, 0, permutation)
-
-    return FloatNDArray(newArray, newStrides)
+    return array
 }
 
-fun transpose(array: DoubleArray, strides: Strides, permutation: IntArray): DoubleNDArray {
-    val newArray = DoubleArray(array.size)
+fun transpose(array: DoubleArray, strides: Strides, newStrides: Strides, permutation: IntArray): DoubleArray {
+    val tmp = array.copyOf()
 
-    val newShape = IntArray(strides.shape.size)
-    for ((i, axis) in permutation.withIndex()) {
-        newShape[i] = strides.shape[axis]
-    }
-    val newStrides = Strides(newShape)
-
-
-    for (i in newArray.indices) {
-        val indices = newStrides.index(i)
-        val newIndices = IntArray(indices.size)
-        for ((id, axis) in permutation.withIndex()) {
-            newIndices[axis] = indices[id]
-        }
-        newArray[i] = array[strides.offset(newIndices)]
+    for (i in array.indices) {
+        val newIndices = newStrides.permuteIndicesAt(i, permutation)
+        array[i] = tmp[strides.offset(newIndices)]
     }
 
-
-    return DoubleNDArray(array, newStrides)
+    return array
 }
 
-fun transpose(array: IntArray, strides: Strides, permutation: IntArray): IntNDArray {
-    val newArray = IntArray(array.size)
+fun transpose(array: IntArray, strides: Strides, newStrides: Strides, permutation: IntArray): IntArray {
+    val tmp = array.copyOf()
 
-    val newShape = IntArray(strides.shape.size)
-    for ((i, axis) in permutation.withIndex()) {
-        newShape[i] = strides.shape[axis]
-    }
-    val newStrides = Strides(newShape)
-
-
-    for (i in newArray.indices) {
-        val indices = newStrides.index(i)
-        val newIndices = IntArray(indices.size)
-        for ((id, axis) in permutation.withIndex()) {
-            newIndices[axis] = indices[id]
-        }
-        newArray[i] = array[strides.offset(newIndices)]
+    for (i in array.indices) {
+        val newIndices = newStrides.permuteIndicesAt(i, permutation)
+        array[i] = tmp[strides.offset(newIndices)]
     }
 
-
-    return IntNDArray(newArray, newStrides)
+    return array
 }
 
-fun transpose(array: LongArray, strides: Strides, permutation: IntArray): LongNDArray {
-    val newArray = LongArray(array.size)
+fun transpose(array: LongArray, strides: Strides, newStrides: Strides, permutation: IntArray): LongArray {
+    val tmp = array.copyOf()
 
-    val newShape = IntArray(strides.shape.size)
-    for ((i, axis) in permutation.withIndex()) {
-        newShape[i] = strides.shape[axis]
-    }
-    val newStrides = Strides(newShape)
-
-
-    for (i in newArray.indices) {
-        val indices = newStrides.index(i)
-        val newIndices = IntArray(indices.size)
-        for ((id, axis) in permutation.withIndex()) {
-            newIndices[axis] = indices[id]
-        }
-        newArray[i] = array[strides.offset(newIndices)]
+    for (i in array.indices) {
+        val newIndices = newStrides.permuteIndicesAt(i, permutation)
+        array[i] = tmp[strides.offset(newIndices)]
     }
 
-
-    return LongNDArray(newArray, newStrides)
+    return tmp
 }
 
-fun transpose(array: ShortArray, strides: Strides, permutation: IntArray): ShortNDArray {
-    val newArray = ShortArray(array.size)
+fun transpose(array: ShortArray, strides: Strides, newStrides: Strides, permutation: IntArray): ShortArray {
+    val tmp = array.copyOf()
 
-    val newShape = IntArray(strides.shape.size)
-    for ((i, axis) in permutation.withIndex()) {
-        newShape[i] = strides.shape[axis]
-    }
-    val newStrides = Strides(newShape)
-
-
-    for (i in newArray.indices) {
-        val indices = newStrides.index(i)
-        val newIndices = IntArray(indices.size)
-        for ((id, axis) in permutation.withIndex()) {
-            newIndices[axis] = indices[id]
-        }
-        newArray[i] = array[strides.offset(newIndices)]
+    for (i in array.indices) {
+        val newIndices = newStrides.permuteIndicesAt(i, permutation)
+        array[i] = tmp[strides.offset(newIndices)]
     }
 
-
-    return ShortNDArray(newArray, newStrides)
+    return array
 }
 
-fun <T> NDArray<T>.transpose(permutation: IntArray): NDArray<T> {
-    return when (array) {
-        is IntArray -> transpose(array, strides, permutation)
-        is FloatArray -> transpose(array, strides, permutation)
-        is ShortArray -> transpose(array, strides, permutation)
-        is DoubleArray -> transpose(array, strides, permutation)
-        is LongArray -> transpose(array, strides, permutation)
+fun <T> MutableTypedNDArray<T>.transpose(permutations: IntArray): MutableTypedNDArray<T> {
+    val newStrides = strides.transpose(permutations)
+
+    when (array) {
+        is IntArray -> transpose(array as IntArray, strides, newStrides, permutations)
+        is FloatArray -> transpose(array as FloatArray, strides, newStrides, permutations)
+        is ShortArray -> transpose(array as ShortArray, strides, newStrides, permutations)
+        is DoubleArray -> transpose(array as DoubleArray, strides, newStrides, permutations)
+        is LongArray -> transpose(array as LongArray, strides, newStrides, permutations)
         else -> throw UnsupportedOperationException()
-    } as NDArray<T>
+    }
+
+    return this.reshape(newStrides)
 }

@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
@@ -21,7 +22,7 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         )
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = input
+    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = input
 }
 
 class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
@@ -44,7 +45,7 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
         TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
         TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")
@@ -71,7 +72,7 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
         TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
         TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")
@@ -98,7 +99,7 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         }
     }
 
-    override fun activate(input: NDArray<Any>): NDArray<Any> = when (input.type) {
+    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
         TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
         TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
         else -> error("Unsupported operation")

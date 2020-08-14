@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.reshape
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
@@ -25,6 +26,6 @@ class Reshape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val targetShape = inputs[1]!!.data
-        return listOf(inputs.first()!!.data.reshape(targetShape).asTensor())
+        return listOf(inputs.first()!!.data.toMutable().reshape(targetShape).asTensor())
     }
 }

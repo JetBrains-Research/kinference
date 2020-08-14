@@ -1,11 +1,12 @@
 package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.Operator
@@ -15,8 +16,8 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
 
-    open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
-    abstract fun activate(input: NDArray<Any>): NDArray<Any>
+    open fun activate(input: Tensor): Tensor = this.activate(input.data.toMutable()).asTensor()
+    abstract fun activate(input: TypedNDArray<Any>): TypedNDArray<Any>
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         return listOf(activate(inputs.first()!!))

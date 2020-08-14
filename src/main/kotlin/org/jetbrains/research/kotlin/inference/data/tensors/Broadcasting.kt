@@ -1,8 +1,8 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArraysCombineFunction
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import kotlin.math.max
 
@@ -33,7 +33,7 @@ fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<I
     return fst to snd
 }
 
-fun <T> NDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray<T> {
+fun <T> TypedNDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): TypedNDArray<T> {
     if (this.shape.contentEquals(newShape) || asMatrixStack && this.rank <= 2) return this
 
     val castShape = newShape.copyOfRange(1, newShape.size)
@@ -41,15 +41,23 @@ fun <T> NDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = f
     //broadcast is available only if corresponding dims are equal or at least one of them is 1
     return when (this.shape[0]) {
         1 -> {
-            val rows = this.row(0).innerBroadcast(castShape)
-            rows.reshape(1.concat(castShape)).repeatRow(newShape[0])
+            val rows = this.row(0).innerBroadcast(castShape).toMutable()
+            val times = newShape[0]
+            val reshaped = rows.reshape(1.concat(castShape))
+            val resShape = reshaped.shape.copyOf().apply { set(0, times) }
+
+            allocateNDArray<T>(type, Strides(resShape)).apply {
+                for (i in 0 until times) {
+                    placeAll(i * reshaped.linearSize, reshaped.array)
+                }
+            }
         }
-        newShape[0] -> this.rows.map { it.innerBroadcast(castShape) }.concatenate(axis = 0)
+        newShape[0] -> this.rows.map { it.toMutable().innerBroadcast(castShape) }.concatenate(axis = 0).toMutable()
         else -> error("Cannot broadcast tensors")
     }
 }
 
-fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): NDArray<T> {
+fun <T> TypedNDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false): TypedNDArray<T> {
     if (this.shape.contentEquals(newShape)) return this
 
     val newDims = if (newShape.size <= rank) {
@@ -61,16 +69,16 @@ fun <T> NDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = false)
             fill(1, 0, offset)
         }
     }
-    val preResult = this.reshape(newDims)
+    val preResult = this.toMutable().reshape(newDims)
 
     return preResult.innerBroadcast(newShape, asMatrixStack)
 }
 
 
-fun <T> NDArray<T>.applyWithBroadcast(other: NDArray<T>, op: PrimitiveArrayCombineFunction<T>): NDArray<T> {
+fun <T> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>): MutableTypedNDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array
 
-    return NDArray(op.apply(castedThis, castedOther), type, newShape)
+    return NDArray(op.apply(castedThis, castedOther), type, newShape).toMutable()
 }

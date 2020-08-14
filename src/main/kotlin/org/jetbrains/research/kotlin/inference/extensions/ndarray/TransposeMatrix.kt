@@ -4,77 +4,83 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 fun transpose(array: FloatArray, rowNum: Int, colNum: Int): FloatArray {
-    val result = FloatArray(rowNum * colNum)
+    val tmp = array.copyOf()
 
     for (j in (0 until colNum)) {
         val ind = j * rowNum
         for (i in (0 until rowNum)) {
-            result[ind + i] = array[i * colNum + j]
+            array[ind + i] = tmp[i * colNum + j]
         }
     }
 
-    return result
+    return array
 }
 
 fun transpose(array: DoubleArray, rowNum: Int, colNum: Int): DoubleArray {
-    val result = DoubleArray(rowNum * colNum)
+    val tmp = array.copyOf()
 
-    for (i in (0 until rowNum)) {
-        for (j in (0 until colNum)) {
-            result[j * rowNum + i] = array[i * colNum + j]
+    for (j in (0 until colNum)) {
+        val ind = j * rowNum
+        for (i in (0 until rowNum)) {
+            array[ind + i] = tmp[i * colNum + j]
         }
     }
 
-    return result
+    return array
 }
 
 fun transpose(array: IntArray, rowNum: Int, colNum: Int): IntArray {
-    val result = IntArray(rowNum * colNum)
+    val tmp = array.copyOf()
 
-    for (i in (0 until rowNum)) {
-        for (j in (0 until colNum)) {
-            result[j * rowNum + i] = array[i * colNum + j]
+    for (j in (0 until colNum)) {
+        val ind = j * rowNum
+        for (i in (0 until rowNum)) {
+            array[ind + i] = tmp[i * colNum + j]
         }
     }
 
-    return result
+    return array
 }
 
 fun transpose(array: LongArray, rowNum: Int, colNum: Int): LongArray {
-    val result = LongArray(rowNum * colNum)
+    val tmp = array.copyOf()
 
-    for (i in (0 until rowNum)) {
-        for (j in (0 until colNum)) {
-            result[j * rowNum + i] = array[i * colNum + j]
+    for (j in (0 until colNum)) {
+        val ind = j * rowNum
+        for (i in (0 until rowNum)) {
+            array[ind + i] = tmp[i * colNum + j]
         }
     }
 
-    return result
+    return array
 }
 
 fun transpose(array: ShortArray, rowNum: Int, colNum: Int): ShortArray {
-    val result = ShortArray(rowNum * colNum)
+    val tmp = array.copyOf()
 
-    for (i in (0 until rowNum)) {
-        for (j in (0 until colNum)) {
-            result[j * rowNum + i] = array[i * colNum + j]
+    for (j in (0 until colNum)) {
+        val ind = j * rowNum
+        for (i in (0 until rowNum)) {
+            array[ind + i] = tmp[i * colNum + j]
         }
     }
 
-    return result
+    return array
 }
 
-fun <T> NDArray<T>.matrixTranspose(): NDArray<T> {
+fun <T> MutableTypedNDArray<T>.matrixTranspose(): MutableTypedNDArray<T> {
     require(this.shape.size == 2)
     val newShape = shape.reversedArray()
     val newStrides = Strides(newShape)
 
-    return when (array) {
-        is IntArray -> IntNDArray(transpose(array, shape[0], shape[1]), newStrides)
-        is FloatArray -> FloatNDArray(transpose(array, shape[0], shape[1]), newStrides)
-        is ShortArray -> ShortNDArray(transpose(array, shape[0], shape[1]), newStrides)
-        is DoubleArray -> DoubleNDArray(transpose(array, shape[0], shape[1]), newStrides)
-        is LongArray -> LongNDArray(transpose(array, shape[0], shape[1]), newStrides)
+    when (array) {
+        is IntArray -> transpose(array as IntArray, shape[0], shape[1])
+        is FloatArray -> transpose(array as FloatArray, shape[0], shape[1])
+        is ShortArray -> transpose(array as ShortArray, shape[0], shape[1])
+        is DoubleArray -> transpose(array as DoubleArray, shape[0], shape[1])
+        is LongArray -> transpose(array as LongArray, shape[0], shape[1])
         else -> throw UnsupportedOperationException()
-    } as NDArray<T>
+    }
+
+    return this.reshape(newStrides)
 }

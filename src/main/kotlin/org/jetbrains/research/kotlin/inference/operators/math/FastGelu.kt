@@ -4,6 +4,7 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.IOInfo

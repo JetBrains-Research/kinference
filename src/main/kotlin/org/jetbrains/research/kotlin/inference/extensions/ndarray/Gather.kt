@@ -1,15 +1,14 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.LongNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-fun <T> NDArray<T>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+fun <T> TypedNDArray<T>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
-fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, type: TensorProto.DataType): NDArray<T> {
+fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, type: TensorProto.DataType): MutableTypedNDArray<T> {
     val newShape = IntArray(shape.size + indices.rank - 1)
     shape.copyInto(newShape, 0, 0, axis)
     indices.shape.copyInto(newShape, axis)
@@ -18,7 +17,7 @@ fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, t
     return allocateNDArray(type, newStrides)
 }
 
-fun <T> NDArray<T>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<T> {
+fun <T> TypedNDArray<T>.gather(indices: TypedNDArray<Any>, axis: Int = 0): TypedNDArray<T> {
     val actualAxis = this.indexAxis(axis)
     val dst = createGatherDstArray<T>(actualAxis, indices as LongNDArray, shape, type)
 

@@ -108,7 +108,7 @@ fun dotInto(left: ShortArray, right: ShortArray, leftShape: IntArray, rightShape
     return destination
 }
 
-fun <T> NDArray<T>.matrixDot(other: NDArray<T>): NDArray<T> {
+fun <T> TypedNDArray<T>.matrixDot(other: TypedNDArray<T>): TypedNDArray<T> {
     require(this::class == other::class)
     require(shape.size == 2 && other.shape.size == 2)
     require(shape[1] == other.shape[0])
@@ -117,27 +117,27 @@ fun <T> NDArray<T>.matrixDot(other: NDArray<T>): NDArray<T> {
 
     @Suppress("UNCHECKED_CAST")
     return when (array) {
-        is FloatArray -> FloatNDArray(dotInto(array, other.array as FloatArray, shape, other.shape, FloatArray(newStrides.linearSize), false), newStrides)
-        is IntArray -> IntNDArray(dotInto(array, other.array as IntArray, shape, other.shape, IntArray(newStrides.linearSize), false), newStrides)
-        is DoubleArray -> DoubleNDArray(dotInto(array, other.array as DoubleArray, shape, other.shape, DoubleArray(newStrides.linearSize), false), newStrides)
-        is ShortArray -> ShortNDArray(dotInto(array, other.array as ShortArray, shape, other.shape, ShortArray(newStrides.linearSize), false), newStrides)
-        is LongArray -> LongNDArray(dotInto(array, other.array as LongArray, shape, other.shape, LongArray(newStrides.linearSize), false), newStrides)
+        is FloatArray -> FloatNDArray(dotInto(array as FloatArray, other.array as FloatArray, shape, other.shape, FloatArray(newStrides.linearSize), false), newStrides)
+        is IntArray -> IntNDArray(dotInto(array as IntArray, other.array as IntArray, shape, other.shape, IntArray(newStrides.linearSize), false), newStrides)
+        is DoubleArray -> DoubleNDArray(dotInto(array as DoubleArray, other.array as DoubleArray, shape, other.shape, DoubleArray(newStrides.linearSize), false), newStrides)
+        is ShortArray -> ShortNDArray(dotInto(array as ShortArray, other.array as ShortArray, shape, other.shape, ShortArray(newStrides.linearSize), false), newStrides)
+        is LongArray -> LongNDArray(dotInto(array as LongArray, other.array as LongArray, shape, other.shape, LongArray(newStrides.linearSize), false), newStrides)
         else -> throw UnsupportedOperationException()
-    } as NDArray<T>
+    } as TypedNDArray<T>
 }
 
-fun <T> NDArray<T>.matrixDotInto(other: NDArray<T>, destination: NDArray<T>, clean: Boolean = true): NDArray<T> {
+fun <T> TypedNDArray<T>.matrixDotInto(other: TypedNDArray<T>, destination: MutableTypedNDArray<T>, clean: Boolean = true): TypedNDArray<T> {
 //    require(this::class == other::class)
     require(shape.size == 2 && other.shape.size == 2)
     require(shape[1] == other.shape[0])
     require(destination.shape[0] == shape[0] && destination.shape[1] == other.shape[1])
 
     when (array) {
-        is FloatArray -> dotInto(array, other.array as FloatArray, shape, other.shape, destination.array as FloatArray, clean)
-        is IntArray -> dotInto(array, other.array as IntArray, shape, other.shape, destination.array as IntArray, clean)
-        is DoubleArray -> dotInto(array, other.array as DoubleArray, shape, other.shape, destination.array as DoubleArray, clean)
-        is ShortArray -> dotInto(array, other.array as ShortArray, shape, other.shape, destination.array as ShortArray, clean)
-        is LongArray -> dotInto(array, other.array as LongArray, shape, other.shape, destination.array as LongArray, clean)
+        is FloatArray -> dotInto(array as FloatArray, other.array as FloatArray, shape, other.shape, destination.array as FloatArray, clean)
+        is IntArray -> dotInto(array as IntArray, other.array as IntArray, shape, other.shape, destination.array as IntArray, clean)
+        is DoubleArray -> dotInto(array as DoubleArray, other.array as DoubleArray, shape, other.shape, destination.array as DoubleArray, clean)
+        is ShortArray -> dotInto(array as ShortArray, other.array as ShortArray, shape, other.shape, destination.array as ShortArray, clean)
+        is LongArray -> dotInto(array as LongArray, other.array as LongArray, shape, other.shape, destination.array as LongArray, clean)
         else -> throw UnsupportedOperationException()
     }
 

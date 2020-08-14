@@ -19,7 +19,7 @@ fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean)
 }
 
 
-fun <T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<NDArray<T>> {
+fun <T> TypedNDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<MutableTypedNDArray<T>> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
     val actualAxis = indexAxis(axis)
     val elementsByIndex = shape[actualAxis]
@@ -32,7 +32,7 @@ fun <T> NDArray<T>.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = 
     return splitWithAxis(split, actualAxis, keepDims)
 }
 
-fun <T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<NDArray<T>> {
+fun <T> TypedNDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<MutableTypedNDArray<T>> {
     val beforeAxisDims = computeBlockSize(toDim = axis)
     val fromAxisDims = computeBlockSize(fromDim = axis)
     val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
@@ -51,20 +51,20 @@ fun <T> NDArray<T>.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean =
     }
 }
 
-fun <T> NDArray<T>.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): NDArray<T> {
+fun <T> TypedNDArray<T>.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableTypedNDArray<T> {
     return when (type) {
-        TensorProto.DataType.DOUBLE -> DoubleNDArray((array as DoubleArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
-        TensorProto.DataType.FLOAT -> FloatNDArray((array as FloatArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
-        TensorProto.DataType.INT64 -> LongNDArray((array as LongArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
-        TensorProto.DataType.INT32 -> IntNDArray((array as IntArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
-        TensorProto.DataType.INT16 -> ShortNDArray((array as ShortArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
+        TensorProto.DataType.DOUBLE -> MutableDoubleNDArray((array as DoubleArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
+        TensorProto.DataType.FLOAT -> MutableFloatNDArray((array as FloatArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
+        TensorProto.DataType.INT64 -> MutableLongNDArray((array as LongArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
+        TensorProto.DataType.INT32 -> MutableIntNDArray((array as IntArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
+        TensorProto.DataType.INT16 -> MutableShortNDArray((array as ShortArray).copySplitFragment(offset, beforeAxisDims, fragmentSize, fromAxisDims), splitStrides)
         else -> error("")
-    } as NDArray<T>
+    } as MutableTypedNDArray<T>
 }
 
-fun <T> NDArray<T>.splitArray(parts: Int, strides: Strides): List<NDArray<T>> {
+fun <T> TypedNDArray<T>.splitArray(parts: Int, strides: Strides): List<MutableTypedNDArray<T>> {
     return when (array) {
-        is FloatArray -> splitParts(array, parts, strides)
+        is FloatArray -> splitParts(array as FloatArray, parts, strides)
         else -> throw UnsupportedOperationException()
-    } as List<NDArray<T>>
+    } as List<MutableTypedNDArray<T>>
 }
