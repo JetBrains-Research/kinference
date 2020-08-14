@@ -15,7 +15,7 @@ fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, t
     indices.shape.copyInto(newShape, axis)
     shape.copyInto(newShape, axis + indices.rank, axis + 1)
     val newStrides = Strides(newShape)
-    return allocateNDArray(type, newStrides) as NDArray<T>
+    return allocateNDArray(type, newStrides)
 }
 
 fun <T> NDArray<T>.gather(indices: NDArray<Any>, axis: Int = 0): NDArray<T> {

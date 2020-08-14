@@ -47,7 +47,7 @@ abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: S
         val outputShape = intArrayOf(seqLength!!, 1, batchSize!!, hiddenSize)
         if (direction == "bidirectional") outputShape[1] = 2
         val outputStrides = Strides(outputShape)
-        val outputArray = allocateNDArray(type!!, outputStrides)
+        val outputArray = allocateNDArray<Any>(type!!, outputStrides)
         return apply(parseInput(input), parseSequenceLens(sequenceLens), outputArray, 0)
     }
 

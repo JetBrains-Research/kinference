@@ -31,7 +31,7 @@ fun <T> createScalarNDArray(type: DataType, value: Any): NDArray<T> {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun allocateNDArray(type: DataType, strides: Strides): NDArray<Any> {
+fun <T> allocateNDArray(type: DataType, strides: Strides): NDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(DoubleArray(strides.linearSize), strides)
         DataType.FLOAT -> FloatNDArray(FloatArray(strides.linearSize), strides)
@@ -40,7 +40,7 @@ fun allocateNDArray(type: DataType, strides: Strides): NDArray<Any> {
         DataType.INT16 -> ShortNDArray(ShortArray(strides.linearSize), strides)
         DataType.BOOL -> BooleanNDArray(BooleanArray(strides.linearSize), strides)
         else -> error("Unsupported type")
-    } as NDArray<Any>
+    } as NDArray<T>
 }
 
 @Suppress("UNCHECKED_CAST")

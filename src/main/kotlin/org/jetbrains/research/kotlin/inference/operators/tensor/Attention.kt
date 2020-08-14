@@ -45,7 +45,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         private fun initQueryKeyValue(input: NDArray<Any>, weights: NDArray<Any>, bias: NDArray<Any>, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<NDArray<Any>> {
-            val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
+            val qkv = Array(3) { allocateNDArray<Any>(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 
             val step = batchSize * numHeads
@@ -77,7 +77,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private fun NDArray<Any>?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
-            val mask = allocateNDArray(TensorProto.DataType.FLOAT, Strides(maskDataShape)) as FloatNDArray
+            val mask = allocateNDArray<FloatArray>(TensorProto.DataType.FLOAT, Strides(maskDataShape)) as FloatNDArray
             val maskOffset = seqLen * fullSeqLen
             repeat(batchSize) { i ->
                 if (this != null) {
@@ -142,7 +142,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             val pastBlockSize = pastSeqLen * headSize
             val inputBlockSize = seqLen * headSize
             val presentBlockSize = pastBlockSize + inputBlockSize
-            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
+            val scores = allocateNDArray<Any>(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
 
             val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen)
 
@@ -174,11 +174,11 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             val pastBlockSize = pastSeqLen * headSize
             val inputBlockSize = seqLen * headSize
             val presentBlockSize = pastBlockSize + inputBlockSize
-            val output = allocateNDArray(scores.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
+            val output = allocateNDArray<Any>(scores.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
 
             val pastOffset = if (past != null) batchSize * hiddenSize * pastSeqLen else 0
             val presentOffset = batchSize * hiddenSize * allSeqLen
-            val tmp = allocateNDArray(scores.type, output.strides)
+            val tmp = allocateNDArray<Any>(scores.type, output.strides)
 
             for (i in 0 until batchSize * numHeads) {
                 val (v, vOffset) = present.updateState(past, values, pastBlockSize, presentBlockSize, i, pastOffset, presentOffset, i * inputBlockSize)
@@ -214,7 +214,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 presentDims[3] += pastSeqLen
             }
 
-            val present = allocateNDArray(q.type, Strides(presentDims))
+            val present = allocateNDArray<Any>(q.type, Strides(presentDims))
 
             val scores = normalizedScores(unidir, q, k, mask, batchSize, seqLen, pastSeqLen, headSize, hiddenSize / headSize, past, present)
             return attentionScore(scores, v, batchSize, seqLen, pastSeqLen, numHeads, hiddenSize, past, present)

@@ -65,7 +65,7 @@ data class GatesData(val input: NDArray<Any>, val output: NDArray<Any>, val forg
             val newStrides = Strides(intArrayOf(1, hiddenSize))
 
             val allocArrays = Array(4) {
-                allocateNDArray(type, newStrides)
+                allocateNDArray<Any>(type, newStrides)
             }
             return GatesData(allocArrays[0], allocArrays[1], allocArrays[2], allocArrays[3])
         }
@@ -78,8 +78,8 @@ data class State(var output: NDArray<Any>, val cellState: NDArray<Any>, var isOu
             val newStrides = Strides(intArrayOf(1, hiddenSize))
 
             return Array(batchSize) {
-                val out = allocateNDArray(type, newStrides)
-                val cell = allocateNDArray(type, newStrides)
+                val out = allocateNDArray<Any>(type, newStrides)
+                val cell = allocateNDArray<Any>(type, newStrides)
                 State(out, cell, true, true)
             }
         }

@@ -50,7 +50,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val matrixRows = expMatrixRows(input, axis)
 
             val step = matrixRows[0].linearSize
-            val array = allocateNDArray(input.type, input.strides)
+            val array = allocateNDArray<Any>(input.type, input.strides)
             repeat(matrixRows.size) { i ->
                 val sum = matrixRows[i].sum()
                 val row = matrixRows[i].div(createScalarNDArray(input.type, sum), false)

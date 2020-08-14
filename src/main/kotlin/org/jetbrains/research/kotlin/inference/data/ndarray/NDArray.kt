@@ -104,17 +104,16 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         return NDArray(row, type, dims) as NDArray<T>
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun repeatRow(times: Int): NDArray<T> {
         require(shape[0] == 1) { "First dimension should be 1" }
         val newShape = shape.copyOf().apply { set(0, times) }
 
-        val result = allocateNDArray(type, Strides(newShape))
+        val result = allocateNDArray<T>(type, Strides(newShape))
         for (i in 0 until times) {
             result.placeAll(i * linearSize, array)
         }
 
-        return result as NDArray<T>
+        return result
     }
 
     fun transpose(permutations: List<Number>? = null): NDArray<T> {

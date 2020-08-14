@@ -132,8 +132,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
     protected fun Array<State>.toOutput(): State {
         val strides = Strides(intArrayOf(1, batchSize!!, hiddenSize))
-        val outputArray = allocateNDArray(type!!, strides)
-        val cellStateArray = allocateNDArray(type!!, strides)
+        val outputArray = allocateNDArray<Any>(type!!, strides)
+        val cellStateArray = allocateNDArray<Any>(type!!, strides)
 
         for (i in this.indices) {
             val offset = i * hiddenSize

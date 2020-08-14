@@ -39,10 +39,10 @@ fun <T> NDArray<T>.concatenate(other: NDArray<T>, axis: Int = 0): NDArray<T> {
     } else {
         fstDim.copyOf(fstDim.size).apply { set(0, fstDim[0] + sndDim[0]) }
     }
-    return allocateNDArray(type, Strides(newShape)).apply {
+    return allocateNDArray<T>(type, Strides(newShape)).apply {
         placeAll(0, this@concatenate.array)
         placeAll(this@concatenate.linearSize, other.array)
-    } as NDArray<T>
+    }
 }
 
 fun <T> Collection<NDArray<T>>.concatenate(axis: Int): NDArray<T> {
@@ -67,10 +67,10 @@ fun <T> NDArray<T>.as2DList(): List<NDArray<T>> {
     val matrixSize = matrixStrides.linearSize
 
     return List(strides.linearSize / matrixSize) { index ->
-        allocateNDArray(type, matrixStrides).apply {
+        allocateNDArray<T>(type, matrixStrides).apply {
             val start = matrixSize * index
             place(0, this@as2DList.array, start, start + matrixSize)
-        } as NDArray<T>
+        }
     }
 }
 
