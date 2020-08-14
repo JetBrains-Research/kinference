@@ -8,17 +8,17 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
-    init {
+class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT, offset) {
+    /*init {
         require(array.size == strides.linearSize)
-    }
+    }*/
 
-    private companion object {
+    /*private companion object {
         val plusWithCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
         val plusWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
         val timesWithCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
         val timesWithoutCopy = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, false) }
-    }
+    }*/
 
     override fun clone(newStrides: Strides): FloatNDArray {
         return FloatNDArray(array.copyOf(), newStrides)
@@ -44,39 +44,50 @@ class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
-    override fun plus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
+    override fun plus(other: NDArray<FloatArray>, destination: NDArray<FloatArray>?): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, if (copy) plusWithCopy else plusWithoutCopy)
+            //this.combineWith(other, if (copy) plusWithCopy else plusWithoutCopy)
+            this.combineWith(other, destination,
+                FloatArrayWithFloatArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    plus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun times(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
+    override fun times(other: NDArray<FloatArray>, destination: NDArray<FloatArray>?): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, if (copy) timesWithCopy else timesWithoutCopy)
+            //this.combineWith(other, if (copy) timesWithCopy else timesWithoutCopy)
+            this.combineWith(other, destination,
+                FloatArrayWithFloatArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    times(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun minus(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
+    override fun minus(other: NDArray<FloatArray>, destination: NDArray<FloatArray>?): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
-        } else if (other.isScalar()) {
-            FloatNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, copy) })
+            //this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                FloatArrayWithFloatArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    minus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun div(other: NDArray<FloatArray>, copy: Boolean): NDArray<FloatArray> {
+    override fun div(other: NDArray<FloatArray>, destination: NDArray<FloatArray>?): NDArray<FloatArray> {
         return if (this.isScalar() && other.isScalar()) {
             FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
-        } else if (other.isScalar()) {
-            FloatNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                FloatArrayWithFloatArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    div(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 

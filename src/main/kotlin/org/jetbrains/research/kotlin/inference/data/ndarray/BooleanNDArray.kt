@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL) {
+class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL, offset) {
     override fun clone(newStrides: Strides): BooleanNDArray {
         return BooleanNDArray(array.copyOf(), newStrides)
     }
@@ -28,19 +28,19 @@ class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : 
         }
     }
 
-    override fun plus(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
+    override fun plus(other: NDArray<BooleanArray>, destination: NDArray<BooleanArray>?): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun minus(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
+    override fun minus(other: NDArray<BooleanArray>, destination: NDArray<BooleanArray>?): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun times(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
+    override fun times(other: NDArray<BooleanArray>, destination: NDArray<BooleanArray>?): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun div(other: NDArray<BooleanArray>, copy: Boolean): NDArray<BooleanArray> {
+    override fun div(other: NDArray<BooleanArray>, destination: NDArray<BooleanArray>?): NDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 

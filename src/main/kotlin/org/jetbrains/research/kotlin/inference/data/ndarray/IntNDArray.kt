@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<IntArray>(array, strides, TensorProto.DataType.INT32) {
+class IntNDArray(array: IntArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<IntArray>(array, strides, TensorProto.DataType.INT32, offset) {
     override fun clone(newStrides: Strides): IntNDArray {
         return IntNDArray(array.copyOf(), newStrides)
     }
@@ -32,47 +32,55 @@ class IntNDArray(array: IntArray, strides: Strides = Strides.empty()) : NDArray<
         }
     }
 
-    override fun plus(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
+    override fun plus(other: NDArray<IntArray>, destination: NDArray<IntArray>?): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> plus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                IntArrayWithIntArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    plus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun times(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
+    override fun times(other: NDArray<IntArray>, destination: NDArray<IntArray>?): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> times(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                IntArrayWithIntArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    times(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun minus(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
+    override fun minus(other: NDArray<IntArray>, destination: NDArray<IntArray>?): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] - other.array[0]))
-        } else if (other.isScalar()) {
-            IntNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> minus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                IntArrayWithIntArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    minus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun div(other: NDArray<IntArray>, copy: Boolean): NDArray<IntArray> {
+    override fun div(other: NDArray<IntArray>, destination: NDArray<IntArray>?): NDArray<IntArray> {
         other as IntNDArray
 
         return if (this.isScalar() && other.isScalar()) {
             IntNDArray(intArrayOf(this.array[0] / other.array[0]))
-        } else if (other.isScalar()) {
-            IntNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, IntArrayWithIntArray { array, otherArray -> div(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                IntArrayWithIntArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    div(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 

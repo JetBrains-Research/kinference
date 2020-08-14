@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : NDArray<DoubleArray>(array, strides, TensorProto.DataType.DOUBLE) {
+class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<DoubleArray>(array, strides, TensorProto.DataType.DOUBLE, offset) {
     override fun clone(newStrides: Strides): DoubleNDArray {
         return DoubleNDArray(array.copyOf(), newStrides)
     }
@@ -32,39 +32,47 @@ class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty()) : ND
         }
     }
 
-    override fun plus(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
+    override fun plus(other: NDArray<DoubleArray>, destination: NDArray<DoubleArray>?): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> plus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                DoubleArrayWithDoubleArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    plus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun minus(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
+    override fun minus(other: NDArray<DoubleArray>, destination: NDArray<DoubleArray>?): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             DoubleNDArray(doubleArrayOf(this.array[0] - other.array[0]))
-        } else if (other.isScalar()) {
-            DoubleNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> minus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                DoubleArrayWithDoubleArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    minus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun times(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
+    override fun times(other: NDArray<DoubleArray>, destination: NDArray<DoubleArray>?): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
             return DoubleNDArray(doubleArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> times(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                DoubleArrayWithDoubleArray() { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    times(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun div(other: NDArray<DoubleArray>, copy: Boolean): NDArray<DoubleArray> {
+    override fun div(other: NDArray<DoubleArray>, destination: NDArray<DoubleArray>?): NDArray<DoubleArray> {
         return if (this.isScalar() && other.isScalar()) {
-            return DoubleNDArray(doubleArrayOf(this.array[0] / other.array[0]))
-        } else if (other.isScalar()) {
-            DoubleNDArray(div(this.array, other.array[0], copy), this.strides)
+            DoubleNDArray(doubleArrayOf(this.array[0] / other.array[0]))
         } else {
-            this.combineWith(other, DoubleArrayWithDoubleArray { array, otherArray -> div(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                DoubleArrayWithDoubleArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    div(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 

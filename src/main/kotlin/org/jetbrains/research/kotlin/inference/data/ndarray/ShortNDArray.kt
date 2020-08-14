@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDArray<ShortArray>(array, strides, TensorProto.DataType.INT16) {
+class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<ShortArray>(array, strides, TensorProto.DataType.INT16, offset) {
     override fun clone(newStrides: Strides): ShortNDArray {
         return ShortNDArray(array.copyOf(), newStrides)
     }
@@ -32,39 +32,48 @@ class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) : NDAr
         }
     }
 
-    override fun plus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
+    override fun plus(other: NDArray<ShortArray>, destination: NDArray<ShortArray>?): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] + other.array[0]).toShort()))
         } else {
-            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> plus(array, otherArray, copy) })
+            //this.combineWith(other, if (copy) plusWithCopy else plusWithoutCopy)
+            this.combineWith(other, destination,
+                ShortArrayWithShortArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    plus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun times(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
+    override fun times(other: NDArray<ShortArray>, destination: NDArray<ShortArray>?): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] * other.array[0]).toShort()))
         } else {
-            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> times(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                ShortArrayWithShortArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    times(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun div(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
+    override fun div(other: NDArray<ShortArray>, destination: NDArray<ShortArray>?): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] / other.array[0]).toShort()))
-        } else if (other.isScalar()) {
-            ShortNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> div(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                ShortArrayWithShortArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    div(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun minus(other: NDArray<ShortArray>, copy: Boolean): NDArray<ShortArray> {
+    override fun minus(other: NDArray<ShortArray>, destination: NDArray<ShortArray>?): NDArray<ShortArray> {
         return if (this.isScalar() && other.isScalar()) {
             ShortNDArray(shortArrayOf((this.array[0] - other.array[0]).toShort()))
-        } else if (other.isScalar()) {
-            ShortNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, ShortArrayWithShortArray { array, otherArray -> minus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                ShortArrayWithShortArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    minus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 

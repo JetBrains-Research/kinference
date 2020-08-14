@@ -91,7 +91,7 @@ fun <T> NDArray<T>.reshape(tensorShape: NDArray<T>): NDArray<T> {
     return reshape(newShape)
 }
 
-fun <T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveArrayCombineFunction<T>): NDArray<T> {
+fun <T : Any> NDArray<T>.combineWith(other: NDArray<T>, destination: NDArray<T>?, transform: PrimitiveArrayCombineFunction<T>): NDArray<T> {
     if (this.isScalar()) {
         return other.scalarOp(this[0], transform)
     } else if (other.isScalar()) {
@@ -99,8 +99,11 @@ fun <T : Any> NDArray<T>.combineWith(other: NDArray<T>, transform: PrimitiveArra
     }
 
     if (!shape.contentEquals(other.shape)) {
-        return applyWithBroadcast(other, transform)
+        return applyWithBroadcast(other, destination, transform)
     }
 
-    return NDArray(transform.apply(array, other.array), type, strides)
+    val actualDestination = destination ?: allocateNDArray(type, strides) as NDArray<T>
+    require(shape.contentEquals(actualDestination.shape))
+
+    return NDArray(transform.apply(array, offset, other.array, other.offset, actualDestination.array, actualDestination.offset, linearSize), type, strides)
 }

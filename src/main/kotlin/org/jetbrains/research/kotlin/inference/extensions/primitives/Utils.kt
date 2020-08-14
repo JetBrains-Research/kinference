@@ -89,6 +89,6 @@ fun <T : Any> NDArray<T>.scalarOp(x: Any, op: PrimitiveArrayCombineFunction<T>):
         else -> error("Unsupported operator")
     }
 
-    return NDArray(op.apply(array, other as T), type, strides)
+    return NDArray(op.apply(array, offset, other as T, 0, other, 0, linearSize), type, strides)
 }
 

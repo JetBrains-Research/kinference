@@ -2,8 +2,8 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
-import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcastDot
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcastShape
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
@@ -15,7 +15,7 @@ import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import kotlin.math.abs
 
-abstract class NDArray<T> protected constructor(val array: T, val strides: Strides, val type: DataType) {
+abstract class NDArray<T> protected constructor(val array: T, val strides: Strides, val type: DataType, val offset: Int) {
     val rank: Int
         get() = strides.shape.size
 
@@ -46,22 +46,27 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
     abstract fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int)
     abstract fun placeAll(startOffset: Int, block: Any?)
 
-    abstract fun plus(other: NDArray<T>, copy: Boolean = true): NDArray<T>
-    operator fun plus(other: NDArray<T>) = plus(other, true)
+    abstract fun plus(other: NDArray<T>, destination: NDArray<T>? = null): NDArray<T>
+    operator fun plus(other: NDArray<T>) = plus(other, null)
+    fun plus(other: NDArray<T>, copy: Boolean) = if (copy) plus(other, null) else plus(other, this)
 
-    abstract fun minus(other: NDArray<T>, copy: Boolean = true): NDArray<T>
-    operator fun minus(other: NDArray<T>): NDArray<T> = minus(other, true)
+    abstract fun minus(other: NDArray<T>, destination: NDArray<T>? = null): NDArray<T>
+    operator fun minus(other: NDArray<T>): NDArray<T> = minus(other, null)
+    fun minus(other: NDArray<T>, copy: Boolean) = if (copy) minus(other, null) else minus(other, this)
 
-    abstract fun times(other: NDArray<T>, copy: Boolean = true): NDArray<T>
-    operator fun times(other: NDArray<T>) = times(other, true)
+    abstract fun times(other: NDArray<T>, destination: NDArray<T>? = null): NDArray<T>
+    operator fun times(other: NDArray<T>) = times(other, null)
+    fun times(other: NDArray<T>, copy: Boolean) = if (copy) times(other, null) else times(other, this)
 
-    abstract fun div(other: NDArray<T>, copy: Boolean = true): NDArray<T>
-    operator fun div(other: NDArray<T>): NDArray<T> = div(other, true)
+    abstract fun div(other: NDArray<T>, destination: NDArray<T>? = null): NDArray<T>
+    operator fun div(other: NDArray<T>): NDArray<T> = div(other, null)
+    fun div(other: NDArray<T>, copy: Boolean) = if (copy) div(other, null) else div(other, this)
 
     abstract fun mapElements(func: PrimitiveArrayFunction, copy: Boolean = true): NDArray<T>
     abstract fun clean(): Unit
     abstract fun slice(sliceLength: Int, start: Int): Any
 
+    fun move(moveSize: Int, strides: Strides = this.strides) = NDArray(array, type, strides, offset + moveSize)
 
     fun indexAxis(axis: Int): Int {
         return if (axis < 0) rank + axis else axis
@@ -75,18 +80,23 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
             return actualThis.matrixDot(actualOther)
         }
 
-        val (fstShape, sndShape) = broadcastMatrixElementsShape(shape, other.shape)
-        val thisMatrices = this.broadcast(fstShape, asMatrixStack = true).as2DList()
-        val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
+        val outputMatrixShape = intArrayOf(shape[indexAxis(-2)], other.shape[other.indexAxis(-1)])
+        val broadcastShape = broadcastShape(shape.copyOfRange(0, rank - 2), other.shape.copyOfRange(0, other.rank - 2))
 
-        val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-            tensor.matrixDot(otherMatrices[i])
-        }
+        val outputShape = IntArray(broadcastShape.size + 2)
+        broadcastShape.copyInto(outputShape)
+        outputMatrixShape.copyInto(outputShape, broadcastShape.size)
+        val outputStrides = Strides(outputShape)
+        val outputArray = allocateNDArray(type, outputStrides) as NDArray<T>
 
-        val lastDims = resMatrices.first().shape
+        val leftWrapSize = outputShape.size - this.shape.size
+        val rightWrapSize = outputShape.size - other.shape.size
 
-        val shape = shape.copyOf(rank - 2) + lastDims
-        return resMatrices.concatenate(0).reshape(shape)
+        val leftWrapped = this.unsqueeze(*IntArray(leftWrapSize) { it })
+        val rightWrapped = other.unsqueeze(*IntArray(rightWrapSize) { it })
+
+        broadcastDot(leftWrapped, rightWrapped, outputArray)
+        return outputArray
     }
 
     fun row(row: Int): NDArray<T> {
@@ -129,7 +139,7 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
         val newStrides = Strides(shape)
         require(linearSize == newStrides.linearSize) { "New shape is not compatible with the previous one" }
 
-        return clone(newStrides)
+        return NDArray(array, type, newStrides, offset)
     }
 
     fun squeeze(vararg axes: Int): NDArray<T> {
@@ -232,12 +242,12 @@ abstract class NDArray<T> protected constructor(val array: T, val strides: Strid
             return NDArray(value, type, Strides(dims))
         }
 
-        operator fun <T> invoke(value: T, type: DataType, strides: Strides): NDArray<T> {
+        operator fun <T> invoke(value: T, type: DataType, strides: Strides, offset: Int = 0): NDArray<T> {
             return when (type) {
-                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
-                DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
-                DataType.INT64 -> LongNDArray(value as LongArray, strides)
-                DataType.INT32 -> IntNDArray(value as IntArray, strides)
+                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides, offset)
+                DataType.FLOAT -> FloatNDArray(value as FloatArray, strides, offset)
+                DataType.INT64 -> LongNDArray(value as LongArray, strides, offset)
+                DataType.INT32 -> IntNDArray(value as IntArray, strides, offset)
                 //DataType.STRING -> TensorData(proto.string_data.map { it.utf8() }, type, proto.dims.toIntArray(), proto.name)
                 else -> error("Unsupported data type $type")
             } as NDArray<T>

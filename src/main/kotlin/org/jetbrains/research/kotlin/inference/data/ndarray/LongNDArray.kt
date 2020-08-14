@@ -8,7 +8,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArray<LongArray>(array, strides, TensorProto.DataType.INT64) {
+class LongNDArray(array: LongArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<LongArray>(array, strides, TensorProto.DataType.INT64, offset) {
     override fun clone(newStrides: Strides): LongNDArray {
         return LongNDArray(array.copyOf(), newStrides)
     }
@@ -32,39 +32,48 @@ class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : NDArra
         }
     }
 
-    override fun plus(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
+    override fun plus(other: NDArray<LongArray>, destination: NDArray<LongArray>?): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] + other.array[0]))
         } else {
-            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> plus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                LongArrayWithLongArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    plus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun times(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
+    override fun times(other: NDArray<LongArray>, destination: NDArray<LongArray>?): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] * other.array[0]))
         } else {
-            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> times(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                LongArrayWithLongArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    times(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun div(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
+    override fun div(other: NDArray<LongArray>, destination: NDArray<LongArray>?): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] / other.array[0]))
-        } else if (other.isScalar()) {
-            LongNDArray(div(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> div(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                LongArrayWithLongArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    div(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
-    override fun minus(other: NDArray<LongArray>, copy: Boolean): NDArray<LongArray> {
+    override fun minus(other: NDArray<LongArray>, destination: NDArray<LongArray>?): NDArray<LongArray> {
         return if (this.isScalar() && other.isScalar()) {
             LongNDArray(longArrayOf(this.array[0] - other.array[0]))
-        } else if (other.isScalar()) {
-            LongNDArray(minus(this.array, other.array[0], copy), this.strides)
         } else {
-            this.combineWith(other, LongArrayWithLongArray { array, otherArray -> minus(array, otherArray, copy) })
+            //this.combineWith(other, FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, copy) })
+            this.combineWith(other, destination,
+                LongArrayWithLongArray { array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size ->
+                    minus(array, arrayOffset, otherArray, otherArrayOffset, destinationArray, destinationArrayOffset, size)
+                })
         }
     }
 
