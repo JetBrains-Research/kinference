@@ -16,7 +16,7 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
 
-    open fun activate(input: Tensor): Tensor = this.activate(input.data.toMutable()).asTensor()
+    open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
     abstract fun activate(input: TypedNDArray<Any>): TypedNDArray<Any>
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {

@@ -8,19 +8,20 @@ import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import kotlin.collections.toIntArray
 
-fun <T> TypedNDArray<T>.shouldCopy() = this !is MutableTypedNDArray
+fun <T> TypedNDArray<T>.isScalar() = shape.isEmpty()
 
 fun <T> MutableTypedNDArray<T>.wrapOneDim(): MutableTypedNDArray<T> {
     return this.reshape(1.concat(this.shape))
 }
 
-fun <T> TypedNDArray<T>.isScalar() = shape.isEmpty()
-
 fun <T> TypedNDArray<T>.indexAxis(axis: Int): Int {
     return if (axis < 0) rank + axis else axis
 }
 
-fun <T> TypedNDArray<T>.asTensor(name: String? = null) = Tensor(this as NDArray<Any>, TensorInfo(name ?: "", type, TensorShape(this.shape)))
+fun <T> TypedNDArray<T>.asTensor(name: String? = null) = Tensor(this as TypedNDArray<Any>, TensorInfo(name ?: "", type, TensorShape(this.shape)))
+
+val <T> TypedNDArray<T>.rows: Array<MutableTypedNDArray<T>>
+    get() = Array(shape[0]) { i -> row(i) as MutableTypedNDArray<T> }
 
 fun <T> MutableTypedNDArray<T>.squeeze(vararg axes: Int): MutableTypedNDArray<T> {
     val actualAxes = if (axes.isNotEmpty()) {
@@ -100,8 +101,8 @@ fun Array<NDArray<Any>>.stack(axis: Int): TypedNDArray<Any> {
     return this.map { it.toMutable().reshape(newShape) }.concatenate(axis)
 }
 
-fun <T> TypedNDArray<T>.as2DList(): List<MutableTypedNDArray<T>> {
-    if (this.rank == 2) return listOf(this.toMutable())
+fun <T> TypedNDArray<T>.as2DList(): List<TypedNDArray<T>> {
+    if (this.rank == 2) return listOf(this)
     if (this.rank == 1) return listOf(this.toMutable().wrapOneDim())
 
     val matrixShape = intArrayOf(shape[indexAxis(-2)], shape[indexAxis(-1)])
@@ -132,24 +133,4 @@ fun <T> MutableTypedNDArray<T>.reshape(tensorShape: TypedNDArray<T>): MutableTyp
     }
 
     return reshape(newShape)
-}
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Any, V : Any> TypedNDArray<T>.combineWith(other: TypedNDArray<T>, transform: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
-    if (this.isScalar()) {
-        return other.scalarOp(this[0] as V, transform)
-    } else if (other.isScalar()) {
-        return this.scalarOp(other[0] as V, transform)
-    }
-
-    transform as PrimitiveArraysCombineFunction<T>
-    if (!shape.contentEquals(other.shape)) {
-        return this.applyWithBroadcast(other, transform)
-    }
-
-    return if (shouldCopy()) {
-        transform.apply(array, other.array); this
-    } else {
-        NDArray(transform.apply(array, other.array), type, strides)
-    }
 }

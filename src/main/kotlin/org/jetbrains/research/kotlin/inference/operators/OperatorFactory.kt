@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.onnx.NodeProto
 import org.jetbrains.research.kotlin.inference.operators.activations.*
 import org.jetbrains.research.kotlin.inference.operators.flow.Loop
+import org.jetbrains.research.kotlin.inference.operators.layer.attention.Attention
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.inference.operators.math.Add
 import org.jetbrains.research.kotlin.inference.operators.math.FastGelu
@@ -18,6 +19,7 @@ object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
         "Add" -> Add(attributes, inputs, outputs)
+        "Attention" -> Attention(attributes, inputs, outputs)
         "Cast" -> Cast(attributes, inputs, outputs)
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
@@ -27,6 +29,7 @@ object OperatorFactory {
         "Identity" -> Identity(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
         "Loop" -> Loop(attributes, inputs, outputs)
+        "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
@@ -40,8 +43,6 @@ object OperatorFactory {
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
-        "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
-        "Attention" -> Attention(attributes, inputs, outputs)
         else -> error("Unsupported operator $name")
     } as Operator<ONNXData, ONNXData>
 

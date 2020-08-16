@@ -16,6 +16,32 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
     }
 }
 
+inline fun <reified T> createMutableNDArray(type: DataType, value: T, strides: Strides): MutableTypedNDArray<T> {
+    return when (type) {
+        DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides)
+        DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides)
+        DataType.INT64 -> MutableLongNDArray(value as LongArray, strides)
+        DataType.INT32 -> MutableIntNDArray(value as IntArray, strides)
+        DataType.INT16 -> MutableShortNDArray(value as ShortArray, strides)
+        DataType.BOOL -> MutableBooleanNDArray(value as BooleanArray, strides)
+        //else -> Array(size, init)
+        else -> error("Unsupported data type $type")
+    } as MutableTypedNDArray<T>
+}
+
+inline fun <reified T> createNDArray(type: DataType, value: T, strides: Strides): TypedNDArray<T> {
+    return when (type) {
+        DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
+        DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
+        DataType.INT64 -> LongNDArray(value as LongArray, strides)
+        DataType.INT32 -> IntNDArray(value as IntArray, strides)
+        DataType.INT16 -> ShortNDArray(value as ShortArray, strides)
+        DataType.BOOL -> BooleanNDArray(value as BooleanArray, strides)
+        //else -> Array(size, init)
+        else -> error("Unsupported data type $type")
+    } as TypedNDArray<T>
+}
+
 inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
     return when (type) {
         DataType.DOUBLE -> DoubleArray(size)

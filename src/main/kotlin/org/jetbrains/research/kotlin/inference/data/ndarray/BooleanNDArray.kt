@@ -53,13 +53,13 @@ open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(
     }
 
     override fun toMutable(): MutableTypedNDArray<BooleanArray> {
-        TODO("Not yet implemented")
+        return MutableBooleanNDArray(array.copyOf(), strides)
     }
 }
 
 class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : BooleanNDArray(array, strides), MutableTypedNDArray<BooleanArray> {
     override fun set(i: Int, value: Any) {
-        TODO("Not yet implemented")
+        array[i] = value as Boolean
     }
 
     override fun plusAssign(other: TypedNDArray<BooleanArray>) {
@@ -79,18 +79,21 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
     }
 
     override fun place(startOffset: Int, block: Any?, startIndex: Int, endIndex: Int) {
-        TODO("Not yet implemented")
+        block as BooleanArray
+        block.copyInto(array, startOffset, startIndex, endIndex)
     }
 
     override fun placeAll(startOffset: Int, block: Any?) {
-        TODO("Not yet implemented")
+        block as BooleanArray
+        block.copyInto(array, startOffset)
     }
 
     override fun reshape(strides: Strides): MutableTypedNDArray<BooleanArray> {
-        TODO("Not yet implemented")
+        this.strides = strides
+        return  this
     }
 
     override fun clean() {
-        TODO("Not yet implemented")
+        array.fill(false)
     }
 }

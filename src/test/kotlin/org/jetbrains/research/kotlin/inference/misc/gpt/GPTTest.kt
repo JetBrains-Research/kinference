@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.misc.pos
+package org.jetbrains.research.kotlin.inference.misc.gpt
 
 import org.jetbrains.research.kotlin.inference.Utils
 import org.jetbrains.research.kotlin.inference.model.Model

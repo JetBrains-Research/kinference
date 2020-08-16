@@ -22,18 +22,18 @@ fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
 fun broadcastMatrixElementsShape(fstShape: IntArray, sndShape: IntArray): Pair<IntArray, IntArray> {
     val base = broadcastShape(fstShape.copyOfRange(0, fstShape.size - 2), sndShape.copyOfRange(0, sndShape.size - 2))
 
-    val fst = IntArray(base.size + 2).apply {
+    val first = IntArray(base.size + 2).apply {
         base.copyInto(this)
         fstShape.copyInto(this, base.size, fstShape.size - 2)
     }
-    val snd = IntArray(base.size + 2).apply {
+    val second = IntArray(base.size + 2).apply {
         base.copyInto(this)
         sndShape.copyInto(this, base.size, sndShape.size - 2)
     }
-    return fst to snd
+    return first to second
 }
 
-fun <T> TypedNDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): TypedNDArray<T> {
+fun <T> MutableTypedNDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolean = false): MutableTypedNDArray<T> {
     if (this.shape.contentEquals(newShape) || asMatrixStack && this.rank <= 2) return this
 
     val castShape = newShape.copyOfRange(1, newShape.size)
@@ -41,7 +41,7 @@ fun <T> TypedNDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolea
     //broadcast is available only if corresponding dims are equal or at least one of them is 1
     return when (this.shape[0]) {
         1 -> {
-            val rows = this.row(0).innerBroadcast(castShape).toMutable()
+            val rows = (this.row(0) as MutableTypedNDArray<T>).innerBroadcast(castShape)
             val times = newShape[0]
             val reshaped = rows.reshape(1.concat(castShape))
             val resShape = reshaped.shape.copyOf().apply { set(0, times) }
@@ -52,7 +52,7 @@ fun <T> TypedNDArray<T>.innerBroadcast(newShape: IntArray, asMatrixStack: Boolea
                 }
             }
         }
-        newShape[0] -> this.rows.map { it.toMutable().innerBroadcast(castShape) }.concatenate(axis = 0).toMutable()
+        newShape[0] -> this.rows.map { it.innerBroadcast(castShape) }.concatenate(axis = 0).toMutable()
         else -> error("Cannot broadcast tensors")
     }
 }
@@ -75,10 +75,10 @@ fun <T> TypedNDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = f
 }
 
 
-fun <T> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>): MutableTypedNDArray<T> {
+fun <T : Any> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>): TypedNDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array
 
-    return NDArray(op.apply(castedThis, castedOther), type, newShape).toMutable()
+    return NDArray(type, op.apply(castedThis, castedOther), Strides(newShape), true)
 }

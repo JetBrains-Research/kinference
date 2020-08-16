@@ -2,8 +2,7 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.functional.*
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineWith
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.isScalar
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
@@ -15,8 +14,8 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
     private companion object {
         val plus = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
         val times = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
-        val minus = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
-        val div = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
+        val minus = FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, true) }
+        val div = FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, true) }
         val scalarPlus = FloatArrayWithFloat { array, value -> plus(array, value, true) }
         val scalarTimes = FloatArrayWithFloat { array, value -> times(array, value, true) }
         val scalarMinus = FloatArrayWithFloat { array, value -> minus(array, value, true) }
@@ -44,46 +43,38 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
     }
 
     override fun plus(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return if (this.isScalar() && other.isScalar()) {
-            FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarPlus)
-        } else {
-            this.combineWith(other, plus)
-        }
-    }
-
-    override fun times(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return if (this.isScalar() && other.isScalar()) {
-            FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarTimes)
-        } else {
-            this.combineWith(other, times)
+        return when {
+            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
+            this.isScalar() || other.isScalar() -> this.combine(other, scalarPlus, ordered = false)
+            else -> this.combine(other, plus, ordered = false)
         }
     }
 
     override fun minus(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return if (this.isScalar() && other.isScalar()) {
-            FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarMinus)
-        } else {
-            this.combineWith(other, minus)
+        return when {
+            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
+            other.isScalar() -> this.combine(other, scalarMinus)
+            else -> this.combine(other, minus)
+        }
+    }
+
+    override fun times(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
+        return when {
+            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
+            this.isScalar() || other.isScalar() -> this.combine(other, scalarTimes, ordered = false)
+            else -> this.combine(other, times, ordered = false)
         }
     }
 
     override fun div(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return if (this.isScalar() && other.isScalar()) {
-            FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarDiv)
-        } else {
-            this.combineWith(other, div)
+        return when {
+            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
+            other.isScalar() -> this.combine(other, scalarDiv)
+            else -> this.combine(other, div)
         }
     }
 
-    override fun mapElements(func: PrimitiveArrayFunction): NDArray<FloatArray> {
+    override fun mapElements(func: PrimitiveArrayFunction): TypedNDArray<FloatArray> {
         func as FloatArrayToFloatArray
         return FloatNDArray(map(array, func, true), strides)
     }
@@ -99,19 +90,19 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
 
 class MutableFloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : FloatNDArray(array, strides), MutableTypedNDArray<FloatArray> {
     private companion object {
-        val plus = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
-        val times = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, false) }
-        val minus = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
-        val div = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
-        val scalarPlus = FloatArrayWithFloat { array, value -> plus(array, value, false) }
-        val scalarTimes = FloatArrayWithFloat { array, value -> times(array, value, false) }
-        val scalarMinus = FloatArrayWithFloat { array, value -> minus(array, value, false) }
-        val scalarDiv = FloatArrayWithFloat { array, value -> div(array, value, false) }
+        val plusAssign = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
+        val timesAssign = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, false) }
+        val minusAssign = FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, false) }
+        val divAssign = FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, false) }
+        val scalarPlusAssign = FloatArrayWithFloat { array, value -> plus(array, value, false) }
+        val scalarTimesAssign = FloatArrayWithFloat { array, value -> times(array, value, false) }
+        val scalarMinusAssign = FloatArrayWithFloat { array, value -> minus(array, value, false) }
+        val scalarDivAssign = FloatArrayWithFloat { array, value -> div(array, value, false) }
     }
 
     override fun clean() = array.fill(0.0f)
 
-    override fun clone(): MutableFloatNDArray {
+    override fun clone(): MutableTypedNDArray<FloatArray> {
         return MutableFloatNDArray(array.copyOf(), strides)
     }
 
@@ -125,53 +116,45 @@ class MutableFloatNDArray(array: FloatArray, strides: Strides = Strides.empty())
         block.copyInto(array, startOffset)
     }
 
-    override fun toMutable(): MutableTypedNDArray<FloatArray> = this
+    override fun toMutable(): MutableTypedNDArray<FloatArray> = MutableFloatNDArray(array, strides)
 
     override fun set(i: Int, value: Any) {
         array[i] = value as Float
     }
 
     override fun plusAssign(other: TypedNDArray<FloatArray>) {
-        if (this.isScalar() && other.isScalar()) {
-            this.array[0] += other.array[0]
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarPlus)
-        } else {
-            this.combineWith(other, plus)
+        when {
+            this.isScalar() && other.isScalar() -> this.array[0] += other.array[0]
+            other.isScalar() -> this.combineAssign(other, scalarPlusAssign)
+            else -> this.combineAssign(other, plusAssign)
         }
     }
 
     override fun minusAssign(other: TypedNDArray<FloatArray>) {
-        if (this.isScalar() && other.isScalar()) {
-            this.array[0] -= other.array[0]
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarMinus)
-        } else {
-            this.combineWith(other, minus)
+        when {
+            this.isScalar() && other.isScalar() -> this.array[0] -= other.array[0]
+            other.isScalar() -> this.combineAssign(other, scalarMinusAssign)
+            else -> this.combineAssign(other, minusAssign)
         }
     }
 
     override fun timesAssign(other: TypedNDArray<FloatArray>) {
-        if (this.isScalar() && other.isScalar()) {
-            this.array[0] *= other.array[0]
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarTimes)
-        } else {
-            this.combineWith(other, times)
+        when {
+            this.isScalar() && other.isScalar() -> this.array[0] *= other.array[0]
+            other.isScalar() -> this.combineAssign(other, scalarTimesAssign)
+            else -> this.combineAssign(other, timesAssign)
         }
     }
 
     override fun divAssign(other: TypedNDArray<FloatArray>) {
-        if (this.isScalar() && other.isScalar()) {
-            this.array[0] /= other.array[0]
-        } else if (other.isScalar()) {
-            this.combineWith(other, scalarDiv)
-        } else {
-            this.combineWith(other, div)
+        when {
+            this.isScalar() && other.isScalar() -> this.array[0] /= other.array[0]
+            other.isScalar() -> this.combineAssign(other, scalarDivAssign)
+            else -> this.combineAssign(other, divAssign)
         }
     }
 
-    override fun mapElements(func: PrimitiveArrayFunction): NDArray<FloatArray> {
+    override fun mapElements(func: PrimitiveArrayFunction): MutableTypedNDArray<FloatArray> {
         func as FloatArrayToFloatArray
         map(array, func, false)
         return this

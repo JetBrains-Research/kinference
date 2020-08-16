@@ -70,16 +70,12 @@ fun <T> TypedNDArray<T>.sum(): Number {
 fun <T> MutableTypedNDArray<T>.exp(): MutableTypedNDArray<T> {
     when (array) {
         is FloatArray -> mapElements(FloatArrayToFloatArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
-        is DoubleArray -> mapElements(FloatArrayToFloatArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
+        is DoubleArray -> mapElements(DoubleArrayToDoubleArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
         else -> throw UnsupportedOperationException()
-    } as NDArray<T>
+    }
     return this
 }
 
-fun <T : Any, V : Any> TypedNDArray<T>.scalarOp(x: V, op: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
-    op.apply(array, x)
-    return this
-}
 
 fun Int.concat(array: IntArray): IntArray {
     val copy = IntArray(array.size + 1)

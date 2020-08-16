@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
@@ -25,6 +26,6 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         val tensor = inputs.first()!!
         val shape = tensor.data.shape
         val data = LongArray(shape.size) { shape[it].toLong() }
-        return listOf(NDArray(data, TensorProto.DataType.INT64, intArrayOf(data.size)).asTensor("shape"))
+        return listOf(NDArray(TensorProto.DataType.INT64, data, intArrayOf(data.size)).asTensor("shape"))
     }
 }

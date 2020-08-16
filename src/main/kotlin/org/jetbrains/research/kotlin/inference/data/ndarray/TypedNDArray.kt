@@ -12,7 +12,6 @@ interface TypedNDArray<T> {
     val rank: Int
     val linearSize: Int
     val shape: IntArray
-    val rows: Array<TypedNDArray<T>>
 
     operator fun get(i: Int): Any
     operator fun get(indices: IntArray): Any

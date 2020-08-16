@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.operators.tensor
+package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.ndarray.*

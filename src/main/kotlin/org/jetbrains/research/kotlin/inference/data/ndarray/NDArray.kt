@@ -22,14 +22,6 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
     override val shape: IntArray
         get() = strides.shape
 
-    override val rows: Array<TypedNDArray<T>>
-        get() {
-            val rowLength: Int = linearSize / shape[0]
-            val dims = shape.copyOfRange(1, rank)
-
-            return Array(shape[0]) { row -> sliceRow(rowLength, row * rowLength, dims) }
-        }
-
     override infix fun matmul(other: TypedNDArray<T>): TypedNDArray<T> {
         require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
         if (rank <= 2 && other.rank <= 2) {
@@ -39,8 +31,8 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         }
 
         val (fstShape, sndShape) = broadcastMatrixElementsShape(shape, other.shape)
-        val thisMatrices = this.toMutable().broadcast(fstShape, asMatrixStack = true).as2DList()
-        val otherMatrices = other.toMutable().broadcast(sndShape, asMatrixStack = true).as2DList()
+        val thisMatrices = this.broadcast(fstShape, asMatrixStack = true).as2DList()
+        val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
 
         val resMatrices = thisMatrices.mapIndexed { i, tensor ->
             tensor.matrixDot(otherMatrices[i])
@@ -52,18 +44,12 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         return resMatrices.concatenate(0).toMutable().reshape(shape)
     }
 
-    override fun row(row: Int): TypedNDArray<T> {
+    override fun row(row: Int): MutableTypedNDArray<T> {
         val rowLength: Int = linearSize / shape[0]
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
 
-        return sliceRow(rowLength, start, dims)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun sliceRow(rowLength: Int, start: Int, dims: IntArray): TypedNDArray<T> {
-        val row = slice(rowLength, start)
-        return NDArray(row, type, dims) as NDArray<T>
+        return createMutableNDArray(type, slice(rowLength, start), Strides(dims)) as MutableTypedNDArray<T>
     }
 
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray<T> {
@@ -120,7 +106,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        fun create(proto: TensorProto): NDArray<out Any> {
+        fun create(proto: TensorProto): TypedNDArray<out Any> {
             if (proto.dims.isNullOrEmpty()) return createScalar(proto)
 
             return when (val type = DataType.fromValue(proto.data_type ?: 0)) {
@@ -133,34 +119,31 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
             }
         }
 
-        operator fun <T> invoke(dims: List<Long>, value: List<*>, type: DataType): NDArray<T> {
+        operator fun <T> invoke(dims: List<Long>, value: List<*>, type: DataType, mutable: Boolean = false): TypedNDArray<T> {
             val data = createArray(type, value.size) { i -> value[i]!! }
-            return NDArray(data, type, dims.toIntArray()) as NDArray<T>
+            return NDArray(type, data, dims.toIntArray(), mutable) as TypedNDArray<T>
         }
 
 
-        operator fun <T> invoke(value: T, type: DataType, dims: IntArray = IntArray(0)): NDArray<T> {
-            return NDArray(value, type, Strides(dims))
+        operator fun <T : Any> invoke(type: DataType, value: T, dims: IntArray = IntArray(0), mutable: Boolean = false): TypedNDArray<T> {
+            return NDArray(type, value, Strides(dims), mutable)
         }
 
-        operator fun <T> invoke(value: T, type: DataType, strides: Strides): NDArray<T> {
-            return when (type) {
-                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
-                DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
-                DataType.INT64 -> LongNDArray(value as LongArray, strides)
-                DataType.INT32 -> IntNDArray(value as IntArray, strides)
-                //DataType.STRING -> TensorData(proto.string_data.map { it.utf8() }, type, proto.dims.toIntArray(), proto.name)
-                else -> error("Unsupported data type $type")
-            } as NDArray<T>
+        operator fun <T : Any> invoke(type: DataType, value: T, strides: Strides, mutable: Boolean = false): TypedNDArray<T> {
+            return if (mutable) {
+                createMutableNDArray<Any>(type, value, strides)
+            } else {
+                createNDArray<Any>(type, value, strides)
+            } as TypedNDArray<T>
         }
 
-        operator fun invoke(value: List<*>, type: DataType): NDArray<Any> {
+        operator fun invoke(value: List<*>, type: DataType, mutable: Boolean = false): TypedNDArray<Any> {
             val dims = intArrayOf(value.size)
             val data = createArray(type, value.size) { i -> value[i] }
-            return NDArray(data, type, dims)
+            return NDArray(type, data, dims, mutable)
         }
 
-        private fun createScalar(proto: TensorProto): NDArray<out Any> {
+        private fun createScalar(proto: TensorProto): TypedNDArray<out Any> {
             val type = DataType.fromValue(proto.data_type ?: 0)
             val array = when (type) {
                 DataType.DOUBLE -> proto.double_data
@@ -180,7 +163,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
                     DataType.BOOL -> BooleanNDArray(booleanArrayOf(proto.raw_data!!.asByteBuffer().int != 0))
                     else -> error("Unsupported data type")
                 }
-            } else NDArray(array[0], type, IntArray(0))
+            } else NDArray<Any>(type, array, IntArray(0))
         }
     }
 }

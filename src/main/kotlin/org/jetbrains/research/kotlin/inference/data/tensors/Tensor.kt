@@ -27,7 +27,7 @@ class Tensor(val data: TypedNDArray<Any>, info: TensorInfo) : ONNXData(ONNXDataT
 
     fun mapElements(type: DataType = this.data.type, func: (Any) -> Any): Tensor {
         val buffer = createArray(type, data.linearSize) { func(data[it]) }
-        return NDArray(buffer, type, data.shape).asTensor()
+        return NDArray(type, buffer, data.shape, false).asTensor()
     }
 
     operator fun plus(other: Tensor): Tensor {
