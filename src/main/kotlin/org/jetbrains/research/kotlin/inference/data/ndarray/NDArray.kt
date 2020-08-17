@@ -32,19 +32,6 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
             return actualThis.matrixDot(actualOther)
         }
 
-        /*val (fstShape, sndShape) = broadcastMatrixElementsShape(shape, other.shape)
-        val thisMatrices = this.broadcast(fstShape, asMatrixStack = true).as2DList()
-        val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
-
-        val resMatrices = thisMatrices.mapIndexed { i, tensor ->
-            tensor.matrixDot(otherMatrices[i])
-        }
-
-        val lastDims = resMatrices.first().shape
-
-        val shape = shape.copyOf(rank - 2) + lastDims
-        return resMatrices.concatenate(0).toMutable().reshape(shape)*/
-
         val outputMatrixShape = intArrayOf(shape[indexAxis(-2)], other.shape[other.indexAxis(-1)])
         val broadcastShape = broadcastShape(shape.copyOfRange(0, rank - 2), other.shape.copyOfRange(0, other.rank - 2))
 
@@ -55,8 +42,8 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         val outputStrides = Strides(outputShape)
         val outputArray = allocateNDArray<T>(type, outputStrides)
 
-        val leftWrapShape = wrapOnes(shape, outputShape.size)
-        val rightWrapShape = wrapOnes(other.shape, outputShape.size)
+        val leftWrapShape = unsqueezeFirst(shape, outputShape.size)
+        val rightWrapShape = unsqueezeFirst(other.shape, outputShape.size)
 
         val leftWrapped = createNDArray(type, array, leftWrapShape, offset)
         val rightWrapped = createNDArray(type, other.array, rightWrapShape, other.offset)

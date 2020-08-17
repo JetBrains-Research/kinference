@@ -26,7 +26,7 @@ fun <T : Any, V : Any> TypedNDArray<T>.combine(other: TypedNDArray<T>, destinati
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Any, V : Any> TypedNDArray<T>.combineAssign(other: TypedNDArray<T>, func: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
+fun <T : Any, V : Any> MutableTypedNDArray<T>.combineAssign(other: TypedNDArray<T>, func: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
     if (other.isScalar()) {
         return this.scalarCombineAssign(other[0] as V, func)
     }
