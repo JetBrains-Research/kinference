@@ -58,7 +58,7 @@ fun gemm(m: Int, n: Int, k: Int, alpha: Float, a: FloatArray, lda: Int, b: Float
                     val temp = a[aIdx + i]
                     val bIdx = i * ldb + bOffset
                     for (j in 0 until n) {
-                        c[cIdx + j] += temp * b[bIdx + j]
+                        c[cIdx + j] += alpha * temp * b[bIdx + j]
                     }
                 }
             }
