@@ -3,10 +3,7 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArraysCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.rows
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
 import kotlin.math.max

@@ -1,11 +1,8 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.broadcastShape
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createMutableNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.createNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 interface TypedNDArray<T> {
@@ -42,11 +39,6 @@ interface TypedNDArray<T> {
     fun mapElements(func: PrimitiveArrayFunction): TypedNDArray<T>
     fun slice(sliceLength: Int, start: Int): T
     infix fun matmul(other: TypedNDArray<T>): TypedNDArray<T>
-
-    fun view(vararg axes: Int): TypedNDArray<T> {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return createNDArray(type, array, Strides(newShape), offset + additionalOffset)
-    }
 }
 
 interface MutableTypedNDArray<T> : TypedNDArray<T> {
@@ -62,25 +54,6 @@ interface MutableTypedNDArray<T> : TypedNDArray<T> {
 
     fun reshape(shape: IntArray): MutableTypedNDArray<T> = reshape(Strides(shape))
     fun reshape(strides: Strides): MutableTypedNDArray<T>
-
-    fun viewMutable(vararg axes: Int): MutableTypedNDArray<T> {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return createMutableNDArray(type, array, Strides(newShape), offset + additionalOffset)
-    }
-
     fun clean()
 }
 
-fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
-    val newOffset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
-    val newShape = strides.shape.copyOfRange(axes.size, strides.shape.size)
-
-    return newOffset to newShape
-}
-
-fun <T> allocateHelper(shape: IntArray, otherShape: IntArray, type: TensorProto.DataType): MutableTypedNDArray<T> {
-    return if (shape.contentEquals(otherShape))
-        allocateNDArray(type, Strides(shape))
-    else
-        allocateNDArray(type, Strides(broadcastShape(shape, otherShape)))
-}
