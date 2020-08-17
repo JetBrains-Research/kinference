@@ -72,7 +72,7 @@ interface MutableTypedNDArray<T> : TypedNDArray<T> {
 }
 
 fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
-    val newOffset = strides.strides.reduceIndexed { index, acc, i -> acc + i * axes[index] }
+    val newOffset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
     val newShape = strides.shape.copyOfRange(axes.size, strides.shape.size)
 
     return newOffset to newShape

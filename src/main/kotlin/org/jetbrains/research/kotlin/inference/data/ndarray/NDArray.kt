@@ -1,9 +1,6 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
-import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
+import org.jetbrains.research.kotlin.inference.data.tensors.*
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
@@ -35,7 +32,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
             return actualThis.matrixDot(actualOther)
         }
 
-        val (fstShape, sndShape) = broadcastMatrixElementsShape(shape, other.shape)
+        /*val (fstShape, sndShape) = broadcastMatrixElementsShape(shape, other.shape)
         val thisMatrices = this.broadcast(fstShape, asMatrixStack = true).as2DList()
         val otherMatrices = other.broadcast(sndShape, asMatrixStack = true).as2DList()
 
@@ -46,7 +43,26 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         val lastDims = resMatrices.first().shape
 
         val shape = shape.copyOf(rank - 2) + lastDims
-        return resMatrices.concatenate(0).toMutable().reshape(shape)
+        return resMatrices.concatenate(0).toMutable().reshape(shape)*/
+
+        val outputMatrixShape = intArrayOf(shape[indexAxis(-2)], other.shape[other.indexAxis(-1)])
+        val broadcastShape = broadcastShape(shape.copyOfRange(0, rank - 2), other.shape.copyOfRange(0, other.rank - 2))
+
+        val outputShape = IntArray(broadcastShape.size + 2)
+        broadcastShape.copyInto(outputShape)
+        outputMatrixShape.copyInto(outputShape, broadcastShape.size)
+
+        val outputStrides = Strides(outputShape)
+        val outputArray = allocateNDArray<T>(type, outputStrides)
+
+        val leftWrapShape = wrapOnes(shape, outputShape.size)
+        val rightWrapShape = wrapOnes(other.shape, outputShape.size)
+
+        val leftWrapped = createNDArray(type, array, leftWrapShape, offset)
+        val rightWrapped = createNDArray(type, other.array, rightWrapShape, other.offset)
+
+        broadcastDot(leftWrapped, rightWrapped, outputArray)
+        return outputArray
     }
 
     override fun row(row: Int): MutableTypedNDArray<T> {

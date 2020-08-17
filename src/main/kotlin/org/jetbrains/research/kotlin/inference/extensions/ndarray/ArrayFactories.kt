@@ -30,7 +30,7 @@ fun <T> createMutableNDArray(type: DataType, value: T, strides: Strides, offset:
 }
 
 fun <T> createMutableNDArray(type: DataType, value: T, shape: IntArray, offset: Int = 0): MutableTypedNDArray<T> {
-    return createMutableNDArray(type, value, Strides(shape))
+    return createMutableNDArray(type, value, Strides(shape), offset)
 }
 
 fun <T> createNDArray(type: DataType, value: T, strides: Strides, offset: Int = 0): TypedNDArray<T> {
@@ -46,8 +46,8 @@ fun <T> createNDArray(type: DataType, value: T, strides: Strides, offset: Int = 
     } as TypedNDArray<T>
 }
 
-fun <T> createNDArray(type: DataType, value: T, shape: IntArray): TypedNDArray<T> {
-    return createNDArray(type, value, Strides(shape))
+fun <T> createNDArray(type: DataType, value: T, shape: IntArray, offset: Int = 0): TypedNDArray<T> {
+    return createNDArray(type, value, Strides(shape), offset)
 }
 
 inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
