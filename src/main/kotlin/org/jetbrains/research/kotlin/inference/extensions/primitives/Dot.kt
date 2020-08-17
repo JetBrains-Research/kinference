@@ -11,13 +11,13 @@ fun dotInto(left: FloatArray, leftOffset: Int, leftShape: IntArray,
     val t = leftShape[1]
 
     for (i in 0 until n) {
-        val ind = i * m
-        val ind2 = i * t
+        val dInd = i * m + destinationOffset
+        val lInd = i * t + leftOffset
         for (k in 0 until t) {
-            val temp = left[leftOffset + ind2 + k]
-            val ind3 = k * m
+            val temp = left[lInd + k]
+            val rInd = k * m + rightOffset
             for (j in 0 until m) {
-                destination[destinationOffset + ind + j] += temp * right[rightOffset + ind3 + j]
+                destination[dInd + j] += temp * right[rInd + j]
             }
         }
     }
