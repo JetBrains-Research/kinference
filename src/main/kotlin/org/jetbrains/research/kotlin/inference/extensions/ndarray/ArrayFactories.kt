@@ -16,31 +16,31 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
     }
 }
 
-fun <T> createMutableNDArray(type: DataType, value: T, strides: Strides): MutableTypedNDArray<T> {
+fun <T> createMutableNDArray(type: DataType, value: T, strides: Strides, offset: Int = 0): MutableTypedNDArray<T> {
     return when (type) {
-        DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides)
-        DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides)
-        DataType.INT64 -> MutableLongNDArray(value as LongArray, strides)
-        DataType.INT32 -> MutableIntNDArray(value as IntArray, strides)
-        DataType.INT16 -> MutableShortNDArray(value as ShortArray, strides)
-        DataType.BOOL -> MutableBooleanNDArray(value as BooleanArray, strides)
+        DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides, offset)
+        DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides, offset)
+        DataType.INT64 -> MutableLongNDArray(value as LongArray, strides, offset)
+        DataType.INT32 -> MutableIntNDArray(value as IntArray, strides, offset)
+        DataType.INT16 -> MutableShortNDArray(value as ShortArray, strides, offset)
+        DataType.BOOL -> MutableBooleanNDArray(value as BooleanArray, strides, offset)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     } as MutableTypedNDArray<T>
 }
 
-fun <T> createMutableNDArray(type: DataType, value: T, shape: IntArray): MutableTypedNDArray<T> {
+fun <T> createMutableNDArray(type: DataType, value: T, shape: IntArray, offset: Int = 0): MutableTypedNDArray<T> {
     return createMutableNDArray(type, value, Strides(shape))
 }
 
-fun <T> createNDArray(type: DataType, value: T, strides: Strides): TypedNDArray<T> {
+fun <T> createNDArray(type: DataType, value: T, strides: Strides, offset: Int = 0): TypedNDArray<T> {
     return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
-        DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
-        DataType.INT64 -> LongNDArray(value as LongArray, strides)
-        DataType.INT32 -> IntNDArray(value as IntArray, strides)
-        DataType.INT16 -> ShortNDArray(value as ShortArray, strides)
-        DataType.BOOL -> BooleanNDArray(value as BooleanArray, strides)
+        DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides, offset)
+        DataType.FLOAT -> FloatNDArray(value as FloatArray, strides, offset)
+        DataType.INT64 -> LongNDArray(value as LongArray, strides, offset)
+        DataType.INT32 -> IntNDArray(value as IntArray, strides, offset)
+        DataType.INT16 -> ShortNDArray(value as ShortArray, strides, offset)
+        DataType.BOOL -> BooleanNDArray(value as BooleanArray, strides, offset)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     } as TypedNDArray<T>

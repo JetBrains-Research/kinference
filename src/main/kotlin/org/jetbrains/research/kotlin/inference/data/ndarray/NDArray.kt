@@ -1,15 +1,20 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcast
+import org.jetbrains.research.kotlin.inference.data.tensors.broadcastMatrixElementsShape
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
+import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
+import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import kotlin.math.abs
 
-abstract class NDArray<T> protected constructor(override val array: T, strides: Strides, override val type: DataType) : TypedNDArray<T> {
+abstract class NDArray<T> protected constructor(override val array: T, strides: Strides, override val type: DataType, override val offset: Int = 0) : TypedNDArray<T> {
     final override var strides: Strides = strides
         protected set
 

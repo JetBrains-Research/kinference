@@ -1,25 +1,30 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.functional.*
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayWithFloat
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayWithFloatArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combine
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineAssign
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.isScalar
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT) {
-    init {
+open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT, offset) {
+    /*init {
         require(array.size == strides.linearSize)
-    }
+    }*/
 
     private companion object {
-        val plus = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, true) }
-        val times = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, true) }
-        val minus = FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, true) }
-        val div = FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, true) }
-        val scalarPlus = FloatArrayWithFloat { array, value -> plus(array, value, true) }
-        val scalarTimes = FloatArrayWithFloat { array, value -> times(array, value, true) }
-        val scalarMinus = FloatArrayWithFloat { array, value -> minus(array, value, true) }
-        val scalarDiv = FloatArrayWithFloat { array, value -> div(array, value, true) }
+        val plus = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val times = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val minus = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val div = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val scalarPlus = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
+        val scalarTimes = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
+        val scalarMinus = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
+        val scalarDiv = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
     }
 
     override fun clone(): TypedNDArray<FloatArray> {
@@ -42,41 +47,45 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
         }
     }
 
-    override fun plus(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return when {
-            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] + other.array[0]))
-            this.isScalar() || other.isScalar() -> this.combine(other, scalarPlus, ordered = false)
-            else -> this.combine(other, plus, ordered = false)
+    override fun plus(other: TypedNDArray<FloatArray>, destination: MutableTypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] + other.array[0]
+            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarPlus, ordered = false)
+            else -> this.combine(other, destination, plus, ordered = false)
         }
+        return destination
     }
 
-    override fun minus(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return when {
-            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] - other.array[0]))
-            other.isScalar() -> this.combine(other, scalarMinus)
-            else -> this.combine(other, minus)
+    override fun minus(other: TypedNDArray<FloatArray>, destination: MutableTypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] - other.array[0]
+            other.isScalar() -> this.combine(other, destination, scalarMinus)
+            else -> this.combine(other, destination, minus)
         }
+        return destination
     }
 
-    override fun times(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return when {
-            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] * other.array[0]))
-            this.isScalar() || other.isScalar() -> this.combine(other, scalarTimes, ordered = false)
-            else -> this.combine(other, times, ordered = false)
+    override fun times(other: TypedNDArray<FloatArray>, destination: MutableTypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] * other.array[0]
+            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarTimes, ordered = false)
+            else -> this.combine(other, destination, times, ordered = false)
         }
+        return destination
     }
 
-    override fun div(other: TypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
-        return when {
-            this.isScalar() && other.isScalar() -> FloatNDArray(floatArrayOf(this.array[0] / other.array[0]))
-            other.isScalar() -> this.combine(other, scalarDiv)
-            else -> this.combine(other, div)
+    override fun div(other: TypedNDArray<FloatArray>, destination: MutableTypedNDArray<FloatArray>): TypedNDArray<FloatArray> {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] / other.array[0]
+            other.isScalar() -> this.combine(other, destination, scalarDiv)
+            else -> this.combine(other, destination, div)
         }
+        return destination
     }
 
     override fun mapElements(func: PrimitiveArrayFunction): TypedNDArray<FloatArray> {
         func as FloatArrayToFloatArray
-        return FloatNDArray(map(array, func, true), strides)
+        return FloatNDArray(map(array, func, true), strides, offset)
     }
 
     override fun slice(sliceLength: Int, start: Int): FloatArray {
@@ -84,20 +93,20 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
     }
 
     override fun toMutable(): MutableTypedNDArray<FloatArray> {
-        return MutableFloatNDArray(array.copyOf(), strides)
+        return MutableFloatNDArray(array.copyOf(), strides, offset)
     }
 }
 
-class MutableFloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) : FloatNDArray(array, strides), MutableTypedNDArray<FloatArray> {
+class MutableFloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), offset: Int = 0) : FloatNDArray(array, strides, offset), MutableTypedNDArray<FloatArray> {
     private companion object {
-        val plusAssign = FloatArrayWithFloatArray { array, otherArray -> plus(array, otherArray, false) }
-        val timesAssign = FloatArrayWithFloatArray { array, otherArray -> times(array, otherArray, false) }
-        val minusAssign = FloatArrayWithFloatArray { array, otherArray -> minus(array, otherArray, false) }
-        val divAssign = FloatArrayWithFloatArray { array, otherArray -> div(array, otherArray, false) }
-        val scalarPlusAssign = FloatArrayWithFloat { array, value -> plus(array, value, false) }
-        val scalarTimesAssign = FloatArrayWithFloat { array, value -> times(array, value, false) }
-        val scalarMinusAssign = FloatArrayWithFloat { array, value -> minus(array, value, false) }
-        val scalarDivAssign = FloatArrayWithFloat { array, value -> div(array, value, false) }
+        val plusAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val timesAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val minusAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val divAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
+        val scalarPlusAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
+        val scalarTimesAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
+        val scalarMinusAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
+        val scalarDivAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
     }
 
     override fun clean() = array.fill(0.0f)

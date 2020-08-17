@@ -4,7 +4,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL) {
+open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL, offset) {
     init {
         require(array.size == strides.linearSize)
     }
@@ -28,7 +28,7 @@ open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(
         }
     }
 
-    override fun div(other: TypedNDArray<BooleanArray>): TypedNDArray<BooleanArray> {
+    override fun div(other: TypedNDArray<BooleanArray>, destination: MutableTypedNDArray<BooleanArray>): MutableTypedNDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
@@ -40,15 +40,15 @@ open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(
         return array.sliceArray(start until start + sliceLength)
     }
 
-    override fun plus(other: TypedNDArray<BooleanArray>): TypedNDArray<BooleanArray> {
+    override fun plus(other: TypedNDArray<BooleanArray>, destination: MutableTypedNDArray<BooleanArray>): MutableTypedNDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun minus(other: TypedNDArray<BooleanArray>): TypedNDArray<BooleanArray> {
+    override fun minus(other: TypedNDArray<BooleanArray>, destination: MutableTypedNDArray<BooleanArray>): MutableTypedNDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
-    override fun times(other: TypedNDArray<BooleanArray>): TypedNDArray<BooleanArray> {
+    override fun times(other: TypedNDArray<BooleanArray>, destination: MutableTypedNDArray<BooleanArray>): MutableTypedNDArray<BooleanArray> {
         TODO("Not yet implemented")
     }
 
@@ -57,7 +57,7 @@ open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(
     }
 }
 
-class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()) : BooleanNDArray(array, strides), MutableTypedNDArray<BooleanArray> {
+class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0) : BooleanNDArray(array, strides, offset), MutableTypedNDArray<BooleanArray> {
     override fun set(i: Int, value: Any) {
         array[i] = value as Boolean
     }

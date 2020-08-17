@@ -1,8 +1,11 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArraysCombineFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.concatenate
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.rows
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import kotlin.math.max
 
@@ -74,10 +77,14 @@ fun <T> TypedNDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = f
     return preResult.innerBroadcast(newShape, asMatrixStack)
 }
 
-fun <T : Any> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>): TypedNDArray<T> {
-    val newShape = broadcastShape(this.shape, other.shape)
-    val castedThis = this.broadcast(newShape).array
-    val castedOther = other.broadcast(newShape).array
 
-    return createMutableNDArray(type, op.apply(castedThis, castedOther), newShape)
+fun <T : Any> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, destination: MutableTypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>) {
+    val newShape = broadcastShape(this.shape, other.shape)
+    val castedThis = this.broadcast(newShape)
+    val castedOther = other.broadcast(newShape)
+
+    require(newShape.contentEquals(destination.shape))
+    op.apply(castedThis.array, castedThis.offset, castedOther.array, castedOther.offset, destination.array, destination.offset, castedThis.linearSize)
+
+    //return destination
 }
