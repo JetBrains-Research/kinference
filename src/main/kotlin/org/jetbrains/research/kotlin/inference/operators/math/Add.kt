@@ -35,8 +35,7 @@ class Add(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val result = inputs.first()!!.data.toMutable()
-        result.plusAssign(inputs.last()!!.data)
-        return listOf(result.asTensor())
+        val result = inputs.first()!!.data + inputs.last()!!.data
+        return listOf(result.asTensor("C"))
     }
 }

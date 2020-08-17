@@ -27,7 +27,7 @@ interface TypedNDArray<T> {
     fun toMutable(): MutableTypedNDArray<T>
 
     fun mapElements(func: PrimitiveArrayFunction): TypedNDArray<T>
-    fun slice(sliceLength: Int, start: Int): Any
+    fun slice(sliceLength: Int, start: Int): T
     infix fun matmul(other: TypedNDArray<T>): TypedNDArray<T>
 }
 

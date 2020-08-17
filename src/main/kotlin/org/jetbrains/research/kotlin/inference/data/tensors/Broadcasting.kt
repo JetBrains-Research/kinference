@@ -74,11 +74,10 @@ fun <T> TypedNDArray<T>.broadcast(newShape: IntArray, asMatrixStack: Boolean = f
     return preResult.innerBroadcast(newShape, asMatrixStack)
 }
 
-
 fun <T : Any> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>): TypedNDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
     val castedThis = this.broadcast(newShape).array
     val castedOther = other.broadcast(newShape).array
 
-    return NDArray(type, op.apply(castedThis, castedOther), Strides(newShape), true)
+    return createMutableNDArray(type, op.apply(castedThis, castedOther), newShape)
 }

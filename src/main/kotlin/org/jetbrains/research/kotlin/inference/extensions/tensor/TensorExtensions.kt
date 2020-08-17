@@ -13,8 +13,12 @@ fun Collection<Tensor>.stack(axis: Int): Tensor {
     return this.map { it.data.toMutable().reshape(newShape) }.concatenate(axis).asTensor()
 }
 
-fun Collection<Tensor>.concatenate(axis: Int): Tensor {
-    return this.reduce { acc, tensor -> acc.data.concatenate(tensor.data, axis).asTensor() }
+fun List<Tensor>.concatenate(axis: Int): Tensor {
+    var acc = this[0].data
+    for (i in 1 until this.size) {
+        acc = acc.concatenate(this[i].data, axis)
+    }
+    return acc.asTensor()
 }
 
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {

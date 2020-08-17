@@ -2,7 +2,6 @@ package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.*
-import org.jetbrains.research.kotlin.inference.extensions.functional.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
@@ -128,7 +127,7 @@ fun <T> MutableTypedNDArray<T>.reshape(tensorShape: TypedNDArray<T>): MutableTyp
 
     val negativeIdx = requestedShape.indexOf(-1)
     if (negativeIdx != -1) {
-        val elementsCount = newShape.filter { it != -1 }.reduce(Int::times)
+        val elementsCount = newShape.filter { it != -1 }.fold(1, Int::times)
         newShape[negativeIdx] = strides.linearSize / elementsCount
     }
 

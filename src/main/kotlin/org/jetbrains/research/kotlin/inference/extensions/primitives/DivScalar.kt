@@ -7,7 +7,7 @@ fun div(array: FloatArray, scalar: Number, copy: Boolean): FloatArray {
 
     for (i in result.indices) result[i] = array[i] / value
 
-    return array
+    return result
 }
 
 fun div(array: IntArray, scalar: Number, copy: Boolean): IntArray {
@@ -17,7 +17,7 @@ fun div(array: IntArray, scalar: Number, copy: Boolean): IntArray {
 
     for (i in result.indices) result[i] = array[i] / value
 
-    return array
+    return result
 }
 
 fun div(array: LongArray, scalar: Number, copy: Boolean): LongArray {
@@ -27,7 +27,7 @@ fun div(array: LongArray, scalar: Number, copy: Boolean): LongArray {
 
     for (i in result.indices) result[i] = array[i] / value
 
-    return array
+    return result
 }
 
 fun div(array: DoubleArray, scalar: Number, copy: Boolean): DoubleArray {
@@ -37,7 +37,7 @@ fun div(array: DoubleArray, scalar: Number, copy: Boolean): DoubleArray {
 
     for (i in result.indices) result[i] = array[i] / value
 
-    return array
+    return result
 }
 
 fun div(array: ShortArray, scalar: Number, copy: Boolean): ShortArray {
@@ -47,5 +47,5 @@ fun div(array: ShortArray, scalar: Number, copy: Boolean): ShortArray {
 
     for (i in result.indices) result[i] = (array[i] / value).toShort()
 
-    return array
+    return result
 }

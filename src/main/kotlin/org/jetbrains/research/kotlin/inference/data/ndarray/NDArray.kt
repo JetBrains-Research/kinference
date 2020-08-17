@@ -25,8 +25,8 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
     override infix fun matmul(other: TypedNDArray<T>): TypedNDArray<T> {
         require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
         if (rank <= 2 && other.rank <= 2) {
-            val actualThis = if (rank == 1) this.toMutable().reshape(1.concat(shape)) else this.toMutable()
-            val actualOther = if (other.rank == 1) this.toMutable().reshape(other.shape.concat(1)) else other.toMutable()
+            val actualThis = if (rank == 1) this.toMutable().reshape(1.concat(shape)) else this
+            val actualOther = if (other.rank == 1) this.toMutable().reshape(other.shape.concat(1)) else other
             return actualThis.matrixDot(actualOther)
         }
 
@@ -49,10 +49,10 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
 
-        return createMutableNDArray(type, slice(rowLength, start), Strides(dims)) as MutableTypedNDArray<T>
+        return createMutableNDArray(type, slice(rowLength, start), dims)
     }
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray<T> {
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): TypedNDArray<T> {
         val newShape = IntArray(shape.size) {
             val length = abs(ends[it] - starts[it])
             val rest = length % abs(steps[it])
@@ -64,7 +64,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
 
         slice(newArray, 0, 0, shape, starts, ends, steps)
 
-        return createNDArrayFromLateInitArray(type, newArray, newStrides) as NDArray<T>
+        return createNDArrayFromLateInitArray(type, newArray, newStrides)
     }
 
     private fun slice(dest: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
@@ -119,30 +119,6 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
             }
         }
 
-        operator fun <T> invoke(dims: List<Long>, value: List<*>, type: DataType, mutable: Boolean = false): TypedNDArray<T> {
-            val data = createArray(type, value.size) { i -> value[i]!! }
-            return NDArray(type, data, dims.toIntArray(), mutable) as TypedNDArray<T>
-        }
-
-
-        operator fun <T : Any> invoke(type: DataType, value: T, dims: IntArray = IntArray(0), mutable: Boolean = false): TypedNDArray<T> {
-            return NDArray(type, value, Strides(dims), mutable)
-        }
-
-        operator fun <T : Any> invoke(type: DataType, value: T, strides: Strides, mutable: Boolean = false): TypedNDArray<T> {
-            return if (mutable) {
-                createMutableNDArray<Any>(type, value, strides)
-            } else {
-                createNDArray<Any>(type, value, strides)
-            } as TypedNDArray<T>
-        }
-
-        operator fun invoke(value: List<*>, type: DataType, mutable: Boolean = false): TypedNDArray<Any> {
-            val dims = intArrayOf(value.size)
-            val data = createArray(type, value.size) { i -> value[i] }
-            return NDArray(type, data, dims, mutable)
-        }
-
         private fun createScalar(proto: TensorProto): TypedNDArray<out Any> {
             val type = DataType.fromValue(proto.data_type ?: 0)
             val array = when (type) {
@@ -163,7 +139,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
                     DataType.BOOL -> BooleanNDArray(booleanArrayOf(proto.raw_data!!.asByteBuffer().int != 0))
                     else -> error("Unsupported data type")
                 }
-            } else NDArray<Any>(type, array, IntArray(0))
+            } else createNDArray(type, array, Strides.empty())
         }
     }
 }

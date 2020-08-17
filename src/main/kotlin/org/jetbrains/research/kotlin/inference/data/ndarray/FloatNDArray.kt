@@ -84,7 +84,7 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty()) :
     }
 
     override fun toMutable(): MutableTypedNDArray<FloatArray> {
-        return MutableFloatNDArray(array, strides)
+        return MutableFloatNDArray(array.copyOf(), strides)
     }
 }
 

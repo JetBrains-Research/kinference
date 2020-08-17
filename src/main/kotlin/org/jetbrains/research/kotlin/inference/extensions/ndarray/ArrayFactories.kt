@@ -16,7 +16,7 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
     }
 }
 
-inline fun <reified T> createMutableNDArray(type: DataType, value: T, strides: Strides): MutableTypedNDArray<T> {
+fun <T> createMutableNDArray(type: DataType, value: T, strides: Strides): MutableTypedNDArray<T> {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides)
         DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides)
@@ -29,7 +29,11 @@ inline fun <reified T> createMutableNDArray(type: DataType, value: T, strides: S
     } as MutableTypedNDArray<T>
 }
 
-inline fun <reified T> createNDArray(type: DataType, value: T, strides: Strides): TypedNDArray<T> {
+fun <T> createMutableNDArray(type: DataType, value: T, shape: IntArray): MutableTypedNDArray<T> {
+    return createMutableNDArray(type, value, Strides(shape))
+}
+
+fun <T> createNDArray(type: DataType, value: T, strides: Strides): TypedNDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
         DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
@@ -40,6 +44,10 @@ inline fun <reified T> createNDArray(type: DataType, value: T, strides: Strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     } as TypedNDArray<T>
+}
+
+fun <T> createNDArray(type: DataType, value: T, shape: IntArray): TypedNDArray<T> {
+    return createNDArray(type, value, Strides(shape))
 }
 
 inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
@@ -100,7 +108,7 @@ fun createLateInitArray(type: DataType, size: Int): LateInitArray {
 
 @Suppress("UNCHECKED_CAST")
 // TODO move into LateInitArray
-fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): NDArray<Any> {
+fun <T> createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): TypedNDArray<T> {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray((array as LateInitDoubleArray).getArray(), strides)
         DataType.FLOAT -> FloatNDArray((array as LateInitFloatArray).getArray(), strides)
@@ -109,7 +117,7 @@ fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides
         DataType.INT16 -> ShortNDArray((array as LateInitShortArray).getArray(), strides)
         DataType.BOOL -> BooleanNDArray((array as LateInitBooleanArray).getArray(), strides)
         else -> error("")
-    } as NDArray<Any>
+    } as TypedNDArray<T>
 }
 
 val SUPPORTED_TYPES = setOf(DataType.DOUBLE, DataType.FLOAT, DataType.INT64, DataType.INT32, DataType.INT16)

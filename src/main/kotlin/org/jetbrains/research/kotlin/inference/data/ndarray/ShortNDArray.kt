@@ -83,7 +83,7 @@ open class ShortNDArray(array: ShortArray, strides: Strides = Strides.empty()) :
     }
 
     override fun toMutable(): MutableTypedNDArray<ShortArray> {
-        return MutableShortNDArray(array, strides)
+        return MutableShortNDArray(array.copyOf(), strides)
     }
 }
 

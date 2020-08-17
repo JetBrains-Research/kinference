@@ -7,7 +7,7 @@ fun plus(array: FloatArray, scalar: Number, copy: Boolean): FloatArray {
 
     for (i in result.indices) result[i] = array[i] + value
 
-    return array
+    return result
 }
 
 fun plus(array: IntArray, scalar: Number, copy: Boolean): IntArray {
@@ -17,7 +17,7 @@ fun plus(array: IntArray, scalar: Number, copy: Boolean): IntArray {
 
     for (i in result.indices) result[i] = array[i] + value
 
-    return array
+    return result
 }
 
 fun plus(array: LongArray, scalar: Number, copy: Boolean): LongArray {
@@ -27,7 +27,7 @@ fun plus(array: LongArray, scalar: Number, copy: Boolean): LongArray {
 
     for (i in result.indices) result[i] = array[i] + value
 
-    return array
+    return result
 }
 
 fun plus(array: DoubleArray, scalar: Number, copy: Boolean): DoubleArray {
@@ -37,7 +37,7 @@ fun plus(array: DoubleArray, scalar: Number, copy: Boolean): DoubleArray {
 
     for (i in result.indices) result[i] = array[i] + value
 
-    return array
+    return result
 }
 
 fun plus(array: ShortArray, scalar: Number, copy: Boolean): ShortArray {
@@ -47,5 +47,5 @@ fun plus(array: ShortArray, scalar: Number, copy: Boolean): ShortArray {
 
     for (i in result.indices) result[i] = (array[i] + value).toShort()
 
-    return array
+    return result
 }

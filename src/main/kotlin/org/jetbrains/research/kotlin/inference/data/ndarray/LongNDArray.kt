@@ -83,7 +83,7 @@ open class LongNDArray(array: LongArray, strides: Strides = Strides.empty()) : N
     }
 
     override fun toMutable(): MutableTypedNDArray<LongArray> {
-        return MutableLongNDArray(array, strides)
+        return MutableLongNDArray(array.copyOf(), strides)
     }
 }
 

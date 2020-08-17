@@ -20,7 +20,7 @@ fun <T : Any, V : Any> TypedNDArray<T>.combine(other: TypedNDArray<T>, func: Pri
         return this.applyWithBroadcast(other, func)
     }
 
-    return NDArray(type, func.apply(array, other.array), strides, false)
+    return createNDArray(type, func.apply(array, other.array), strides)
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -37,7 +37,7 @@ fun <T : Any, V : Any> TypedNDArray<T>.combineAssign(other: TypedNDArray<T>, fun
 }
 
 fun <T : Any, V : Any> TypedNDArray<T>.scalarCombine(x: V, func: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
-    return NDArray(type, func.apply(array, x), strides, false)
+    return createNDArray(type, func.apply(array, x), strides)
 }
 
 fun <T : Any, V : Any> TypedNDArray<T>.scalarCombineAssign(x: V, op: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
