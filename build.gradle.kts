@@ -8,7 +8,7 @@ version = "0.1.0"
 plugins {
     idea
     id("tanvd.kosogor") version "1.0.9" apply true
-    kotlin("jvm") version "1.4.0-rc" apply true
+    kotlin("jvm") version "1.4.0" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
 }
