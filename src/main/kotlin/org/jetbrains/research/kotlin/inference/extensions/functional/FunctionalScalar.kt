@@ -1,8 +1,6 @@
 package org.jetbrains.research.kotlin.inference.extensions.functional
 
-interface PrimitiveArrayValueCombineFunction<T, V> {
-    //fun apply(array: T, value: V): T
-}
+interface PrimitiveArrayValueCombineFunction<T, V>
 
 fun interface PrimitiveArrayWithScalar<T, V> : PrimitiveArrayValueCombineFunction<T, V> {
     fun apply(array: T, offset: Int, value: V, destination: T, destinationOffset: Int, size: Int)

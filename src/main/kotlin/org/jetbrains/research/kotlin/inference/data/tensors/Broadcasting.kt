@@ -7,42 +7,17 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
 import kotlin.math.max
 
-fun broadcastShape(currentShape: IntArray, newShape: IntArray): IntArray {
-    val totalShapeLength = max(currentShape.size, newShape.size)
+fun broadcastShape(firstShape: IntArray, secondShape: IntArray): IntArray {
+    val totalShapeLength = max(firstShape.size, secondShape.size)
 
     return IntArray(totalShapeLength) { i ->
-        val currentDim = currentShape.getOrNull(currentShape.size - i - 1) ?: 1
-        val newDim = newShape.getOrNull(newShape.size - i - 1) ?: 1
+        val firstDim = firstShape.getOrNull(firstShape.size - i - 1) ?: 1
+        val second = secondShape.getOrNull(secondShape.size - i - 1) ?: 1
 
-        if (currentDim != newDim && currentDim != 1 && newDim != 1) error("Cannot broadcast shapes")
+        if (firstDim != second && firstDim != 1 && second != 1) error("Cannot broadcast shapes")
 
-        max(currentDim, newDim)
+        max(firstDim, second)
     }.reversedArray()
-}
-
-fun <T> TypedNDArray<T>.broadcast(newShape: IntArray): TypedNDArray<T> {
-    if (this.shape.contentEquals(newShape)) return this
-
-    val unsqueezedShape = if (newShape.size <= rank) {
-        this.shape.copyOf()
-    } else {
-        unsqueezeFirst(this.shape, newShape.size)
-    }
-
-    val unsqueezedStrides = Strides(unsqueezedShape)
-    val newStrides = Strides(newShape)
-    val newArray = allocateNDArray<T>(type, newStrides)
-
-    for (i in newStrides.strides.size - 1 until 0) {
-        val blockSize = unsqueezedStrides.strides[i]
-        val requiredBlockSize = newStrides.strides[i]
-        if (blockSize < requiredBlockSize) {
-            for (j in 0 until (requiredBlockSize / blockSize)) {
-                newArray.place(blockSize * j, array, 0, blockSize)
-            }
-        }
-    }
-    return newArray
 }
 
 fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
@@ -54,26 +29,26 @@ fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
     return wrappedShape
 }
 
-fun <T> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, destination: MutableTypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>) {
+fun <T> TypedNDArray<T>.applyWithBroadcast(other: TypedNDArray<T>, destination: MutableTypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>, ordered: Boolean = false): MutableTypedNDArray<T> {
     val newShape = broadcastShape(this.shape, other.shape)
 
-    require(destination.shape.contentEquals(newShape))
+    require(destination.shape.contentEquals(newShape) && (!ordered || newShape.contentEquals(this.shape)))
 
-    val wrappedLeftShape = unsqueezeFirst(shape, newShape.size)
-    val wrappedRightShape = unsqueezeFirst(other.shape, newShape.size)
+    val leftShape = if (ordered) shape else unsqueezeFirst(shape, newShape.size)
+    val rightShape = unsqueezeFirst(other.shape, newShape.size)
 
-    val wrappedLeft = createNDArray(type, array, wrappedLeftShape, offset)
-    val wrappedRight = createNDArray(type, other.array, wrappedRightShape, other.offset)
+    val left = createNDArray(type, array, leftShape, offset)
+    val right = createNDArray(type, other.array, rightShape, other.offset)
 
-
-    broadcast(wrappedLeft, wrappedRight, destination, op)
+    broadcast(left, right, destination, op)
+    return destination
 }
 
 fun <T> broadcast(left: TypedNDArray<T>, right: TypedNDArray<T>, destination: MutableTypedNDArray<T>, op: PrimitiveArraysCombineFunction<T>) {
     if (left.shape.contentEquals(right.shape)) {
         op.apply(left.array, left.offset, right.array, right.offset, destination.array, destination.offset, left.linearSize)
     } else {
-        innerBroadcast(left, right, destination) { left, right, destination -> broadcast(left, right, destination, op) }
+        innerBroadcast(left, right, destination) { fstArray, sndArray, dest -> broadcast(fstArray, sndArray, dest, op) }
     }
 }
 

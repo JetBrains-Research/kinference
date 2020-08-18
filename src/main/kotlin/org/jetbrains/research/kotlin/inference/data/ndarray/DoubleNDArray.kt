@@ -49,8 +49,8 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
     override fun plus(other: TypedNDArray<DoubleArray>, destination: MutableTypedNDArray<DoubleArray>): TypedNDArray<DoubleArray> {
         when {
             this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] + other.array[0]
-            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarPlus, ordered = false)
-            else -> this.combine(other, destination, plus, ordered = false)
+            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarPlus)
+            else -> this.combine(other, destination, plus)
         }
         return destination
     }
@@ -58,8 +58,8 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
     override fun minus(other: TypedNDArray<DoubleArray>, destination: MutableTypedNDArray<DoubleArray>): TypedNDArray<DoubleArray> {
         when {
             this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] - other.array[0]
-            other.isScalar() -> this.combine(other, destination, scalarMinus)
-            else -> this.combine(other, destination, minus)
+            other.isScalar() -> this.combine(other, destination, scalarMinus, ordered = true)
+            else -> this.combine(other, destination, minus, ordered = true)
         }
         return destination
     }
@@ -67,8 +67,8 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
     override fun times(other: TypedNDArray<DoubleArray>, destination: MutableTypedNDArray<DoubleArray>): TypedNDArray<DoubleArray> {
         when {
             this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] * other.array[0]
-            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarTimes, ordered = false)
-            else -> this.combine(other, destination, times, ordered = false)
+            this.isScalar() || other.isScalar() -> this.combine(other, destination, scalarTimes)
+            else -> this.combine(other, destination, times)
         }
         return destination
     }
@@ -76,8 +76,8 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
     override fun div(other: TypedNDArray<DoubleArray>, destination: MutableTypedNDArray<DoubleArray>): TypedNDArray<DoubleArray> {
         when {
             this.isScalar() && other.isScalar() -> destination.array[0] = this.array[0] / other.array[0]
-            other.isScalar() -> this.combine(other, destination, scalarDiv)
-            else -> this.combine(other, destination, div)
+            other.isScalar() -> this.combine(other, destination, scalarDiv, ordered = true)
+            else -> this.combine(other, destination, div, ordered = true)
         }
         return destination
     }
