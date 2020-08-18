@@ -48,7 +48,7 @@ abstract class NDArray<T> protected constructor(override val array: T, strides: 
         val leftWrapped = createNDArray(type, array, leftWrapShape, offset)
         val rightWrapped = createNDArray(type, other.array, rightWrapShape, other.offset)
 
-        broadcastDot(leftWrapped, rightWrapped, outputArray)
+        matmul(leftWrapped, rightWrapped, outputArray)
         return outputArray
     }
 

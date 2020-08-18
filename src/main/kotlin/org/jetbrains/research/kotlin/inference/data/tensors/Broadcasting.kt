@@ -52,11 +52,11 @@ fun <T> broadcast(left: TypedNDArray<T>, right: TypedNDArray<T>, destination: Mu
     }
 }
 
-fun <T> broadcastDot(left: TypedNDArray<T>, right: TypedNDArray<T>, destination: MutableTypedNDArray<T>) {
+fun <T> matmul(left: TypedNDArray<T>, right: TypedNDArray<T>, destination: MutableTypedNDArray<T>) {
     if (left.shape.size == 2) {
         left.matrixDotInto(right, destination, false)
     } else {
-        innerBroadcast(left, right, destination, ::broadcastDot)
+        innerBroadcast(left, right, destination, ::matmul)
     }
 }
 
