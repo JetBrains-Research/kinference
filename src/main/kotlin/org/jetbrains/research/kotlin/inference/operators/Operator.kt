@@ -48,7 +48,7 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInfo, val attributes: Map<String, Attribute<Any>> = emptyMap(), val inputs: List<String>, val outputs: List<String>) {
     init {
         for (info in info.attributes.values) {
-            if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${info.name} operator" }
+            if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${this.info.name} operator" }
 
             attributes[info.name]?.let { attribute ->
                 require(attribute.type in info.types) { "Attribute '${attribute.name}' type doesn't match specification\nPresent: ${attribute.type}, Expected: one of ${info.types}" }
@@ -106,7 +106,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
     fun applyWithCheck(context: Context, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
         val outputs = apply(context, inputs)
-        require(outputs.size >= outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${outputs.size}" }
+        require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
     }
