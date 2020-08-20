@@ -3,10 +3,6 @@ package org.jetbrains.research.kotlin.inference.graph
 class GraphValueOrderInfo {
     private val orders: HashMap<String, Int> = HashMap()
 
-    init {
-
-    }
-
     fun putOrder(name: String, order: Int) {
         if (!orders.containsKey(name) || orders[name]!! < order)
             orders[name] = order
@@ -19,6 +15,6 @@ class GraphValueOrderInfo {
     }
 
     fun getOrder(name: String): Int {
-        return orders[name] ?: Int.MAX_VALUE
+        return orders.getOrDefault(name, Int.MAX_VALUE)
     }
 }
