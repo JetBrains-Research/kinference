@@ -87,13 +87,18 @@ class Graph(proto: GraphProto) {
                     node.visited = true
                     stack.pop()
                     operators.add(OperatorFactory.create(node.proto))
-                    valueOrderInfo.putOrder(node.dependencies, order)
+                    valueOrderInfo.putOrderFor(node.dependencies, order)
                     order++
                 }
             } else stack.pop()
         }
 
         require(operators.size == proto.node.size)
+    }
+
+    private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
+        val (_, otherNames) = names.partition { name -> initializers.any { it.info.name == name } }
+        putOrder(otherNames, order)
     }
 
     val availableInputs: List<String>
