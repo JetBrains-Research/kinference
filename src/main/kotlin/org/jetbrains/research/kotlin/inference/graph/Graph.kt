@@ -21,6 +21,7 @@ class Graph(proto: GraphProto) {
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.value_info.map { ValueInfo.create(it) }
+    private val valueInfo = GraphValueOrderInfo()
 
     val initializers = proto.initializer.map { Tensor.create(it) }
 
@@ -48,6 +49,11 @@ class Graph(proto: GraphProto) {
         val dependencies by lazy { proto.collectRequiredInputs() }
     }
 
+    private fun GraphValueOrderInfo.putOrders(names: Set<String>, order: Int) {
+        val notInitializerNames = names.filter { name -> !initializers.any { it.info.name == name } }
+        putOrder(notInitializerNames, order)
+    }
+
     init {
         operators = ArrayList(proto.node.size)
         val nodes = HashMap<String, Node>().apply {
@@ -69,6 +75,7 @@ class Graph(proto: GraphProto) {
             }
         }
 
+        var order = 0
         while (stack.isNotEmpty()) {
             val node = stack.peek()
             if (!node.visited) {
@@ -85,6 +92,8 @@ class Graph(proto: GraphProto) {
                     node.visited = true
                     stack.pop()
                     operators.add(OperatorFactory.create(node.proto))
+                    valueInfo.putOrders(node.dependencies, order)
+                    order++
                 }
             } else stack.pop()
         }
@@ -106,6 +115,10 @@ class Graph(proto: GraphProto) {
         return prepareInput(name, value)
     }
 
+    private fun Context.cleanupBefore(order: Int) {
+        return this.removeValues { valueInfo.getOrder(it) < order }
+    }
+
     //only for sequential models
     fun execute(inputs: List<ONNXData>, root: Context? = null): List<ONNXData> {
         //TODO: check that all inputs were set and not null
@@ -114,22 +127,22 @@ class Graph(proto: GraphProto) {
         for (tensor in initializers) {
             context.putValue(tensor.info.name, tensor)
         }
-
         for (input in inputs) {
             require(input.info.name in availableInputs) { "Input node '${input.info.name}' not found in Graph" }
             context.putValue(input.info.name, input)
         }
 
-        for (operator in operators) {
+        for ((i, operator) in operators.withIndex()) {
             val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
+
             outputs.zip(operator.outputs) { output, variable ->
                 if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                 if (variable.isNotEmpty()) {
                     context.putValue(variable, output!!.rename(newName = variable))
                 }
             }
+            context.cleanupBefore(i)
         }
-
         return outputs.map { context.getValue(it.name) }
     }
 }

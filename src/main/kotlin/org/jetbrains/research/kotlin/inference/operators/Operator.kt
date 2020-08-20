@@ -63,7 +63,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
     }
 
     private fun check(constraints: List<IOInfo>, values: List<ONNXData?>, what: String) {
-        fun infos(constraints: List<IOInfo>) = sequence<IOInfo?> {
+        fun infos(constraints: List<IOInfo>) = sequence {
             for (constraint in constraints) {
                 while (constraint is VariadicIOInfo) yield(constraint)
                 yield(constraint)

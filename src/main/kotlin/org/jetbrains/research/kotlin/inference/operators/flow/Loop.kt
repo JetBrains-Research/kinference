@@ -44,7 +44,7 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         val iterationOutputs = outputs.drop(body.inputs.size - 1)
 
         modified.clear()
-        // remove keepgooing flag (first) and take only modified (without scans)
+        // remove keepgoing flag (first) and take only modified (without scans)
         for (output in outputs.drop(1).take(body.inputs.size - 2)) {
             modified.add(output as Tensor)
         }
