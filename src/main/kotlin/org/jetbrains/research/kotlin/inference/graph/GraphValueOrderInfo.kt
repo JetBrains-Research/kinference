@@ -8,7 +8,7 @@ class GraphValueOrderInfo {
             orders[name] = order
     }
 
-    fun putOrder(names: List<String>, order: Int) {
+    fun putOrder(names: Set<String>, order: Int) {
         for (name in names) {
             putOrder(name, order)
         }

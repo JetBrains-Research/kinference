@@ -21,7 +21,7 @@ class Graph(proto: GraphProto) {
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.value_info.map { ValueInfo.create(it) }
-    private val valueInfo = GraphValueOrderInfo()
+    private val valueOrderInfo = GraphValueOrderInfo()
 
     val initializers = proto.initializer.map { Tensor.create(it) }
 
@@ -47,11 +47,6 @@ class Graph(proto: GraphProto) {
         }
 
         val dependencies by lazy { proto.collectRequiredInputs() }
-    }
-
-    private fun GraphValueOrderInfo.putOrders(names: Set<String>, order: Int) {
-        val notInitializerNames = names.filter { name -> !initializers.any { it.info.name == name } }
-        putOrder(notInitializerNames, order)
     }
 
     init {
@@ -92,7 +87,7 @@ class Graph(proto: GraphProto) {
                     node.visited = true
                     stack.pop()
                     operators.add(OperatorFactory.create(node.proto))
-                    valueInfo.putOrders(node.dependencies, order)
+                    valueOrderInfo.putOrder(node.dependencies, order)
                     order++
                 }
             } else stack.pop()
@@ -115,8 +110,8 @@ class Graph(proto: GraphProto) {
         return prepareInput(name, value)
     }
 
-    private fun Context.cleanupBefore(order: Int) {
-        return this.removeValues { valueInfo.getOrder(it) < order }
+    private fun Context.cleanupUntilOrder(order: Int) {
+        return this.removeValues { valueOrderInfo.getOrder(it) <= order }
     }
 
     //only for sequential models
@@ -135,13 +130,13 @@ class Graph(proto: GraphProto) {
         for ((i, operator) in operators.withIndex()) {
             val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
 
+            context.cleanupUntilOrder(i)
             outputs.zip(operator.outputs) { output, variable ->
                 if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                 if (variable.isNotEmpty()) {
                     context.putValue(variable, output!!.rename(newName = variable))
                 }
             }
-            context.cleanupBefore(i)
         }
         return outputs.map { context.getValue(it.name) }
     }
