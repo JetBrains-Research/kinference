@@ -4,14 +4,9 @@ import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.broadcastShape
+import org.jetbrains.research.kotlin.inference.math.viewHelper
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
-fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
-    val newOffset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
-    val newShape = strides.shape.copyOfRange(axes.size, strides.shape.size)
-
-    return newOffset to newShape
-}
 
 fun <T> allocateHelper(shape: IntArray, otherShape: IntArray, type: TensorProto.DataType): MutableTypedNDArray<T> {
     return if (shape.contentEquals(otherShape))

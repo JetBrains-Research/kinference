@@ -1,9 +1,17 @@
 rootProject.name = "kotlin-inference"
 
+include(":annotations", ":primitives-generator")
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
         jcenter()
+
+        mavenCentral()
+
+        maven("https://plugins.gradle.org/m2/")
+
+        mavenLocal()
     }
 
     resolutionStrategy {

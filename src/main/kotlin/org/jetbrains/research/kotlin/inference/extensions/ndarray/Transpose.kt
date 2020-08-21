@@ -1,15 +1,15 @@
 package org.jetbrains.research.kotlin.inference.extensions.ndarray
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
-private fun Strides.transpose(permutations: IntArray): Strides {
-    val newShape = IntArray(shape.size)
-    for ((i, axis) in permutations.withIndex()) {
-        newShape[i] = shape[axis]
-    }
-    return Strides(newShape)
-}
+//private fun Strides.transpose(permutations: IntArray): Strides {
+//    val newShape = IntArray(shape.size)
+//    for ((i, axis) in permutations.withIndex()) {
+//        newShape[i] = shape[axis]
+//    }
+//    return Strides(newShape)
+//}
 
 private fun Strides.permuteIndicesAt(i: Int, permutation: IntArray): IntArray {
     val indices = this.index(i)

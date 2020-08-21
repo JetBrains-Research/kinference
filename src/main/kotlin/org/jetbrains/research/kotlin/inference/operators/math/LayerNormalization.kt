@@ -1,7 +1,8 @@
 package org.jetbrains.research.kotlin.inference.operators.math
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.indexAxis
 import org.jetbrains.research.kotlin.inference.graph.Context
@@ -92,7 +93,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     }
                 }
                 listOf(
-                    FloatNDArray(outputArray, input.strides).asTensor(),
+                    FloatNDArray(outputArray, input.strides).asTensor()
                 )
             }
             DataType.DOUBLE -> {
@@ -119,7 +120,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     }
                 }
                 listOf(
-                    DoubleNDArray(outputArray, input.strides).asTensor(),
+                    DoubleNDArray(outputArray, input.strides).asTensor()
                 )
             }
             else -> throw UnsupportedOperationException()

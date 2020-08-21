@@ -2,7 +2,8 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateHelper
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 interface TypedNDArray<T> {

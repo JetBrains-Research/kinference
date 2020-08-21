@@ -1,7 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.MutableFloatNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
@@ -34,12 +37,12 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
             IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
             IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
-            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true),
+            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
         )
 
         private val OUTPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false),
-            IOInfo(0, TYPE_CONSTRAINTS, "present", optional = true)
+            IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
         )
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)

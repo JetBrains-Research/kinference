@@ -18,7 +18,7 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "bias", optional = true),
+            IOInfo(1, TYPE_CONSTRAINTS, "bias", optional = true)
         )
 
         private val OUTPUTS_INFO = listOf(
@@ -33,28 +33,32 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         val bias = inputs.getOrNull(1)
 
         val result = when (input.data.type) {
-            TensorProto.DataType.FLOAT -> input.data.mapElements(FloatArrayToFloatArray { array ->
-                if (bias == null) {
-                    for (i in array.indices) array[i] = fgelu(array[i])
-                } else {
-                    val biasArray = bias.data.array as FloatArray
+            TensorProto.DataType.FLOAT -> input.data.mapElements(object : FloatArrayToFloatArray {
+                override fun apply(array: FloatArray): FloatArray {
+                    if (bias == null) {
+                        for (i in array.indices) array[i] = fgelu(array[i])
+                    } else {
+                        val biasArray = bias.data.array as FloatArray
 //                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
-                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
-                }
+                        for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
+                    }
 
-                array
+                    return array
+                }
             })
 
-            TensorProto.DataType.DOUBLE -> input.data.mapElements(DoubleArrayToDoubleArray { array ->
-                if (bias == null) {
-                    for (i in array.indices) array[i] = fgelu(array[i])
-                } else {
-                    val biasArray = bias.data.array as DoubleArray
+            TensorProto.DataType.DOUBLE -> input.data.mapElements(object : DoubleArrayToDoubleArray {
+                override fun apply(array: DoubleArray): DoubleArray {
+                    if (bias == null) {
+                        for (i in array.indices) array[i] = fgelu(array[i])
+                    } else {
+                        val biasArray = bias.data.array as DoubleArray
 //                    require(biasArray.size == array.size) { "FastGelu: Bias length must be same as input" }
-                    for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
-                }
+                        for (i in array.indices) array[i] = fgelu(array[i] + biasArray[i % biasArray.size])
+                    }
 
-                array
+                    return array
+                }
             })
 
             else -> error("Unsupported operation")

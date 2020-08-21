@@ -1,7 +1,9 @@
 package org.jetbrains.research.kotlin.inference.extensions.primitives
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.functional.*
+import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
+import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
+import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
 
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
@@ -69,8 +71,16 @@ fun <T> TypedNDArray<T>.sum(): Number {
 
 fun <T> MutableTypedNDArray<T>.exp(): MutableTypedNDArray<T> {
     when (array) {
-        is FloatArray -> mapElements(FloatArrayToFloatArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
-        is DoubleArray -> mapElements(DoubleArrayToDoubleArray { array -> for (i in array.indices) array[i] = kotlin.math.exp(array[i]); array })
+        is FloatArray -> mapElements(object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = kotlin.math.exp(array[i]); return array
+            }
+        })
+        is DoubleArray -> mapElements(object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = kotlin.math.exp(array[i]); return array
+            }
+        })
         else -> throw UnsupportedOperationException()
     }
     return this

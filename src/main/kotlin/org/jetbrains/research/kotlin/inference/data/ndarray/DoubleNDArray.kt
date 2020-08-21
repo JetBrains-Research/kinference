@@ -9,6 +9,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combine
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineAssign
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.isScalar
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<DoubleArray>(array, strides, TensorProto.DataType.DOUBLE, offset) {
@@ -17,14 +18,46 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
     }*/
 
     protected companion object {
-        val plus = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val times = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val minus = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val div = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val scalarPlus = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
-        val scalarTimes = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
-        val scalarMinus = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
-        val scalarDiv = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
+        val plus = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val times = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return times(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val minus = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val div = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return div(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val scalarPlus = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                plus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarTimes = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                times(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarMinus = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                minus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarDiv = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                div(array, offset, value, destination, destinationOffset, size)
+            }
+        }
     }
 
     override fun clone(): TypedNDArray<DoubleArray> {
@@ -98,14 +131,46 @@ open class DoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(),
 
 class MutableDoubleNDArray(array: DoubleArray, strides: Strides = Strides.empty(), offset: Int = 0) : DoubleNDArray(array, strides, offset), MutableTypedNDArray<DoubleArray> {
     private companion object {
-        val plusAssign = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val timesAssign = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val minusAssign = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val divAssign = DoubleArrayWithDoubleArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val scalarPlusAssign = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
-        val scalarTimesAssign = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
-        val scalarMinusAssign = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
-        val scalarDivAssign = DoubleArrayWithDouble { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
+        val plusAssign = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val timesAssign = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return times(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val minusAssign = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val divAssign = object : DoubleArrayWithDoubleArray {
+            override fun apply(left: DoubleArray, leftOffset: Int, right: DoubleArray, rightOffset: Int, destination: DoubleArray, destinationOffset: Int, size: Int): DoubleArray {
+                return div(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val scalarPlusAssign = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                plus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarTimesAssign = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                times(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarMinusAssign = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                minus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarDivAssign = object : DoubleArrayWithDouble {
+            override fun apply(array: DoubleArray, offset: Int, value: Double, destination: DoubleArray, destinationOffset: Int, size: Int) {
+                div(array, offset, value, destination, destinationOffset, size)
+            }
+        }
     }
 
     override fun clean() = array.fill(0.0)

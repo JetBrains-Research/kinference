@@ -21,7 +21,7 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
             IOInfo(1, INDEX_TYPE_CONSTRAINTS, "starts", optional = false, differentiable = false),
             IOInfo(2, INDEX_TYPE_CONSTRAINTS, "ends", optional = false, differentiable = false),
             IOInfo(3, INDEX_TYPE_CONSTRAINTS, "axes", optional = true, differentiable = false),
-            IOInfo(4, INDEX_TYPE_CONSTRAINTS, "steps", optional = true, differentiable = false),
+            IOInfo(4, INDEX_TYPE_CONSTRAINTS, "steps", optional = true, differentiable = false)
         )
 
         private val OUTPUTS_INFO = listOf(

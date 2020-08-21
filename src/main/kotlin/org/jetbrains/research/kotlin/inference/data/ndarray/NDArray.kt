@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.concat
 import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDot
 import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo

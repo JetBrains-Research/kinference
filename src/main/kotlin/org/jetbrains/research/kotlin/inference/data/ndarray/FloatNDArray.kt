@@ -9,6 +9,7 @@ import org.jetbrains.research.kotlin.inference.extensions.ndarray.combine
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.combineAssign
 import org.jetbrains.research.kotlin.inference.extensions.ndarray.isScalar
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<FloatArray>(array, strides, TensorProto.DataType.FLOAT, offset) {
@@ -17,14 +18,46 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), o
     }*/
 
     private companion object {
-        val plus = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val times = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val minus = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val div = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val scalarPlus = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
-        val scalarTimes = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
-        val scalarMinus = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
-        val scalarDiv = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
+        val plus = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val times = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return times(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val minus = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val div = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return div(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val scalarPlus = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                plus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarTimes = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                times(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarMinus = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                minus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarDiv = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                div(array, offset, value, destination, destinationOffset, size)
+            }
+        }
     }
 
     override fun clone(): TypedNDArray<FloatArray> {
@@ -99,14 +132,46 @@ open class FloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), o
 
 class MutableFloatNDArray(array: FloatArray, strides: Strides = Strides.empty(), offset: Int = 0) : FloatNDArray(array, strides, offset), MutableTypedNDArray<FloatArray> {
     private companion object {
-        val plusAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val timesAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> times(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val minusAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val divAssign = FloatArrayWithFloatArray { left, leftOffset, right, rightOffset, destination, destinationOffset, size -> div(left, leftOffset, right, rightOffset, destination, destinationOffset, size) }
-        val scalarPlusAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> plus(array, offset, value, destination, destinationOffset, size) }
-        val scalarTimesAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> times(array, offset, value, destination, destinationOffset, size) }
-        val scalarMinusAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> minus(array, offset, value, destination, destinationOffset, size) }
-        val scalarDivAssign = FloatArrayWithFloat { array, offset, value, destination, destinationOffset, size -> div(array, offset, value, destination, destinationOffset, size) }
+        val plusAssign = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return plus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val timesAssign = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return times(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val minusAssign = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return minus(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val divAssign = object : FloatArrayWithFloatArray {
+            override fun apply(left: FloatArray, leftOffset: Int, right: FloatArray, rightOffset: Int, destination: FloatArray, destinationOffset: Int, size: Int): FloatArray {
+                return div(left, leftOffset, right, rightOffset, destination, destinationOffset, size)
+            }
+        }
+        val scalarPlusAssign = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                plus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarTimesAssign = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                times(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarMinusAssign = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                minus(array, offset, value, destination, destinationOffset, size)
+            }
+        }
+        val scalarDivAssign = object : FloatArrayWithFloat {
+            override fun apply(array: FloatArray, offset: Int, value: Float, destination: FloatArray, destinationOffset: Int, size: Int) {
+                div(array, offset, value, destination, destinationOffset, size)
+            }
+        }
     }
 
     override fun clean() = array.fill(0.0f)

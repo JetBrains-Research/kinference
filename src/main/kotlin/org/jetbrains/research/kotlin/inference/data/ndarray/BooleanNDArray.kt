@@ -2,6 +2,7 @@ package org.jetbrains.research.kotlin.inference.data.ndarray
 
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 
 open class BooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0) : NDArray<BooleanArray>(array, strides, TensorProto.DataType.BOOL, offset) {

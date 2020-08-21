@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.data.ndarray
 
-interface LateInitArray
+import org.jetbrains.research.kotlin.inference.math.LateInitArray
 
 class LateInitFloatArray(size: Int) : LateInitArray {
     private val array = FloatArray(size)

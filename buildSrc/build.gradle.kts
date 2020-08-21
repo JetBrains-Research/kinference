@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin-api", "1.4.0"))
+    implementation(kotlin("gradle-plugin-api", "1.3.72"))
 }

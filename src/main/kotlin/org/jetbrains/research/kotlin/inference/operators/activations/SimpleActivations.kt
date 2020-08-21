@@ -1,7 +1,6 @@
 package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
 import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
@@ -34,14 +33,18 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = FloatArrayToFloatArray { array ->
-            for (i in array.indices) array[i] = max(0.0f, array[i])
-            array
+        val activateFloat = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = max(0.0f, array[i])
+                return array
+            }
         }
 
-        val activateDouble = DoubleArrayToDoubleArray { array ->
-            for (i in array.indices) array[i] = max(0.0, array[i])
-            array
+        val activateDouble = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = max(0.0, array[i])
+                return array
+            }
         }
     }
 
@@ -61,14 +64,18 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = FloatArrayToFloatArray { array ->
-            for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
-            array
+        val activateFloat = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
+                return array
+            }
         }
 
-        val activateDouble = DoubleArrayToDoubleArray { array ->
-            for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
-            array
+        val activateDouble = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
+                return array
+            }
         }
     }
 
@@ -88,14 +95,18 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = FloatArrayToFloatArray { array ->
-            for (i in array.indices) array[i] = tanh(array[i])
-            array
+        val activateFloat = object : FloatArrayToFloatArray {
+            override fun apply(array: FloatArray): FloatArray {
+                for (i in array.indices) array[i] = tanh(array[i])
+                return array
+            }
         }
 
-        val activateDouble = DoubleArrayToDoubleArray { array ->
-            for (i in array.indices) array[i] = tanh(array[i])
-            array
+        val activateDouble = object : DoubleArrayToDoubleArray {
+            override fun apply(array: DoubleArray): DoubleArray {
+                for (i in array.indices) array[i] = tanh(array[i])
+                return array
+            }
         }
     }
 

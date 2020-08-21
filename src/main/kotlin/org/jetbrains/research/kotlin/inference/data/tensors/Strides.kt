@@ -29,6 +29,15 @@ class Strides(val shape: IntArray) {
         return res
     }
 
+    fun transpose(permutations: IntArray): Strides {
+        val newShape = IntArray(shape.size)
+        for ((i, axis) in permutations.withIndex()) {
+            newShape[i] = shape[axis]
+        }
+
+        return Strides(newShape)
+    }
+
     val linearSize = if (shape.isEmpty()) 1 else strides[0] * shape[0]
 
     override fun equals(other: Any?): Boolean {

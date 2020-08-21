@@ -8,16 +8,22 @@ version = "0.1.0"
 plugins {
     idea
     id("tanvd.kosogor") version "1.0.9" apply true
-    kotlin("jvm") version "1.4.0" apply true
+    kotlin("jvm") version "1.3.72" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    id("org.jetbrains.research.kotlin.inference.primitives-generator") version ("0.1.0") apply true
 }
 
 repositories {
     jcenter()
+    mavenLocal()
 }
 
 val generatedDir = "src/main/kotlin-gen"
+
+primitives {
+    generationPath = generatedDir
+}
 
 wire {
     protoPath("src/main/proto")
@@ -54,7 +60,7 @@ detekt {
 tasks.withType<KotlinJvmCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
-        languageVersion = "1.4"
+        languageVersion = "1.3"
         apiVersion = "1.3"
     }
 }
@@ -92,6 +98,7 @@ publishJar {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(project(":annotations"))
     api("com.squareup.wire", "wire-runtime", "3.2.2")
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
 }
