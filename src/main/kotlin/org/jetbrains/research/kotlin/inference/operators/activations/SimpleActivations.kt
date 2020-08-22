@@ -1,10 +1,8 @@
 package org.jetbrains.research.kotlin.inference.operators.activations
 
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.operators.math.tanh
@@ -21,9 +19,10 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         )
     }
 
-    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = input
+    override fun activate(input: NDArray): NDArray = input
 }
 
+@ExperimentalUnsignedTypes
 class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -33,28 +32,23 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) array[i] = max(0.0f, array[i])
-                return array
-            }
+        val activateFloat = object : FloatMap {
+            override fun apply(value: Float): Float = max(0.0f, value)
         }
 
-        val activateDouble = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = max(0.0, array[i])
-                return array
-            }
+        val activateDouble = object : DoubleMap {
+            override fun apply(value: Double): Double = max(0.0, value)
         }
     }
 
-    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
-        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
+    override fun activate(input: NDArray): NDArray = when (input.type) {
+        DataType.FLOAT -> input.map(activateFloat)
+        DataType.DOUBLE -> input.map(activateDouble)
         else -> error("Unsupported operation")
     }
 }
 
+@ExperimentalUnsignedTypes
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -64,28 +58,23 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) array[i] = 1.0f / (1.0f + exp(-array[i]))
-                return array
-            }
+        val activateFloat = object : FloatMap {
+            override fun apply(value: Float): Float = 1.0f / (1.0f + exp(-value))
         }
 
-        val activateDouble = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = 1.0 / (1.0 + exp(-array[i]))
-                return array
-            }
+        val activateDouble = object : DoubleMap {
+            override fun apply(value: Double): Double = 1.0 / (1.0 + exp(-value))
         }
     }
 
-    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
-        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
+    override fun activate(input: NDArray): NDArray = when (input.type) {
+        DataType.FLOAT -> input.map(activateFloat)
+        DataType.DOUBLE -> input.map(activateDouble)
         else -> error("Unsupported operation")
     }
 }
 
+@ExperimentalUnsignedTypes
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -95,24 +84,18 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
 
-        val activateFloat = object : FloatArrayToFloatArray {
-            override fun apply(array: FloatArray): FloatArray {
-                for (i in array.indices) array[i] = tanh(array[i])
-                return array
-            }
+        val activateFloat = object : FloatMap {
+            override fun apply(value: Float): Float = tanh(value)
         }
 
-        val activateDouble = object : DoubleArrayToDoubleArray {
-            override fun apply(array: DoubleArray): DoubleArray {
-                for (i in array.indices) array[i] = tanh(array[i])
-                return array
-            }
+        val activateDouble = object : DoubleMap {
+            override fun apply(value: Double): Double = tanh(value)
         }
     }
 
-    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> = when (input.type) {
-        TensorProto.DataType.FLOAT -> input.mapElements(activateFloat)
-        TensorProto.DataType.DOUBLE -> input.mapElements(activateDouble)
+    override fun activate(input: NDArray): NDArray = when (input.type) {
+        DataType.FLOAT -> input.map(activateFloat)
+        DataType.DOUBLE -> input.map(activateDouble)
         else -> error("Unsupported operation")
     }
 }

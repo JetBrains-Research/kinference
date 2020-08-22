@@ -5,8 +5,8 @@ import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.data.seq.TensorSeq
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.isScalar
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.math.isScalar
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import kotlin.properties.ReadOnlyProperty

@@ -1,13 +1,14 @@
-package org.jetbrains.research.kotlin.inference.extensions.ndarray
+package org.jetbrains.research.kotlin.inference.math.extensions
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
-import org.jetbrains.research.kotlin.inference.data.tensors.*
+import org.jetbrains.research.kotlin.inference.math.MutableNDArray
+import org.jetbrains.research.kotlin.inference.math.NDArray
+
+/*import org.jetbrains.research.kotlin.inference.data.tensors.*
 import org.jetbrains.research.kotlin.inference.extensions.primitives.*
 import org.jetbrains.research.kotlin.inference.types.TensorInfo
 import org.jetbrains.research.kotlin.inference.types.TensorShape
 import kotlin.collections.toIntArray
 
-fun <T> TypedNDArray<T>.isScalar() = shape.isEmpty()
 
 fun <T> MutableTypedNDArray<T>.wrapOneDim(): MutableTypedNDArray<T> {
     return this.reshape(1.concat(this.shape))
@@ -114,18 +115,17 @@ fun <T> TypedNDArray<T>.as2DList(): List<TypedNDArray<T>> {
             place(0, this@as2DList.array, start, start + matrixSize)
         }
     }
-}
+}*/
 
-fun <T> MutableTypedNDArray<T>.reshape(tensorShape: TypedNDArray<T>): MutableTypedNDArray<T> {
-    val requestedShape = tensorShape.array as LongArray
-    val newShape = IntArray(requestedShape.size) { i -> requestedShape[i].toInt() }
+fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
+    val newShape = IntArray(tensorShape.linearSize) { i -> (tensorShape[i] as Number).toInt() }
     require(newShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
 
     for ((i, axisShape) in newShape.withIndex()) {
         if (axisShape == 0) newShape[i] = shape[i]
     }
 
-    val negativeIdx = requestedShape.indexOf(-1)
+    val negativeIdx = newShape.indexOf(-1)
     if (negativeIdx != -1) {
         val elementsCount = newShape.filter { it != -1 }.fold(1, Int::times)
         newShape[negativeIdx] = strides.linearSize / elementsCount

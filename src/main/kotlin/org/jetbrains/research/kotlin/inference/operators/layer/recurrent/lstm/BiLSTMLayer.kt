@@ -1,9 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
+import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
 
 class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
     init {
@@ -14,9 +15,9 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
     var forwardLstmData: LSTMData? = null
     var reverseLstmData: LSTMData? = null
 
-    override fun apply(inputs: List<TypedNDArray<Any>>, sequenceLens: IntArray, outputArray: MutableTypedNDArray<Any>, startOffset: Int): List<Tensor> {
-        val forwardLayer = LSTMLayer.create(hiddenSize, activations.subList(0, 3), "forward", forwardLstmData!!, seqLength!!, batchSize!!, type!!)
-        val reverseLayer = LSTMLayer.create(hiddenSize, activations.subList(3, 6), "reverse", reverseLstmData!!, seqLength!!, batchSize!!, type!!)
+    override fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor> {
+        val forwardLayer = LSTMLayer.create(hiddenSize, activations.subList(0, 3), "forward", forwardLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
+        val reverseLayer = LSTMLayer.create(hiddenSize, activations.subList(3, 6), "reverse", reverseLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
 
         val (_, forwardLastOutput, forwardLastCellState) = forwardLayer.apply(inputs, sequenceLens, outputArray, startOffset)
         val (output, reverseLastOutput, reverseLastCellState) = reverseLayer.apply(inputs, sequenceLens, outputArray, startOffset + batchSize!! * hiddenSize)
@@ -24,13 +25,13 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
         return listOf(output, concatLasts(forwardLastOutput, reverseLastOutput).asTensor(), concatLasts(forwardLastCellState, reverseLastCellState).asTensor())
     }
 
-    private fun concatLasts(forward: Tensor, reverse: Tensor): MutableTypedNDArray<Any> {
+    private fun concatLasts(forward: Tensor, reverse: Tensor): MutableNDArray {
         val newShape = forward.data.shape.copyOf()
         newShape[0] = 2
         val newStrides = Strides(newShape)
-        val newArray = allocateNDArray<Any>(type!!, newStrides)
-        newArray.placeAll(0, forward.data.array)
-        newArray.placeAll(forward.data.linearSize, reverse.data.array)
+        val newArray = allocateNDArray(type!!, newStrides)
+        newArray.placeAllFrom(0, forward.data)
+        newArray.placeAllFrom(forward.data.linearSize, reverse.data)
         return newArray
     }
 

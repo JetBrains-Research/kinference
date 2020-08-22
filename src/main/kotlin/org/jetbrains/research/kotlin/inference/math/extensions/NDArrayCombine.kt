@@ -1,6 +1,6 @@
-package org.jetbrains.research.kotlin.inference.extensions.ndarray
+package org.jetbrains.research.kotlin.inference.math.extensions
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
+/*import org.jetbrains.research.kotlin.inference.data.ndarray.MutableTypedNDArray
 import org.jetbrains.research.kotlin.inference.data.ndarray.TypedNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.applyWithBroadcast
 import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayValueCombineFunction
@@ -38,4 +38,4 @@ fun <T : Any, V : Any> TypedNDArray<T>.scalarCombine(x: V, destination: MutableT
 
 fun <T : Any, V : Any> MutableTypedNDArray<T>.scalarCombineAssign(x: V, func: PrimitiveArrayValueCombineFunction<T, V>): TypedNDArray<T> {
     return this.scalarCombine(x, this, func)
-}
+}*/

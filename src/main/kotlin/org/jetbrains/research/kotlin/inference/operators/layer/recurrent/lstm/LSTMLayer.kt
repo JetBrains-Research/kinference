@@ -1,11 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.functional.PrimitiveArrayFunction
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.matrixDotInto
+import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
+import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
 
@@ -18,7 +17,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         require(activations.size >= 3)
     }
 
-    override fun apply(inputs: List<TypedNDArray<Any>>, sequenceLens: IntArray, outputArray: MutableTypedNDArray<Any>, startOffset: Int): List<Tensor> {
+    override fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor> {
         val batchSize = batchSize!!
         val seqLength = seqLength!!
         val type = type!!
@@ -52,39 +51,33 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
     }
 
-    private fun step(lstmData: LSTMData, input: TypedNDArray<Any>, output: MutableTypedNDArray<Any>, outputOffset: Int, gatesData: GatesData,
-                     lastState: State, f: PrimitiveArrayFunction, g: PrimitiveArrayFunction, h: PrimitiveArrayFunction) {
-        input.matrixDotInto(lstmData.weights.input, gatesData.input, true)
-        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.input, gatesData.input, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.input.plusAssign(lstmData.peepholes.input * lastState.cellState)
-        if (lstmData.bias != null) gatesData.input.plusAssign(lstmData.bias.input)
-        gatesData.input.mapElements(f)
+    private fun NDArray.activateStep(lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
+                                     recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null) {
+        this as NumberNDArray; lstmWeight as MutableNumberNDArray; lstmGate as MutableNumberNDArray
+        lstmGate.clean()
+        this.dot(lstmWeight, lstmGate)
+        if (!lastState.isOutputZero) (lastState.output as NumberNDArray).dot(recurrent as NumberNDArray, lstmGate)
+        if (!lastState.isCellStateZero && peepholes != null)
+            lstmGate.plusAssign(peepholes as NumberNDArray * lastState.cellState as NumberNDArray)
+        if (bias != null) lstmGate.plusAssign(bias)
+        lstmGate.mapMutable(activation)
+    }
 
-        input.matrixDotInto(lstmData.weights.forget, gatesData.forget, true)
-        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.forget, gatesData.forget, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.forget.plusAssign(lstmData.peepholes.forget * lastState.cellState)
-        if (lstmData.bias != null) gatesData.forget.plusAssign(lstmData.bias.forget)
-        gatesData.forget.mapElements(f)
+    private fun step(lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
+                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction) {
+        input.activateStep(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
+        input.activateStep(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)
+        input.activateStep(lastState, lstmData.weights.cellGate, gatesData.cellGate, g, lstmData.recurrentWeights.cellGate, lstmData.bias?.cellGate)
 
-        input.matrixDotInto(lstmData.weights.cellGate, gatesData.cellGate, true)
-        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.cellGate, gatesData.cellGate, false)
-        if (lstmData.bias != null) gatesData.cellGate.plusAssign(lstmData.bias.cellGate)
-        gatesData.cellGate.mapElements(g)
+        if (!lastState.isCellStateZero) (lastState.cellState as MutableNumberNDArray).timesAssign(gatesData.forget)
+        (gatesData.input as MutableNumberNDArray).timesAssign(gatesData.cellGate)
+        (lastState.cellState as MutableNumberNDArray).plusAssign(gatesData.input)
 
-        if (!lastState.isCellStateZero) lastState.cellState.timesAssign(gatesData.forget)
-        gatesData.input.timesAssign(gatesData.cellGate)
-        lastState.cellState.plusAssign(gatesData.input)
+        input.activateStep(lastState, lstmData.weights.output, gatesData.output, f, lstmData.recurrentWeights.output, lstmData.bias?.output, lstmData.peepholes?.output)
 
-        input.matrixDotInto(lstmData.weights.output, gatesData.output, true)
-        if (!lastState.isOutputZero) lastState.output.matrixDotInto(lstmData.recurrentWeights.output, gatesData.output, false)
-        if (!lastState.isCellStateZero && lstmData.peepholes != null) gatesData.output.plusAssign(lstmData.peepholes.output * lastState.cellState)
-        if (lstmData.bias != null) gatesData.output.plusAssign(lstmData.bias.output)
-        gatesData.output.mapElements(f)
+        lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
 
-        lastState.output = (lastState.cellState.clone()).mapElements(h) as MutableTypedNDArray<Any>
-        lastState.output.timesAssign(gatesData.output)
-
-        output.placeAll(outputOffset, lastState.output.array)
+        output.placeAllFrom(outputOffset, lastState.output)
 
         lastState.isOutputZero = false
         lastState.isCellStateZero = false
@@ -131,13 +124,13 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
     protected fun Array<State>.toOutput(): State {
         val strides = Strides(intArrayOf(1, batchSize!!, hiddenSize))
-        val outputArray = allocateNDArray<Any>(type!!, strides)
-        val cellStateArray = allocateNDArray<Any>(type!!, strides)
+        val outputArray = allocateNDArray(type!!, strides)
+        val cellStateArray = allocateNDArray(type!!, strides)
 
         for (i in this.indices) {
             val offset = i * hiddenSize
-            outputArray.placeAll(offset, this[i].output.array)
-            cellStateArray.placeAll(offset, this[i].cellState.array)
+            outputArray.placeAllFrom(offset, this[i].output)
+            cellStateArray.placeAllFrom(offset, this[i].cellState)
         }
 
         return State(outputArray, cellStateArray, false, false)
@@ -149,7 +142,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
             lstm.lstmData = lstmData
             lstm.seqLength = seqLength
             lstm.batchSize = batchSize
-            lstm.type = type
+            lstm.type = type.resolveLocalDataType()
             return lstm
         }
     }

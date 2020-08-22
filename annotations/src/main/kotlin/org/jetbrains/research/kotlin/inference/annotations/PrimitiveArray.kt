@@ -16,6 +16,8 @@ enum class DataType {
     FLOAT,
     DOUBLE,
 
+    BOOLEAN,
+
     UNKNOWN
 }
 
@@ -48,7 +50,7 @@ class PrimitiveType {
     fun toPrimitive(): PrimitiveType = throw UnsupportedOperationException()
 }
 
-fun Int.toPrimitive(): PrimitiveType = throw UnsupportedOperationException()
+fun Number.toPrimitive(): PrimitiveType = throw UnsupportedOperationException()
 
 class PrimitiveArray(val size: Int) {
     constructor(size: Int, init: (Int) -> Any) : this(size)

@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.math
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
+import org.jetbrains.research.kotlin.inference.annotations.PrimitiveType
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 interface LateInitArray
@@ -27,6 +28,8 @@ interface NDArray {
     fun view(vararg axes: Int): NDArray
     fun toMutable(newStrides: Strides = strides, additionalOffset: Int = 0): MutableNDArray
 
+    fun copyIfNotMutable(): MutableNDArray
+
     fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int)
 
     fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray
@@ -48,6 +51,7 @@ interface MutableNDArray : NDArray {
     fun reshape(strides: Strides): MutableNDArray
     fun reshape(shape: IntArray): MutableNDArray = reshape(Strides(shape))
     fun transpose(permutations: IntArray): MutableNDArray
+    fun transpose2D(): MutableNDArray
 
     fun clean()
 }
@@ -80,6 +84,9 @@ interface NumberNDArray : NDArray {
     fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
+
+    fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NumberNDArray, ldb: Int, beta: Double, c: MutableNDArray,
+             ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {

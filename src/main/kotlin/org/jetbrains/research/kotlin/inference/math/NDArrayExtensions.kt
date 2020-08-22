@@ -1,8 +1,49 @@
 package org.jetbrains.research.kotlin.inference.math
 
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.primitives.*
+import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.math.extensions.*
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.types.TensorInfo
+import org.jetbrains.research.kotlin.inference.types.TensorShape
 import kotlin.collections.toIntArray
+
+fun TensorProto.DataType.resolveLocalDataType(): DataType {
+    return when(this) {
+        TensorProto.DataType.DOUBLE -> DataType.DOUBLE
+        TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16 -> DataType.FLOAT
+        TensorProto.DataType.INT32 -> DataType.INT
+        TensorProto.DataType.INT64 -> DataType.LONG
+        TensorProto.DataType.INT16 -> DataType.SHORT
+        TensorProto.DataType.INT8-> DataType.BYTE
+        TensorProto.DataType.BOOL -> DataType.BOOLEAN
+        TensorProto.DataType.UINT32-> DataType.UINT
+        TensorProto.DataType.UINT64 -> DataType.ULONG
+        TensorProto.DataType.UINT16 -> DataType.USHORT
+        TensorProto.DataType.UINT8 -> DataType.UBYTE
+        TensorProto.DataType.UNDEFINED -> DataType.UNKNOWN
+        else -> error("Cannot resolve data type")
+    }
+}
+
+fun DataType.resolveProtoDataType(): TensorProto.DataType {
+    return when(this) {
+        DataType.DOUBLE -> TensorProto.DataType.DOUBLE
+        DataType.FLOAT -> TensorProto.DataType.FLOAT
+        DataType.INT -> TensorProto.DataType.INT32
+        DataType.LONG -> TensorProto.DataType.INT64
+        DataType.SHORT -> TensorProto.DataType.INT16
+        DataType.BYTE -> TensorProto.DataType.INT8
+        DataType.BOOLEAN -> TensorProto.DataType.BOOL
+        DataType.UINT -> TensorProto.DataType.UINT32
+        DataType.ULONG -> TensorProto.DataType.UINT64
+        DataType.USHORT -> TensorProto.DataType.UINT16
+        DataType.UBYTE -> TensorProto.DataType.UINT8
+        DataType.UNKNOWN -> TensorProto.DataType.UNDEFINED
+        else -> error("Cannot resolve data type")
+    }
+}
 
 fun NDArray.isScalar() = shape.isEmpty()
 
@@ -14,7 +55,7 @@ fun NDArray.indexAxis(axis: Int): Int {
     return if (axis < 0) rank + axis else axis
 }
 
-//fun NDArray.asTensor(name: String? = null) = Tensor(this as TypedNDArray<Any>, TensorInfo(name ?: "", type, TensorShape(this.shape)))
+fun NDArray.asTensor(name: String? = null) = Tensor(this, TensorInfo(name ?: "", type.resolveProtoDataType(), TensorShape(this.shape)))
 
 val NDArray.rows: Array<MutableNDArray>
     get() = Array(shape[0]) { i -> row(i) }
@@ -44,11 +85,10 @@ fun MutableNDArray.unsqueeze(vararg axes: Int): MutableNDArray {
 }
 
 fun MutableNDArray.transpose(permutations: List<Number>? = null): MutableNDArray {
-//    if (rank == 2) return this.matrixTranspose()
-
     require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
-    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed() else permutations.toIntArray()
+    if (this.rank == 2) return this.transpose2D()
 
+    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed() else permutations.toIntArray()
     return this.transpose(actualPerm)
 }
 
@@ -96,12 +136,12 @@ fun Array<NDArray>.stack(axis: Int): NDArray {
     fstShape.copyInto(newShape, 0, 0, axis)
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
-    return this.map { it.toMutable().reshape(newShape) }.concatenate(axis)
+    return this.map { it.copyIfNotMutable().reshape(newShape) }.concatenate(axis)
 }
 
 fun NDArray.as2DList(): List<NDArray> {
     if (this.rank == 2) return listOf(this)
-    if (this.rank == 1) return listOf(this.toMutable().wrapOneDim())
+    if (this.rank == 1) return listOf(this.copyIfNotMutable().wrapOneDim())
 
     val matrixShape = intArrayOf(shape[indexAxis(-2)], shape[indexAxis(-1)])
     val matrixStrides = Strides(matrixShape)
@@ -155,7 +195,7 @@ infix fun NumberNDArray.matmul(other: NumberNDArray): MutableNumberNDArray {
     }
 
     val outputMatrixShape = intArrayOf(shape[indexAxis(-2)], other.shape[other.indexAxis(-1)])
-    val broadcastShape = org.jetbrains.research.kotlin.inference.data.tensors.broadcastShape(shape.copyOfRange(0, rank - 2), other.shape.copyOfRange(0, other.rank - 2))
+    val broadcastShape = broadcastShape(shape.copyOfRange(0, rank - 2), other.shape.copyOfRange(0, other.rank - 2))
 
     val outputShape = IntArray(broadcastShape.size + 2)
     broadcastShape.copyInto(outputShape)
@@ -164,8 +204,8 @@ infix fun NumberNDArray.matmul(other: NumberNDArray): MutableNumberNDArray {
     val outputStrides = Strides(outputShape)
     val outputArray = allocateNDArray(outputStrides)
 
-    val leftWrapShape = org.jetbrains.research.kotlin.inference.data.tensors.unsqueezeFirst(shape, outputShape.size)
-    val rightWrapShape = org.jetbrains.research.kotlin.inference.data.tensors.unsqueezeFirst(other.shape, outputShape.size)
+    val leftWrapShape = unsqueezeFirst(shape, outputShape.size)
+    val rightWrapShape = unsqueezeFirst(other.shape, outputShape.size)
 
     val leftWrapped = this.toMutable(Strides(leftWrapShape))
     val rightWrapped = other.toMutable(Strides(rightWrapShape))
@@ -181,6 +221,8 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     return newOffset to newShape
 }
 
+fun Double.toUShort() = this.toInt().toUShort()
+fun Double.toUByte() = this.toInt().toUByte()
 //fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
 //    val requestedShape = tensorShape.array as LongArray
 //    val newShape = IntArray(requestedShape.size) { i -> requestedShape[i].toInt() }

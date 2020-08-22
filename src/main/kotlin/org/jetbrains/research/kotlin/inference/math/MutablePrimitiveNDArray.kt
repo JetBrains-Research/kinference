@@ -4,6 +4,7 @@ package org.jetbrains.research.kotlin.inference.math
 
 import org.jetbrains.research.kotlin.inference.annotations.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
+import org.jetbrains.research.kotlin.inference.math.extensions.applyWithBroadcast
 import kotlin.math.abs
 
 @PrimitiveClass
@@ -226,6 +227,78 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return destination
     }
 
+    override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NumberNDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
+        b as PrimitiveNDArray; c as MutablePrimitiveNDArray
+        val betaPrimitive = beta.toPrimitive()
+        if (beta != 1.0) {
+            for (i in 0 until m) {
+                val cIdx = i * ldc + cOffset
+                for (j in 0 until n) {
+                    c[cIdx + j] = (betaPrimitive * c[cIdx + j]).toPrimitive()
+                }
+            }
+        }
+
+        val alphaPrimitive = alpha.toPrimitive()
+        when {
+            transposeA && transposeB -> {
+                for (t in 0 until m) {
+                    for (j in 0 until n) {
+                        val cIdx = t * ldc + j + cOffset
+                        for (i in 0 until k) {
+                            val aIdx = i * lda + t + aOffset
+                            val bIdx = j * ldb + i + bOffset
+                            c[cIdx] = (alphaPrimitive * this[aIdx] * b[bIdx] + c[cIdx]).toPrimitive()
+                        }
+                    }
+                }
+            }
+            transposeA -> {
+                for (t in 0 until m) {
+                    for (j in 0 until n) {
+                        val cIdx = t * ldc + j + cOffset
+                        for (i in 0 until k) {
+                            val aIdx = i * lda + t + aOffset
+                            val bIdx = i * ldb + j + bOffset
+                            c[cIdx] = (alphaPrimitive * this[aIdx] * b[bIdx] + c[cIdx]).toPrimitive()
+                        }
+                    }
+                }
+            }
+            transposeB -> {
+                for (t in 0 until m) {
+                    val aIdx = t * lda + aOffset
+                    for (j in 0 until n) {
+                        val cIdx = t * ldc + j + cOffset
+                        val bIdx = j * ldb + bOffset
+                        for (i in 0 until k) {
+                            c[cIdx] = (alphaPrimitive * this[aIdx + i] * b[bIdx + i] + c[cIdx]).toPrimitive()
+                        }
+                    }
+                }
+            }
+            else -> {
+                for (t in 0 until m) {
+                    val cIdx = t * ldc + cOffset
+                    val aIdx = t * lda + aOffset
+                    for (i in 0 until k) {
+                        val temp = (alphaPrimitive * this[aIdx + i]).toPrimitive()
+                        val bIdx = i * ldb + bOffset
+                        for (j in 0 until n) {
+                            c[cIdx + j] = (temp * b[bIdx + j] + c[cIdx + j]).toPrimitive()
+                        }
+                    }
+                }
+            }
+        }
+
+        return c
+    }
+
+    override fun copyIfNotMutable(): MutableNDArray {
+        return MutablePrimitiveNDArray(array.copyOf(), strides, offset)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false
@@ -252,6 +325,10 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
 open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Strides.empty(), offset: Int = 0) : PrimitiveNDArray(array, strides, offset), MutableNumberNDArray {
     override fun set(index: Int, value: Any) {
         array[index] = value as PrimitiveType
+    }
+
+    override fun copyIfNotMutable(): MutableNDArray {
+        return MutablePrimitiveNDArray(array, strides)
     }
 
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray {
@@ -391,6 +468,22 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
     override fun transpose(permutations: IntArray): MutableNumberNDArray {
         val newStrides = strides.transpose(permutations)
         transposeRec(array.copyOf(), array, strides, newStrides, 0, 0, 0, permutations)
+        return this.reshape(newStrides)
+    }
+
+    override fun transpose2D(): MutableNDArray {
+        require(rank == 2)
+        val newShape = shape.reversedArray()
+        val newStrides = Strides(newShape)
+
+        val tmp = array.copyOf()
+        for (j in (0 until shape[1])) {
+            val ind = j * shape[0]
+            for (i in (0 until shape[0])) {
+                array[ind + i] = (tmp[i * shape[1] + j]).toPrimitive()
+            }
+        }
+
         return this.reshape(newStrides)
     }
 

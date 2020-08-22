@@ -1,14 +1,15 @@
-package org.jetbrains.research.kotlin.inference.extensions.ndarray
+package org.jetbrains.research.kotlin.inference.math.extensions
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.math.*
 
-fun <T> TypedNDArray<T>.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
-fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, type: TensorProto.DataType): MutableTypedNDArray<T> {
+@ExperimentalUnsignedTypes
+fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
     val newShape = IntArray(shape.size + indices.rank - 1)
     shape.copyInto(newShape, 0, 0, axis)
     indices.shape.copyInto(newShape, axis)
@@ -17,9 +18,10 @@ fun <T> createGatherDstArray(axis: Int, indices: LongNDArray, shape: IntArray, t
     return allocateNDArray(type, newStrides)
 }
 
-fun <T> TypedNDArray<T>.gather(indices: TypedNDArray<Any>, axis: Int = 0): TypedNDArray<T> {
+@ExperimentalUnsignedTypes
+fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
     val actualAxis = this.indexAxis(axis)
-    val dst = createGatherDstArray<T>(actualAxis, indices as LongNDArray, shape, type)
+    val dst = createGatherDstArray(actualAxis, indices, shape, type)
 
     val block = computeBlockSize(fromDim = actualAxis + 1)
     val dataBatch = computeBlockSize(fromDim = actualAxis)
@@ -28,8 +30,9 @@ fun <T> TypedNDArray<T>.gather(indices: TypedNDArray<Any>, axis: Int = 0): Typed
 
     val numBlocks = computeBlockSize(toDim = actualAxis)
 
-    val indicesArray = IntArray(indices.array.size) { i ->
-        if (indices.array[i] < 0) (indices.array[i].toInt() + this.shape[actualAxis]) else indices.array[i].toInt()
+    val indicesArray = IntArray(indices.linearSize) { i ->
+        val idx = (indices[i] as Number).toInt()
+        if (idx < 0) idx + this.shape[actualAxis] else idx
     }
 
     repeat(numBlocks * indicesSize) { index ->
@@ -40,7 +43,7 @@ fun <T> TypedNDArray<T>.gather(indices: TypedNDArray<Any>, axis: Int = 0): Typed
         val srcOffset = numBatch * dataBatch + idx * block
         val dstOffset = numBatch * gatheredBatch + i * block
 
-        dst.place(dstOffset, this.array, srcOffset, srcOffset + block)
+        dst.placeFrom(dstOffset, this, srcOffset, srcOffset + block)
     }
     return dst
 }

@@ -1,13 +1,12 @@
 package org.jetbrains.research.kotlin.inference.operators.math
 
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.indexAxis
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
@@ -20,9 +19,9 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
-            DataType.FLOAT,
-            DataType.DOUBLE,
-            DataType.FLOAT16
+            TensorProto.DataType.FLOAT,
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.FLOAT16
         )
 
         private val ATTRIBUTES_INFO = listOf(
@@ -70,18 +69,15 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
         return when (type) {
             DataType.FLOAT -> {
-                val inputArray = input.array as FloatArray
-                val scaleArray = scale.array as FloatArray
-                val biasArray = bias.array as FloatArray
-
-                val outputArray = FloatArray(inputArray.size)
+                input as FloatNDArray; scale as FloatNDArray; bias as FloatNDArray
+                val outputArray = FloatArray(input.linearSize)
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
                     var mean = 0.0f
                     var meanSquare = 0.0f
                     for (h in 0 until normSize) {
-                        val temp = inputArray[offset + h]
+                        val temp = input[offset + h]
                         mean += temp
                         meanSquare += temp * temp
                     }
@@ -89,7 +85,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     mean = mean / normSize
                     meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon)
                     for (h in 0 until normSize) {
-                        outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
+                        outputArray[offset + h] = (input[offset + h] - mean) / meanSquare * scale[h] + bias[h]
                     }
                 }
                 listOf(
@@ -97,18 +93,16 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                 )
             }
             DataType.DOUBLE -> {
-                val inputArray = input.array as DoubleArray
-                val scaleArray = scale.array as DoubleArray
-                val biasArray = bias.array as DoubleArray
+                input as DoubleNDArray; scale as DoubleNDArray; bias as DoubleNDArray
 
-                val outputArray = DoubleArray(inputArray.size)
+                val outputArray = DoubleArray(input.linearSize)
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
                     var mean = 0.0
                     var meanSquare = 0.0
                     for (h in 0 until normSize) {
-                        val temp = inputArray[offset + h]
+                        val temp = input[offset + h]
                         mean += temp
                         meanSquare += temp * temp
                     }
@@ -116,7 +110,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
                     mean = mean / normSize
                     meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon.toDouble())
                     for (h in 0 until normSize) {
-                        outputArray[offset + h] = (inputArray[offset + h] - mean) / meanSquare * scaleArray[h] + biasArray[h]
+                        outputArray[offset + h] = (input[offset + h] - mean) / meanSquare * scale[h] + bias[h]
                     }
                 }
                 listOf(

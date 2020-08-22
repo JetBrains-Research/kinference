@@ -1,7 +1,8 @@
-package org.jetbrains.research.kotlin.inference.extensions.tensor
+package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.math.asTensor
+import org.jetbrains.research.kotlin.inference.math.concatenate
+import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape
@@ -14,7 +15,7 @@ fun Collection<Tensor>.stack(axis: Int): Tensor {
 }
 
 fun List<Tensor>.concatenate(axis: Int): Tensor {
-    var acc = this[0].data
+    var acc = this[0].data.toMutable()
     for (i in 1 until this.size) {
         acc = acc.concatenate(this[i].data, axis)
     }
@@ -30,5 +31,6 @@ fun Tensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = tru
 }
 
 fun Tensor.splitWithAxis(splitTensor: Tensor, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
-    return this.data.splitWithAxis(splitTensor.data.array as IntArray, axis, keepDims).map { it.asTensor() }
+    val splitArray = IntArray(splitTensor.data.linearSize) { i -> (splitTensor.data[i] as Number).toInt() }
+    return this.data.splitWithAxis(splitArray, axis, keepDims).map { it.asTensor() }
 }

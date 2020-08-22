@@ -1,12 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.math
 
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.functional.DoubleArrayToDoubleArray
-import org.jetbrains.research.kotlin.inference.extensions.functional.FloatArrayToFloatArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
@@ -33,8 +31,16 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         val bias = inputs.getOrNull(1)
 
         val result = when (input.data.type) {
-            TensorProto.DataType.FLOAT -> input.data.mapElements(object : FloatArrayToFloatArray {
-                override fun apply(array: FloatArray): FloatArray {
+            DataType.FLOAT -> {
+                val biasData = bias?.data as? FloatNDArray
+                val result = input.data.toMutable() as MutableFloatNDArray
+                if (bias?.data == null) {
+                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i])
+                } else {
+                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i] + biasData!![i % biasData.linearSize])
+                }
+                result
+                /*override fun apply(array: FloatArray): FloatArray {
                     if (bias == null) {
                         for (i in array.indices) array[i] = fgelu(array[i])
                     } else {
@@ -44,10 +50,18 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                     }
 
                     return array
-                }
-            })
+                }*/
+            }
 
-            TensorProto.DataType.DOUBLE -> input.data.mapElements(object : DoubleArrayToDoubleArray {
+            DataType.DOUBLE -> {
+                val biasData = bias?.data as? DoubleNDArray
+                val result = input.data.toMutable() as MutableDoubleNDArray
+                if (bias?.data == null) {
+                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i])
+                } else {
+                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i] + biasData!![i % biasData.linearSize])
+                }
+                /*input.data.mapElements(object : DoubleArrayToDoubleArray {
                 override fun apply(array: DoubleArray): DoubleArray {
                     if (bias == null) {
                         for (i in array.indices) array[i] = fgelu(array[i])
@@ -58,8 +72,9 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                     }
 
                     return array
-                }
-            })
+                }*/
+                result
+            }
 
             else -> error("Unsupported operation")
         }.asTensor("Y")

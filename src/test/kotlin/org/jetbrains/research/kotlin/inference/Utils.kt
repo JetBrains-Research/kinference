@@ -1,13 +1,10 @@
 package org.jetbrains.research.kotlin.inference
 
 import org.jetbrains.research.kotlin.inference.data.ONNXData
-import org.jetbrains.research.kotlin.inference.data.ndarray.DoubleNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.FloatNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.IntNDArray
-import org.jetbrains.research.kotlin.inference.data.ndarray.LongNDArray
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.math.toIntArray
+import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.model.Model
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -71,19 +68,19 @@ object Utils {
         when (expected.info.type) {
             DataType.FLOAT -> {
                 ((expected.data as FloatNDArray).array).forEachIndexed { index, value ->
-                    assertEquals(value, (actual.data.array as FloatArray)[index], delta.toFloat(), "Tensor ${expected.info.name} does not match")
+                    assertEquals(value, actual.data[index] as Float, delta.toFloat(), "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.DOUBLE -> {
                 ((expected.data as DoubleNDArray).array).forEachIndexed { index, value ->
-                    assertEquals(value, (actual.data.array as DoubleArray)[index], delta, "Tensor ${expected.info.name} does not match")
+                    assertEquals(value, actual.data[index] as Double, delta, "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.INT64 -> {
                 ((expected.data as LongNDArray).array).forEachIndexed { index, value ->
-                    assertEquals(value, (actual.data.array as LongArray)[index], "Tensor ${expected.info.name} does not match")
+                    assertEquals(value, actual.data[index] as Long, "Tensor ${expected.info.name} does not match")
                 }
             }
 

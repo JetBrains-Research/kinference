@@ -1,16 +1,16 @@
 package org.jetbrains.research.kotlin.inference.operators.activations
 
+import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
-import org.jetbrains.research.kotlin.inference.extensions.primitives.exp
-import org.jetbrains.research.kotlin.inference.extensions.primitives.max
-import org.jetbrains.research.kotlin.inference.extensions.primitives.sum
+import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
+import org.jetbrains.research.kotlin.inference.math.extensions.createScalarNDArray
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
+import kotlin.math.exp
 
 //only for float and double types
 class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
@@ -30,7 +30,17 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             return if (dims == null || dims.isEmpty()) 1 else dims.reduce(Int::times)
         }
 
-        private fun <T> expMatrixRows(input: MutableTypedNDArray<T>, axis: Int): Array<MutableTypedNDArray<T>> {
+        fun exp(type: DataType) = when (type) {
+            DataType.FLOAT -> object : FloatMap {
+                override fun apply(value: Float): Float = exp(value)
+            }
+            DataType.DOUBLE -> object : DoubleMap {
+                override fun apply(value: Double): Double = exp(value)
+            }
+            else -> error("Unsupported data type")
+        }
+
+        private fun expMatrixRows(input: MutableNDArray, axis: Int): Array<MutableNumberNDArray> {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -40,21 +50,23 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
             val matrixRows = input.reshape(intArrayOf(rows, columns)).rows
             return Array(matrixRows.size) { i ->
-                val max = createScalarNDArray<T>(input.type, matrixRows[i].max()!!)
-                matrixRows[i].minusAssign(max)
-                matrixRows[i].exp()
+                (matrixRows[i] as MutableNumberNDArray).apply {
+                    val max = createScalarNDArray(input.type, this.max())
+                    minusAssign(max)
+                    mapMutable(exp(type))
+                }
             }
         }
 
-        fun softmax(input: MutableTypedNDArray<Any>, axis: Int = 0, strides: Strides = input.strides): MutableTypedNDArray<Any> {
+        fun softmax(input: MutableNDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
             val matrixRows = expMatrixRows(input, axis)
 
             val step = matrixRows[0].linearSize
-            val array = allocateNDArray<Any>(input.type, strides)
+            val array = allocateNDArray(input.type, strides)
             repeat(matrixRows.size) { i ->
                 val sum = matrixRows[i].sum()
                 matrixRows[i].divAssign(createScalarNDArray(input.type, sum))
-                array.placeAll(i * step, matrixRows[i].array)
+                array.placeAllFrom(i * step, matrixRows[i])
             }
             return array
         }
@@ -62,7 +74,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: TypedNDArray<Any>): TypedNDArray<Any> {
+    override fun activate(input: NDArray): NDArray {
         return softmax(input.toMutable(), axis, input.strides)
     }
 }

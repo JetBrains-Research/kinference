@@ -1,6 +1,6 @@
-package org.jetbrains.research.kotlin.inference.extensions.ndarray
+package org.jetbrains.research.kotlin.inference.math.extensions
 
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
+/*import org.jetbrains.research.kotlin.inference.data.ndarray.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 fun transpose(array: FloatArray, rowNum: Int, colNum: Int): FloatArray {
@@ -83,4 +83,4 @@ fun <T> MutableTypedNDArray<T>.matrixTranspose(): MutableTypedNDArray<T> {
     }
 
     return this.reshape(newStrides)
-}
+}*/
