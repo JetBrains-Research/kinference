@@ -39,8 +39,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
         if (forwardLstmData == null || reverseLstmData == null) {
             val (forwardParsedWeights, reverseParsedWeights) = weights.data.splitWithAxis(2).map { GatesData.createWeights(it) }
             val (forwardParsedRecWeights, reverseParsedRecWeights) = recurrentWeights.data.splitWithAxis(2).map { GatesData.createWeights(it) }
-            forwardLstmData = LSTMData(forwardParsedWeights, forwardParsedRecWeights, null, null, null, null, type!!)
-            reverseLstmData = LSTMData(reverseParsedWeights, reverseParsedRecWeights, null, null, null, null, type!!)
+            forwardLstmData = LSTMData(type!!, forwardParsedWeights, forwardParsedRecWeights)
+            reverseLstmData = LSTMData( type!!, reverseParsedWeights, reverseParsedRecWeights)
 
             this.weights = weights.data
             this.recurrentWeights = recurrentWeights.data

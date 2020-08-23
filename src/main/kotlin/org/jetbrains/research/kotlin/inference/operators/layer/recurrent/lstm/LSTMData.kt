@@ -6,20 +6,21 @@ import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.math.extensions.*
 
 @ExperimentalUnsignedTypes
-class LSTMData(val weights: GatesData,
+class LSTMData(val type: DataType,
+               val weights: GatesData,
                val recurrentWeights: GatesData,
-               val bias: GatesData?,
-               val initialOutput: List<NDArray>?,
-               val initialCellState: List<NDArray>?,
-               val peepholes: GatesData?,
-               val type: DataType) {
+               val bias: GatesData? = null,
+               val initialOutput: List<NDArray>? = null,
+               val initialCellState: List<NDArray>? = null,
+               val peepholes: GatesData? = null
+) {
 
-    fun updateWeights(weights: GatesData) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
-    fun updateRecurrentWeights(recurrentWeights: GatesData) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
-    fun updateBias(bias: GatesData) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
-    fun updateInitialOutput(initialOutput: List<NDArray>) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
-    fun updateInitialCellGate(initialCellSate: List<NDArray>) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellSate, peepholes, type)
-    fun updatePeepholes(peepholes: GatesData) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
+    fun updateWeights(weights: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
+    fun updateRecurrentWeights(recurrentWeights: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
+    fun updateBias(bias: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
+    fun updateInitialOutput(initialOutput: List<NDArray>) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
+    fun updateInitialCellGate(initialCellSate: List<NDArray>) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellSate, peepholes)
+    fun updatePeepholes(peepholes: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
 }
 
 @ExperimentalUnsignedTypes
@@ -28,6 +29,13 @@ data class GatesData(val input: MutableNDArray,
                      val forget: MutableNDArray,
                      val cellGate: MutableNDArray
 ) {
+    fun cleanup() {
+        input.clean()
+        output.clean()
+        forget.clean()
+        cellGate.clean()
+    }
+
     companion object {
         fun createWeights(weights: MutableNDArray): GatesData {
             require(weights.shape[0] == 1)
@@ -66,9 +74,7 @@ data class GatesData(val input: MutableNDArray,
         fun allocateGates(hiddenSize: Int, type: DataType): GatesData {
             val newStrides = Strides(intArrayOf(1, hiddenSize))
 
-            val allocArrays = Array(4) {
-                allocateNDArray(type, newStrides)
-            }
+            val allocArrays = Array(4) { allocateNDArray(type, newStrides) }
             return GatesData(allocArrays[0], allocArrays[1], allocArrays[2], allocArrays[3])
         }
     }

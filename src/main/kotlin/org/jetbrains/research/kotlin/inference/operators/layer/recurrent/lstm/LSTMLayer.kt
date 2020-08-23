@@ -51,10 +51,9 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
     }
 
-    private fun NDArray.activateStep(lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
-                                     recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null) {
+    private fun NDArray.processGate(lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
+                                    recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null) {
         this as NumberNDArray; lstmWeight as MutableNumberNDArray; lstmGate as MutableNumberNDArray
-        lstmGate.clean()
         this.dot(lstmWeight, lstmGate)
         if (!lastState.isOutputZero) (lastState.output as NumberNDArray).dot(recurrent as NumberNDArray, lstmGate)
         if (!lastState.isCellStateZero && peepholes != null)
@@ -65,15 +64,16 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
     private fun step(lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
                      lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction) {
-        input.activateStep(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
-        input.activateStep(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)
-        input.activateStep(lastState, lstmData.weights.cellGate, gatesData.cellGate, g, lstmData.recurrentWeights.cellGate, lstmData.bias?.cellGate)
+        gatesData.cleanup()
+        input.processGate(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
+        input.processGate(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)
+        input.processGate(lastState, lstmData.weights.cellGate, gatesData.cellGate, g, lstmData.recurrentWeights.cellGate, lstmData.bias?.cellGate)
 
         if (!lastState.isCellStateZero) (lastState.cellState as MutableNumberNDArray).timesAssign(gatesData.forget)
         (gatesData.input as MutableNumberNDArray).timesAssign(gatesData.cellGate)
         (lastState.cellState as MutableNumberNDArray).plusAssign(gatesData.input)
 
-        input.activateStep(lastState, lstmData.weights.output, gatesData.output, f, lstmData.recurrentWeights.output, lstmData.bias?.output, lstmData.peepholes?.output)
+        input.processGate(lastState, lstmData.weights.output, gatesData.output, f, lstmData.recurrentWeights.output, lstmData.bias?.output, lstmData.peepholes?.output)
 
         lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
 
@@ -87,7 +87,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         if (lstmData == null) {
             val parsedWeights = GatesData.createWeights(weights.data.toMutable())
             val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data.toMutable())
-            lstmData = LSTMData(parsedWeights, parsedRecurrentWeights, null, null, null, null, type!!)
+            lstmData = LSTMData(type!!, parsedWeights, parsedRecurrentWeights)
 
             this.weights = weights.data
             this.recurrentWeights = recurrentWeights.data
