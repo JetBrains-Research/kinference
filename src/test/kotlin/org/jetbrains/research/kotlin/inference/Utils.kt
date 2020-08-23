@@ -5,6 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.math.toIntArray
 import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
 import org.jetbrains.research.kotlin.inference.model.Model
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -14,6 +15,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.pow
 
+@ExperimentalUnsignedTypes
 object Utils {
     private val delta = (10.0).pow(-3)
 

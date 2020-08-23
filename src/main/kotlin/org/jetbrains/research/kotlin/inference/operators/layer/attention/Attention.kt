@@ -7,6 +7,7 @@ import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -17,6 +18,7 @@ import org.jetbrains.research.kotlin.inference.operators.activations.Softmax
 import kotlin.math.min
 import kotlin.math.sqrt
 
+@ExperimentalUnsignedTypes
 class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
 

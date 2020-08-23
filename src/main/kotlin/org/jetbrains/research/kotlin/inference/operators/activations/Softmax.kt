@@ -4,8 +4,7 @@ import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
-import org.jetbrains.research.kotlin.inference.math.extensions.createScalarNDArray
+import org.jetbrains.research.kotlin.inference.math.extensions.*
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
@@ -13,6 +12,7 @@ import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import kotlin.math.exp
 
 //only for float and double types
+@ExperimentalUnsignedTypes
 class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

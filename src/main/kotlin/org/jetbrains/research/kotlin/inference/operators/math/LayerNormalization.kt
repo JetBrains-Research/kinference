@@ -5,6 +5,8 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
+import org.jetbrains.research.kotlin.inference.math.extensions.indexAxis
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -45,6 +47,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
         private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data
         val scale = inputs[1]!!.data
@@ -70,6 +73,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
         return when (type) {
             DataType.FLOAT -> {
                 input as FloatNDArray; scale as FloatNDArray; bias as FloatNDArray
+
                 val outputArray = FloatArray(input.linearSize)
                 for (i in 0 until normCount) {
                     val offset = i * normSize

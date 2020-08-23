@@ -5,10 +5,10 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 
-@Suppress("UNCHECKED_CAST")
 abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
 
@@ -19,6 +19,7 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
         return listOf(activate(inputs.first()!!))
     }
 
+    @ExperimentalUnsignedTypes
     companion object {
         // TODO: Add activations with alpha and beta
         fun createFloat(name: String): FloatMap = when (name) {

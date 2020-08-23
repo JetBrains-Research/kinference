@@ -12,6 +12,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
     val refAttrName: String? = proto.ref_attr_name
 
     companion object {
+        @ExperimentalUnsignedTypes
         fun create(proto: AttributeProto): Attribute<Any> = when (proto.type) {
             AttributeType.FLOAT -> Attribute(proto, proto.f!!)
             AttributeType.INT -> Attribute(proto, proto.i!!)

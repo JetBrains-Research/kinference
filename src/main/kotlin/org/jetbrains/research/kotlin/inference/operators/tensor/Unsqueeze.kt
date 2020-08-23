@@ -4,8 +4,8 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.math.toIntArray
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.math.asTensor
-import org.jetbrains.research.kotlin.inference.math.unsqueeze
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
+import org.jetbrains.research.kotlin.inference.math.extensions.unsqueeze
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
 import org.jetbrains.research.kotlin.inference.operators.IOInfo

@@ -1,5 +1,8 @@
 package org.jetbrains.research.kotlin.inference.math
 
+fun Double.toUShort() = this.toInt().toUShort()
+fun Double.toUByte() = this.toInt().toUByte()
+
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
     for ((i, element) in this.withIndex()) {

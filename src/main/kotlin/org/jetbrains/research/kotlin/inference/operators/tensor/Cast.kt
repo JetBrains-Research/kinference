@@ -47,6 +47,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!

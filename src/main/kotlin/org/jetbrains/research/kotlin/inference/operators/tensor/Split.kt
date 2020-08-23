@@ -27,6 +27,7 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val split: Any? by attributeOrNull()
 
+    @Suppress("UNCHECKED_CAST")
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs.first()!!
         return when (split) {

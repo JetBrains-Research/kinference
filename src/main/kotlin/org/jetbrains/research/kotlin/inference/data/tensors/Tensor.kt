@@ -5,7 +5,7 @@ import org.jetbrains.research.kotlin.inference.data.ONNXDataType
 import org.jetbrains.research.kotlin.inference.math.toIntArray
 import org.jetbrains.research.kotlin.inference.math.*
 import org.jetbrains.research.kotlin.inference.math.NDArray
-import org.jetbrains.research.kotlin.inference.math.BooleanNDArray
+import org.jetbrains.research.kotlin.inference.math.arrays.BooleanNDArray
 import org.jetbrains.research.kotlin.inference.math.extensions.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
@@ -16,7 +16,6 @@ import java.nio.ByteOrder
 
 //TODO: support segments
 //TODO: support external and raw data
-@Suppress("UNCHECKED_CAST")
 class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
     override fun rename(newName: String): ONNXData {
         return Tensor(data, TensorInfo(newName, info.type, TensorShape(data.shape)))
@@ -46,6 +45,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
 
     companion object {
         //TODO: complex, uint32/64 tensors
+        @Suppress("UNCHECKED_CAST")
         @ExperimentalUnsignedTypes
         fun create(proto: TensorProto): Tensor {
             if (proto.dims.isNullOrEmpty()) return parseScalar(proto)
@@ -103,6 +103,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             }
         }
 
+        @ExperimentalUnsignedTypes
         operator fun invoke(dims: List<Long>, value: List<*>, type: DataType, name: String?): Tensor {
             val data = createArray(type.resolveLocalDataType(), value.size) { i -> value[i]!! }
             return Tensor(data, type, dims.toIntArray(), name)

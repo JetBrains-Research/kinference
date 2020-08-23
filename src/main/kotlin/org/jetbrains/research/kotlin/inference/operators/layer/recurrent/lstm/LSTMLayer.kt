@@ -3,11 +3,11 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
-import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
+import org.jetbrains.research.kotlin.inference.math.extensions.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.operators.activations.Activation
 
+@ExperimentalUnsignedTypes
 open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
 
     private var lstmData: LSTMData? = null

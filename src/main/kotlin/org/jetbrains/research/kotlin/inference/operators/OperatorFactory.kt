@@ -15,6 +15,7 @@ import org.jetbrains.research.kotlin.inference.operators.seq.ConcatFromSequence
 import org.jetbrains.research.kotlin.inference.operators.seq.SplitToSequence
 import org.jetbrains.research.kotlin.inference.operators.tensor.*
 
+@ExperimentalUnsignedTypes
 object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {

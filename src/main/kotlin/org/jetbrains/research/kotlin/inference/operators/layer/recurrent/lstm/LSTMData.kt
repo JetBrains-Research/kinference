@@ -3,9 +3,9 @@ package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
-import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
+import org.jetbrains.research.kotlin.inference.math.extensions.*
 
+@ExperimentalUnsignedTypes
 class LSTMData(val weights: GatesData,
                val recurrentWeights: GatesData,
                val bias: GatesData?,
@@ -22,7 +22,7 @@ class LSTMData(val weights: GatesData,
     fun updatePeepholes(peepholes: GatesData) = LSTMData(weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes, type)
 }
 
-
+@ExperimentalUnsignedTypes
 data class GatesData(val input: MutableNDArray,
                      val output: MutableNDArray,
                      val forget: MutableNDArray,
@@ -74,6 +74,7 @@ data class GatesData(val input: MutableNDArray,
     }
 }
 
+@ExperimentalUnsignedTypes
 data class State(var output: MutableNDArray, val cellState: MutableNDArray, var isOutputZero: Boolean, var isCellStateZero: Boolean) {
     companion object {
         fun allocateState(batchSize: Int, hiddenSize: Int, type: DataType): Array<State> {

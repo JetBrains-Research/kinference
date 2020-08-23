@@ -4,7 +4,7 @@ package org.jetbrains.research.kotlin.inference.math
 
 import org.jetbrains.research.kotlin.inference.annotations.*
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.extensions.applyWithBroadcast
+import org.jetbrains.research.kotlin.inference.math.extensions.*
 import kotlin.math.abs
 
 @PrimitiveClass
@@ -473,6 +473,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
 
     override fun transpose2D(): MutableNDArray {
         require(rank == 2)
+
         val newShape = shape.reversedArray()
         val newStrides = Strides(newShape)
 
@@ -491,7 +492,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
 }
 
 @PrimitiveClass
-@ExperimentalUnsignedTypes
 class LateInitPrimitiveArray(size: Int) : LateInitArray {
     private val array = PrimitiveArray(size)
     private var index = 0
@@ -508,7 +508,6 @@ class LateInitPrimitiveArray(size: Int) : LateInitArray {
 }
 
 @PrimitiveClass
-@ExperimentalUnsignedTypes
 interface PrimitiveMap : PrimitiveToPrimitiveFunction {
     fun apply(value: PrimitiveType): PrimitiveType
 }

@@ -3,6 +3,7 @@ package org.jetbrains.research.kotlin.inference.math.extensions
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.math.arrays.*
 
 inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (Int) -> T): Any {
     return when (type) {
@@ -54,7 +55,7 @@ fun createNDArray(type: DataType, value: Any, shape: IntArray, offset: Int = 0):
     return createNDArray(type, value, Strides(shape), offset)
 }
 
-inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
+fun createZerosArray(type: DataType, size: Int): Any {
     return when (type) {
         DataType.DOUBLE -> DoubleArray(size)
         DataType.FLOAT -> FloatArray(size)
@@ -62,12 +63,11 @@ inline fun <reified T> createZerosArray(type: DataType, size: Int): Any {
         DataType.INT -> IntArray(size)
         DataType.SHORT -> ShortArray(size)
         DataType.BOOLEAN -> BooleanArray(size)
-        else -> arrayOfNulls<T>(size)
+        else -> error("Unsupported data type $type")
     }
 }
 
 @ExperimentalUnsignedTypes
-@Suppress("UNCHECKED_CAST")
 fun createScalarNDArray(type: DataType, value: Any): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(doubleArrayOf(value as Double))
@@ -82,7 +82,6 @@ fun createScalarNDArray(type: DataType, value: Any): NDArray {
 }
 
 @ExperimentalUnsignedTypes
-@Suppress("UNCHECKED_CAST")
 fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(DoubleArray(strides.linearSize), strides)
@@ -91,12 +90,11 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
         DataType.INT -> MutableIntNDArray(IntArray(strides.linearSize), strides)
         DataType.SHORT -> MutableShortNDArray(ShortArray(strides.linearSize), strides)
         DataType.BOOLEAN -> MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
-        else -> error("Unsupported type")
+        else -> error("Unsupported data type $type")
     }
 }
 
 @ExperimentalUnsignedTypes
-@Suppress("UNCHECKED_CAST")
 fun createLateInitArray(type: DataType, strides: Strides): LateInitArray {
     return createLateInitArray(type, strides.linearSize)
 }
@@ -110,14 +108,13 @@ fun createLateInitArray(type: DataType, size: Int): LateInitArray {
         DataType.INT -> LateInitIntArray(size)
         DataType.SHORT -> LateInitShortArray(size)
         DataType.BOOLEAN -> LateInitBooleanArray(size)
-        else -> error("Unsupported type")
+        else -> error("Unsupported data type $type")
     }
 }
 
 @ExperimentalUnsignedTypes
-@Suppress("UNCHECKED_CAST")
 // TODO move into LateInitArray
-fun <T> createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): NDArray {
+fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray((array as LateInitDoubleArray).getArray(), strides)
         DataType.FLOAT -> FloatNDArray((array as LateInitFloatArray).getArray(), strides)

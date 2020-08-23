@@ -5,7 +5,7 @@ import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.math.extensions.createNDArray
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.math.asTensor
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
@@ -23,6 +23,7 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         private val INFO = OperatorInfo("Shape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val shape = tensor.data.shape

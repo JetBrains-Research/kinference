@@ -8,11 +8,6 @@ import java.io.File
 class Model(proto: ModelProto) {
     val graph = Graph(proto.graph!!)
 
-    fun <T : Number> predict(input: List<T>): List<ONNXData> {
-        val inputs = listOf(graph.prepareInput(input))
-        return graph.execute(inputs)
-    }
-
     fun predict(input: Collection<ONNXData>): List<ONNXData> {
         return graph.execute(input.toList())
     }

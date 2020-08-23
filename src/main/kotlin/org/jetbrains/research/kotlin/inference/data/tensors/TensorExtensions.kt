@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.math.asTensor
-import org.jetbrains.research.kotlin.inference.math.concatenate
+import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
+import org.jetbrains.research.kotlin.inference.math.extensions.concatenate
 import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {

@@ -22,6 +22,7 @@ abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: S
 
     abstract fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor>
 
+    @ExperimentalUnsignedTypes
     override fun apply(inputList: List<Tensor?>): List<Tensor?> {
         require(inputList.toMutableList().also { if (4 in it.indices) it.removeAt(4) }.all { it?.data?.type == inputList[0]!!.data.type })
 

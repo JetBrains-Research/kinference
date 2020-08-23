@@ -10,6 +10,7 @@ import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
+@ExperimentalUnsignedTypes
 class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
