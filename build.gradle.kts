@@ -11,6 +11,7 @@ plugins {
     kotlin("jvm") version "1.4.0" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    id("me.champeau.gradle.jmh") version "0.5.0" apply true
 }
 
 repositories {
@@ -35,7 +36,13 @@ sourceSets {
 
 tasks.compileTestKotlin {
     doFirst {
-        source = source.filter { "kotlin-gen" !in it.path }.asFileTree
+        source = source.filter { generatedDir !in it.path }.asFileTree
+    }
+}
+
+tasks.compileJmhKotlin {
+    doFirst {
+        source = source.filter { generatedDir !in it.path }.asFileTree
     }
 }
 
@@ -90,8 +97,19 @@ publishJar {
     }
 }
 
+jmh {
+    fork = 1
+    threads = 1
+    timeUnit = "ms"
+    benchmarkMode = listOf("avgt")
+    timeOnIteration = "1ms"
+    warmup = "1ms"
+    verbosity = "silent"
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
     api("com.squareup.wire", "wire-runtime", "3.2.2")
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
+    testImplementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
 }

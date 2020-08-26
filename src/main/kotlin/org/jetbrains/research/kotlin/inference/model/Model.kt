@@ -13,8 +13,10 @@ class Model(proto: ModelProto) {
     }
 
     companion object {
-        fun load(file: String): Model {
-            val modelScheme = ModelProto.ADAPTER.decode(File(file).readBytes())
+        fun load(file: String): Model = load(File(file).readBytes())
+
+        fun load(bytes: ByteArray): Model {
+            val modelScheme = ModelProto.ADAPTER.decode(bytes)
             return Model(modelScheme)
         }
     }
