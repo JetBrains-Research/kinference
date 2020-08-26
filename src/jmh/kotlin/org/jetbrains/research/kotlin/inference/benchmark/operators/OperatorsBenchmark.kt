@@ -6,8 +6,8 @@ import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 
 @State(Scope.Benchmark)
-@Warmup(iterations = 1)
-@Measurement(iterations = 5)
+@Warmup(iterations = 30)
+@Measurement(iterations = 100)
 open class OperatorsBenchmark {
     // Mask: operator.test_name.data_set
     @Param(
