@@ -3,10 +3,11 @@ package org.jetbrains.research.kotlin.inference.operators.math
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
-import org.jetbrains.research.kotlin.inference.math.extensions.indexAxis
+import org.jetbrains.research.kotlin.inference.ndarray.DoubleNDArray
+import org.jetbrains.research.kotlin.inference.ndarray.FloatNDArray
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.indexAxis
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto.AttributeType
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo

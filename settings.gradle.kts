@@ -1,6 +1,6 @@
 rootProject.name = "kotlin-inference"
 
-include(":annotations", ":primitives-generator")
+include(":annotations", ":primitives-generator", ":ndarray")
 
 pluginManagement {
     repositories {

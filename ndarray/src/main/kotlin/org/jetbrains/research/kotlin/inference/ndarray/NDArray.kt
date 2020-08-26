@@ -1,8 +1,6 @@
-package org.jetbrains.research.kotlin.inference.math
+package org.jetbrains.research.kotlin.inference.ndarray
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
-import org.jetbrains.research.kotlin.inference.annotations.PrimitiveType
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 
 interface LateInitArray
 interface PrimitiveToPrimitiveFunction

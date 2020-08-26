@@ -1,7 +1,6 @@
-package org.jetbrains.research.kotlin.inference.math.extensions
+package org.jetbrains.research.kotlin.inference.ndarray.extensions
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import kotlin.math.ceil
 
 fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {

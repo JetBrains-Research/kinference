@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.math
+package org.jetbrains.research.kotlin.inference.ndarray
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()

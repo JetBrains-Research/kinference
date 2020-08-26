@@ -1,10 +1,9 @@
-package org.jetbrains.research.kotlin.inference.math.arrays
+package org.jetbrains.research.kotlin.inference.ndarray.arrays
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.slice
-import org.jetbrains.research.kotlin.inference.math.extensions.viewHelper
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.slice
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.viewHelper
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import kotlin.math.abs
 
 class LateInitBooleanArray(size: Int) : LateInitArray {

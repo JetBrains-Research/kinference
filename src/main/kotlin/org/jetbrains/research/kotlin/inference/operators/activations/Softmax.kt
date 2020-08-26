@@ -2,9 +2,8 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.*
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
 import org.jetbrains.research.kotlin.inference.operators.IOInfo

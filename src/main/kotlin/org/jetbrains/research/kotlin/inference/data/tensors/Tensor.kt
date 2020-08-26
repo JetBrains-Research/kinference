@@ -2,11 +2,9 @@ package org.jetbrains.research.kotlin.inference.data.tensors
 
 import org.jetbrains.research.kotlin.inference.data.ONNXData
 import org.jetbrains.research.kotlin.inference.data.ONNXDataType
-import org.jetbrains.research.kotlin.inference.math.toIntArray
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.NDArray
-import org.jetbrains.research.kotlin.inference.math.arrays.BooleanNDArray
-import org.jetbrains.research.kotlin.inference.math.extensions.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.arrays.BooleanNDArray
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto.DataType
 import org.jetbrains.research.kotlin.inference.types.TensorInfo

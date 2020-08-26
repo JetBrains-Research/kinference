@@ -1,11 +1,10 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
-import org.jetbrains.research.kotlin.inference.math.extensions.splitParts
-import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.allocateNDArray
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.splitParts
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.RecurrentLayer
 
 abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: String) : RecurrentLayer(hiddenSize, activations, direction) {

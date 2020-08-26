@@ -3,9 +3,9 @@ package org.jetbrains.research.kotlin.inference.operators.math
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo

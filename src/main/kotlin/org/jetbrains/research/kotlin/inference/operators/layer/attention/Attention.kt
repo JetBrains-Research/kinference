@@ -2,12 +2,11 @@ package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.math.extensions.allocateNDArray
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.allocateNDArray
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -122,7 +121,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         //create present state block from past + current states
-        private fun MutableNDArray.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int, pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableNDArray, Int> {
+        private fun MutableNDArray.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
+                                               pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableNDArray, Int> {
             //present state block offset
             val presentStart = i * presentBlockSize + presentOffset
 
@@ -161,9 +161,6 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 //Q*K(transposed) / sqrt(d) where d is attention head size
                 (queries as NumberNDArray).gemm(seqLen, allSeqLen, headSize, alpha, headSize, k as NumberNDArray, headSize, 1.0, scores, allSeqLen,
                     inputBlockSize * i, kOffset, i * seqLen * allSeqLen, transposeB = true)
-                /*gemm(queries, k, scores, inputBlockSize * i, kOffset,
-                    i * seqLen * allSeqLen, seqLen, allSeqLen, headSize,
-                    headSize, headSize, allSeqLen, alpha = alpha, transposeB = true)*/
             }
             //softmax for each result (normalize along last axis)
             return Softmax.softmax(scores, -1)
@@ -191,8 +188,6 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 val tmpOffset = inputBlockSize * i
                 //multiply normalized scores by value
                 (scores as NumberNDArray).gemm(seqLen, headSize, allSeqLen, 1.0, allSeqLen, v as NumberNDArray, headSize, 0.0, tmp, headSize, attentionOffset, vOffset, tmpOffset)
-                /*gemm(scores, v, tmp, attentionOffset, vOffset, tmpOffset, seqLen,
-                    headSize, allSeqLen, allSeqLen, headSize, headSize, beta = 0.0)*/
 
                 val batchIdx = i / numHeads
                 val headIdx = i % numHeads

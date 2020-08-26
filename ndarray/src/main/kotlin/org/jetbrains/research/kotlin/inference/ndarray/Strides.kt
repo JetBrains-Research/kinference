@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.data.tensors
+package org.jetbrains.research.kotlin.inference.ndarray
 
 class Strides(val shape: IntArray) {
     val strides = IntArray(shape.size)

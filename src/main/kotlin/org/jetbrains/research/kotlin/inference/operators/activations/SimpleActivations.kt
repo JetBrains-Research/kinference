@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.inference.operators.activations
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.OperatorInfo
 import org.jetbrains.research.kotlin.inference.operators.math.tanh

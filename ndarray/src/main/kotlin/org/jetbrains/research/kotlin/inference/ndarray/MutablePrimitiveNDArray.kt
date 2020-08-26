@@ -1,10 +1,9 @@
 @file:GenerateWithPrimitives
 
-package org.jetbrains.research.kotlin.inference.math
+package org.jetbrains.research.kotlin.inference.ndarray
 
 import org.jetbrains.research.kotlin.inference.annotations.*
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.extensions.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.*
 import kotlin.math.abs
 
 @PrimitiveClass

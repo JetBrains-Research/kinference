@@ -1,8 +1,50 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.math.extensions.asTensor
-import org.jetbrains.research.kotlin.inference.math.extensions.concatenate
-import org.jetbrains.research.kotlin.inference.math.extensions.splitWithAxis
+import org.jetbrains.research.kotlin.inference.annotations.DataType
+import org.jetbrains.research.kotlin.inference.ndarray.NDArray
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.concatenate
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.splitWithAxis
+import org.jetbrains.research.kotlin.inference.onnx.TensorProto
+import org.jetbrains.research.kotlin.inference.types.TensorInfo
+import org.jetbrains.research.kotlin.inference.types.TensorShape
+
+fun TensorProto.DataType.resolveLocalDataType(): DataType {
+    return when(this) {
+        TensorProto.DataType.DOUBLE -> DataType.DOUBLE
+        TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16 -> DataType.FLOAT
+        TensorProto.DataType.INT32 -> DataType.INT
+        TensorProto.DataType.INT64 -> DataType.LONG
+        TensorProto.DataType.INT16 -> DataType.SHORT
+        TensorProto.DataType.INT8-> DataType.BYTE
+        TensorProto.DataType.BOOL -> DataType.BOOLEAN
+        TensorProto.DataType.UINT32-> DataType.UINT
+        TensorProto.DataType.UINT64 -> DataType.ULONG
+        TensorProto.DataType.UINT16 -> DataType.USHORT
+        TensorProto.DataType.UINT8 -> DataType.UBYTE
+        TensorProto.DataType.UNDEFINED -> DataType.UNKNOWN
+        else -> error("Cannot resolve data type")
+    }
+}
+
+fun DataType.resolveProtoDataType(): TensorProto.DataType {
+    return when(this) {
+        DataType.DOUBLE -> TensorProto.DataType.DOUBLE
+        DataType.FLOAT -> TensorProto.DataType.FLOAT
+        DataType.INT -> TensorProto.DataType.INT32
+        DataType.LONG -> TensorProto.DataType.INT64
+        DataType.SHORT -> TensorProto.DataType.INT16
+        DataType.BYTE -> TensorProto.DataType.INT8
+        DataType.BOOLEAN -> TensorProto.DataType.BOOL
+        DataType.UINT -> TensorProto.DataType.UINT32
+        DataType.ULONG -> TensorProto.DataType.UINT64
+        DataType.USHORT -> TensorProto.DataType.UINT16
+        DataType.UBYTE -> TensorProto.DataType.UINT8
+        DataType.UNKNOWN -> TensorProto.DataType.UNDEFINED
+        else -> kotlin.error("Cannot resolve data type")
+    }
+}
+
+fun NDArray.asTensor(name: String? = null) = Tensor(this, TensorInfo(name ?: "", type.resolveProtoDataType(), TensorShape(this.shape)))
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape

@@ -1,8 +1,6 @@
-package org.jetbrains.research.kotlin.inference.math.extensions
+package org.jetbrains.research.kotlin.inference.ndarray.extensions
 
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.MutableNDArray
-import org.jetbrains.research.kotlin.inference.math.NDArray
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import kotlin.math.max
 
 fun broadcastShape(firstShape: IntArray, secondShape: IntArray): IntArray {

@@ -1,9 +1,8 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.*
-import org.jetbrains.research.kotlin.inference.math.extensions.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.*
 
 @ExperimentalUnsignedTypes
 class LSTMData(val type: DataType,

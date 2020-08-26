@@ -1,8 +1,7 @@
-package org.jetbrains.research.kotlin.inference.math.extensions
+package org.jetbrains.research.kotlin.inference.ndarray.extensions
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
-import org.jetbrains.research.kotlin.inference.math.*
+import org.jetbrains.research.kotlin.inference.ndarray.*
 
 fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
