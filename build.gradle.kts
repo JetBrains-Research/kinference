@@ -104,7 +104,7 @@ jmh {
     benchmarkMode = listOf("avgt")
     timeOnIteration = "1ms"
     warmup = "1ms"
-    verbosity = "silent"
+    verbosity = "normal"
 }
 
 dependencies {
