@@ -11,7 +11,7 @@ plugins {
     kotlin("jvm") version "1.4.0" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
-    id("me.champeau.gradle.jmh") version "0.5.0" apply true
+    kotlin("kapt") version "1.4.0"
 }
 
 repositories {
@@ -19,6 +19,7 @@ repositories {
 }
 
 val generatedDir = "src/main/kotlin-gen"
+
 
 wire {
     protoPath("src/main/proto")
@@ -35,12 +36,6 @@ sourceSets {
 }
 
 tasks.compileTestKotlin {
-    doFirst {
-        source = source.filter { generatedDir !in it.path }.asFileTree
-    }
-}
-
-tasks.compileJmhKotlin {
     doFirst {
         source = source.filter { generatedDir !in it.path }.asFileTree
     }
@@ -69,6 +64,7 @@ tasks.withType<KotlinJvmCompile> {
 tasks.test {
     useJUnitPlatform {
         excludeTags("heavy")
+        excludeTags("benchmark")
     }
     maxHeapSize = "20m"
 
@@ -82,9 +78,23 @@ tasks.create("testHeavy", Test::class.java) {
 
     useJUnitPlatform {
         includeTags("heavy")
+        excludeTags("benchmark")
     }
 
     maxHeapSize = "8192m"
+
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+tasks.create("testPerfomance", Test::class.java) {
+    group = "verification"
+
+    useJUnitPlatform {
+        excludeTags("heavy")
+        includeTags("benchmark")
+    }
 
     testLogging {
         events("passed", "skipped", "failed")
@@ -97,19 +107,14 @@ publishJar {
     }
 }
 
-jmh {
-    fork = 1
-    threads = 1
-    timeUnit = "ms"
-    benchmarkMode = listOf("avgt")
-    timeOnIteration = "1ms"
-    warmup = "1ms"
-    verbosity = "normal"
-}
-
 dependencies {
     implementation(kotlin("stdlib"))
     api("com.squareup.wire", "wire-runtime", "3.2.2")
+
+    testImplementation("org.openjdk.jmh:jmh-core:1.25.1")
+    testImplementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
+    kaptTest("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
+
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
 }
