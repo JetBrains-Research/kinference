@@ -12,19 +12,23 @@ import kotlin.random.Random
 
 
 @State(Scope.Benchmark)
-@Fork(value = 1, warmups = 0, jvmArgsAppend = ["-XX:CompileThreshold=100"])
+@Fork(value = 1, warmups = 0, jvmArgsAppend = [
+    "-XX:CompileThreshold=100",
+    "-XX:+UnlockDiagnosticVMOptions",
+//    "-XX:CompileCommand=print,\"org/jetbrains/research/kotlin/inference/benchmark/DotBenchmark.baseline\""
+])
 @Warmup(iterations = 3)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
 open class DotBenchmark {
-    @Param("1000")
+    @Param("10", "100", "1000")
     var n = 0
 
-    @Param("1000")
+    @Param("10", "100", "1000")
     var m = 0
 
-    @Param("1000")
+    @Param("10", "100", "1000")
     var t = 0
 
     lateinit var left: FloatArray
@@ -101,7 +105,10 @@ class BenchmarkTest {
     @Test
     @Tag("benchmark")
     fun `test dot performance`() {
-        val opts = OptionsBuilder().include("DotBenchmark").build()
+        val opts = OptionsBuilder()
+            .include("DotBenchmark")
+//            .addProfiler("org.openjdk.jmh.profile.WinPerfAsmProfiler")
+            .build()
         val results = Runner(opts).run().toTypedArray()
 
         assert(results[0].primaryResult.score < 500)
