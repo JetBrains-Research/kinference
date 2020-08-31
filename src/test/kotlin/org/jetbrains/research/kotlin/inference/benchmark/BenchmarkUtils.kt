@@ -1,10 +1,12 @@
-package org.jetbrains.research.kotlin.inference
+package org.jetbrains.research.kotlin.inference.benchmark
 
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import org.jetbrains.research.kotlin.inference.Utils
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.model.Model
+import org.jetbrains.research.kotlin.inference.ndarray.*
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import java.nio.DoubleBuffer
 import java.nio.FloatBuffer
@@ -25,10 +27,10 @@ object BenchmarkUtils {
         }
 
     fun Tensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
-        TensorProto.DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap(data.array as FloatArray), data.shape.toLongArray())
-        TensorProto.DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap(data.array as DoubleArray), data.shape.toLongArray())
-        TensorProto.DataType.INT32 -> OnnxTensor.createTensor(env, IntBuffer.wrap(data.array as IntArray), data.shape.toLongArray())
-        TensorProto.DataType.INT64 -> OnnxTensor.createTensor(env, LongBuffer.wrap(data.array as LongArray), data.shape.toLongArray())
+        TensorProto.DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array), data.shape.toLongArray())
+        TensorProto.DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array), data.shape.toLongArray())
+        TensorProto.DataType.INT32 -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array), data.shape.toLongArray())
+        TensorProto.DataType.INT64 -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array), data.shape.toLongArray())
         else -> throw UnsupportedOperationException()
     }
 
@@ -37,8 +39,8 @@ object BenchmarkUtils {
     fun modelWithInputs(path: String): Pair<ByteArray, List<Tensor>> {
         val (mainPath, testName, dataSet) = path.split('.')
 
-        val modelBytes: ByteArray
-        val inputs: List<Tensor>
+        lateinit var modelBytes: ByteArray
+        lateinit var inputs: List<Tensor>
 
         val testDir = "/$mainPath/test_$testName/"
         val path = javaClass.getResource(testDir).toURI()

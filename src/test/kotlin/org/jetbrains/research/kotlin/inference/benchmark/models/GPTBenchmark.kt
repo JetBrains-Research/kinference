@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.benchmark.models
 
-import org.jetbrains.research.kotlin.inference.BenchmarkUtils
+import org.jetbrains.research.kotlin.inference.benchmark.BenchmarkUtils
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 

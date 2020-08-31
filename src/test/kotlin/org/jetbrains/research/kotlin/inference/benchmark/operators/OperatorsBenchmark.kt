@@ -1,7 +1,7 @@
 package org.jetbrains.research.kotlin.inference.benchmark.operators
 
-import org.jetbrains.research.kotlin.inference.BenchmarkUtils.KIState
-import org.jetbrains.research.kotlin.inference.BenchmarkUtils.OrtState
+import org.jetbrains.research.kotlin.inference.benchmark.BenchmarkUtils.KIState
+import org.jetbrains.research.kotlin.inference.benchmark.BenchmarkUtils.OrtState
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 

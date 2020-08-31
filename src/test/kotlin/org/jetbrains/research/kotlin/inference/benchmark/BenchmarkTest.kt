@@ -14,7 +14,7 @@ import kotlin.random.Random
 @State(Scope.Benchmark)
 @Fork(value = 1, warmups = 0, jvmArgsAppend = [
     "-XX:CompileThreshold=100",
-    "-XX:+UnlockDiagnosticVMOptions",
+    "-XX:+UnlockDiagnosticVMOptions"
 //    "-XX:CompileCommand=print,\"org/jetbrains/research/kotlin/inference/benchmark/DotBenchmark.baseline\""
 ])
 @Warmup(iterations = 3)
@@ -111,7 +111,7 @@ class BenchmarkTest {
             .build()
         val results = Runner(opts).run().toTypedArray()
 
-        assert(results[0].primaryResult.score < 500)
-        assert(results[1].primaryResult.score < 150)
+        assert(results[0].primaryResult.getScore() < 500)
+        assert(results[1].primaryResult.getScore() < 150)
     }
 }
