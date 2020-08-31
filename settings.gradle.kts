@@ -1,5 +1,6 @@
 rootProject.name = "kinference"
 
+include(":inference")
 include(":ndarray")
 
 pluginManagement {

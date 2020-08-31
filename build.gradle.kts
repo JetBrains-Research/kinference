@@ -1,126 +1,74 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import tanvd.kosogor.proxy.publishJar
 import io.kinference.gradle.generatedDir
 import io.kinference.gradle.kotlin
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "io.kinference"
 version = "0.1.0"
 
 plugins {
     id("tanvd.kosogor") version "1.0.9" apply true
-    kotlin("jvm") version "1.3.72" apply true
 
-    id("com.squareup.wire") version "3.2.2" apply true
-    id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    kotlin("jvm") version "1.3.72" apply true
+    kotlin("kapt") version "1.3.72" apply false
+
     id("io.kinference.primitives") version ("0.1.1") apply false
 
-    kotlin("kapt") version "1.3.72"
+    id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    idea apply true
 }
 
 allprojects {
     repositories {
         jcenter()
+        gradlePluginPortal()
+    }
+}
+
+subprojects {
+    apply {
+        plugin("kotlin")
+        plugin("idea")
+        plugin("io.kinference.primitives")
+        plugin("tanvd.kosogor")
+        plugin("io.gitlab.arturbosch.detekt")
     }
 
-    tasks.withType<KotlinCompile> {
+    tasks.withType<KotlinJvmCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
             languageVersion = "1.3"
             apiVersion = "1.3"
         }
     }
-}
 
+    detekt {
+        parallel = true
 
-sourceSets {
-    main {
-        kotlin.srcDirs(generatedDir)
-    }
-}
+        config = rootProject.files("detekt.yml")
 
-idea {
-    module.generatedSourceDirs.plusAssign(files(generatedDir))
-}
-
-
-wire {
-    protoPath("src/main/proto")
-
-    kotlin {
-        out = generatedDir
-    }
-}
-
-tasks.compileTestKotlin {
-    doFirst {
-        source = source.filter { generatedDir !in it.path }.asFileTree
-    }
-}
-
-
-detekt {
-    config = files(file("detekt.yml"))
-    reports {
-        xml.enabled = false
-        html.enabled = false
-    }
-}
-
-tasks.test {
-    useJUnitPlatform {
-        excludeTags("heavy")
-        excludeTags("benchmark")
-    }
-    maxHeapSize = "20m"
-
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-}
-
-tasks.create("testHeavy", Test::class.java) {
-    group = "verification"
-
-    useJUnitPlatform {
-        includeTags("heavy")
-        excludeTags("benchmark")
+        reports {
+            xml {
+                enabled = false
+            }
+            html {
+                enabled = false
+            }
+        }
     }
 
-    maxHeapSize = "8192m"
-
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-}
-
-tasks.create("testPerfomance", Test::class.java) {
-    group = "verification"
-
-    useJUnitPlatform {
-        excludeTags("heavy")
-        includeTags("benchmark")
+    sourceSets {
+        main {
+            kotlin.srcDirs(generatedDir)
+        }
     }
 
-    testLogging {
-        events("passed", "skipped", "failed")
+    idea {
+        module.generatedSourceDirs.plusAssign(files(generatedDir))
     }
-}
 
-publishJar {
-    publication {
-        artifactId = "kotlin-inference"
+    tasks.compileTestKotlin {
+        doFirst {
+            source = source.filter { generatedDir !in it.path }.asFileTree
+        }
     }
-}
-
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(project(":ndarray"))
-    api("com.squareup.wire", "wire-runtime", "3.2.2")
-
-    testImplementation("org.openjdk.jmh:jmh-core:1.25.1")
-    testImplementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
-    kaptTest("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
-
-    testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
-    testImplementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
 }
