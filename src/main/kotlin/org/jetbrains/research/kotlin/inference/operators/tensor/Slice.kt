@@ -2,9 +2,9 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
-import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.ndarray.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.IOInfo
 import org.jetbrains.research.kotlin.inference.operators.Operator
@@ -21,7 +21,7 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
             IOInfo(1, INDEX_TYPE_CONSTRAINTS, "starts", optional = false, differentiable = false),
             IOInfo(2, INDEX_TYPE_CONSTRAINTS, "ends", optional = false, differentiable = false),
             IOInfo(3, INDEX_TYPE_CONSTRAINTS, "axes", optional = true, differentiable = false),
-            IOInfo(4, INDEX_TYPE_CONSTRAINTS, "steps", optional = true, differentiable = false),
+            IOInfo(4, INDEX_TYPE_CONSTRAINTS, "steps", optional = true, differentiable = false)
         )
 
         private val OUTPUTS_INFO = listOf(

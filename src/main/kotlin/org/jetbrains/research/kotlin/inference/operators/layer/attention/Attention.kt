@@ -1,13 +1,12 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
-import org.jetbrains.research.kotlin.inference.data.ndarray.*
-import org.jetbrains.research.kotlin.inference.data.tensors.Strides
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.allocateNDArray
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.asTensor
-import org.jetbrains.research.kotlin.inference.extensions.primitives.gemm
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.ndarray.*
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.allocateNDArray
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -18,6 +17,7 @@ import org.jetbrains.research.kotlin.inference.operators.activations.Softmax
 import kotlin.math.min
 import kotlin.math.sqrt
 
+@ExperimentalUnsignedTypes
 class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
 
@@ -34,18 +34,18 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
             IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
             IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
-            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true),
+            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
         )
 
         private val OUTPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false),
-            IOInfo(0, TYPE_CONSTRAINTS, "present", optional = true)
+            IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
         )
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun initQueryKeyValue(input: TypedNDArray<Any>, weights: TypedNDArray<Any>, bias: TypedNDArray<Any>, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableTypedNDArray<Any>> {
-            val qkv = Array(3) { allocateNDArray<Any>(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
+        private fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
+            val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 
             val step = batchSize * numHeads
@@ -62,22 +62,24 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 //broadcast biases for each
                 repeat(seqLen) {
                     val offset = qkvOffset + it * attentionHeadSize
-                    qkv[qkvIdx].place(offset, bias.array, weightsOffset, weightsOffset + attentionHeadSize)
+                    qkv[qkvIdx].placeFrom(offset, bias, weightsOffset, weightsOffset + attentionHeadSize)
                 }
 
                 //x * W[q|k|v] + bias and apply mask
-                gemm(input, weights, qkv[qkvIdx], inputBatchOffset, weightsOffset,
+                /*gemm(input, weights, qkv[qkvIdx], inputBatchOffset, weightsOffset,
                     qkvOffset, seqLen, attentionHeadSize, hiddenSize,
-                    hiddenSize, 3 * hiddenSize, attentionHeadSize)
+                    hiddenSize, 3 * hiddenSize, attentionHeadSize)*/
+                (input as NumberNDArray).gemm(seqLen, attentionHeadSize, hiddenSize, 1.0, hiddenSize, weights as NumberNDArray,
+                    3 * hiddenSize, 1.0, qkv[qkvIdx], attentionHeadSize, inputBatchOffset, weightsOffset, qkvOffset)
             }
             return qkv
         }
 
 
-        private fun TypedNDArray<Any>?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
+        private fun NDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
-            val mask = allocateNDArray<FloatArray>(TensorProto.DataType.FLOAT, Strides(maskDataShape)) as MutableFloatNDArray
+            val mask = allocateNDArray(DataType.FLOAT, Strides(maskDataShape)) as MutableFloatNDArray
             val maskOffset = seqLen * fullSeqLen
             repeat(batchSize) { i ->
                 if (this != null) {
@@ -105,7 +107,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 //broadcast mask block
                 for (seqIdx in 1 until seqLen) {
                     val start = seqIdx * fullSeqLen + i * maskOffset
-                    mask.place(start, mask.array, i * maskOffset, i * maskOffset + fullSeqLen)
+                    mask.placeFrom(start, mask, i * maskOffset, i * maskOffset + fullSeqLen)
                 }
 
                 if (unidir) {
@@ -119,30 +121,31 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         //create present state block from past + current states
-        private fun MutableTypedNDArray<Any>.updateState(past: TypedNDArray<Any>?, currentState: TypedNDArray<Any>, pastBlockSize: Int, presentBlockSize: Int, i: Int, pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableTypedNDArray<Any>, Int> {
+        private fun MutableNDArray.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
+                                               pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableNDArray, Int> {
             //present state block offset
             val presentStart = i * presentBlockSize + presentOffset
 
             var presentPos = presentStart
             if (past != null) {
                 val srcPast = i * pastBlockSize + pastOffset
-                this.place(presentPos, past.array, srcPast, srcPast + pastBlockSize)
+                this.placeFrom(presentPos, past, srcPast, srcPast + pastBlockSize)
                 presentPos += pastBlockSize
             }
-            this.place(presentPos, currentState.array, currentOffset, currentOffset + presentBlockSize - pastBlockSize)
+            this.placeFrom(presentPos, currentState, currentOffset, currentOffset + presentBlockSize - pastBlockSize)
 
             return this to presentStart
         }
 
         private fun normalizedScores(
-            unidir: Boolean, queries: TypedNDArray<Any>, keys: TypedNDArray<Any>, maskIndices: TypedNDArray<Any>?, batchSize: Int,
-            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: TypedNDArray<Any>?, present: MutableTypedNDArray<Any>
-        ): TypedNDArray<Any> {
+            unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: NDArray?, batchSize: Int,
+            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArray?, present: MutableNDArray
+        ): NDArray {
             val allSeqLen = pastSeqLen + seqLen
             val pastBlockSize = pastSeqLen * headSize
             val inputBlockSize = seqLen * headSize
             val presentBlockSize = pastBlockSize + inputBlockSize
-            val scores = allocateNDArray<Any>(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
+            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
 
             val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen)
 
@@ -151,42 +154,40 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 val batchIdx = i / numHeads
                 if (maskData != null) {
                     val start = batchIdx * seqLen * allSeqLen
-                    scores.place(seqLen * allSeqLen * i, maskData.array, start, start + seqLen * allSeqLen)
+                    scores.placeFrom(seqLen * allSeqLen * i, maskData, start, start + seqLen * allSeqLen)
                 }
                 val (k, kOffset) = present.updateState(past, keys, pastBlockSize, presentBlockSize, i, 0, 0, inputBlockSize * i)
 
                 //Q*K(transposed) / sqrt(d) where d is attention head size
-                gemm(queries, k, scores, inputBlockSize * i, kOffset,
-                    i * seqLen * allSeqLen, seqLen, allSeqLen, headSize,
-                    headSize, headSize, allSeqLen, alpha = alpha, transposeB = true)
+                (queries as NumberNDArray).gemm(seqLen, allSeqLen, headSize, alpha, headSize, k as NumberNDArray, headSize, 1.0, scores, allSeqLen,
+                    inputBlockSize * i, kOffset, i * seqLen * allSeqLen, transposeB = true)
             }
             //softmax for each result (normalize along last axis)
             return Softmax.softmax(scores, -1)
         }
 
         private fun attentionScore(
-            scores: TypedNDArray<Any>, values: TypedNDArray<Any>, batchSize: Int, seqLen: Int, pastSeqLen: Int,
-            numHeads: Int, hiddenSize: Int, past: TypedNDArray<Any>?, present: MutableTypedNDArray<Any>
-        ): Pair<TypedNDArray<Any>, TypedNDArray<Any>> {
+            scores: NDArray, values: NDArray, batchSize: Int, seqLen: Int, pastSeqLen: Int,
+            numHeads: Int, hiddenSize: Int, past: NDArray?, present: MutableNDArray
+        ): Pair<NDArray, NDArray> {
             val allSeqLen = seqLen + pastSeqLen
 
             val headSize = hiddenSize / numHeads
             val pastBlockSize = pastSeqLen * headSize
             val inputBlockSize = seqLen * headSize
             val presentBlockSize = pastBlockSize + inputBlockSize
-            val output = allocateNDArray<Any>(scores.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
+            val output = allocateNDArray(scores.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
 
             val pastOffset = if (past != null) batchSize * hiddenSize * pastSeqLen else 0
             val presentOffset = batchSize * hiddenSize * allSeqLen
-            val tmp = allocateNDArray<Any>(scores.type, output.strides)
+            val tmp = allocateNDArray(scores.type, output.strides)
 
             for (i in 0 until batchSize * numHeads) {
                 val (v, vOffset) = present.updateState(past, values, pastBlockSize, presentBlockSize, i, pastOffset, presentOffset, i * inputBlockSize)
                 val attentionOffset = seqLen * allSeqLen * i
                 val tmpOffset = inputBlockSize * i
                 //multiply normalized scores by value
-                gemm(scores, v, tmp, attentionOffset, vOffset, tmpOffset, seqLen,
-                    headSize, allSeqLen, allSeqLen, headSize, headSize, beta = 0.0)
+                (scores as NumberNDArray).gemm(seqLen, headSize, allSeqLen, 1.0, allSeqLen, v as NumberNDArray, headSize, 0.0, tmp, headSize, attentionOffset, vOffset, tmpOffset)
 
                 val batchIdx = i / numHeads
                 val headIdx = i % numHeads
@@ -194,7 +195,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 var dstOffset = (batchIdx * seqLen * numHeads + headIdx) * headSize
                 //transpose along last two axes
                 repeat(seqLen) {
-                    output.place(dstOffset, tmp.array, srcOffset, srcOffset + headSize)
+                    output.placeFrom(dstOffset, tmp, srcOffset, srcOffset + headSize)
                     srcOffset += headSize
                     dstOffset += hiddenSize
                 }
@@ -203,9 +204,9 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         private fun getScores(
-            unidir: Boolean, q: TypedNDArray<Any>, k: TypedNDArray<Any>, v: TypedNDArray<Any>, mask: TypedNDArray<Any>?,
-            past: TypedNDArray<Any>?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
-        ): Pair<TypedNDArray<Any>, TypedNDArray<Any>> {
+            unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: NDArray?,
+            past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
+        ): Pair<NDArray, NDArray> {
             var pastSeqLen = 0
             val headSize = hiddenSize / numHeads
             val presentDims = intArrayOf(2, batchSize, hiddenSize / headSize, seqLen, headSize)
@@ -214,7 +215,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 presentDims[3] += pastSeqLen
             }
 
-            val present = allocateNDArray<Any>(q.type, Strides(presentDims))
+            val present = allocateNDArray(q.type, Strides(presentDims))
 
             val scores = normalizedScores(unidir, q, k, mask, batchSize, seqLen, pastSeqLen, headSize, hiddenSize / headSize, past, present)
             return attentionScore(scores, v, batchSize, seqLen, pastSeqLen, numHeads, hiddenSize, past, present)

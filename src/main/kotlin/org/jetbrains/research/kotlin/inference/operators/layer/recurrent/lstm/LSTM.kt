@@ -16,6 +16,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
     private val direction: String by attribute()
     private val hiddenSize: Long by attribute("hidden_size")
 
+    @ExperimentalUnsignedTypes
     private val layer = when (direction) {
         "forward", "reverse" -> LSTMLayer(hiddenSize.toInt(), activations, direction)
         "bidirectional" -> BiLSTMLayer(hiddenSize.toInt(), activations, direction)
@@ -61,6 +62,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         return layer.apply(inputs)
     }

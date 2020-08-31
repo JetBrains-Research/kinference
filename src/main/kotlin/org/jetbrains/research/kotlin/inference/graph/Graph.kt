@@ -16,8 +16,9 @@ import kotlin.collections.HashSet
 //TODO: support general graphs
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
+@ExperimentalUnsignedTypes
 class Graph(proto: GraphProto) {
-    val operators: List<Operator<ONNXData, ONNXData>>// = proto.node.map { OperatorFactory.create(it) }
+    val operators: List<Operator<ONNXData, ONNXData>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.value_info.map { ValueInfo.create(it) }

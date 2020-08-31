@@ -2,9 +2,9 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.primitives.toIntArray
-import org.jetbrains.research.kotlin.inference.extensions.tensor.splitWithAxis
+import org.jetbrains.research.kotlin.inference.data.tensors.splitWithAxis
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.ndarray.toIntArray
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.*
 
@@ -27,6 +27,7 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val split: Any? by attributeOrNull()
 
+    @Suppress("UNCHECKED_CAST")
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs.first()!!
         return when (split) {

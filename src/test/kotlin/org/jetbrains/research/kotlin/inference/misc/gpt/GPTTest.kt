@@ -18,7 +18,7 @@ class GPTTest {
     @Test
     @Tag("heavy")
     fun `test GPT performance`() {
-        val path = object {}.javaClass.getResource("/gpt/test_dummy_input/").path
+        val path = javaClass.getResource("/gpt/test_dummy_input/").path
         val model = Model.load(path + "model.onnx")
         val dataSet = File(path).list()!!.filter { "test" in it }.map {
             val inputFiles = File("$path/$it").walk().filter { file -> "input" in file.name }

@@ -9,6 +9,5 @@ enum class ONNXDataType {
 }
 
 abstract class ONNXData(val type: ONNXDataType, val info: ValueInfo) {
-    abstract fun clone(newName: String): ONNXData
     abstract fun rename(newName: String): ONNXData
 }

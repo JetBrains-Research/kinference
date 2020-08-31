@@ -9,12 +9,14 @@ import org.jetbrains.research.kotlin.inference.operators.layer.attention.Attenti
 import org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm.LSTM
 import org.jetbrains.research.kotlin.inference.operators.math.Add
 import org.jetbrains.research.kotlin.inference.operators.math.FastGelu
-import org.jetbrains.research.kotlin.inference.operators.math.LayerNormalization
+import org.jetbrains.research.kotlin.inference.operators.layer.normalization.LayerNormalization
+import org.jetbrains.research.kotlin.inference.operators.layer.normalization.SkipLayerNormalization
 import org.jetbrains.research.kotlin.inference.operators.math.MatMul
 import org.jetbrains.research.kotlin.inference.operators.seq.ConcatFromSequence
 import org.jetbrains.research.kotlin.inference.operators.seq.SplitToSequence
 import org.jetbrains.research.kotlin.inference.operators.tensor.*
 
+@ExperimentalUnsignedTypes
 object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
@@ -35,6 +37,7 @@ object OperatorFactory {
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "Shape" -> Shape(attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(attributes, inputs, outputs)
+        "SkipLayerNormalization" -> SkipLayerNormalization(attributes, inputs, outputs)
         "Slice" -> Slice(attributes, inputs, outputs)
         "Softmax" -> Softmax(attributes, inputs, outputs)
         "Split" -> Split(attributes, inputs, outputs)

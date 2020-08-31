@@ -17,7 +17,7 @@ class POSTest {
     @Test
     @Tag("heavy")
     fun `test POS-tagger performance`() {
-        val path = object {}.javaClass.getResource("/pos/test_pos_tagger/").path
+        val path = javaClass.getResource("/pos/test_pos_tagger/").path
         val model = Model.load(path + "model.onnx")
         val dataSet = File(path).list()!!.filter { "test" in it }.map {
             val inputFiles = File("$path/$it").walk().filter { file -> "input" in file.name }

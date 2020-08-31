@@ -1,6 +1,7 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
-import org.jetbrains.research.kotlin.inference.kotlin
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import tanvd.kosogor.proxy.publishJar
+import org.jetbrains.research.kotlin.inference.generatedDir
+import org.jetbrains.research.kotlin.inference.kotlin
 
 group = "org.jetbrains.research.kotlin.inference"
 version = "0.1.0"
@@ -8,17 +9,37 @@ version = "0.1.0"
 plugins {
     idea
     id("tanvd.kosogor") version "1.0.9" apply true
-    kotlin("jvm") version "1.4.0" apply true
+    kotlin("jvm") version "1.3.72" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
-    kotlin("kapt") version "1.4.0"
+    id("io.kinference.primitives") version ("0.1.1") apply false
+    kotlin("kapt") version "1.3.72"
 }
 
-repositories {
-    jcenter()
+allprojects {
+    repositories {
+        jcenter()
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            languageVersion = "1.3"
+            apiVersion = "1.3"
+        }
+    }
 }
 
-val generatedDir = "src/main/kotlin-gen"
+
+sourceSets {
+    main {
+        kotlin.srcDirs(generatedDir)
+    }
+}
+
+idea {
+    module.generatedSourceDirs.plusAssign(files(generatedDir))
+}
 
 
 wire {
@@ -29,35 +50,18 @@ wire {
     }
 }
 
-sourceSets {
-    main {
-        kotlin.srcDirs(generatedDir)
-    }
-}
-
 tasks.compileTestKotlin {
     doFirst {
         source = source.filter { generatedDir !in it.path }.asFileTree
     }
 }
 
-idea {
-    module.generatedSourceDirs.plusAssign(files(generatedDir))
-}
 
 detekt {
     config = files(file("detekt.yml"))
     reports {
         xml.enabled = false
         html.enabled = false
-    }
-}
-
-tasks.withType<KotlinJvmCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        languageVersion = "1.4"
-        apiVersion = "1.3"
     }
 }
 
@@ -109,6 +113,7 @@ publishJar {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(project(":ndarray"))
     api("com.squareup.wire", "wire-runtime", "3.2.2")
 
     testImplementation("org.openjdk.jmh:jmh-core:1.25.1")

@@ -2,7 +2,7 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.tensor.concatenate
+import org.jetbrains.research.kotlin.inference.data.tensors.concatenate
 import org.jetbrains.research.kotlin.inference.graph.Context
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.operators.*
@@ -26,7 +26,6 @@ class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        inputs as List<Tensor>
-        return listOf(inputs.concatenate(axis))
+        return listOf(inputs.requireNoNulls().concatenate(axis))
     }
 }

@@ -2,8 +2,10 @@ package org.jetbrains.research.kotlin.inference.operators.tensor
 
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
-import org.jetbrains.research.kotlin.inference.extensions.ndarray.*
+import org.jetbrains.research.kotlin.inference.data.tensors.asTensor
 import org.jetbrains.research.kotlin.inference.graph.Context
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.gather
+import org.jetbrains.research.kotlin.inference.ndarray.extensions.indexAxis
 import org.jetbrains.research.kotlin.inference.onnx.AttributeProto
 import org.jetbrains.research.kotlin.inference.onnx.TensorProto
 import org.jetbrains.research.kotlin.inference.operators.AttributeInfo
@@ -31,6 +33,7 @@ class Gather(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val (data, indices) = inputs
         val axis = data!!.data.indexAxis(axis)
