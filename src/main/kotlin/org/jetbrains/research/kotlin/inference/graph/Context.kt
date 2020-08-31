@@ -23,6 +23,10 @@ class Context(val base: Context? = null) {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
     }
 
+    fun removeValues(predicate: (String) -> Boolean) {
+        values.entries.removeIf { predicate(it.key) }
+    }
+
     fun putShape(name: String, shape: Int) {
         require(name !in shapes && base?.hasShape(name)?.not() ?: true) { "'$name' already exists in context shapes" }
         shapes[name] = shape

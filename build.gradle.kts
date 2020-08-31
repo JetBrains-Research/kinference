@@ -13,6 +13,7 @@ plugins {
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
     id("io.kinference.primitives") version ("0.1.1") apply false
+    kotlin("kapt") version "1.3.72"
 }
 
 allprojects {
@@ -40,6 +41,7 @@ idea {
     module.generatedSourceDirs.plusAssign(files(generatedDir))
 }
 
+
 wire {
     protoPath("src/main/proto")
 
@@ -50,7 +52,7 @@ wire {
 
 tasks.compileTestKotlin {
     doFirst {
-        source = source.filter { "kotlin-gen" !in it.path }.asFileTree
+        source = source.filter { generatedDir !in it.path }.asFileTree
     }
 }
 
@@ -66,6 +68,7 @@ detekt {
 tasks.test {
     useJUnitPlatform {
         excludeTags("heavy")
+        excludeTags("benchmark")
     }
     maxHeapSize = "20m"
 
@@ -79,9 +82,23 @@ tasks.create("testHeavy", Test::class.java) {
 
     useJUnitPlatform {
         includeTags("heavy")
+        excludeTags("benchmark")
     }
 
     maxHeapSize = "8192m"
+
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+tasks.create("testPerfomance", Test::class.java) {
+    group = "verification"
+
+    useJUnitPlatform {
+        excludeTags("heavy")
+        includeTags("benchmark")
+    }
 
     testLogging {
         events("passed", "skipped", "failed")
@@ -98,5 +115,11 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":ndarray"))
     api("com.squareup.wire", "wire-runtime", "3.2.2")
+
+    testImplementation("org.openjdk.jmh:jmh-core:1.25.1")
+    testImplementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
+    kaptTest("org.openjdk.jmh:jmh-generator-annprocess:1.25.1")
+
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
+    testImplementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
 }

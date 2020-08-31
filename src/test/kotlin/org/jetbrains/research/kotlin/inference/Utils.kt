@@ -17,8 +17,11 @@ import kotlin.math.pow
 object Utils {
     private val delta = (10.0).pow(-3)
 
-    fun getTensor(path: File): Tensor {
-        val tensorProto = TensorProto.ADAPTER.decode(path.readBytes())
+    fun getTensor(file: File): Tensor = getTensor(file.readBytes())
+
+    fun getTensor(byteArray: ByteArray): Tensor = getTensor(TensorProto.ADAPTER.decode(byteArray))
+
+    fun getTensor(tensorProto: TensorProto): Tensor {
         return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
             DataType.INT64 -> getTensorLong(tensorProto)
