@@ -52,18 +52,21 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
                 val offset = hiddenSize * i
 
                 var mean = 0.0f
-                var meanSqrt = 0.0f
+                var meanSquare = 0.0f
 
-                for (j in offset until hiddenSize + offset) {
-                    val value = this[j] + skip[j] + (bias?.get(j) as? Float ?: 0.0f)
-                    dst[j] = value
+                for (j in 0 until hiddenSize) {
+                    val value = this[j + offset] + skip[j + offset] + (bias?.get(j) as? Float ?: 0.0f)
+                    dst[j + offset] = value
                     mean += value
-                    meanSqrt = sqrt(meanSqrt / hiddenSize - mean * mean + epsilon)
+                    meanSquare += value * value
                 }
+
+                mean /= hiddenSize
+                meanSquare = sqrt(meanSquare / hiddenSize - mean * mean + epsilon)
 
                 gamma as FloatNDArray; beta as FloatNDArray
                 for (j in 0 until hiddenSize) {
-                    dst[j] = (dst[j] - mean) / meanSqrt * gamma[j] + beta[j]
+                    dst[j + offset] = (dst[j + offset] - mean) / meanSquare * gamma[j] + beta[j]
                 }
             }
         }
