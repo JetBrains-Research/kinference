@@ -40,7 +40,7 @@ fun DataType.resolveProtoDataType(): TensorProto.DataType {
         DataType.USHORT -> TensorProto.DataType.UINT16
         DataType.UBYTE -> TensorProto.DataType.UINT8
         DataType.UNKNOWN -> TensorProto.DataType.UNDEFINED
-        else -> kotlin.error("Cannot resolve data type")
+        else -> error("Cannot resolve data type")
     }
 }
 

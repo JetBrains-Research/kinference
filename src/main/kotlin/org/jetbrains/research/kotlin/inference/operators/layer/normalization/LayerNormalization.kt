@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.operators.math
+package org.jetbrains.research.kotlin.inference.operators.layer.normalization
 
 import org.jetbrains.research.kotlin.inference.annotations.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute

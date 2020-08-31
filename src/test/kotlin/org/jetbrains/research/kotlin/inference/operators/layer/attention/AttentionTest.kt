@@ -1,4 +1,4 @@
-package org.jetbrains.research.kotlin.inference.operators.operations
+package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
 import org.jetbrains.research.kotlin.inference.Utils
 import org.junit.jupiter.api.Test
