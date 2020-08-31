@@ -1,18 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import tanvd.kosogor.proxy.publishJar
-import org.jetbrains.research.kotlin.inference.generatedDir
-import org.jetbrains.research.kotlin.inference.kotlin
+import io.kinference.gradle.generatedDir
+import io.kinference.gradle.kotlin
 
-group = "org.jetbrains.research.kotlin.inference"
+group = "io.kinference"
 version = "0.1.0"
 
 plugins {
-    idea
     id("tanvd.kosogor") version "1.0.9" apply true
     kotlin("jvm") version "1.3.72" apply true
+
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
     id("io.kinference.primitives") version ("0.1.1") apply false
+
     kotlin("kapt") version "1.3.72"
 }
 

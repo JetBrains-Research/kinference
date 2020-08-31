@@ -7,9 +7,9 @@
 
 syntax = "proto2";
 
-package jetbrains.research.kotlin.inference.onnx;
+package kinference.onnx;
 
-option java_package = "org.jetbrains.research.kotlin.inference.onnx";
+option java_package = "io.kinference.onnx";
 
 // Overview
 //

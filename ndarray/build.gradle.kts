@@ -1,9 +1,9 @@
 import io.kinference.primitives.primitives
-import org.jetbrains.research.kotlin.inference.generatedDir
-import org.jetbrains.research.kotlin.inference.kotlin
+import io.kinference.gradle.generatedDir
+import io.kinference.gradle.kotlin
 
-group = "org.jetbrains.research.kotlin.inference"
-version = "0.1.0"
+group = rootProject.group
+version = rootProject.version
 
 plugins {
     idea
