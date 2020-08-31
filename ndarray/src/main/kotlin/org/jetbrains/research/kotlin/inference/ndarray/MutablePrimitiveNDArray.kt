@@ -2,7 +2,9 @@
 
 package org.jetbrains.research.kotlin.inference.ndarray
 
-import org.jetbrains.research.kotlin.inference.annotations.*
+import io.kinference.primitives.annotations.GenerateWithPrimitives
+import io.kinference.primitives.annotations.PrimitiveClass
+import io.kinference.primitives.types.*
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.*
 import kotlin.math.abs
 

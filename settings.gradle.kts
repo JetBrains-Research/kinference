@@ -1,6 +1,6 @@
 rootProject.name = "kotlin-inference"
 
-include(":annotations", ":primitives-generator", ":ndarray")
+include(":ndarray")
 
 pluginManagement {
     repositories {
@@ -10,8 +10,6 @@ pluginManagement {
         mavenCentral()
 
         maven("https://plugins.gradle.org/m2/")
-
-        mavenLocal()
     }
 
     resolutionStrategy {

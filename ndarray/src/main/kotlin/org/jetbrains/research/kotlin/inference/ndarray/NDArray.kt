@@ -1,6 +1,7 @@
 package org.jetbrains.research.kotlin.inference.ndarray
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
+
 
 interface LateInitArray
 interface PrimitiveToPrimitiveFunction

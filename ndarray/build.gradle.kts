@@ -1,3 +1,4 @@
+import io.kinference.primitives.primitives
 import org.jetbrains.research.kotlin.inference.generatedDir
 import org.jetbrains.research.kotlin.inference.kotlin
 
@@ -7,11 +8,11 @@ version = "0.1.0"
 plugins {
     idea
     kotlin("jvm") apply true
-    id("org.jetbrains.research.kotlin.inference.primitives-generator")
+    id("io.kinference.primitives")
 }
 
 primitives {
-    generationPath = generatedDir
+    generationPath = file(generatedDir)
 }
 
 sourceSets {
@@ -20,11 +21,15 @@ sourceSets {
     }
 }
 
+tasks.compileKotlin {
+    dependsOn("generateSources")
+}
+
 idea {
     module.generatedSourceDirs.plusAssign(files(generatedDir))
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api(project(":annotations"))
+    api("io.kinference.primitives","primitives-annotations","0.1.1")
 }

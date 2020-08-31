@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.attention
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.attributes.Attribute
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.data.tensors.asTensor

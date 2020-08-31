@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.ndarray.arrays
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.slice
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.viewHelper
 import org.jetbrains.research.kotlin.inference.ndarray.*

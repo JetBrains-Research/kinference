@@ -12,13 +12,12 @@ plugins {
     kotlin("jvm") version "1.3.72" apply true
     id("com.squareup.wire") version "3.2.2" apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
-    id("org.jetbrains.research.kotlin.inference.primitives-generator") version ("0.1.0") apply true
+    id("io.kinference.primitives") version ("0.1.1") apply false
 }
 
 allprojects {
     repositories {
         jcenter()
-        mavenLocal()
     }
 
     tasks.withType<KotlinCompile> {

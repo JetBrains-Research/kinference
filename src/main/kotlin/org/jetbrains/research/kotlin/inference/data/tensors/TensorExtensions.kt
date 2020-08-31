@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.data.tensors
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.ndarray.NDArray
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.concatenate
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.splitWithAxis

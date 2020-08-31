@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.ndarray.extensions
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.ndarray.*
 
 fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {

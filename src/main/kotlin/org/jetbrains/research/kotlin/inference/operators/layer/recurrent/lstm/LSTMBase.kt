@@ -1,6 +1,6 @@
 package org.jetbrains.research.kotlin.inference.operators.layer.recurrent.lstm
 
-import org.jetbrains.research.kotlin.inference.annotations.DataType
+import io.kinference.primitives.types.DataType
 import org.jetbrains.research.kotlin.inference.data.tensors.Tensor
 import org.jetbrains.research.kotlin.inference.ndarray.*
 import org.jetbrains.research.kotlin.inference.ndarray.extensions.allocateNDArray
