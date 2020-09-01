@@ -47,12 +47,8 @@ subprojects {
         config = rootProject.files("detekt.yml")
 
         reports {
-            xml {
-                enabled = false
-            }
-            html {
-                enabled = false
-            }
+            xml.enabled = false
+            html.enabled = false
         }
     }
 
