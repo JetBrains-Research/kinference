@@ -20,6 +20,7 @@ object OperatorFactory {
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
         "Add" -> Add(attributes, inputs, outputs)
         "Attention" -> Attention(attributes, inputs, outputs)
+        "BiasGelu" -> BiasGelu(attributes, inputs, outputs)
         "Cast" -> Cast(attributes, inputs, outputs)
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
@@ -27,6 +28,7 @@ object OperatorFactory {
         "Erf" -> Erf(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
+        "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)

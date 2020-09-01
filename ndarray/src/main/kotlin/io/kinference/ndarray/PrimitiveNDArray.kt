@@ -101,23 +101,6 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return sum
     }
 
-    override fun erf(): MutableNumberNDArray {
-        return this.map(object : PrimitiveMap {
-            override fun apply(value: PrimitiveType): PrimitiveType {
-                val sign = value.toDouble().sign
-                val doubleValue = abs(value.toDouble())
-                val t = 1 / (1 + ERF_P_VALUE * doubleValue)
-
-                val tPowers = generateSequence(t) { it * t }.take(ERF_COEFFICIENTS.size).toList()
-                val sum = ERF_COEFFICIENTS.foldIndexed(0.0) { i, acc, coef ->
-                    acc + coef * tPowers[i]
-                }
-
-                return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
-            }
-        })
-    }
-
     override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides))
 
     private fun plusScalar(array: PrimitiveArray, offset: Int, size: Int, scalar: PrimitiveType, destination: PrimitiveArray, destinationOffset: Int) {
@@ -369,6 +352,24 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         }
 
         return this
+    }
+
+    override fun erfFor(value: Any): PrimitiveType {
+        value as PrimitiveType
+        val sign = value.toDouble().sign
+        val doubleValue = abs(value.toDouble())
+        val t = 1 / (1 + ERF_P_VALUE * doubleValue)
+
+        val tPowers = generateSequence(t) { it * t }.take(ERF_COEFFICIENTS.size).toList()
+        val sum = ERF_COEFFICIENTS.foldIndexed(0.0) { i, acc, coef -> acc + coef * tPowers[i] }
+
+        return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
+    }
+
+    override fun erf(): MutableNumberNDArray {
+        return this.mapMutable(object : PrimitiveMap {
+            override fun apply(value: PrimitiveType): PrimitiveType = erfFor(value)
+        })
     }
 
     override operator fun plusAssign(other: NDArray) {

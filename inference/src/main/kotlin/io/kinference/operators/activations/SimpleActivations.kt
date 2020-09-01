@@ -112,5 +112,5 @@ class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<Str
         )
     }
 
-    override fun activate(input: NDArray): NDArray = (input as NumberNDArray).erf()
+    override fun activate(input: NDArray): NDArray = (input.toMutable() as MutableNumberNDArray).erf()
 }
