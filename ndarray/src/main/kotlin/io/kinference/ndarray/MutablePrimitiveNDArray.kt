@@ -232,7 +232,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return destination
     }
 
-    override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NumberNDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
+    override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
         val betaPrimitive = beta.toPrimitive()
         if (beta != 1.0) {
@@ -339,6 +339,11 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray {
         val (additionalOffset, newShape) = viewHelper(axes, strides)
         return MutablePrimitiveNDArray(array, Strides(newShape), offset + additionalOffset)
+    }
+
+    override fun fill(value: Any, from: Int, to: Int) {
+        value as PrimitiveType
+        array.fill(value, from, to)
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {

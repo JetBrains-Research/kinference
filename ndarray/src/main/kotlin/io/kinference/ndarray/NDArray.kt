@@ -84,7 +84,7 @@ interface NumberNDArray : NDArray {
 
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
-    fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NumberNDArray, ldb: Int, beta: Double, c: MutableNDArray,
+    fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
 }
 
@@ -96,6 +96,8 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun reshape(strides: Strides): MutableNumberNDArray
     override fun reshape(shape: IntArray): MutableNumberNDArray = reshape(Strides(shape))
     override fun transpose(permutations: IntArray): MutableNumberNDArray
+
+    fun fill(value: Any, from: Int, to: Int)
 
     operator fun plusAssign(other: NDArray)
     operator fun minusAssign(other: NDArray)

@@ -11,6 +11,7 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.extensions.gemm
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.AttributeInfo
@@ -70,9 +71,6 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 }
 
                 //x * W[q|k|v] + bias and apply mask
-                /*gemm(input, weights, qkv[qkvIdx], inputBatchOffset, weightsOffset,
-                    qkvOffset, seqLen, attentionHeadSize, hiddenSize,
-                    hiddenSize, 3 * hiddenSize, attentionHeadSize)*/
                 (input as NumberNDArray).gemm(seqLen, attentionHeadSize, hiddenSize, 1.0, hiddenSize, weights as NumberNDArray,
                     3 * hiddenSize, 1.0, qkv[qkvIdx], attentionHeadSize, inputBatchOffset, weightsOffset, qkvOffset)
             }
@@ -163,7 +161,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 val (k, kOffset) = present.updateState(past, keys, pastBlockSize, presentBlockSize, i, 0, 0, inputBlockSize * i)
 
                 //Q*K(transposed) / sqrt(d) where d is attention head size
-                (queries as NumberNDArray).gemm(seqLen, allSeqLen, headSize, alpha, headSize, k as NumberNDArray, headSize, 1.0, scores, allSeqLen,
+                gemm(seqLen, allSeqLen, headSize, alpha, queries as NumberNDArray, k as NumberNDArray, 1.0, scores,
                     inputBlockSize * i, kOffset, i * seqLen * allSeqLen, transposeB = true)
             }
             //softmax for each result (normalize along last axis)

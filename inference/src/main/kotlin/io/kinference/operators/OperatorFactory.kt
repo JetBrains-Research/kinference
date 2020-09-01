@@ -7,11 +7,9 @@ import io.kinference.operators.activations.*
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.recurrent.lstm.LSTM
-import io.kinference.operators.math.Add
-import io.kinference.operators.math.FastGelu
 import io.kinference.operators.layer.normalization.LayerNormalization
 import io.kinference.operators.layer.normalization.SkipLayerNormalization
-import io.kinference.operators.math.MatMul
+import io.kinference.operators.math.*
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
@@ -28,6 +26,7 @@ object OperatorFactory {
         "Constant" -> Constant(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
+        "Gemm" -> Gemm(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
         "Loop" -> Loop(attributes, inputs, outputs)
