@@ -9,8 +9,7 @@ import io.kinference.ndarray.extensions.viewHelper
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
-import io.kinference.ndarray.extensions.*
-import kotlin.math.abs
+import kotlin.math.*
 
 @PrimitiveClass
 @ExperimentalUnsignedTypes
@@ -100,6 +99,23 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         }
 
         return sum
+    }
+
+    override fun erf(): MutableNumberNDArray {
+        return this.map(object : PrimitiveMap {
+            override fun apply(value: PrimitiveType): PrimitiveType {
+                val sign = value.toDouble().sign
+                val doubleValue = abs(value.toDouble())
+                val t = 1 / (1 + ERF_P_VALUE * doubleValue)
+
+                val tPowers = generateSequence(t) { it * t }.take(ERF_COEFFICIENTS.size).toList()
+                val sum = ERF_COEFFICIENTS.foldIndexed(0.0) { i, acc, coef ->
+                    acc + coef * tPowers[i]
+                }
+
+                return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
+            }
+        })
     }
 
     override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides))
