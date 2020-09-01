@@ -100,3 +100,17 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         else -> error("Unsupported operation")
     }
 }
+
+@ExperimentalUnsignedTypes
+class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
+
+        private val INFO = OperatorInfo("Erf", emptyMap(),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
+        )
+    }
+
+    override fun activate(input: NDArray): NDArray = (input as NumberNDArray).erf()
+}

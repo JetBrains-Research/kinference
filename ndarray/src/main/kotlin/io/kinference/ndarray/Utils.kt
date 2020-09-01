@@ -1,7 +1,11 @@
 package io.kinference.ndarray
 
+import io.kinference.primitives.types.PrimitiveType
+
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
+
+fun PrimitiveType.toDouble(): Double = throw UnsupportedOperationException()
 
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
@@ -50,3 +54,12 @@ fun IntArray.concat(value: Int): IntArray {
     copy[size] = value
     return copy
 }
+
+const val ERF_P_VALUE = 0.3275911
+val ERF_COEFFICIENTS = doubleArrayOf(
+    0.254829592,
+    -0.284496736,
+    1.421413741,
+    -1.453152027,
+    1.061405429
+)

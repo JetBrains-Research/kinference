@@ -69,6 +69,7 @@ interface NumberNDArray : NDArray {
     fun min(): Any
     fun max(): Any
     fun sum(): Any
+    fun erf(): MutableNumberNDArray
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
