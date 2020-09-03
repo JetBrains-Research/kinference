@@ -15,8 +15,8 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
     private val alpha: Double by attribute { it: Number -> it.toDouble() }
     private val beta: Double by attribute { it: Number -> it.toDouble() }
 
-    private val transA: Boolean by attribute { it: Number -> it != 0 }
-    private val transB: Boolean by attribute { it: Number -> it != 0 }
+    private val transA: Boolean by attribute { it: Number -> it.toInt() != 0 }
+    private val transB: Boolean by attribute { it: Number -> it.toInt() != 0 }
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(

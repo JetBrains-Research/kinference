@@ -72,6 +72,7 @@ class Graph(proto: GraphProto) {
         }
 
         var order = 0
+        val outputNames = outputs.map { it.name }
         while (stack.isNotEmpty()) {
             val node = stack.peek()
             if (!node.visited) {
@@ -88,7 +89,7 @@ class Graph(proto: GraphProto) {
                     node.visited = true
                     stack.pop()
                     operators.add(OperatorFactory.create(node.proto))
-                    valueOrderInfo.putOrderFor(node.dependencies, order)
+                    valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
                     order++
                 }
             } else stack.pop()
@@ -120,7 +121,6 @@ class Graph(proto: GraphProto) {
         return this.removeValues { valueOrderInfo.getOrder(it) <= order }
     }
 
-    //only for sequential models
     fun execute(inputs: List<ONNXData>, root: Context? = null): List<ONNXData> {
         //TODO: check that all inputs were set and not null
 
