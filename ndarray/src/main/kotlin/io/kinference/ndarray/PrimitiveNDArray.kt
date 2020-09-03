@@ -41,6 +41,17 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return destination
     }
 
+    override fun erfFor(value: Any): PrimitiveType {
+        value as PrimitiveType
+        val sign = value.toDouble().sign
+        val doubleValue = abs(value.toDouble())
+        val t = 1 / (1 + ERF_P_VALUE * doubleValue)
+
+        val sum = t * (ERF_COEF[0] + t * (ERF_COEF[1] + t * (ERF_COEF[2] + t * (ERF_COEF[3] + t * ERF_COEF[4]))))
+
+        return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
+    }
+
     override fun row(row: Int): MutableNumberNDArray {
         val rowLength: Int = linearSize / shape[0]
         val start = row * rowLength
@@ -352,18 +363,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         }
 
         return this
-    }
-
-    override fun erfFor(value: Any): PrimitiveType {
-        value as PrimitiveType
-        val sign = value.toDouble().sign
-        val doubleValue = abs(value.toDouble())
-        val t = 1 / (1 + ERF_P_VALUE * doubleValue)
-
-        val tPowers = generateSequence(t) { it * t }.take(ERF_COEFFICIENTS.size).toList()
-        val sum = ERF_COEFFICIENTS.foldIndexed(0.0) { i, acc, coef -> acc + coef * tPowers[i] }
-
-        return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
     }
 
     override fun erf(): MutableNumberNDArray {

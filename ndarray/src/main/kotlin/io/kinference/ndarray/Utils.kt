@@ -56,7 +56,7 @@ fun IntArray.concat(value: Int): IntArray {
 }
 
 const val ERF_P_VALUE = 0.3275911
-val ERF_COEFFICIENTS = doubleArrayOf(
+val ERF_COEF = doubleArrayOf(
     0.254829592,
     -0.284496736,
     1.421413741,

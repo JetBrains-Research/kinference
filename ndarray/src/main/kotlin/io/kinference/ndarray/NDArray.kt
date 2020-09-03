@@ -69,6 +69,7 @@ interface NumberNDArray : NDArray {
     fun min(): Any
     fun max(): Any
     fun sum(): Any
+    fun erfFor(value: Any): Any
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
@@ -99,7 +100,6 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
 
     fun fill(value: Any, from: Int, to: Int)
     fun erf(): MutableNumberNDArray
-    fun erfFor(value: Any): Any
 
     operator fun plusAssign(other: NDArray)
     operator fun minusAssign(other: NDArray)
