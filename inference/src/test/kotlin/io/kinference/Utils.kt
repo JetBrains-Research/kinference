@@ -89,6 +89,12 @@ object Utils {
                 }
             }
 
+            DataType.INT32 -> {
+                ((expected.data as IntNDArray).array).forEachIndexed { index, value ->
+                    assertEquals(value, actual.data[index] as Int, "Tensor ${expected.info.name} does not match")
+                }
+            }
+
             else -> assertEquals(expected, actual, "Tensor ${expected.info.name} does not match")
         }
     }

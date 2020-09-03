@@ -6,9 +6,8 @@ import io.kinference.onnx.NodeProto
 import io.kinference.operators.activations.*
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
+import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.layer.recurrent.lstm.LSTM
-import io.kinference.operators.layer.normalization.LayerNormalization
-import io.kinference.operators.layer.normalization.SkipLayerNormalization
 import io.kinference.operators.math.*
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
@@ -25,6 +24,7 @@ object OperatorFactory {
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
         "Constant" -> Constant(attributes, inputs, outputs)
+        "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
