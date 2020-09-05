@@ -63,7 +63,6 @@ complexity:
     includeStaticDeclarations: false
   ComplexMethod:
     active: true
-    excludes: "**/*Gemm.kt"
     threshold: 15
     ignoreSingleWhenExpression: true
     ignoreSimpleWhenEntries: true
@@ -77,11 +76,9 @@ complexity:
     threshold: 600
   LongMethod:
     active: true
-    excludes: "**/*Gemm.kt"
     threshold: 60
   LongParameterList:
     active: true
-    excludes: "**/*Gemm.kt"
     threshold: 12
     ignoreDefaultParameters: false
   MethodOverloading:
@@ -90,7 +87,6 @@ complexity:
   NestedBlockDepth:
     active: true
     threshold: 4
-    excludes: "**/*Gemm.kt"
   StringLiteralDuplication:
     active: false
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
@@ -100,7 +96,7 @@ complexity:
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
+    excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt,**/*PrimitiveNDArray.kt, **/*NDArray.kt"
     thresholdInFiles: 11
     thresholdInClasses: 20
     thresholdInInterfaces: 11
