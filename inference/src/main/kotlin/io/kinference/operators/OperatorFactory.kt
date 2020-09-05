@@ -24,6 +24,7 @@ object OperatorFactory {
         "Concat" -> Concat(attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
         "Constant" -> Constant(attributes, inputs, outputs)
+        "ConstantOfShape" -> ConstantOfShape(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)

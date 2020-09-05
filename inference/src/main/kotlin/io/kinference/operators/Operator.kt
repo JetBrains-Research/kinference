@@ -159,6 +159,8 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED
+        val PRIMITIVE_DATA_TYPES = setOf(DataType.BOOL, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE, DataType.INT32,
+            DataType.INT16, DataType.INT8, DataType.INT64, DataType.UINT16, DataType.UINT8, DataType.UINT32, DataType.UINT64)
         val FLOAT_DATA_TYPES = setOf(DataType.BFLOAT16, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE)
     }
 }

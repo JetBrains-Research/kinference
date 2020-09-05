@@ -46,6 +46,7 @@ interface MutableNDArray : NDArray {
 
     fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int)
     fun placeAllFrom(offset: Int, other: NDArray)
+    fun fill(value: Any, from: Int = 0, to: Int = linearSize)
 
     fun reshape(strides: Strides): MutableNDArray
     fun reshape(shape: IntArray): MutableNDArray = reshape(Strides(shape))
@@ -98,7 +99,6 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun reshape(shape: IntArray): MutableNumberNDArray = reshape(Strides(shape))
     override fun transpose(permutations: IntArray): MutableNumberNDArray
 
-    fun fill(value: Any, from: Int, to: Int)
     fun erf(): MutableNumberNDArray
 
     operator fun plusAssign(other: NDArray)

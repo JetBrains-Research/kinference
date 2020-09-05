@@ -135,6 +135,10 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
         other as BooleanNDArray
         other.array.copyInto(this.array, offset)
     }
+
+    override fun fill(value: Any, from: Int, to: Int) {
+        array.fill(value as Boolean)
+    }
     
     override fun reshape(strides: Strides): MutableNDArray {
         this.strides = strides
