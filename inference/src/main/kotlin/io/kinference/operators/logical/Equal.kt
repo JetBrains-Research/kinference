@@ -27,7 +27,7 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         infix fun NDArray.equal(other: NDArray): NDArray {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
-                for (i in 0 until dest.linearSize) dest[i] = first[i] == second[i]
+                for (i in 0 until dest.linearSize) dest[i + dest.offset] = first[i + first.offset] == second[i + second.offset]
             }
         }
     }
