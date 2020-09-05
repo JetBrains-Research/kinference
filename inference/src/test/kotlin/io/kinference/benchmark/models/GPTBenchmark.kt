@@ -56,7 +56,7 @@ open class GPTBenchmarkORT {
 class GPTBenchmark {
     @Test
     @Tag("benchmark")
-    fun `pos-tagger performance`() {
+    fun `gpt performance`() {
         val opts = OptionsBuilder()
             .include("GPTBenchmark*")
             .jvmArgsAppend("-Xmx2000m")

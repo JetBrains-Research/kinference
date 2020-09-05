@@ -134,7 +134,7 @@ open class OperatorsBenchmark {
 
     @Test
     @Tag("benchmark")
-    fun `pos-tagger performance`() {
+    fun `operators performance`() {
         val opts = OptionsBuilder()
             .include("OperatorsBenchmark")
             .build()
