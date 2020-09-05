@@ -36,6 +36,7 @@ object OperatorFactory {
         "Loop" -> Loop(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
+        "Mul" -> Mul(attributes, inputs, outputs)
         "Not" -> Not(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
