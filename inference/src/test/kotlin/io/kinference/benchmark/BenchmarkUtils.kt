@@ -6,18 +6,19 @@ import ai.onnxruntime.OrtSession
 import io.kinference.Utils
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
-import io.kinference.ndarray.*
-import io.kinference.onnx.TensorProto
+import io.kinference.ndarray.DoubleNDArray
+import io.kinference.ndarray.FloatNDArray
+import io.kinference.ndarray.IntNDArray
+import io.kinference.ndarray.LongNDArray
+import io.kinference.primitives.types.DataType
+import java.io.File
 import java.nio.DoubleBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.nio.LongBuffer
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.util.stream.Collectors
 
 object BenchmarkUtils {
-    val ortOptions
+    private val ortOptions
         get() = OrtSession.SessionOptions().apply {
             this.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL)
             this.setInterOpNumThreads(1)
@@ -27,35 +28,23 @@ object BenchmarkUtils {
         }
 
     fun Tensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
-        TensorProto.DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array), data.shape.toLongArray())
-        TensorProto.DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array), data.shape.toLongArray())
-        TensorProto.DataType.INT32 -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array), data.shape.toLongArray())
-        TensorProto.DataType.INT64 -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array), data.shape.toLongArray())
+        DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array), data.shape.toLongArray())
+        DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array), data.shape.toLongArray())
+        DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array), data.shape.toLongArray())
+        DataType.LONG -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array), data.shape.toLongArray())
         else -> throw UnsupportedOperationException()
     }
 
-    fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
+    private fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
 
     fun modelWithInputs(path: String): Pair<ByteArray, List<Tensor>> {
         val (mainPath, testName, dataSet) = path.split('.')
 
-        lateinit var modelBytes: ByteArray
-        lateinit var inputs: List<Tensor>
+        val testDir = javaClass.getResource("/$mainPath/test_$testName").path
 
-        val testDir = "/$mainPath/test_$testName/"
-        val path = javaClass.getResource(testDir).toURI()
-
-        FileSystems.newFileSystem(path, emptyMap<String, Any>()).use { fileSystem ->
-            val testPath = fileSystem.getPath(testDir)
-
-            val modelPath = fileSystem.getPath("$testDir/model.onnx")
-            modelBytes = Files.readAllBytes(modelPath)
-
-            val dataSetPath = Files.list(testPath).collect(Collectors.toList()).find { "test_data_set_$dataSet" in it.fileName.toString() }
-            val inputFiles = Files.list(dataSetPath).collect(Collectors.toList()).filter { "input" in it.fileName.toString() }
-            inputs = inputFiles.map { Utils.getTensor(Files.readAllBytes(it)) }
-
-        }
+        val modelBytes = File("$testDir/model.onnx").readBytes()
+        val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
+        val inputs = inputFiles.map { Utils.getTensor(it.readBytes()) }
 
         return modelBytes to inputs
     }

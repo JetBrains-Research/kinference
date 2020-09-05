@@ -2,12 +2,20 @@ package io.kinference.benchmark.operators
 
 import io.kinference.benchmark.BenchmarkUtils.KIState
 import io.kinference.benchmark.BenchmarkUtils.OrtState
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
+import org.openjdk.jmh.runner.Runner
+import org.openjdk.jmh.runner.options.OptionsBuilder
+import java.util.concurrent.TimeUnit
 
-@State(Scope.Benchmark)
+@Fork(value = 1, warmups = 0)
+@BenchmarkMode(Mode.SingleShotTime)
 @Warmup(iterations = 30)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
+@State(Scope.Benchmark)
 open class OperatorsBenchmark {
     // Mask: operator.test_name.data_set
     @Param(
@@ -122,5 +130,15 @@ open class OperatorsBenchmark {
     fun benchmarkORT(blackhole: Blackhole) {
         val outputs = ortState.session.run(ortState.inputs)
         blackhole.consume(outputs)
+    }
+
+    @Test
+    @Tag("benchmark")
+    fun `pos-tagger performance`() {
+        val opts = OptionsBuilder()
+            .include("OperatorsBenchmark")
+            .build()
+
+        Runner(opts).run()
     }
 }

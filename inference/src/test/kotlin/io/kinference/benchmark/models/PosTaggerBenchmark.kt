@@ -2,10 +2,22 @@ package io.kinference.benchmark.models
 
 import io.kinference.benchmark.BenchmarkUtils.KIState
 import io.kinference.benchmark.BenchmarkUtils.OrtState
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
+import org.openjdk.jmh.runner.Runner
+import org.openjdk.jmh.runner.options.OptionsBuilder
+import java.util.concurrent.TimeUnit
 
-@Warmup(iterations = 30)
+@Fork(value = 1, warmups = 0, jvmArgsAppend = [
+    "-XX:CompileThreshold=100",
+    "-XX:+UnlockDiagnosticVMOptions"
+//    "-XX:CompileCommand=print,\"io.kinference/benchmark/DotBenchmark.baseline\""
+])
+@BenchmarkMode(Mode.SingleShotTime)
+@Warmup(iterations = 3)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
 @State(Scope.Benchmark)
 open class PosTaggerBenchmarkKI {
@@ -17,14 +29,17 @@ open class PosTaggerBenchmarkKI {
         state = KIState.create(path)
     }
 
-    @Benchmark
+    //@Benchmark
     fun benchmark(blackhole: Blackhole) {
         val outputs = state.model.predict(state.inputs)
         blackhole.consume(outputs)
     }
 }
 
-@Warmup(iterations = 30)
+@Fork(value = 1, warmups = 0)
+@BenchmarkMode(Mode.SingleShotTime)
+@Warmup(iterations = 3)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
 @State(Scope.Benchmark)
 open class PosTaggerBenchmarkORT {
@@ -40,5 +55,17 @@ open class PosTaggerBenchmarkORT {
     fun benchmark(blackhole: Blackhole) {
         val outputs = state.session.run(state.inputs)
         blackhole.consume(outputs)
+    }
+}
+
+class PosTaggerBenchmark {
+    @Test
+    @Tag("benchmark")
+    fun `pos-tagger performance`() {
+        val opts = OptionsBuilder()
+            .include("PosTaggerBenchmark*")
+            .build()
+
+        Runner(opts).run()
     }
 }
