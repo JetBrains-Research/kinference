@@ -7,12 +7,14 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.pow
 
 @ExperimentalUnsignedTypes
@@ -28,8 +30,19 @@ object Utils {
             DataType.FLOAT -> getTensorFloat(tensorProto)
             DataType.INT64 -> getTensorLong(tensorProto)
             DataType.INT32 -> getTensorInt(tensorProto)
+            DataType.BOOL -> getTensorBoolean(tensorProto)
             else -> throw UnsupportedOperationException()
         }
+    }
+
+    private fun getTensorBoolean(tensorProto: TensorProto): Tensor {
+        val booleanData = if (tensorProto.raw_data != null) {
+            val rawBooleanData = tensorProto.raw_data!!.toByteArray()
+            BooleanArray(rawBooleanData.size) { rawBooleanData[it].toInt() != 0 }
+        } else BooleanArray(tensorProto.int32_data.size) { tensorProto.int32_data[it] != 0 }
+
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return BooleanNDArray(booleanData, strides).asTensor(tensorProto.name!!)
     }
 
     private fun getTensorFloat(tensorProto: TensorProto): Tensor {
@@ -56,9 +69,9 @@ object Utils {
 
     private fun getTensorInt(tensorProto: TensorProto): Tensor {
         val intData = if (tensorProto.raw_data != null) {
-            val rawLongData = tensorProto.raw_data!!.toByteArray()
-            val chunkedRawLongData = rawLongData.asIterable().chunked(4)
-            chunkedRawLongData.map { ByteBuffer.wrap(it.reversed().toByteArray()).int }.toIntArray()
+            val rawIntData = tensorProto.raw_data!!.toByteArray()
+            val chunkedRawIntData = rawIntData.asIterable().chunked(4)
+            chunkedRawIntData.map { ByteBuffer.wrap(it.reversed().toByteArray()).int }.toIntArray()
         } else tensorProto.int32_data.toIntArray()
 
         val strides = Strides(tensorProto.dims.toIntArray())
@@ -92,6 +105,12 @@ object Utils {
             DataType.INT32 -> {
                 ((expected.data as IntNDArray).array).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Int, "Tensor ${expected.info.name} does not match")
+                }
+            }
+
+            DataType.BOOL -> {
+                ((expected.data as BooleanNDArray).array).forEachIndexed { index, value ->
+                    assertEquals(value, actual.data[index] as Boolean, "Tensor ${expected.info.name} does not match")
                 }
             }
 

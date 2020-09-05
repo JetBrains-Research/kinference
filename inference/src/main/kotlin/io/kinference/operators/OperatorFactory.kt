@@ -36,6 +36,7 @@ object OperatorFactory {
         "Loop" -> Loop(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
+        "Not" -> Not(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "Shape" -> Shape(attributes, inputs, outputs)
@@ -49,7 +50,7 @@ object OperatorFactory {
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
-        else -> error("Unsupported operator $name")
+        else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 
     fun create(proto: NodeProto) = create(proto.op_type, proto.attribute.map { Attribute.create(it) }.associateBy(Attribute<Any>::name), proto.input, proto.output)

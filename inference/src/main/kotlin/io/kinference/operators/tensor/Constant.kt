@@ -1,6 +1,5 @@
 package io.kinference.operators.tensor
 
-
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context

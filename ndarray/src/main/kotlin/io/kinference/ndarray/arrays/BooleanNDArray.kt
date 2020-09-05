@@ -28,10 +28,6 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
 }
 
 open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.empty(), override val offset: Int = 0) : NDArray {
-    init {
-        require(array.size == strides.linearSize)
-    }
-
     override val type: DataType = DataType.BOOLEAN
 
     final override var strides: Strides = strides
@@ -176,5 +172,11 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
 
     override fun clean() {
         array.fill(false)
+    }
+
+    fun not(): MutableNDArray {
+        return mapMutable(object : BooleanMap {
+            override fun apply(value: Boolean): Boolean = value.not()
+        })
     }
 }
