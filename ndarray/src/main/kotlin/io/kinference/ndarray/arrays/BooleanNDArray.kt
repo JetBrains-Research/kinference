@@ -97,6 +97,18 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
 
         return MutableBooleanNDArray(newArray.getArray(), newStrides)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BooleanNDArray) return false
+
+        if (type != other.type) return false
+        if (offset != other.offset) return false
+        if (strides != other.strides) return false
+        if (array != other.array) return false
+
+        return true
+    }
 }
 
 class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0): BooleanNDArray(array, strides, offset), MutableNDArray {

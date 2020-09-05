@@ -1,9 +1,7 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.*
+import io.kinference.primitives.types.DataType
 import kotlin.math.max
 
 fun broadcastShape(firstShape: IntArray, secondShape: IntArray): IntArray {
@@ -42,6 +40,12 @@ fun NDArray.applyWithBroadcast(other: NDArray, destination: MutableNDArray, orde
 
     broadcast(left, right, destination, op)
     return destination
+}
+
+fun NDArray.applyWithBroadcast(other: NDArray, destType: DataType = this.type, ordered: Boolean = false, op: (NDArray, NDArray, MutableNDArray) -> Unit): MutableNDArray {
+    val newShape = broadcastShape(this.shape, other.shape)
+    val destination = allocateNDArray(destType, Strides(newShape))
+    return applyWithBroadcast(other, destination, ordered, op)
 }
 
 fun broadcast(left: NDArray, right: NDArray, destination: MutableNDArray, op: (NDArray, NDArray, MutableNDArray) -> Unit) {

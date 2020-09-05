@@ -1,4 +1,4 @@
-package io.kinference.operators.tensor
+package io.kinference.operators.logical
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
@@ -23,6 +23,6 @@ class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
     @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val data = inputs[0]!!.data.toMutable() as MutableBooleanNDArray
-        return listOf(data.not().asTensor())
+        return listOf(data.not().asTensor("output"))
     }
 }

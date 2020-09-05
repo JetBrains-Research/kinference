@@ -34,7 +34,7 @@ class Add(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val result = inputs.first()!! + inputs.last()!!
+        val result = inputs[0]!! + inputs[1]!!
         return listOf(result.rename("C") as Tensor)
     }
 }

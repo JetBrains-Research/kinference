@@ -1,4 +1,4 @@
-package io.kinference.operators.operations
+package io.kinference.operators.logical
 
 import io.kinference.Utils
 import org.junit.jupiter.api.Test
