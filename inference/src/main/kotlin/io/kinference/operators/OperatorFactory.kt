@@ -27,6 +27,7 @@ object OperatorFactory {
         "ConcatFromSequence" -> ConcatFromSequence(attributes, inputs, outputs)
         "Constant" -> Constant(attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(attributes, inputs, outputs)
+        "CumSum" -> CumSum(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)

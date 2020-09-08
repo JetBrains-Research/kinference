@@ -26,12 +26,13 @@ object Utils {
     fun getTensor(byteArray: ByteArray): Tensor = getTensor(TensorProto.ADAPTER.decode(byteArray))
 
     fun getTensor(tensorProto: TensorProto): Tensor {
-        return when (DataType.fromValue(tensorProto.data_type!!) ?: 0) {
+        return when (val type = DataType.fromValue(tensorProto.data_type!!) ?: 0) {
             DataType.FLOAT -> getTensorFloat(tensorProto)
+            DataType.DOUBLE -> getTensorDouble(tensorProto)
             DataType.INT64 -> getTensorLong(tensorProto)
             DataType.INT32 -> getTensorInt(tensorProto)
             DataType.BOOL -> getTensorBoolean(tensorProto)
-            else -> throw UnsupportedOperationException()
+            else -> error("Unsupported proto data type: $type")
         }
     }
 
@@ -43,6 +44,17 @@ object Utils {
 
         val strides = Strides(tensorProto.dims.toIntArray())
         return BooleanNDArray(booleanData, strides).asTensor(tensorProto.name!!)
+    }
+
+    private fun getTensorDouble(tensorProto: TensorProto): Tensor {
+        val doubleData = if (tensorProto.raw_data != null) {
+            val rawFloatData = tensorProto.raw_data!!.toByteArray()
+            val chunkedRawFloatData = rawFloatData.asIterable().chunked(8)
+            chunkedRawFloatData.map { ByteBuffer.wrap(it.reversed().toByteArray()).double }.toDoubleArray()
+        } else tensorProto.double_data.toDoubleArray()
+
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return DoubleNDArray(doubleData, strides).asTensor(tensorProto.name!!)
     }
 
     private fun getTensorFloat(tensorProto: TensorProto): Tensor {

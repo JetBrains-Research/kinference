@@ -70,6 +70,8 @@ interface NumberNDArray : NDArray {
     fun min(): Any
     fun max(): Any
     fun sum(): Any
+    fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
+
     fun erfFor(value: Any): Any
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray

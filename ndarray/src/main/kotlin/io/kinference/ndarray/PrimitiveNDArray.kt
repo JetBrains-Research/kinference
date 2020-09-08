@@ -2,10 +2,7 @@
 
 package io.kinference.ndarray
 
-import io.kinference.ndarray.extensions.applyWithBroadcast
-import io.kinference.ndarray.extensions.isScalar
-import io.kinference.ndarray.extensions.slice
-import io.kinference.ndarray.extensions.viewHelper
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
@@ -110,6 +107,35 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         }
 
         return sum
+    }
+
+    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray {
+        val output = MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides)
+        val actualAxis = indexAxis(axis)
+
+        val blockSize = computeBlockSize(fromDim = actualAxis + 1)
+        val batchSize = computeBlockSize(fromDim = actualAxis)
+        val numBatches = computeBlockSize(toDim = actualAxis)
+        repeat(numBatches) { blockIdx ->
+            val baseOff = if (!reverse) blockIdx * batchSize else numBatches * batchSize - blockSize
+            if (!exclusive) {
+                this.array.copyInto(output.array, baseOff, baseOff, baseOff + blockSize)
+            }
+
+            if (!reverse) {
+                val thisOffBase = if (!exclusive) baseOff else baseOff - blockSize
+                for (i in blockSize until batchSize) {
+                    val currentOff = baseOff + i
+                    output.array[currentOff] = (output.array[currentOff - blockSize] + this.array[thisOffBase + i]).toPrimitive()
+                }
+            } else {
+                for (i in blockSize until batchSize) {
+                    val currentOff = baseOff - i
+                    output.array[currentOff] = (output.array[currentOff + blockSize] + this.array[baseOff + 1 - i]).toPrimitive()
+                }
+            }
+        }
+        return output
     }
 
     override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides))
