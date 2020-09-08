@@ -8,6 +8,7 @@ import io.kinference.onnx.NodeProto
 import io.kinference.operators.Operator
 import io.kinference.operators.OperatorFactory
 import io.kinference.types.ValueInfo
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -18,6 +19,10 @@ import kotlin.collections.HashSet
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalUnsignedTypes
 class Graph(proto: GraphProto) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(Graph::class.java)
+    }
+
     val operators: List<Operator<ONNXData, ONNXData>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
@@ -129,7 +134,10 @@ class Graph(proto: GraphProto) {
             context.putValue(tensor.info.name, tensor)
         }
         for (input in inputs) {
-            require(input.info.name in availableInputs) { "Input node '${input.info.name}' not found in Graph" }
+            if (input.info.name !in availableInputs) {
+                logger.warn("Input node '${input.info.name}' not found in Graph and probably is excessive")
+                continue
+            }
             context.putValue(input.info.name, input)
         }
 

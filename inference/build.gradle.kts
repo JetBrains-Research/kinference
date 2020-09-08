@@ -66,6 +66,8 @@ publishJar {
 dependencies {
     implementation(project(":ndarray"))
 
+    implementation("org.slf4j", "slf4j-api", "1.7.30")
+
     api("com.squareup.wire", "wire-runtime", "3.2.2")
 
     testImplementation("org.openjdk.jmh:jmh-core:1.25.1")

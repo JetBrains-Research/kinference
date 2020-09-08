@@ -39,6 +39,11 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
         return (this.data + other.data).asTensor()
     }
 
+    operator fun minus(other: Tensor): Tensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data - other.data).asTensor()
+    }
+
     operator fun times(other: Tensor): Tensor {
         require(this.data is NumberNDArray && other.data is NumberNDArray)
         return (this.data * other.data).asTensor()
@@ -65,7 +70,9 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 DataType.INT32 -> proto.int32_data
                 DataType.BOOL -> proto.int32_data.map { it != 0 }
                 DataType.STRING -> proto.string_data.map { it.utf8() }
-                else -> error("Unsupported data type")
+                DataType.UINT8 -> emptyList<UByte>()
+                DataType.INT8 -> emptyList<Byte>()
+                else -> error("Unsupported data type $type")
             }
 
             return if (array.isEmpty()) {
@@ -94,9 +101,19 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                         buffer.asIntBuffer().get(array)
                         Tensor(array, type, shape, proto.name)
                     }
+                    DataType.INT8 -> {
+                        val array = ByteArray(sizeInBytes)
+                        buffer.get(array)
+                        Tensor(array, type, shape, proto.name)
+                    }
+                    DataType.UINT8 -> {
+                        val array = ByteArray(sizeInBytes)
+                        buffer.get(array)
+                        Tensor(array.toUByteArray(), type, shape, proto.name)
+                    }
                     DataType.BOOL -> Tensor(BooleanArray(sizeInBytes) { buffer[it] != 0.toByte() }, type, shape, proto.name)
                     DataType.STRING -> error("String data MUST not be present in raw_data field")
-                    else -> error("Unsupported data type")
+                    else -> error("Unsupported data type $type")
                 }
             } else when (type) {
                 DataType.DOUBLE -> Tensor((array as List<Double>).toDoubleArray(), type, shape, proto.name)
@@ -105,7 +122,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 DataType.INT32 -> Tensor((array as List<Int>).toIntArray(), type, shape, proto.name)
                 DataType.BOOL -> Tensor((array as List<Boolean>).toBooleanArray(), type, shape, proto.name)
                 DataType.STRING -> Tensor((array as List<String>).toTypedArray(), type, shape, proto.name)
-                else -> error("Unsupported data type")
+                else -> error("Unsupported data type $type")
             }
         }
 
@@ -118,15 +135,18 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
 
         @ExperimentalUnsignedTypes
         operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = ""): Tensor {
+            val name = name ?: ""
             if (dims.isEmpty()) return createScalarNDArray(type.resolveLocalDataType(), value).asTensor(name)
 
             return when (type) {
-                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, Strides(dims)).asTensor(name!!)
-                DataType.FLOAT -> FloatNDArray(value as FloatArray, Strides(dims)).asTensor(name!!)
-                DataType.INT32 -> IntNDArray(value as IntArray, Strides(dims)).asTensor(name!!)
-                DataType.INT64 -> LongNDArray(value as LongArray, Strides(dims)).asTensor(name!!)
-                DataType.INT16 -> ShortNDArray(value as ShortArray, Strides(dims)).asTensor(name!!)
-                DataType.BOOL -> BooleanNDArray(value as BooleanArray, Strides(dims)).asTensor(name!!)
+                DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, Strides(dims)).asTensor(name)
+                DataType.FLOAT -> FloatNDArray(value as FloatArray, Strides(dims)).asTensor(name)
+                DataType.INT32 -> IntNDArray(value as IntArray, Strides(dims)).asTensor(name)
+                DataType.INT8 -> ByteNDArray(value as ByteArray, Strides(dims)).asTensor(name)
+                DataType.UINT8 -> UByteNDArray(value as UByteArray, Strides(dims)).asTensor(name)
+                DataType.INT64 -> LongNDArray(value as LongArray, Strides(dims)).asTensor(name)
+                DataType.INT16 -> ShortNDArray(value as ShortArray, Strides(dims)).asTensor(name)
+                DataType.BOOL -> BooleanNDArray(value as BooleanArray, Strides(dims)).asTensor(name)
                 else -> error("Unsupported data type $type")
             }
         }
@@ -146,8 +166,9 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 DataType.FLOAT -> proto.float_data
                 DataType.INT64 -> proto.int64_data
                 DataType.INT32 -> proto.int32_data
+                DataType.INT8, DataType.UINT8 -> emptyList()
                 DataType.BOOL -> proto.int32_data.map { it != 0 }
-                else -> error("Unsupported data type")
+                else -> error("Unsupported data type $type")
             }
             return if (array.isEmpty()) {
                 when (type) {
@@ -156,8 +177,10 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                     DataType.INT64 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).long, type, dims = IntArray(0), name = proto.name)
                     DataType.INT32 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int, type, dims = IntArray(0), name = proto.name)
                     DataType.INT16 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).short, type, dims = IntArray(0), name = proto.name)
+                    DataType.INT8 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN), type, dims = IntArray(0), name = proto.name)
+                    DataType.UINT8 -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN), type, dims = IntArray(0), name = proto.name)
                     DataType.BOOL -> Tensor(proto.raw_data!!.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).int != 0, type, dims = IntArray(0), name = proto.name)
-                    else -> error("Unsupported data type")
+                    else -> error("Unsupported data type $type")
                 }
             } else Tensor(array[0], type, IntArray(0), proto.name)
         }

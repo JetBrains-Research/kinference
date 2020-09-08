@@ -82,6 +82,7 @@ fun createScalarNDArray(type: DataType, value: Any): NDArray {
         DataType.INT -> IntNDArray(intArrayOf(value as Int))
         DataType.SHORT -> ShortNDArray(shortArrayOf(value as Short))
         DataType.BOOLEAN -> BooleanNDArray(booleanArrayOf(value as Boolean))
+        DataType.BYTE -> ByteNDArray(byteArrayOf(value as Byte))
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }

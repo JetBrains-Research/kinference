@@ -20,6 +20,7 @@ object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
         "Add" -> Add(attributes, inputs, outputs)
+        "Sub" -> Sub(attributes, inputs, outputs)
         "Attention" -> Attention(attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(attributes, inputs, outputs)
         "Cast" -> Cast(attributes, inputs, outputs)
