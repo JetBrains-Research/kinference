@@ -14,8 +14,8 @@ import kotlin.random.Random
 
 @State(Scope.Benchmark)
 @Fork(value = 1, warmups = 0, jvmArgsAppend = [
-    "-XX:CompileThreshold=100",
-    "-XX:+UnlockDiagnosticVMOptions"
+//    "-XX:CompileThreshold=100",
+//    "-XX:+UnlockDiagnosticVMOptions"
 //    "-XX:CompileCommand=print,\"io.kinference/benchmark/DotBenchmark.baseline\""
 ])
 @Warmup(iterations = 3)
@@ -23,13 +23,13 @@ import kotlin.random.Random
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
 open class DotBenchmark {
-    @Param("1000")
+    @Param("16384", "4096", "1024", "128", "16")
     var n = 0
 
-    @Param("1000")
+    @Param("16384", "4096", "1024", "128", "16")
     var m = 0
 
-    @Param("1000")
+    @Param("16384", "4096", "1024", "128", "16")
     var t = 0
 
     lateinit var left: FloatArray
@@ -64,18 +64,7 @@ open class DotBenchmark {
 
     @Benchmark
     fun baseline(blackhole: Blackhole) {
-        for (i in 0 until n) {
-            val dInd = i * m
-            val lInd = i * t
-            for (k in 0 until t) {
-                val temp = left[lInd + k]
-                val rInd = k * m
-                for (j in 0 until m) {
-                    dest[dInd + j] += temp * right[rInd + j]
-                }
-            }
-        }
-
+        dotBaseline(left, right, dest, m, n, t)
         blackhole.consume(dest)
     }
 
@@ -108,14 +97,14 @@ open class DotBenchmark {
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 100)
-open class DotBenchmarkTiled {
-    @Param("1000")
+open class DotBenchmarkComposite {
+    @Param("16384", "4096", "1024", "128", "16")
     var n = 0
 
-    @Param("1000")
+    @Param("16384", "4096", "1024", "128", "16")
     var m = 0
 
-    @Param("1000")
+    @Param("16384", "4096", "1024", "128", "16")
     var t = 0
 
     lateinit var left: CompositeArray
@@ -156,7 +145,111 @@ open class DotBenchmarkTiled {
     }
 }
 
+@State(Scope.Benchmark)
+@Fork(value = 1, warmups = 0)
+@Warmup(iterations = 3)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Measurement(iterations = 100)
+open class DotBenchmarkTiled {
+    @Param("16384", "4096", "1024", "128", "16")
+    var n = 0
+
+    @Param("16384", "4096", "1024", "128", "16")
+    var m = 0
+
+    @Param("16384", "4096", "1024", "128", "16")
+    var t = 0
+
+    lateinit var left: TiledArray
+    lateinit var right: TiledArray
+    lateinit var dest: TiledArray
+
+    @Setup(Level.Iteration)
+    fun setup() {
+        left = TiledArray(Strides(intArrayOf(n, t))) { Random.nextFloat() }
+        right = TiledArray(Strides(intArrayOf(t, m))) { Random.nextFloat() }
+        dest = TiledArray(Strides(intArrayOf(n, m))) { 0f }
+    }
+
+    @TearDown(Level.Iteration)
+    fun teardown() {
+        for (i in 0 until dest.blocksNum) {
+            for (j in 0 until dest.blockSize) {
+                dest.blocks[i][j] = 0f
+            }
+        }
+    }
+
+    @Benchmark
+    fun baseline(blackhole: Blackhole) {
+        dotTiled(left, right, dest, m, n, t)
+        blackhole.consume(dest)
+    }
+}
+
+fun dotBaseline(left: FloatArray, right: FloatArray, dest: FloatArray, m: Int, n: Int, t: Int) {
+    for (i in 0 until n) {
+        val dInd = i * m
+        val lInd = i * t
+        for (k in 0 until t) {
+            val temp = left[lInd + k]
+            val rInd = k * m
+            for (j in 0 until m) {
+                dest[dInd + j] += temp * right[rInd + j]
+            }
+        }
+    }
+}
+
+fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: Int, t: Int) {
+    for (rdCol in 0 until right.blocksInRow) {
+        val rightIdx = rdCol * t
+        val destIdx = rdCol * n
+
+        for (i in 0 until n) {
+            val destBlock = dest.blocks[destIdx + i]
+
+            for (k in 0 until t) {
+                val kb = k / left.blockSize
+                val temp = left.blocks[i * left.blocksInRow + kb * t][k % left.blockSize]
+
+                val rightBlock = right.blocks[rightIdx + k]
+                for (j in 0 until dest.blockSize) {
+                    destBlock[j] += temp * rightBlock[j]
+                }
+            }
+        }
+    }
+}
+
 class BenchmarkTest {
+    @Test
+    @Tag("heavy")
+    fun `test tiled dot`() {
+        val r1 = Random(100)
+        val r2 = Random(100)
+
+        val n = 374
+        val m = 16384
+        val t = 1024
+
+        val leftTiled = TiledArray(Strides(intArrayOf(n, t))) { r1.nextFloat() }
+        val rightTiled = TiledArray(Strides(intArrayOf(t, m))) { r1.nextFloat() }
+        val destTiled = TiledArray(Strides(intArrayOf(n, m))) { 0f }
+
+        dotTiled(leftTiled, rightTiled, destTiled, m, n, t)
+
+        val left = FloatArray(n * t) { r2.nextFloat() }
+        val right = FloatArray(t * m) { r2.nextFloat() }
+        val dest = FloatArray(n * m)
+
+        dotBaseline(left, right, dest, m, n, t)
+
+        val tiledResult = destTiled.toArray()
+        assert(dest.contentEquals(tiledResult))
+    }
+
     @Test
     @Tag("benchmark")
     fun `test dot performance`() {
