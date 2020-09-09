@@ -116,22 +116,31 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         val blockSize = computeBlockSize(fromDim = actualAxis + 1)
         val batchSize = computeBlockSize(fromDim = actualAxis)
         val numBatches = computeBlockSize(toDim = actualAxis)
-        repeat(numBatches) { blockIdx ->
-            val baseOff = if (!reverse) blockIdx * batchSize else numBatches * batchSize - blockSize
+        val numBlocks = batchSize / blockSize
+        repeat(numBatches) { batchIdx ->
+            val dstOff = if (!reverse) batchIdx * batchSize else (numBatches - batchIdx) * batchSize - 1
             if (!exclusive) {
-                this.array.copyInto(output.array, baseOff, baseOff, baseOff + blockSize)
+                if (!reverse)
+                    this.array.copyInto(output.array, dstOff, dstOff, dstOff + blockSize)
+                else
+                    this.array.copyInto(output.array, dstOff - blockSize + 1, dstOff - blockSize + 1, dstOff + 1)
             }
 
             if (!reverse) {
-                val thisOffBase = if (!exclusive) baseOff else baseOff - blockSize
-                for (i in blockSize until batchSize) {
-                    val currentOff = baseOff + i
-                    output.array[currentOff] = (output.array[currentOff - blockSize] + this.array[thisOffBase + i]).toPrimitive()
+                for (i in 1 until numBlocks) {
+                    for (j in 0 until blockSize) {
+                        val currentOff = dstOff + i * blockSize + j
+                        val thisOff = if (!exclusive) currentOff else currentOff - blockSize
+                        output.array[currentOff] = (output.array[currentOff - blockSize] + this.array[thisOff]).toPrimitive()
+                    }
                 }
             } else {
-                for (i in blockSize until batchSize) {
-                    val currentOff = baseOff - i
-                    output.array[currentOff] = (output.array[currentOff + blockSize] + this.array[baseOff + 1 - i]).toPrimitive()
+                for (i in 1 until numBlocks) {
+                    for (j in blockSize - 1 downTo 0) {
+                        val currentOff = dstOff - i * blockSize - j
+                        val thisOff = if (!exclusive) currentOff else currentOff + blockSize
+                        output.array[currentOff] = (output.array[currentOff + blockSize] + this.array[thisOff]).toPrimitive()
+                    }
                 }
             }
         }

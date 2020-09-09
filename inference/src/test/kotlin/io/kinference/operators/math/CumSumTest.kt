@@ -32,7 +32,37 @@ class CumSumTest {
     }
 
     @Test
-    fun `test cumulative sum along negative for 2d data`() {
+    fun `test cumulative sum along negative axis for 2d data`() {
         Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_negative_axis"))
+    }
+
+    @Test
+    fun `test reverse exclusive cumulative sum along axis=1 for 2d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_1_reverse_exclusive"))
+    }
+
+    @Test
+    fun `test reverse cumulative sum along axis=0 for 2d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_0_reverse"))
+    }
+
+    @Test
+    fun `test reverse cumulative sum along axis=1 for 3d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_3d_axis_1_reverse"))
+    }
+
+    @Test
+    fun `test reverse exclusive cumulative sum along negative axis for 3d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_3d_negative_axis_reverse_exclusive"))
+    }
+
+    @Test
+    fun `test cumulative sum along axis=2 for 4d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_4d_axis_2"))
+    }
+
+    @Test
+    fun `test exclusive cumulative sum along axis=0 for 4d data`() {
+        Utils.tensorTestRunner(getTargetPath("test_cumsum_4d_axis_0_exclusive"))
     }
 }
