@@ -20,16 +20,16 @@ import kotlin.random.Random
 ])
 @Warmup(iterations = 3)
 @BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Measurement(iterations = 100)
 open class DotBenchmark {
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var n = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var m = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var t = 0
 
     lateinit var left: FloatArray
@@ -95,16 +95,16 @@ open class DotBenchmark {
 @Fork(value = 1, warmups = 0)
 @Warmup(iterations = 3)
 @BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Measurement(iterations = 100)
 open class DotBenchmarkComposite {
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var n = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var m = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var t = 0
 
     lateinit var left: CompositeArray
@@ -149,16 +149,16 @@ open class DotBenchmarkComposite {
 @Fork(value = 1, warmups = 0)
 @Warmup(iterations = 3)
 @BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Measurement(iterations = 100)
 open class DotBenchmarkTiled {
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var n = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var m = 0
 
-    @Param("16384", "4096", "1024", "128", "16")
+    @Param("4096", "1024", "128", "16")
     var t = 0
 
     lateinit var left: TiledArray
@@ -212,7 +212,7 @@ fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: I
 
             for (k in 0 until t) {
                 val kb = k / left.blockSize
-                val temp = left.blocks[i * left.blocksInRow + kb * t][k % left.blockSize]
+                val temp = left.blocks[i + kb * n][k % left.blockSize]
 
                 val rightBlock = right.blocks[rightIdx + k]
                 for (j in 0 until dest.blockSize) {
@@ -232,7 +232,7 @@ class BenchmarkTest {
 
         val n = 374
         val m = 16384
-        val t = 1024
+        val t = 4096
 
         val leftTiled = TiledArray(Strides(intArrayOf(n, t))) { r1.nextFloat() }
         val rightTiled = TiledArray(Strides(intArrayOf(t, m))) { r1.nextFloat() }
