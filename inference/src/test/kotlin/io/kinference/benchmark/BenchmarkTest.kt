@@ -203,6 +203,7 @@ fun dotBaseline(left: FloatArray, right: FloatArray, dest: FloatArray, m: Int, n
 }
 
 fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: Int, t: Int) {
+    val rdBlockSize = dest.blockSize
     for (rdCol in 0 until right.blocksInRow) {
         val rightIdx = rdCol * t
         val destIdx = rdCol * n
@@ -210,13 +211,17 @@ fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: I
         for (i in 0 until n) {
             val destBlock = dest.blocks[destIdx + i]
 
-            for (k in 0 until t) {
-                val kb = k / left.blockSize
-                val temp = left.blocks[i + kb * n][k % left.blockSize]
+            for (lCol in 0 until left.blocksInRow) {
+                val leftBlock = left.blocks[i + lCol * n]
+                val rightIdxOffset = rightIdx + left.blockSize * lCol
 
-                val rightBlock = right.blocks[rightIdx + k]
-                for (j in 0 until dest.blockSize) {
-                    destBlock[j] += temp * rightBlock[j]
+                for (k in 0 until left.blockSize) {
+                    val temp = leftBlock[k]
+                    val rightBlock = right.blocks[rightIdxOffset + k]
+
+                    for (j in 0 until rdBlockSize) {
+                        destBlock[j] += temp * rightBlock[j]
+                    }
                 }
             }
         }
