@@ -6,6 +6,7 @@ import kotlin.collections.toIntArray
 import kotlin.ranges.reversed
 
 fun NDArray.isScalar() = shape.isEmpty()
+fun NDArray.isScalarOr1D() = shape.isEmpty() || shape.size == 1
 
 fun MutableNDArray.wrapOneDim(): MutableNDArray {
     return this.reshape(1.concat(this.shape))

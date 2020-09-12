@@ -31,6 +31,7 @@ object Utils {
             DataType.DOUBLE -> getTensorDouble(tensorProto)
             DataType.INT64 -> getTensorLong(tensorProto)
             DataType.INT32 -> getTensorInt(tensorProto)
+            DataType.INT8 -> getTensorByte(tensorProto)
             DataType.BOOL -> getTensorBoolean(tensorProto)
             else -> error("Unsupported proto data type: $type")
         }
@@ -44,6 +45,15 @@ object Utils {
 
         val strides = Strides(tensorProto.dims.toIntArray())
         return BooleanNDArray(booleanData, strides).asTensor(tensorProto.name!!)
+    }
+
+    private fun getTensorByte(tensorProto: TensorProto): Tensor {
+        val byteData = if (tensorProto.raw_data != null) {
+            tensorProto.raw_data!!.toByteArray()
+        } else ByteArray(tensorProto.int32_data.size) { tensorProto.int32_data[it].toByte() }
+
+        val strides = Strides(tensorProto.dims.toIntArray())
+        return ByteNDArray(byteData, strides).asTensor(tensorProto.name!!)
     }
 
     private fun getTensorDouble(tensorProto: TensorProto): Tensor {

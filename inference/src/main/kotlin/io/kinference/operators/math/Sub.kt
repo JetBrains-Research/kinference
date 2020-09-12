@@ -30,7 +30,7 @@ class Sub(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("Add", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val INFO = OperatorInfo("Sub", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {

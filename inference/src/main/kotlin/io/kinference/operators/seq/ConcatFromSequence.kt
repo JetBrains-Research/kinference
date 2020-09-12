@@ -30,12 +30,12 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<S
         private val INFO = OperatorInfo("ConcatFromSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    private val axis: Long by attribute()
-    private val newAxis: Long by attribute("new_axis")
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+    private val newAxis: Boolean by attribute("new_axis") { it: Number -> it.toInt() == 1 }
 
     override fun apply(context: Context, inputs: List<TensorSeq?>): List<Tensor?> {
         val srcTensors = inputs.first()!!.data
-        val tensor = if (newAxis == 1L) srcTensors.stack(axis.toInt()) else srcTensors.concatenate(axis.toInt())
+        val tensor = if (newAxis) srcTensors.stack(axis) else srcTensors.concatenate(axis)
         return listOf(tensor)
     }
 }

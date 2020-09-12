@@ -25,7 +25,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1L)
+            AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1)
         )
 
         private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO,
@@ -79,7 +79,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         }
     }
 
-    private val axis: Int by attribute { it: Number -> it.toInt() }
+    private val axis: Int by attribute("axis") { it: Number -> it.toInt() }
 
     override fun activate(input: NDArray): NDArray {
         return softmax(input.toMutable(), axis, input.strides)

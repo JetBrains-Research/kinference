@@ -35,19 +35,19 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    private val axis: Long by attribute()
-    private val keepDims: Long by attribute("keepdims")
+    private val axis: Int by attribute { it: Number -> it.toInt() }
+    private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
         val parts = inputs.elementAtOrNull(1)
 
-        val input = inputs.first()!!
+        val input = inputs[0]!!
         val tensors = if (parts == null) {
-            input.splitWithAxis(input.data.shape[axis.toInt()], axis.toInt(), keepDims == 1L)
+            input.splitWithAxis(input.data.shape[axis], axis, keepDims)
         } else {
-            input.splitWithAxis(parts, axis.toInt())
+            input.splitWithAxis(parts, axis)
         }
 
-        return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors.first().info.type)))
+        return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors[0].info.type)))
     }
 }

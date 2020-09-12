@@ -11,6 +11,7 @@ import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.Equal
 import io.kinference.operators.logical.Not
 import io.kinference.operators.math.*
+import io.kinference.operators.quantization.DequantizeLinear
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
@@ -29,6 +30,7 @@ object OperatorFactory {
         "Constant" -> Constant(attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(attributes, inputs, outputs)
         "CumSum" -> CumSum(attributes, inputs, outputs)
+        "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
