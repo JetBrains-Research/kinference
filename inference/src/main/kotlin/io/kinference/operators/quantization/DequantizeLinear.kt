@@ -24,7 +24,7 @@ class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<Str
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), required = false)
+            AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), required = false, default = 1)
         )
 
         private val INPUTS_INFO = listOf(
@@ -46,30 +46,31 @@ class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<Str
         }
 
         @ExperimentalUnsignedTypes
-        private fun NDArray.quantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
+        private fun NDArray.quantize(zeroPoint: NDArray?, scale: NDArray, axis: Int): NDArray {
             this as NumberNDArray; scale as FloatNDArray
             val output = MutableFloatNDArray(FloatArray(this.linearSize), this.strides)
-            if (axis == null) {
-                require(canQuantizePerTensor(zeroPoint, scale)) { "Cannot perform per-tensor quantization. Scale and zero point tensors should be scalars." }
-                val zero = (zeroPoint?.get(0) as? Number)?.toFloat() ?: 0f
-                for (i in 0 until output.linearSize) {
-                    output[i] = ((this[i] as Number).toFloat() - zero) * scale[0]
+            when {
+                canQuantizePerAxis(axis, zeroPoint, scale) -> {
+                    val axisBlockSize = shape[axis]
+                    for (i in 0 until output.linearSize) {
+                        val idx = i % axisBlockSize
+                        val zero = (zeroPoint?.get(idx) as? Number)?.toFloat() ?: 0f
+                        output[i] = ((this[i] as Number).toFloat() - zero) * scale[idx]
+                    }
                 }
-            } else {
-                //quantize per axis, if axis is not null
-                require(canQuantizePerAxis(axis, zeroPoint, scale)) { "Cannot perform per-axis quantization. Scale and zero point tensors should have ${shape[axis]} elements." }
-                val axisBlockSize = shape[axis]
-                for (i in 0 until output.linearSize) {
-                    val idx = i % axisBlockSize
-                    val zero = (zeroPoint?.get(idx) as? Number)?.toFloat() ?: 0f
-                    output[i] = ((this[i] as Number).toFloat() - zero) * scale[idx]
+                canQuantizePerTensor(zeroPoint, scale) -> {
+                    val zero = (zeroPoint?.get(0) as? Number)?.toFloat() ?: 0f
+                    for (i in 0 until output.linearSize) {
+                        output[i] = ((this[i] as Number).toFloat() - zero) * scale[0]
+                    }
                 }
+                else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
             }
             return output
         }
     }
 
-    private val axis: Int? by attributeOrNull { it: Number? -> it?.toInt() }
+    private val axis: Int by attribute { it: Number -> it.toInt() }
 
     @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
