@@ -304,6 +304,30 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return destination
     }
 
+    override fun dotInteger(other: NumberNDArray, destination: MutableIntNDArray): MutableNumberNDArray {
+        other as PrimitiveNDArray
+        require(shape.size == 2 && other.shape.size == 2)
+        require(shape[1] == other.shape[0])
+
+        val N = this.shape[0]
+        val M = other.shape[1]
+        val K = this.shape[1]
+
+        for (n in 0 until N) {
+            val dIdx = n * M + destination.offset
+            val lIdx = n * K + this.offset
+            for (k in 0 until K) {
+                val temp = this.array[lIdx + k].toSignedInt()
+                val rIdx = k * M + other.offset
+                for (m in 0 until M) {
+                    destination.array[dIdx + m] = destination.array[dIdx + m] + temp * other.array[rIdx + m].toSignedInt()
+                }
+            }
+        }
+
+        return destination
+    }
+
     override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
         val betaPrimitive = beta.toPrimitive()

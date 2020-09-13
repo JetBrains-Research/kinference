@@ -89,6 +89,7 @@ interface NumberNDArray : NDArray {
     fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
+    fun dotInteger(other: NumberNDArray, destination: MutableIntNDArray): MutableNumberNDArray
 
     fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
