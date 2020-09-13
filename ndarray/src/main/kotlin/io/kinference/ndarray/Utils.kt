@@ -5,6 +5,7 @@ import io.kinference.primitives.types.PrimitiveType
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
 
+fun PrimitiveType.toFloat(): Float = throw UnsupportedOperationException()
 fun PrimitiveType.toDouble(): Double = throw UnsupportedOperationException()
 
 fun Collection<Number>.toIntArray(): IntArray {

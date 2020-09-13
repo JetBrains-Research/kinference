@@ -49,6 +49,33 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
     }
 
+    override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int): NDArray {
+        scale as FloatNDArray
+        val zeros = (zeroPoint as? PrimitiveNDArray)?.array
+        val output = MutableFloatNDArray(FloatArray(this.linearSize), this.strides)
+        when {
+            canDequantizePerTensor(zeroPoint, scale) -> {
+                val zero = zeros?.get(0)?.toFloat() ?: 0f
+                for (i in 0 until output.linearSize) output[i] = (this[i].toFloat() - zero) * scale[0]
+            }
+            canDequantizePerAxis(axis, zeroPoint, scale) -> {
+                val actualAxis = indexAxis(axis)
+                val blockCount = computeBlockSize(toDim = actualAxis)
+                val blockSize = computeBlockSize(fromDim = actualAxis + 1)
+                var outOffset = 0
+                repeat(blockCount) {
+                    for (i in 0 until shape[actualAxis]) {
+                        val zero = zeros?.get(i)?.toFloat() ?: 0f
+                        for (j in 0 until blockSize) output[j + outOffset] = (this[j + outOffset].toFloat() - zero) * scale[i]
+                        outOffset += blockSize
+                    }
+                }
+            }
+            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
+        }
+        return output
+    }
+
     override fun row(row: Int): MutableNumberNDArray {
         val rowLength: Int = linearSize / shape[0]
         val start = row * rowLength

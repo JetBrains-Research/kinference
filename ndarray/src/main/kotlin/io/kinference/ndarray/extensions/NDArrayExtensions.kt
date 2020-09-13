@@ -1,12 +1,18 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
-import io.kinference.ndarray.*
 import kotlin.collections.toIntArray
 import kotlin.ranges.reversed
 
 fun NDArray.isScalar() = shape.isEmpty()
-fun NDArray.isScalarOr1D() = shape.isEmpty() || shape.size == 1
+
+fun NDArray.canDequantizePerAxis(axis: Int, zeroPoint: NDArray?, scale: NDArray): Boolean {
+    return scale.rank == 1 && scale.linearSize == shape[axis] && (zeroPoint == null || zeroPoint.rank == 1 && zeroPoint.linearSize == shape[axis])
+}
+
+fun canDequantizePerTensor(zeroPoint: NDArray?, scale: NDArray): Boolean {
+    return scale.linearSize == 1 && (zeroPoint == null || zeroPoint.linearSize == 1)
+}
 
 fun MutableNDArray.wrapOneDim(): MutableNDArray {
     return this.reshape(1.concat(this.shape))
