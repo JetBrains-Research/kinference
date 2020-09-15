@@ -6,6 +6,7 @@ import io.kinference.onnx.NodeProto
 import io.kinference.operators.activations.*
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
+import io.kinference.operators.layer.attention.QAttention
 import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.Equal
@@ -46,6 +47,7 @@ object OperatorFactory {
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
         "Not" -> Not(attributes, inputs, outputs)
+        "QAttention" -> QAttention(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "Shape" -> Shape(attributes, inputs, outputs)

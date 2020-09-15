@@ -59,7 +59,7 @@ interface MutableNDArray : NDArray {
 interface NumberNDArray : NDArray {
     override fun allocateNDArray(strides: Strides): MutableNumberNDArray
 
-    fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int): NDArray
+    fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int? = null): NDArray
 
     override fun view(vararg axes: Int): NumberNDArray
     override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNumberNDArray

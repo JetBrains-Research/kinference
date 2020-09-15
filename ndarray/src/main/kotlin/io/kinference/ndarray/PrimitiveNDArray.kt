@@ -49,7 +49,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
     }
 
-    override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int): NDArray {
+    override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
         scale as FloatNDArray
         val zeros = (zeroPoint as? PrimitiveNDArray)?.array
         val output = MutableFloatNDArray(FloatArray(this.linearSize), this.strides)
@@ -58,7 +58,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
                 val zero = zeros?.get(0)?.toFloat() ?: 0f
                 for (i in 0 until output.linearSize) output[i] = (this[i].toFloat() - zero) * scale[0]
             }
-            canDequantizePerAxis(axis, zeroPoint, scale) -> {
+            canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
                 val actualAxis = indexAxis(axis)
                 val blockCount = computeBlockSize(toDim = actualAxis)
                 val blockSize = computeBlockSize(fromDim = actualAxis + 1)

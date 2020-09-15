@@ -111,7 +111,7 @@ object Utils {
         return IntNDArray(intData, strides).asTensor(tensorProto.name!!)
     }
 
-    fun assertTensors(expected: Tensor, actual: Tensor) {
+    fun assertTensors(expected: Tensor, actual: Tensor, delta: Double) {
         assertEquals(expected.type, actual.type, "Types of tensors ${expected.info.name} do not match")
         assertArrayEquals(expected.data.shape, actual.data.shape)
 
@@ -167,7 +167,7 @@ object Utils {
         }
     }
 
-    fun tensorTestRunner(testDir: String) {
+    fun tensorTestRunner(testDir: String, delta: Double = this.delta) {
         val dataSets = operatorTestHelper(testDir)
         for (dataSet in dataSets) {
             val (expectedOutputTensors, actualOutputTensors) = dataSet
@@ -176,7 +176,7 @@ object Utils {
 
             for (expectedOutputTensor in expectedOutputTensors) {
                 val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.info.name] ?: error("Required tensor not found")
-                assertTensors(expectedOutputTensor as Tensor, actualOutputTensor as Tensor)
+                assertTensors(expectedOutputTensor as Tensor, actualOutputTensor as Tensor, delta)
             }
         }
     }

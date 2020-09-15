@@ -49,7 +49,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
+        internal fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 
@@ -205,7 +205,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             return output to present
         }
 
-        private fun getScores(
+        internal fun getScores(
                 unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: NDArray?,
                 past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Pair<NDArray, NDArray> {
@@ -225,7 +225,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     }
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
-    private val unidir: Int by attribute("unidirectional") { it: Number -> it.toInt() }
+    private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data
@@ -238,7 +238,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         val (queries, keys, values) = initQueryKeyValue(input, weights, bias, batchSize, seqLen, hiddenSize, numHeads)
 
-        val (scores, present) = getScores(unidir == 1, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+        val (scores, present) = getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())
     }
 }
