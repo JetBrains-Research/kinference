@@ -54,7 +54,7 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
         val outputScale = (inputMax - inputMin) / 255f
         val outputScaleScalar = createScalarNDArray(DataType.FLOAT, outputScale)
 
-        val outputZeroPoint = clip(round((0f - inputMin) / outputScale), 0f, 255f)
+        val outputZeroPoint = clip(round((-inputMin) / outputScale), 0f, 255f)
         val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
 
         val output = allocateNDArray(DataType.UBYTE, input.strides) as MutableUByteNDArray

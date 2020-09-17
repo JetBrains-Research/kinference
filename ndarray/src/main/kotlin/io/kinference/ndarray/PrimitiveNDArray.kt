@@ -55,8 +55,8 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         val output = MutableFloatNDArray(FloatArray(this.linearSize), this.strides)
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
-                val zero = zeros?.get(0)?.toFloat() ?: 0f
-                for (i in 0 until output.linearSize) output[i] = (this[i].toFloat() - zero) * scale[0]
+                val zero = zeros?.get(0)?.toSignedInt()?.toFloat() ?: 0f
+                for (i in 0 until output.linearSize) output[i] = (this[i].toSignedInt().toFloat() - zero) * scale[0]
             }
             canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
                 val actualAxis = indexAxis(axis)
