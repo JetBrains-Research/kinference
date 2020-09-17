@@ -1,7 +1,5 @@
 package io.kinference
 
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.toIntArray
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import kotlin.math.pow
 
 @ExperimentalUnsignedTypes
@@ -144,6 +141,12 @@ object Utils {
             DataType.BOOL -> {
                 ((expected.data as BooleanNDArray).array).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Boolean, "Tensor ${expected.info.name} does not match")
+                }
+            }
+
+            DataType.UINT8 -> {
+                ((expected.data as UByteNDArray).array).forEachIndexed { index, value ->
+                    assertEquals(value, actual.data[index] as UByte, "Tensort ${expected.info.name} does not match")
                 }
             }
 

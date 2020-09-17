@@ -7,12 +7,15 @@ import io.kinference.operators.activations.*
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
-import io.kinference.operators.layer.normalization.*
+import io.kinference.operators.layer.normalization.EmbedLayerNormalization
+import io.kinference.operators.layer.normalization.LayerNormalization
+import io.kinference.operators.layer.normalization.SkipLayerNormalization
 import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.Equal
 import io.kinference.operators.logical.Not
 import io.kinference.operators.math.*
 import io.kinference.operators.quantization.DequantizeLinear
+import io.kinference.operators.quantization.DynamicQuantizeLinear
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
@@ -61,6 +64,7 @@ object OperatorFactory {
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
+        "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

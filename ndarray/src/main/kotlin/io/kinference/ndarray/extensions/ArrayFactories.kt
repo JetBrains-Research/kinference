@@ -1,15 +1,10 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.LateInitArray
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.Strides
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LateInitBooleanArray
 import io.kinference.ndarray.arrays.MutableBooleanNDArray
 import io.kinference.primitives.types.DataType
-import io.kinference.ndarray.*
-import io.kinference.ndarray.arrays.*
 
 inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (Int) -> T): Any {
     return when (type) {
@@ -83,6 +78,7 @@ fun createScalarNDArray(type: DataType, value: Any): NDArray {
         DataType.SHORT -> ShortNDArray(shortArrayOf(value as Short))
         DataType.BOOLEAN -> BooleanNDArray(booleanArrayOf(value as Boolean))
         DataType.BYTE -> ByteNDArray(byteArrayOf(value as Byte))
+        DataType.UBYTE -> UByteNDArray(ubyteArrayOf(value as UByte))
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
@@ -97,6 +93,7 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
         DataType.INT -> MutableIntNDArray(IntArray(strides.linearSize), strides)
         DataType.SHORT -> MutableShortNDArray(ShortArray(strides.linearSize), strides)
         DataType.BOOLEAN -> MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
+        DataType.UBYTE -> MutableUByteNDArray(UByteArray(strides.linearSize), strides)
         else -> error("Unsupported data type $type")
     }
 }
