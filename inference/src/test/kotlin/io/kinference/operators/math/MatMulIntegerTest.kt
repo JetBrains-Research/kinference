@@ -10,4 +10,9 @@ class MatMulIntegerTest {
     fun `test matmul integer`() {
         Utils.tensorTestRunner(getTargetPath("test_matmulinteger"))
     }
+
+    @Test
+    fun `test matmul integer op`() {
+        Utils.tensorTestRunner(getTargetPath("test_matmulinteger_op"))
+    }
 }

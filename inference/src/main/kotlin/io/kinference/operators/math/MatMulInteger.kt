@@ -28,6 +28,12 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "Y", optional = false))
 
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+
+        private fun NumberNDArray.toIntNDArray() = when (this) {
+            is UByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides, offset)
+            is ByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides, offset)
+            else -> error("Unsupported data type: $type")
+        }
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
@@ -36,8 +42,8 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
         val firstZero = inputs.getOrNull(2)?.data as? NumberNDArray
         val secondZero = inputs.getOrNull(3)?.data as? NumberNDArray
 
-        val firstQuantized = if (firstZero == null) first else first - firstZero
-        val secondQuantized = if (secondZero == null) second else second - secondZero
+        val firstQuantized = if (firstZero == null) first.toIntNDArray() else first.toIntNDArray() - firstZero.toIntNDArray()
+        val secondQuantized = if (secondZero == null) second.toIntNDArray() else second.toIntNDArray() - secondZero.toIntNDArray()
 
         return listOf((firstQuantized matMulInteger secondQuantized).asTensor("y"))
     }

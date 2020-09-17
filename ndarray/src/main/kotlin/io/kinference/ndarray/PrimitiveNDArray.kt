@@ -305,6 +305,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     }
 
     override fun dotInteger(other: NumberNDArray, destination: MutableIntNDArray): MutableNumberNDArray {
+        other as PrimitiveNDArray
         require(shape.size == 2 && other.shape.size == 2)
         require(shape[1] == other.shape[0])
 
@@ -316,10 +317,10 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
             val dIdx = n * M + destination.offset
             val lIdx = n * K + this.offset
             for (k in 0 until K) {
-                val temp = this.array[lIdx + k].toSignedInt()
+                val temp = this.array[lIdx + k]
                 val rIdx = k * M + other.offset
                 for (m in 0 until M) {
-                    destination.array[dIdx + m] = destination.array[dIdx + m] + temp * (other[rIdx + m] as Comparable<*>).toSignedInt()
+                    destination.array[dIdx + m] = (destination.array[dIdx + m].toPrimitive() + temp * other.array[rIdx + m]).toInt()
                 }
             }
         }

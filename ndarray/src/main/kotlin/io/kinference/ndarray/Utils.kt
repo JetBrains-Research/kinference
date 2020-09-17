@@ -8,15 +8,6 @@ fun Double.toUByte() = this.toInt().toUByte()
 fun PrimitiveType.toFloat(): Float = throw UnsupportedOperationException()
 fun PrimitiveType.toDouble(): Double = throw UnsupportedOperationException()
 fun PrimitiveType.toInt(): Int = throw UnsupportedOperationException()
-fun PrimitiveType.toSignedInt(): Int = throw UnsupportedOperationException()
-
-fun <T> Comparable<T>.toSignedInt(): Int {
-    return when (this) {
-        is Byte -> this.toInt()
-        is UByte -> this.toByte().toInt()
-        else -> error("Only for bytes and unsigned bytes")
-    }
-}
 
 fun Collection<Number>.toIntArray(): IntArray {
     val array = IntArray(this.size)
