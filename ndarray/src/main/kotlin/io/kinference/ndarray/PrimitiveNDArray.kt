@@ -320,7 +320,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
                 val temp = this.array[lIdx + k]
                 val rIdx = k * M + other.offset
                 for (m in 0 until M) {
-                    destination.array[dIdx + m] = (destination.array[dIdx + m].toPrimitive() + temp * other.array[rIdx + m]).toInt()
+                    destination.array[dIdx + m] = destination.array[dIdx + m] + (temp * other.array[rIdx + m]).toInt()
                 }
             }
         }
