@@ -35,6 +35,7 @@ object OperatorFactory {
         "ConstantOfShape" -> ConstantOfShape(attributes, inputs, outputs)
         "CumSum" -> CumSum(attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
+        "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
@@ -64,7 +65,6 @@ object OperatorFactory {
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
-        "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

@@ -166,7 +166,8 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 DataType.FLOAT -> proto.float_data
                 DataType.INT64 -> proto.int64_data
                 DataType.INT32 -> proto.int32_data
-                DataType.INT8, DataType.UINT8 -> emptyList()
+                DataType.INT8 -> if (!proto.int32_data.isNullOrEmpty()) proto.int32_data.map { it.toByte() } else emptyList()
+                DataType.UINT8 -> if (!proto.int32_data.isNullOrEmpty()) proto.int32_data.map { it.toUByte() } else emptyList()
                 DataType.BOOL -> proto.int32_data.map { it != 0 }
                 else -> error("Unsupported data type $type")
             }
