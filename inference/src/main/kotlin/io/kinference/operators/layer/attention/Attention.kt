@@ -49,7 +49,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        internal fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
+        private fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 

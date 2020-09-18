@@ -4,7 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.NumberNDArray
+import io.kinference.ndarray.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -16,6 +17,7 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     companion object {
         private val FLOATS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
         private val BYTES = setOf(TensorProto.DataType.INT8, TensorProto.DataType.UINT8)
+        private val DEFAULT_SCALE = FloatNDArray(floatArrayOf(1f))
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),
@@ -40,6 +42,36 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         )
 
         private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+
+        private fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int, outputScale: Float = 1f): Array<MutableNDArray> {
+            bias as FloatNDArray
+            val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
+            val attentionHeadSize = hiddenSize / numHeads
+
+            val step = batchSize * numHeads
+
+            for (i in 0 until 3 * step) {
+                val batchIdx = (i / 3) / numHeads
+                val headIdx = (i / 3) % numHeads
+                val qkvIdx = i % 3
+
+                val inputBatchOffset = batchIdx * seqLen * hiddenSize
+                val weightsOffset = qkvIdx * hiddenSize + headIdx * attentionHeadSize
+                val qkvOffset = (batchIdx * numHeads + headIdx) * (seqLen * attentionHeadSize)
+
+                //x * W[q|k|v]
+                (input as NumberNDArray).gemm(seqLen, attentionHeadSize, hiddenSize, 1.0, hiddenSize, weights as NumberNDArray,
+                    3 * hiddenSize, 1.0, qkv[qkvIdx], attentionHeadSize, inputBatchOffset, weightsOffset, qkvOffset)
+
+                repeat(seqLen) {
+                    val offset = qkvOffset + it * attentionHeadSize
+                    for (j in 0 until attentionHeadSize) {
+                        qkv[qkvIdx][j + offset] = qkv[qkvIdx][j + offset] as Float * outputScale + bias[j + weightsOffset]
+                    }
+                }
+            }
+            return qkv
+        }
     }
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
@@ -48,12 +80,14 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val weights = inputs[1]!!.data as NumberNDArray
-        val qInput = input.dequantize(inputs.getOrNull(6)?.data, inputs[3]!!.data)
-        val qWeight = weights.dequantize(inputs.getOrNull(7)?.data, inputs[4]!!.data)
+
+        val qInput = input.dequantize(inputs.getOrNull(6)?.data, DEFAULT_SCALE)
+        val qWeight = weights.dequantize(inputs.getOrNull(7)?.data, DEFAULT_SCALE)
 
         val (batchSize, seqLen, hiddenSize) = input.shape
         val bias = inputs[2]!!.data
-        val (queries, keys, values) = Attention.initQueryKeyValue(qInput, qWeight, bias, batchSize, seqLen, hiddenSize, numHeads)
+        val outputScale = inputs[3]!!.data as FloatNDArray * inputs[4]!!.data as FloatNDArray
+        val (queries, keys, values) = initQueryKeyValue(qInput, qWeight, bias, batchSize, seqLen, hiddenSize, numHeads, (outputScale[0] as Float))
 
         val maskIndices = inputs.elementAtOrNull(5)?.data
         val past = inputs.elementAtOrNull(8)?.data
