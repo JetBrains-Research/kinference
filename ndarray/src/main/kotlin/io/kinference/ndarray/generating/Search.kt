@@ -10,7 +10,7 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
                       val lenNormBase: Int = 0, val lenNormPow: Int = 0, val repetitionPenalty: Double = 1.0) {
 
     @ExperimentalUnsignedTypes
-    abstract fun step(stepLogProbs: MutableNumberNDArray, context: IntNDArray? = null): List<Int>
+    abstract fun step(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int>
 
     protected fun stepCheck(logProbs: NDArray) {
         assert(logProbs.shape.contentEquals(intArrayOf(batchSize(), vocabSize))
@@ -38,7 +38,7 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
     /**
      * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
      */
-    abstract fun lastPredictions(): NDArray
+    abstract fun lastPredictions(): List<Int>
 
     /**
      * Current batch size
@@ -50,15 +50,14 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
                  lenNormBase: Int = 0, lenNormPow: Int = 0, repetitionPenalty: Double = 1.0) :
     Search(eosIds, vocabSize, searchSize, lenNormBase, lenNormPow, repetitionPenalty) {
 
-    val length = 1.0
+    private val length = 1.0
 
-    //    private var scores: MutableNumberNDArray? = null
-    private var scores: MutableList<Float> = ArrayList()
+    private var scores: MutableList<Double> = ArrayList()
     private var hypotheses: List<MutableList<Int>> = ArrayList()
-    private var eachStepProbs: List<MutableList<Float>> = ArrayList()
-    private val terminatedHypotheses: MutableList<Pair<List<Int>, Float>> = ArrayList()
+    private var eachStepProbs: List<MutableList<Double>> = ArrayList()
+    private val terminatedHypotheses: MutableList<Pair<List<Int>, Double>> = ArrayList()
     private var sortMask: List<Int>? = null
-    private var eosTensor: NDArray? = null
+    private val eosIdsSet: Set<Int> = eosIds.toSet()
 
     private fun initState(type: DataType) {
 //        scores = torch.zeros(1, dtype = type)
@@ -67,47 +66,56 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 //        eos_tensor = torch.tensor(self._eos_ids, dtype = torch.long).unsqueeze(1)
     }
 
-    @ExperimentalUnsignedTypes
-    override fun step(stepLogProbs: MutableNumberNDArray, context: IntNDArray?): List<Int> {
-        modifyScore(stepLogProbs, context)
-        super.stepCheck(stepLogProbs)
+    private fun toDoubleList2d(data: NumberNDArray): List<MutableList<Double>> {
+        assert(data.shape.size == 2)
 
-        if (scores == null) {
-            initState(stepLogProbs.type)
+        val result = ArrayList<MutableList<Double>>()
+        for (i in 0 until data.shape[0]) {
+
+            val row = ArrayList<Double>()
+            for (j in 0 until data.shape[1]) {
+                row.add(data[intArrayOf(i, j)] as Double)
+            }
+
+            result.add(row)
         }
 
-//        var logProbs = stepLogProbs.plus(scores!!.unsqueeze(1) as MutableNumberNDArray)
-        var logProbs = stepLogProbs.plus(scores as MutableNumberNDArray)
-        logProbs = logProbs.reshape(intArrayOf(logProbs.linearSize))
+        return result
+    }
 
-        var stepLogProbs = stepLogProbs.map(object : DoubleMap {
-            override fun apply(value: Double): Double = kotlin.math.exp(value)
-        }).reshape(intArrayOf(stepLogProbs.linearSize))
+    @ExperimentalUnsignedTypes
+    override fun step(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int> {
+        modifyScore(ndStepLogProbs, context)
+        super.stepCheck(ndStepLogProbs)
 
-        var topInds = topk1d(logProbs, min((1 + eosIds.size) * searchSize, logProbs.shape[0]), sorted = false)
-        val samplesStepLogProbs = topInds.map { stepLogProbs[it] }
-        val sortMask = topInds.map { floorDiv(it, vocabSize) }
-        topInds = topInds.map { floorMod(it, vocabSize) }
+//        if (scores == null) {
+//            initState(stepLogProbs.type)
+//        }
+
+        val stepLogProbs = toDoubleList2d(ndStepLogProbs)
+
+        val ndScores = DoubleNDArray(scores.toDoubleArray())
+        val ndLogProbs = ndStepLogProbs.plus(ndScores)
+        val logProbs = toDoubleList2d(ndLogProbs).flatten()
+
+        val flattenStepLogProbs = stepLogProbs.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }.flatten()
+
+        var samples = topk1dList(logProbs, min((1 + eosIds.size) * searchSize, ndLogProbs.shape[0]))
+
+        val samplesStepLogProbs = samples.map { flattenStepLogProbs[it] }
+        val sortMask = samples.map { floorDiv(it, vocabSize) }
+        samples = samples.map { floorMod(it, vocabSize) }
 
         initSortMask()
-        val sampleScores = topInds.map { logProbs[it] }
-        updateState(topInds, sampleScores, samplesStepLogProbs, sortMask)
+        val sampleScores: MutableList<Double> = samples.map { logProbs[it] }.toMutableList()
+        updateState(samples, sampleScores, samplesStepLogProbs, sortMask)
         length.plus(1)
 
         return sortMask
     }
 
-    private fun topk(data: NumberNDArray, size: Int, sorted: Boolean = true): List<List<Int>> {
-        return emptyList()
-    }
-
-    private fun topk1d(data: NumberNDArray, size: Int, sorted: Boolean = true): List<Int> {
-        assert(data.shape.size == 1)
-        return listOf()
-    }
-
-    private fun topk1dList(data: List<Float>, size: Int): List<Int> {
-        val pairedData = ArrayList<Pair<Float, Int>>()
+    private fun topk1dList(data: List<Double>, size: Int): List<Int> {
+        val pairedData = ArrayList<Pair<Double, Int>>()
         for (i in data.indices) {
             pairedData.add(Pair(data[i], i))
         }
@@ -116,24 +124,16 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     }
 
     @ExperimentalUnsignedTypes
-    private fun modifyScore(scores: MutableNumberNDArray, context: IntNDArray?) {
+    private fun modifyScore(scores: MutableNumberNDArray, context: List<Int>) {
         // repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
 
         if (repetitionPenalty != 1.0) {
-            if (context != null) {
-                val contextTokens = context.row(0) as IntNDArray
-                val uniqueTokens = HashSet<Int>()
-                for (i in 0 until contextTokens.shape[0]) {
-                    uniqueTokens.add(contextTokens[i])
-                }
-
-                for (i in 0 until scores.shape[0]) {
-                    pessimizeScore(scores, i, uniqueTokens)
-                }
+            for (i in 0 until scores.shape[0]) {
+                pessimizeScore(scores, i, context.toSet())
             }
 
             for (i in hypotheses.indices) {
-                pessimizeScore(scores, i, hypotheses[i].toHashSet())
+                pessimizeScore(scores, i, hypotheses[i].toSet())
             }
         }
     }
@@ -151,11 +151,10 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     override fun maskedHypotheses(mask: BooleanArray): List<List<Pair<List<Int>, GenerationInfo>>> {
         val ans = ArrayList<Pair<List<Int>, GenerationInfo>>()
+        val score = getNormalizedScores().map { kotlin.math.exp(it) }
         for (i in hypotheses.indices) {
             if (mask[i]) {
-//                val score = torch.exp(self._get_normalized_scores())
-                val score = 0.0F
-                ans.add(Pair(hypotheses[i], GenerationInfo(eachStepProbs[i], score)))
+                ans.add(Pair(hypotheses[i], GenerationInfo(eachStepProbs[i], score[i])))
             }
         }
 //        ans.sortBy { -it.second.score }
@@ -175,22 +174,21 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     override fun currentHypotheses(): List<List<Pair<List<Int>, GenerationInfo>>> {
         val ans = ArrayList<Pair<List<Int>, GenerationInfo>>()
+        val score = getNormalizedScores().map { kotlin.math.exp(it) }
         for (i in hypotheses.indices) {
-            // val score = torch.exp(self._get_normalized_scores())
-            val score = 0.0F
-            ans.add(Pair(hypotheses[i], GenerationInfo(eachStepProbs[i], score)))
+            ans.add(Pair(hypotheses[i], GenerationInfo(eachStepProbs[i], score[i])))
         }
 
         // ans.sortBy { -it.second.score }
         return listOf(ans)
     }
 
-    override fun lastPredictions(): NDArray {
-        TODO("Not yet implemented")
+    override fun lastPredictions(): List<Int> {
+        assert(hypotheses.isNotEmpty() && hypotheses[0].size > 0) {"Can't get last predictions if no steps have been performed"}
+        return hypotheses.map{ it[it.size - 1] }
     }
 
     override fun batchSize(): Int {
-//        return scores?.shape?.get(0) ?: 1
         return scores.size
     }
 
@@ -198,50 +196,46 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         sortMask = (0 until batchSize()).toList()
     }
 
-    private fun updateState(samples: List<Int>, sampleScores: List<Float>, stepLogProbs: NDArray, sortMask: List<Int>) {
+    private fun updateState(samples: List<Int>, sampleScores: MutableList<Double>, stepLogProbs: List<Double>, sortMask: List<Int>) {
         sortState(sortMask)
 
-//        scores = sampleScores
-//        self._hypotheses = torch.cat((self._hypotheses, samples.unsqueeze(1)), dim = 1)
-//        eachStepProbs = torch.cat((eachStepProbs, stepLogProbs.unsqueeze(1)), dim = 1)
+        scores = sampleScores
+        for (i in hypotheses.indices) {
+            hypotheses[i].add(samples[i])
+            eachStepProbs[i].add(stepLogProbs[i])
+        }
         stashTerminated(samples)
     }
 
     private fun stashTerminated(samples: List<Int>) {
         val toStash = isSampleTerminates(samples.subList(0, searchSize))
 
-        scores = getNormalizedScores().map { kotlin.math.exp(it.toDouble()).toFloat() }.toMutableList()
-        for (i in hypotheses.indices) {
-            assert(hypotheses[i].size == length.toInt())
-            hypotheses[i]
-            terminatedHypotheses.add(Pair(ArrayList(hypotheses[i]), scores.subList(0, searchSize)[toStash])
+        scores = getNormalizedScores().map { kotlin.math.exp(it) }.toMutableList()
+
+        val trimmedHypotheses = hypotheses.subList(0, searchSize)
+        val trimmedScores = scores.subList(0, searchSize)
+
+        for (i in trimmedHypotheses.indices.filter { toStash[it] }) {
+            assert(trimmedHypotheses[i].size == length.toInt())
+            terminatedHypotheses.add(Pair(ArrayList(trimmedHypotheses[i]), trimmedScores[i]))
         }
 
-        for (terminatedHypothesis, score in zip(
-        self._hypotheses[: self._search_size][to_stash], scores[: self._search_size][to_stash]
-        ):
-        assert len(terminatedHypothesis) == int(self._length)
-        terminatedHypotheses.append((terminated_hypothesis.clone(), score.item()))
-
         val terminated = isSampleTerminates(samples)
-//        applySliceToState(~terminated)
+        val notTerminatedInds = (terminated.indices).filter { !terminated[it] }
+        applySliceToState(notTerminatedInds)
         sortState()
 }
 
     private fun sortState(sortMask: List<Int>? = null) {
-        val mask = topk1dList(scores, min(searchSize, scores.size))
-        applySliceToState(mask)
+        if (sortMask == null) {
+            applySliceToState(topk1dList(scores, min(searchSize, scores.size)))
+        } else {
+            applySliceToState(sortMask)
+        }
     }
 
     private fun isSampleTerminates(samples: List<Int>): List<Boolean> {
-//        val result = samples == eosTensor.expand(eosTensor!!.shape[0], samples.shape[0])
-        //        return result.sum(dim = 0)
-
-        val res = ArrayList<Boolean>()
-        for (i in samples.indices) {
-            res.add(false)
-        }
-        return res
+        return samples.map { it in eosIdsSet }
     }
 
     private fun applySliceToState(tensorSlice: List<Int>) {
@@ -251,11 +245,10 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         if (sortMask != null) {
             sortMask = tensorSlice.map { sortMask!![it] }
         }
-}
+    }
 
-    private fun getNormalizedScores(): List<Float> {
-        val normFactor = ((lenNormBase + length) / (lenNormBase + 1)).pow(lenNormPow).toFloat()
-//        return scores.div(normFactor)
+    private fun getNormalizedScores(): List<Double> {
+        val normFactor = ((lenNormBase + length) / (lenNormBase + 1)).pow(lenNormPow)
         return scores.map { it / normFactor }
     }
 }

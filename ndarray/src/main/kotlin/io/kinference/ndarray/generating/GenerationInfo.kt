@@ -1,7 +1,7 @@
 package io.kinference.ndarray.generating
 
-class GenerationInfo(var probs: MutableList<Float> = ArrayList(), var score: Float = -1000.0F, var wordLen: Int = 0) {
-    fun add(prob: Float) {
+class GenerationInfo(var probs: MutableList<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
+    fun add(prob: Double) {
         probs.add(prob)
     }
 
