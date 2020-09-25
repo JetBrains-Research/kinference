@@ -49,7 +49,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int): Array<MutableNDArray> {
+        internal fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int,
+                                      hiddenSize: Int, numHeads: Int, outputScale: Double = 1.0): Array<MutableNDArray> {
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 
@@ -71,7 +72,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 }
 
                 //x * W[q|k|v] + bias and apply mask
-                (input as NumberNDArray).gemm(seqLen, attentionHeadSize, hiddenSize, 1.0, hiddenSize, weights as NumberNDArray,
+                (input as NumberNDArray).gemm(seqLen, attentionHeadSize, hiddenSize, outputScale, hiddenSize, weights as NumberNDArray,
                     3 * hiddenSize, 1.0, qkv[qkvIdx], attentionHeadSize, inputBatchOffset, weightsOffset, qkvOffset)
             }
             return qkv
