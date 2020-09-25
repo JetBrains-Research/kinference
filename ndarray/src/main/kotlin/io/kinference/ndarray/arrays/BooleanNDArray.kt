@@ -50,6 +50,10 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         return BooleanNDArray(array, Strides(newShape), offset + additionalOffset)
     }
 
+    override fun reshapeView(newShape: IntArray): NDArray {
+        return BooleanNDArray(array, Strides(newShape), offset)
+    }
+
     override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNDArray {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }

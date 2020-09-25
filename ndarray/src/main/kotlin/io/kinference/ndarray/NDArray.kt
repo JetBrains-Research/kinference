@@ -25,6 +25,7 @@ interface NDArray {
     fun allocateNDArray(strides: Strides): MutableNDArray
 
     fun view(vararg axes: Int): NDArray
+    fun reshapeView(newShape: IntArray): NDArray
     fun toMutable(newStrides: Strides = strides, additionalOffset: Int = 0): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
@@ -73,6 +74,7 @@ interface NumberNDArray : NDArray {
     fun max(): Any
     fun sum(): Any
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
+    fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray
 
     fun erfFor(value: Any): Any
 
@@ -89,7 +91,6 @@ interface NumberNDArray : NDArray {
     fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
-    fun dotInteger(other: NumberNDArray, destination: MutableIntNDArray): MutableNumberNDArray
 
     fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray

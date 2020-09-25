@@ -42,9 +42,9 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
         val firstZero = inputs.getOrNull(2)?.data as? NumberNDArray
         val secondZero = inputs.getOrNull(3)?.data as? NumberNDArray
 
-        val firstQuantized = if (firstZero == null) first.toIntNDArray() else first.toIntNDArray() - firstZero.toIntNDArray()
-        val secondQuantized = if (secondZero == null) second.toIntNDArray() else second.toIntNDArray() - secondZero.toIntNDArray()
+        val firstBiased = if (firstZero == null) first.toIntNDArray() else first.withZeroPoint(firstZero)
+        val secondBiased = if (secondZero == null) second.toIntNDArray() else second.withZeroPoint(secondZero)
 
-        return listOf((firstQuantized matMulInteger secondQuantized).asTensor("y"))
+        return listOf((firstBiased matmul secondBiased).asTensor("y"))
     }
 }

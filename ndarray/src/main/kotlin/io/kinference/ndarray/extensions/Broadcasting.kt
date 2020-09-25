@@ -35,8 +35,8 @@ fun NDArray.applyWithBroadcast(other: NDArray, destination: MutableNDArray, orde
     val leftShape = if (ordered) shape else unsqueezeFirst(shape, newShape.size)
     val rightShape = unsqueezeFirst(other.shape, newShape.size)
 
-    val left = this.toMutable(Strides(leftShape))
-    val right = other.toMutable(Strides(rightShape))
+    val left = this.reshapeView(leftShape)
+    val right = other.reshapeView(rightShape)
 
     broadcast(left, right, destination, op)
     return destination
