@@ -7,10 +7,12 @@ import kotlin.math.min
 import kotlin.math.pow
 
 abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: Int,
-                      val lenNormBase: Int = 0, val lenNormPow: Int = 0, val repetitionPenalty: Double = 1.0) {
+                      val lenNormBase: Double = 0.0, val lenNormPow: Double = 0.0, val repetitionPenalty: Double = 1.0) {
 
     @ExperimentalUnsignedTypes
-    abstract fun step(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int>
+    abstract fun ndStep(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int>
+
+    abstract fun step(stepLogProbs: List<MutableList<Double>>, context: List<Int>): List<Int>
 
     protected fun stepCheck(logProbs: NDArray) {
         assert(logProbs.shape.contentEquals(intArrayOf(batchSize(), vocabSize))
@@ -23,7 +25,7 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
     /**
      * List of list of tuples of current hypotheses and theirs scores
      */
-    abstract fun maskedHypotheses(mask: BooleanArray): List<List<Pair<List<Int>, GenerationInfo>>>
+    abstract fun maskedHypotheses(mask: List<Boolean>): List<List<Pair<List<Int>, GenerationInfo>>>
 
     /**
      * List of list of tuples of terminated hypotheses and theirs scores
@@ -47,7 +49,7 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
 }
 
 class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
-                 lenNormBase: Int = 0, lenNormPow: Int = 0, repetitionPenalty: Double = 1.0) :
+                 lenNormBase: Double = 0.0, lenNormPow: Double = 0.0, repetitionPenalty: Double = 1.0) :
     Search(eosIds, vocabSize, searchSize, lenNormBase, lenNormPow, repetitionPenalty) {
 
     private val length = 1.0
@@ -84,8 +86,8 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     }
 
     @ExperimentalUnsignedTypes
-    override fun step(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int> {
-        modifyScore(ndStepLogProbs, context)
+    override fun ndStep(ndStepLogProbs: MutableNumberNDArray, context: List<Int>): List<Int> {
+        ndModifyScore(ndStepLogProbs, context)
         super.stepCheck(ndStepLogProbs)
 
 //        if (scores == null) {
@@ -100,36 +102,70 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
         val flattenStepLogProbs = stepLogProbs.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }.flatten()
 
-        var samples = topk1dList(logProbs, min((1 + eosIds.size) * searchSize, ndLogProbs.shape[0]))
+        var samples = topk1d(logProbs, min((1 + eosIds.size) * searchSize, ndLogProbs.shape[0]))
 
-        val samplesStepLogProbs = samples.map { flattenStepLogProbs[it] }
+        val samplesStepLogProbs = flattenStepLogProbs.slice(samples)
         val sortMask = samples.map { floorDiv(it, vocabSize) }
         samples = samples.map { floorMod(it, vocabSize) }
 
         initSortMask()
-        val sampleScores: MutableList<Double> = samples.map { logProbs[it] }.toMutableList()
+        val sampleScores: MutableList<Double> = logProbs.slice(samples).toMutableList()
         updateState(samples, sampleScores, samplesStepLogProbs, sortMask)
         length.plus(1)
 
         return sortMask
     }
 
-    private fun topk1dList(data: List<Double>, size: Int): List<Int> {
-        val pairedData = ArrayList<Pair<Double, Int>>()
-        for (i in data.indices) {
-            pairedData.add(Pair(data[i], i))
-        }
-        pairedData.sortBy { -it.first }
-        return pairedData.map { it.second }.subList(0, size)
+    override fun step(stepLogProbs: List<MutableList<Double>>, context: List<Int>): List<Int> {
+        modifyScore(stepLogProbs, context)
+        // TODO: check
+//        super.stepCheck(stepLogProbs)
+
+//        if (scores == null) {
+//            initState(stepLogProbs.type)
+//        }
+
+        val logProbs = stepLogProbs.mapIndexed { i, mutableList -> mutableList.map { d -> d + scores[i] } }
+        val logProbs1d = logProbs.flatten()
+
+        val flattenStepLogProbs = stepLogProbs.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }.flatten()
+
+        var samples = topk1d(logProbs1d, min((1 + eosIds.size) * searchSize, logProbs.size))
+
+        val samplesStepLogProbs = flattenStepLogProbs.slice(samples)
+        val sortMask = samples.map { floorDiv(it, vocabSize) }
+        samples = samples.map { floorMod(it, vocabSize) }
+
+        initSortMask()
+        val sampleScores: MutableList<Double> = logProbs1d.slice(samples).toMutableList()
+        updateState(samples, sampleScores, samplesStepLogProbs, sortMask)
+        length.plus(1)
+
+        return sortMask
     }
 
     @ExperimentalUnsignedTypes
-    private fun modifyScore(scores: MutableNumberNDArray, context: List<Int>) {
+    private fun ndModifyScore(scores: MutableNumberNDArray, context: List<Int>) {
         // repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
 
         if (repetitionPenalty != 1.0) {
             for (i in 0 until scores.shape[0]) {
-                pessimizeScore(scores, i, context.toSet())
+                ndPessimizeScore(scores, i, context.toSet())
+            }
+
+            for (i in hypotheses.indices) {
+                ndPessimizeScore(scores, i, hypotheses[i].toSet())
+            }
+        }
+    }
+
+    private fun modifyScore(scores: List<MutableList<Double>>, context: List<Int>) {
+        // repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
+
+        if (repetitionPenalty != 1.0) {
+            val uniqueTokens = context.toSet()
+            for (i in scores.indices) {
+                pessimizeScore(scores, i, uniqueTokens)
             }
 
             for (i in hypotheses.indices) {
@@ -138,7 +174,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         }
     }
 
-    private fun pessimizeScore(scores: MutableNumberNDArray, ind: Int, uniqueTokens: Set<Int>) {
+    private fun ndPessimizeScore(scores: MutableNumberNDArray, ind: Int, uniqueTokens: Set<Int>) {
         val row = scores[ind] as MutableNumberNDArray
 
         for (previousToken in uniqueTokens) {
@@ -149,7 +185,14 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         scores[ind] = row
     }
 
-    override fun maskedHypotheses(mask: BooleanArray): List<List<Pair<List<Int>, GenerationInfo>>> {
+    private fun pessimizeScore(scores: List<MutableList<Double>>, ind: Int, uniqueTokens: Set<Int>) {
+        for (previousToken in uniqueTokens) {
+            val score = scores[ind][previousToken]
+            scores[ind][previousToken] = score * if (score < 0.0) repetitionPenalty else 1.0 / repetitionPenalty
+        }
+    }
+
+    override fun maskedHypotheses(mask: List<Boolean>): List<List<Pair<List<Int>, GenerationInfo>>> {
         val ans = ArrayList<Pair<List<Int>, GenerationInfo>>()
         val score = getNormalizedScores().map { kotlin.math.exp(it) }
         for (i in hypotheses.indices) {
@@ -228,7 +271,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     private fun sortState(sortMask: List<Int>? = null) {
         if (sortMask == null) {
-            applySliceToState(topk1dList(scores, min(searchSize, scores.size)))
+            applySliceToState(topk1d(scores, min(searchSize, scores.size)))
         } else {
             applySliceToState(sortMask)
         }
@@ -239,11 +282,11 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     }
 
     private fun applySliceToState(tensorSlice: List<Int>) {
-        scores = tensorSlice.map { scores[it] }.toMutableList()
-        hypotheses = tensorSlice.map { hypotheses[it] }
-        eachStepProbs = tensorSlice.map { eachStepProbs[it] }
+        scores = scores.slice(tensorSlice).toMutableList()
+        hypotheses = hypotheses.slice(tensorSlice)
+        eachStepProbs = eachStepProbs.slice(tensorSlice)
         if (sortMask != null) {
-            sortMask = tensorSlice.map { sortMask!![it] }
+            sortMask = sortMask!!.slice(tensorSlice)
         }
     }
 
