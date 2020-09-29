@@ -5,10 +5,7 @@ package io.kinference.ndarray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
-import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveArray
-import io.kinference.primitives.types.PrimitiveType
-import io.kinference.primitives.types.toPrimitive
+import io.kinference.primitives.types.*
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.sign
