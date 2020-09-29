@@ -1,6 +1,12 @@
 package io.kinference.ndarray.generating
 
-class GenerationInfo(var probs: MutableList<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
+class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
+    var probs: MutableList<Double>
+
+    init {
+        probs = initProbs.toMutableList()
+    }
+
     fun add(prob: Double) {
         probs.add(prob)
     }
