@@ -1,7 +1,7 @@
 package io.kinference.ndarray.generating
 
-//import com.beust.klaxon.Parser
-//import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
+import com.beust.klaxon.JsonObject
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -166,7 +166,7 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
             try {
                 val tokenizer = BPETokenizer(vocabPath, mergesPath)
                 val text = "1. Modeling Vocabulary for Big Code Machine Learning (https://arxiv.org/pdf/1904.01873.pdf)"
-                val res = tokenizer.encode(text)
+                val res = tokenizer.tokenize(text)
                 print(res.map { "'$it'" })
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -175,31 +175,40 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
     }
 
     init {
-        var vocabLine = File(vocabPath).readLines()[0]
-        vocabLine = vocabLine.substring(1, vocabLine.length - 2)
-        val pieces = vocabLine.split("\"")
-        var i = 1
-        var lastInd = 1
-        var key: String?
-        var value: Int?
-        while (i < pieces.size) {
-            val s = pieces[i]
-            if (s.endsWith("Model")) {
-                var a = 0
-            }
-            if (s.matches(Regex(": [0-9]+, "))) {
-                value = s.substring(2, s.indexOf(',')).toInt()
-                key = pieces.subList(lastInd, i).joinToString("\"")
-                lastInd = i + 1
-
-                vocab[key] = value
-                reversedVocab[value] = key
-            }
-            i += 1
-            if (i % 100 == 0) {
-                var a = 0
-            }
+        val parser: Parser = Parser.default()
+        val vocabJson: JsonObject = parser.parse(vocabPath) as JsonObject
+        for (pair in vocabJson.map.entries) {
+            val value = pair.value as Int
+            vocab[pair.key] = value
+            reversedVocab[value] = pair.key
         }
+
+//        var vocabLine = File(vocabPath).readLines()[0]
+//        vocabLine = vocabLine.substring(1, vocabLine.length - 2)
+//        val pieces = vocabLine.split("\"")
+//        var i = 1
+//        var lastInd = 1
+//        var key: String?
+//        var value: Int?
+//        val g = 'Ġ'
+//        while (i < pieces.size) {
+//            val s = pieces[i]
+//            if (s.endsWith("Model")) {
+//                var a = 0
+//            }
+//            if (s.matches(Regex(": [0-9]+, "))) {
+//                value = s.substring(2, s.indexOf(',')).toInt()
+//                key = pieces.subList(lastInd, i).joinToString("\"")
+//                lastInd = i + 1
+//
+//                vocab[key] = value
+//                reversedVocab[value] = key
+//            }
+//            i += 1
+//            if (i % 100 == 0) {
+//                var a = 0
+//            }
+//        }
 
         var merges = File(mergesPath).readLines()
 //        val merges: JsonArray<String> = parser.parse(mergesPath) as JsonArray<String>
