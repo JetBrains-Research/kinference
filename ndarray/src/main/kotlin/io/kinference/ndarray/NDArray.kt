@@ -9,7 +9,6 @@ interface PrimitiveToPrimitiveFunction
 interface NDArray {
     val type: DataType
 
-    val offset: Int
     val strides: Strides
 
     val linearSize: Int
@@ -24,9 +23,9 @@ interface NDArray {
 
     fun allocateNDArray(strides: Strides): MutableNDArray
 
-    fun view(vararg axes: Int): NDArray
+    //fun view(vararg axes: Int): NDArray
     fun reshapeView(newShape: IntArray): NDArray
-    fun toMutable(newStrides: Strides = strides, additionalOffset: Int = 0): MutableNDArray
+    fun toMutable(newStrides: Strides = strides): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
 
@@ -42,8 +41,6 @@ interface MutableNDArray : NDArray {
     operator fun set(index: Int, value: Any)
 
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
-
-    fun viewMutable(vararg axes: Int): MutableNDArray
 
     fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int)
     fun placeAllFrom(offset: Int, other: NDArray)
@@ -62,8 +59,7 @@ interface NumberNDArray : NDArray {
 
     fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int? = null): NDArray
 
-    override fun view(vararg axes: Int): NumberNDArray
-    override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNumberNDArray
+    override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
@@ -97,8 +93,6 @@ interface NumberNDArray : NDArray {
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
-    override fun viewMutable(vararg axes: Int): MutableNumberNDArray
-
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
     override fun reshape(strides: Strides): MutableNumberNDArray

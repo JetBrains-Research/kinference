@@ -5,12 +5,17 @@ package io.kinference.ndarray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
-import io.kinference.primitives.types.*
-import kotlin.math.*
+import io.kinference.primitives.types.DataType
+import io.kinference.primitives.types.PrimitiveArray
+import io.kinference.primitives.types.PrimitiveType
+import io.kinference.primitives.types.toPrimitive
+import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.sign
 
 @PrimitiveClass
 @ExperimentalUnsignedTypes
-open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Strides.empty(), override val offset: Int = 0) : NumberNDArray {
+open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Strides.empty()) : NumberNDArray {
     override val type = DataType.UNKNOWN
 
     final override var strides: Strides = strides
@@ -21,22 +26,21 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
 
     override fun allocateNDArray(strides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(PrimitiveArray(strides.linearSize), strides)
 
-    override fun view(vararg axes: Int): NumberNDArray {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return PrimitiveNDArray(array, Strides(newShape), offset + additionalOffset)
-    }
-
     override fun reshapeView(newShape: IntArray): NDArray {
-        return PrimitiveNDArray(array, Strides(newShape), offset)
+        val newStrides = Strides(newShape)
+
+        require(newStrides.linearSize == linearSize)
+
+        return PrimitiveNDArray(array, newStrides)
     }
 
-    override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNumberNDArray = MutablePrimitiveNDArray(array.copyOfRange(offset + additionalOffset, offset + additionalOffset + newStrides.linearSize), newStrides)
+    override fun toMutable(newStrides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(array.copyOf(), newStrides)
 
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
         function as PrimitiveMap
         val destination = allocateNDArray(strides) as MutablePrimitiveNDArray
         for (index in 0 until destination.linearSize) {
-            destination.array[index] = function.apply(this.array[offset + index])
+            destination.array[index] = function.apply(this.array[index])
         }
 
         return destination
@@ -57,14 +61,14 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         zeroPoint as PrimitiveNDArray
         return if (zeroPoint.linearSize == 1) {
             val zero = zeroPoint.array[0].toInt()
-            IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() - zero }, strides, offset)
+            IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() - zero }, strides)
         } else {
             val blocks = zeroPoint.linearSize
             val blockSize = this.linearSize / blocks
             val arr = IntArray(this.linearSize) { i ->
                 this.array[i].toInt() - zeroPoint.array[i % blockSize].toInt()
             }
-            IntNDArray(arr, strides, offset)
+            IntNDArray(arr, strides)
         }
     }
 
@@ -107,7 +111,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
         array as LateInitPrimitiveArray
         for (index in range) {
-            array.putNext(this.array[offset + additionalOffset + index])
+            array.putNext(this.array[additionalOffset + index])
         }
     }
 
@@ -129,7 +133,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     override fun min(): PrimitiveType {
         var min = PrimitiveType.MAX_VALUE
         for (index in 0 until linearSize) {
-            val tmp = array[offset + index]
+            val tmp = array[index]
             if (tmp < min) min = tmp
         }
 
@@ -139,7 +143,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     override fun max(): PrimitiveType {
         var max = PrimitiveType.MIN_VALUE
         for (index in 0 until linearSize) {
-            val tmp = array[offset + index]
+            val tmp = array[index]
             if (tmp > max) max = tmp
         }
 
@@ -149,7 +153,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     override fun sum(): PrimitiveType {
         var sum = (0).toPrimitive()
         for (index in 0 until linearSize) {
-            sum = (sum + array[offset + index]).toPrimitive()
+            sum = (sum + array[index]).toPrimitive()
         }
 
         return sum
@@ -195,9 +199,9 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
 
     override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides))
 
-    private fun plusScalar(array: PrimitiveArray, offset: Int, size: Int, scalar: PrimitiveType, destination: PrimitiveArray, destinationOffset: Int) {
+    private fun plusScalar(array: PrimitiveArray, size: Int, scalar: PrimitiveType, destination: PrimitiveArray) {
         for (index in 0 until size) {
-            destination[destinationOffset + index] = (array[offset + index] + scalar).toPrimitive()
+            destination[index] = (array[index] + scalar).toPrimitive()
         }
     }
 
@@ -205,14 +209,14 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
-            this.isScalar() && other.isScalar() -> destination.array[destination.offset] = (this.array[this.offset] + other.array[other.offset]).toPrimitive()
-            this.isScalar() -> plusScalar(other.array, other.offset, other.linearSize, this.array[this.offset], destination.array, destination.offset)
-            other.isScalar() -> plusScalar(this.array, this.offset, this.linearSize, other.array[other.offset], destination.array, destination.offset)
+            this.isScalar() && other.isScalar() -> destination.array[0] = (this.array[0] + other.array[0]).toPrimitive()
+            this.isScalar() -> plusScalar(other.array, other.linearSize, this.array[0], destination.array)
+            other.isScalar() -> plusScalar(this.array, this.linearSize, other.array[0], destination.array)
             else -> this.applyWithBroadcast(other, destination, false) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] + right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] + right.array[index]).toPrimitive()
                 }
             }
         }
@@ -226,11 +230,11 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
-            this.isScalar() && other.isScalar() -> destination.array[destination.offset] = (this.array[this.offset] - other.array[other.offset]).toPrimitive()
+            this.isScalar() && other.isScalar() -> destination.array[0] = (this.array[0] - other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    destination[destination.offset + index] = (this.array[this.offset + index] - scalar).toPrimitive()
+                    destination[index] = (this.array[index] - scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Subtraction of a matrix from a scalar is prohibited")
@@ -238,7 +242,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] - right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] - right.array[index]).toPrimitive()
                 }
             }
         }
@@ -248,9 +252,9 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
 
     override fun times(other: NumberNDArray): MutableNumberNDArray = times(other, MutablePrimitiveNDArray(PrimitiveArray(linearSize), strides))
 
-    private fun timesScalar(array: PrimitiveArray, offset: Int, size: Int, scalar: PrimitiveType, destination: PrimitiveArray, destinationOffset: Int) {
+    private fun timesScalar(array: PrimitiveArray, size: Int, scalar: PrimitiveType, destination: PrimitiveArray) {
         for (index in 0 until size) {
-            destination[destinationOffset + index] = (array[offset + index] * scalar).toPrimitive()
+            destination[index] = (array[index] * scalar).toPrimitive()
         }
     }
 
@@ -258,14 +262,14 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
-            this.isScalar() && other.isScalar() -> destination.array[destination.offset] = (this.array[this.offset] * other.array[other.offset]).toPrimitive()
-            this.isScalar() -> timesScalar(other.array, other.offset, other.linearSize, this.array[this.offset], destination.array, destination.offset)
-            other.isScalar() -> timesScalar(this.array, this.offset, this.linearSize, other.array[other.offset], destination.array, destination.offset)
+            this.isScalar() && other.isScalar() -> destination.array[0] = (this.array[0] * other.array[0]).toPrimitive()
+            this.isScalar() -> timesScalar(other.array, other.linearSize, this.array[0], destination.array)
+            other.isScalar() -> timesScalar(this.array, this.linearSize, other.array[0], destination.array)
             else -> this.applyWithBroadcast(other, destination, false) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] * right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] * right.array[index]).toPrimitive()
                 }
             }
         }
@@ -279,11 +283,11 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
-            this.isScalar() && other.isScalar() -> destination.array[destination.offset] = (this.array[this.offset] / other.array[other.offset]).toPrimitive()
+            this.isScalar() && other.isScalar() -> destination.array[0] = (this.array[0] / other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    destination[destination.offset + index] = (this.array[this.offset + index] / scalar).toPrimitive()
+                    destination[index] = (this.array[index] / scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Division of a scalar into a matrix is prohibited")
@@ -291,7 +295,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] / right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] / right.array[index]).toPrimitive()
                 }
             }
         }
@@ -309,11 +313,11 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         val K = this.shape[1]
 
         for (n in 0 until N) {
-            val dIdx = n * M + destination.offset
-            val lIdx = n * K + this.offset
+            val dIdx = n * M
+            val lIdx = n * K
             for (k in 0 until K) {
                 val temp = this.array[lIdx + k]
-                val rIdx = k * M + other.offset
+                val rIdx = k * M
                 for (m in 0 until M) {
                     destination.array[dIdx + m] = (destination.array[dIdx + m] + temp * other.array[rIdx + m]).toPrimitive()
                 }
@@ -392,7 +396,7 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     }
 
     override fun copyIfNotMutable(): MutableNDArray {
-        return MutablePrimitiveNDArray(array.copyOf(), strides, offset)
+        return MutablePrimitiveNDArray(array.copyOf(), strides)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -400,7 +404,6 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         if (other !is PrimitiveNDArray) return false
 
         if (type != other.type) return false
-        if (offset != other.offset) return false
         if (strides != other.strides) return false
         if (array != other.array) return false
 
@@ -410,7 +413,6 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
     override fun hashCode(): Int {
         var result = array.hashCode()
         result = 31 * result + strides.hashCode()
-        result = 31 * result + offset
         result = 31 * result + type.hashCode()
         return result
     }
@@ -418,18 +420,13 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
 
 @PrimitiveClass
 @ExperimentalUnsignedTypes
-open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Strides.empty(), offset: Int = 0) : PrimitiveNDArray(array, strides, offset), MutableNumberNDArray {
+open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Strides.empty()) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
     override fun set(index: Int, value: Any) {
         array[index] = value as PrimitiveType
     }
 
     override fun copyIfNotMutable(): MutableNDArray {
         return MutablePrimitiveNDArray(array, strides)
-    }
-
-    override fun viewMutable(vararg axes: Int): MutableNumberNDArray {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return MutablePrimitiveNDArray(array, Strides(newShape), offset + additionalOffset)
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
@@ -440,7 +437,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
         function as PrimitiveMap
         for (index in 0 until linearSize) {
-            array[offset + index] = function.apply(array[offset + index])
+            array[index] = function.apply(array[index])
         }
 
         return this
@@ -457,9 +454,9 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         when {
             this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] + other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    this.array[this.offset + index] = (this.array[this.offset + index] + scalar).toPrimitive()
+                    this.array[index] = (this.array[index] + scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Plus assign of a scalar into a matrix is prohibited")
@@ -468,7 +465,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] + right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] + right.array[index]).toPrimitive()
                 }
             }
         }
@@ -479,9 +476,9 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         when {
             this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] - other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    this.array[this.offset + index] = (this.array[this.offset + index] - scalar).toPrimitive()
+                    this.array[index] = (this.array[index] - scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Plus assign of a scalar into a matrix is prohibited")
@@ -489,7 +486,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] - right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] - right.array[index]).toPrimitive()
                 }
             }
         }
@@ -500,9 +497,9 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         when {
             this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] * other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    this.array[this.offset + index] = (this.array[this.offset + index] * scalar).toPrimitive()
+                    this.array[index] = (this.array[index] * scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Plus assign of a scalar into a matrix is prohibited")
@@ -510,7 +507,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] * right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] * right.array[index]).toPrimitive()
                 }
             }
         }
@@ -521,9 +518,9 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
         when {
             this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] / other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array[other.offset]
+                val scalar = other.array[0]
                 for (index in 0 until this.linearSize) {
-                    this.array[this.offset + index] = (this.array[this.offset + index] / scalar).toPrimitive()
+                    this.array[index] = (this.array[index] / scalar).toPrimitive()
                 }
             }
             this.isScalar() -> error("Plus assign of a scalar into a matrix is prohibited")
@@ -531,7 +528,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveArray, strides: Strides = Str
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (index in 0 until left.linearSize) {
-                    dest.array[dest.offset + index] = (left.array[left.offset + index] / right.array[right.offset + index]).toPrimitive()
+                    dest.array[index] = (left.array[index] / right.array[index]).toPrimitive()
                 }
             }
         }

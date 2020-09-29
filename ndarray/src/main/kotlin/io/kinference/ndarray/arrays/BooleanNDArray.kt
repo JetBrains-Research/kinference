@@ -1,10 +1,8 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
-import io.kinference.primitives.types.DataType
 import io.kinference.ndarray.extensions.slice
-import io.kinference.ndarray.extensions.viewHelper
-import io.kinference.ndarray.*
+import io.kinference.primitives.types.DataType
 import kotlin.math.abs
 
 class LateInitBooleanArray(size: Int) : LateInitArray {
@@ -27,7 +25,7 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.empty(), override val offset: Int = 0) : NDArray {
+open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.empty()) : NDArray {
     override val type: DataType = DataType.BOOLEAN
 
     final override var strides: Strides = strides
@@ -45,21 +43,16 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         return MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
     }
 
-    override fun view(vararg axes: Int): NDArray {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return BooleanNDArray(array, Strides(newShape), offset + additionalOffset)
-    }
-
     override fun reshapeView(newShape: IntArray): NDArray {
-        return BooleanNDArray(array, Strides(newShape), offset)
+        return BooleanNDArray(array, Strides(newShape))
     }
 
-    override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNDArray {
+    override fun toMutable(newStrides: Strides): MutableNDArray {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }
 
     override fun copyIfNotMutable(): MutableNDArray {
-        return MutableBooleanNDArray(array, strides, offset)
+        return MutableBooleanNDArray(array, strides)
     }
 
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
@@ -73,7 +66,7 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         function as BooleanMap
         val destination = allocateNDArray(strides) as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
-            destination.array[index] = function.apply(this.array[offset + index])
+            destination.array[index] = function.apply(this.array[index])
         }
 
         return destination
@@ -107,7 +100,6 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         if (other !is BooleanNDArray) return false
 
         if (type != other.type) return false
-        if (offset != other.offset) return false
         if (strides != other.strides) return false
         if (array != other.array) return false
 
@@ -115,27 +107,22 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
     }
 }
 
-class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty(), offset: Int = 0): BooleanNDArray(array, strides, offset), MutableNDArray {
+class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
     override fun set(index: Int, value: Any) {
         array[index] = value as Boolean
     }
 
     override fun copyIfNotMutable(): MutableNDArray {
-        return MutableBooleanNDArray(array, strides, offset)
+        return MutableBooleanNDArray(array, strides)
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         function as BooleanMap
         for (index in 0 until linearSize) {
-            array[offset + index] = function.apply(array[offset + index])
+            array[index] = function.apply(array[index])
         }
 
         return this
-    }
-
-    override fun viewMutable(vararg axes: Int): MutableNDArray {
-        val (additionalOffset, newShape) = viewHelper(axes, strides)
-        return MutableBooleanNDArray(array, Strides(newShape), offset + additionalOffset)
     }
 
     override fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {

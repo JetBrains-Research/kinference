@@ -4,10 +4,15 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.ByteNDArray
+import io.kinference.ndarray.IntNDArray
+import io.kinference.ndarray.NumberNDArray
+import io.kinference.ndarray.UByteNDArray
+import io.kinference.ndarray.extensions.matmul
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.*
+import io.kinference.operators.IOInfo
+import io.kinference.operators.Operator
+import io.kinference.operators.OperatorInfo
 
 class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -30,8 +35,8 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
         private fun NumberNDArray.toIntNDArray() = when (this) {
-            is UByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides, offset)
-            is ByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides, offset)
+            is UByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides)
+            is ByteNDArray -> IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() }, strides)
             else -> error("Unsupported data type: $type")
         }
     }

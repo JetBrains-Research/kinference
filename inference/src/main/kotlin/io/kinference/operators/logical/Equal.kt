@@ -7,7 +7,9 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.NDArray
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.*
+import io.kinference.operators.IOInfo
+import io.kinference.operators.Operator
+import io.kinference.operators.OperatorInfo
 import io.kinference.primitives.types.DataType
 
 class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -27,7 +29,7 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         infix fun NDArray.equal(other: NDArray): NDArray {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
-                for (i in 0 until dest.linearSize) dest[i + dest.offset] = first[i + first.offset] == second[i + second.offset]
+                for (i in 0 until dest.linearSize) dest[i] = first[i] == second[i]
             }
         }
     }

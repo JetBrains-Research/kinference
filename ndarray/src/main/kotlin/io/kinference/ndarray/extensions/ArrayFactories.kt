@@ -19,41 +19,41 @@ inline fun <reified T> createArray(type: DataType, size: Int, noinline init: (In
 }
 
 @ExperimentalUnsignedTypes
-fun createMutableNDArray(type: DataType, value: Any, strides: Strides, offset: Int = 0): MutableNDArray {
+fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableNDArray {
     return when (type) {
-        DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides, offset)
-        DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides, offset)
-        DataType.LONG -> MutableLongNDArray(value as LongArray, strides, offset)
-        DataType.INT -> MutableIntNDArray(value as IntArray, strides, offset)
-        DataType.SHORT -> MutableShortNDArray(value as ShortArray, strides, offset)
-        DataType.BOOLEAN -> MutableBooleanNDArray(value as BooleanArray, strides, offset)
+        DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleArray, strides)
+        DataType.FLOAT -> MutableFloatNDArray(value as FloatArray, strides)
+        DataType.LONG -> MutableLongNDArray(value as LongArray, strides)
+        DataType.INT -> MutableIntNDArray(value as IntArray, strides)
+        DataType.SHORT -> MutableShortNDArray(value as ShortArray, strides)
+        DataType.BOOLEAN -> MutableBooleanNDArray(value as BooleanArray, strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
 }
 
 @ExperimentalUnsignedTypes
-fun createMutableNDArray(type: DataType, value: Any, shape: IntArray, offset: Int = 0): MutableNDArray {
-    return createMutableNDArray(type, value, Strides(shape), offset)
+fun createMutableNDArray(type: DataType, value: Any, shape: IntArray): MutableNDArray {
+    return createMutableNDArray(type, value, Strides(shape))
 }
 
 @ExperimentalUnsignedTypes
-fun createNDArray(type: DataType, value: Any, strides: Strides, offset: Int = 0): NDArray {
+fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
     return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides, offset)
-        DataType.FLOAT -> FloatNDArray(value as FloatArray, strides, offset)
-        DataType.LONG -> LongNDArray(value as LongArray, strides, offset)
-        DataType.INT -> IntNDArray(value as IntArray, strides, offset)
-        DataType.SHORT -> ShortNDArray(value as ShortArray, strides, offset)
-        DataType.BOOLEAN -> BooleanNDArray(value as BooleanArray, strides, offset)
+        DataType.DOUBLE -> DoubleNDArray(value as DoubleArray, strides)
+        DataType.FLOAT -> FloatNDArray(value as FloatArray, strides)
+        DataType.LONG -> LongNDArray(value as LongArray, strides)
+        DataType.INT -> IntNDArray(value as IntArray, strides)
+        DataType.SHORT -> ShortNDArray(value as ShortArray, strides)
+        DataType.BOOLEAN -> BooleanNDArray(value as BooleanArray, strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
 }
 
 @ExperimentalUnsignedTypes
-fun createNDArray(type: DataType, value: Any, shape: IntArray, offset: Int = 0): NDArray {
-    return createNDArray(type, value, Strides(shape), offset)
+fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArray {
+    return createNDArray(type, value, Strides(shape))
 }
 
 fun createZerosArray(type: DataType, size: Int): Any {
@@ -98,6 +98,9 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
         else -> error("Unsupported data type $type")
     }
 }
+
+@ExperimentalUnsignedTypes
+fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
 
 @ExperimentalUnsignedTypes
 fun createLateInitArray(type: DataType, strides: Strides): LateInitArray {
