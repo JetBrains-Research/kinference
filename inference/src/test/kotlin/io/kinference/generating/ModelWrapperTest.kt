@@ -9,9 +9,9 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testExecutable() {
         val baseDir = "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src"
-        val model = OnnxModelWrapper("$baseDir/completion/big/opt/onnxrt/onnx_models/distilgpt2_opt.onnx")
+        val model = OnnxModelWrapper("$baseDir/completion/big/opt/onnxrt/onnx_models/distilgpt2_l3_h12_d256_int8.onnx")
         val res = model.initLastLogProbs(listOf(1, 2, 3, 452))
-        print(res)
-        assertTrue(true)
+        val targetProb = -23.7406
+        assertTrue(kotlin.math.abs(res.first[0][234] - targetProb) < 0.1)
     }
 }
