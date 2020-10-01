@@ -35,7 +35,7 @@ class OnnxModelWrapper(modelPath: String) : ModelWrapper {
 
         val batchSize = 1
         val shape = intArrayOf(2, batchSize, numAttentionHeads, 0, hiddenSize / numAttentionHeads)
-        for (i in 1..numLayer) {
+        for (i in 0 until numLayer) {
             val emptyPast = FloatNDArray(floatArrayOf(0.0f), Strides(shape))
             input.add(emptyPast.asTensor("past_$i"))
         }
