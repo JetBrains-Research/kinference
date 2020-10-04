@@ -28,10 +28,10 @@ object BenchmarkUtils {
         }
 
     fun Tensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
-        DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array), data.shape.toLongArray())
-        DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array), data.shape.toLongArray())
-        DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array), data.shape.toLongArray())
-        DataType.LONG -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array), data.shape.toLongArray())
+        DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.LONG -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array.toArray()), data.shape.toLongArray())
         else -> throw UnsupportedOperationException()
     }
 

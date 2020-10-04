@@ -115,25 +115,25 @@ object Utils {
         @Suppress("UNCHECKED_CAST")
         when (expected.info.type) {
             DataType.FLOAT -> {
-                ((expected.data as FloatNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as FloatNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Float, delta.toFloat(), "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.DOUBLE -> {
-                ((expected.data as DoubleNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as DoubleNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Double, delta, "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.INT64 -> {
-                ((expected.data as LongNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as LongNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Long, "Tensor ${expected.info.name} does not match")
                 }
             }
 
             DataType.INT32 -> {
-                ((expected.data as IntNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as IntNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Int, "Tensor ${expected.info.name} does not match")
                 }
             }
@@ -145,7 +145,7 @@ object Utils {
             }
 
             DataType.UINT8 -> {
-                ((expected.data as UByteNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as UByteNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as UByte, "Tensort ${expected.info.name} does not match")
                 }
             }
