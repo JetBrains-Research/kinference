@@ -1,6 +1,6 @@
 package io.kinference.generating
 
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.*
 import java.lang.Integer.min
 import kotlin.math.ln
 
@@ -8,7 +8,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
     private val prefixMatcher = FuzzyPrefixMatcher(tokenizer, prefixErrLimit)
 
     private var prefixes: List<Pair<String, Int>>? = null  // ArrayList()
-    private var mems: List<NDArray>? = null
+    private var mems: List<MutableNDArray>? = null
 
     private val padTokenId = tokenizer.eosTokenId
     private val eosTokenId = tokenizer.eosTokenId
@@ -96,7 +96,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
     }
 
     private fun initLogProbs(context: List<Int>): List<MutableList<Double>> {
-        val logProbs = model.initLastLogProbs(context)
+        val logProbs = model.initLastLogProbs(listOf(context))
         val scores = logProbs.first
         mems = logProbs.second
 
@@ -108,14 +108,28 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return initLogProbs(context)
     }
 
+    @ExperimentalUnsignedTypes
     private fun sortState(sortMask: List<Int>) {
-        // TODO: mems resort
-//        mems = [mem[:, sort_mask].contiguous() for mem in mems]
+        // mems = [mem[:, sort_mask].contiguous() for mem in mems]
+        mems = mems!!.map { mem ->
+            val shape = mem.shape
+            val size = mem.linearSize * sortMask.size / shape[1]
+            val values: MutableList<Float> = ArrayList(size)
+
+            for (i in 0 until shape[0]) {
+                val row = mem.row(i)
+                for (j in sortMask.indices) {
+                    values.addAll((row.row(sortMask[j]) as FloatNDArray).array.toList())
+                }
+            }
+            MutableFloatNDArray(values.toFloatArray(), Strides(intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4])))
+        }
+
         prefixes = prefixes!!.slice(sortMask)
     }
 
     private fun getLogProbs(data: List<Int>): List<MutableList<Double>> {
-        val logProbs = model.getLogProbs(data, mems!!)
+        val logProbs = model.getLastLogProbs(data, mems!!)
         val scores = logProbs.first
         mems = logProbs.second
         return modifyScore(logSoftmax(scores))
