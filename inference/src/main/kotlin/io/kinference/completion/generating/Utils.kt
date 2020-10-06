@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
 fun logSoftmax(scores: List<MutableList<Double>>): List<MutableList<Double>> {
     val expScores = scores.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }

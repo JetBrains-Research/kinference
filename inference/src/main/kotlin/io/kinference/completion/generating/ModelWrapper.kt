@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
@@ -18,7 +18,7 @@ interface ModelWrapper {
     fun getLogProbs(inputIds: List<List<Int>>, past: List<MutableNDArray>): Pair<List<List<MutableList<Double>>>, List<MutableNDArray>>
 
     fun getLastLogProbs(inputIds: List<Int>, past: List<MutableNDArray>): Pair<List<MutableList<Double>>, List<MutableNDArray>> {
-        val (score, mems) = getLogProbs(listOf(inputIds), past)
+        val (score, mems) = getLogProbs(inputIds.map { listOf(it) }, past)
         // (batchSize, seqLen, vocabSize) -> (batchSize, vocabSize)
         val lastProbs: List<MutableList<Double>> = score.map { seq -> seq[seq.size - 1] }
         return Pair(lastProbs, mems)
