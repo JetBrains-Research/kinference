@@ -1,12 +1,11 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
+import io.kinference.completion.BPETokenizer
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.util.*
 import kotlin.collections.ArrayList
 
-import com.beust.klaxon.Parser
-import com.beust.klaxon.JsonObject
 import kotlin.collections.HashMap
 
 abstract class PrefixMatcher {

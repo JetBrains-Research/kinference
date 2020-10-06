@@ -1,5 +1,6 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
+import io.kinference.completion.BPETokenizer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test

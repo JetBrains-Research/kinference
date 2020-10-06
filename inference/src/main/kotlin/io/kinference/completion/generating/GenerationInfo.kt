@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
 class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
     var probs: MutableList<Double>

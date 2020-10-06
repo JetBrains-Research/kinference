@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
 import org.junit.jupiter.api.Test
 
