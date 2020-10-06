@@ -1,10 +1,11 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
+import io.kinference.completion.BPETokenizer
 import io.kinference.ndarray.*
 import java.lang.Integer.min
 import kotlin.math.ln
 
-class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPETokenizer, private val prefixErrLimit: Int, spellProb: Double) {
+class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPETokenizer, private val prefixErrLimit: Int = 0, spellProb: Double = 0.0001) {
     private val prefixMatcher = FuzzyPrefixMatcher(tokenizer, prefixErrLimit)
 
     private var prefixes: List<Pair<String, Int>>? = null  // ArrayList()
@@ -143,7 +144,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
                 val tokenId = newTokensIds[i]
                 val token = tokenizer.decode(tokenId)
                 val errCnt = PrefixMatcher.levenshtein(prefix, token)
-                val newPrefix = prefix.substring(token.length)
+                val newPrefix = prefix.substring(min(prefix.length, token.length))
                 result.add(Pair(newPrefix, min(errLimit - errCnt, newPrefix.length)))
             }
 
@@ -175,7 +176,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         val search = getSearch(numBeams, numGroups, repetitionPenalty)
 
         val one_log_probs = initState(context, prefix)
-
         var log_probs = List(search.batchSize()) { one_log_probs[0] }
         sortState(List(search.batchSize()) { 0 })
 
