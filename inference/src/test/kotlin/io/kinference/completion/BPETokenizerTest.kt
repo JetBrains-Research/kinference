@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Tag

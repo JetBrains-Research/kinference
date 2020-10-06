@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion
 
 import com.beust.klaxon.Parser
 import com.beust.klaxon.JsonObject
