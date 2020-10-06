@@ -1,4 +1,4 @@
-package io.kinference.generating
+package io.kinference.completion.generating
 
 import io.kinference.ndarray.*
 import io.kinference.primitives.types.DataType
@@ -52,11 +52,11 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
                  lenNormBase: Double = 0.0, lenNormPow: Double = 0.0, repetitionPenalty: Double = 1.0) :
     Search(eosIds, vocabSize, searchSize, lenNormBase, lenNormPow, repetitionPenalty) {
 
-    private val length = 1.0
+    private var length = 1.0
 
-    private var scores: MutableList<Double> = ArrayList()
-    private var hypotheses: List<MutableList<Int>> = ArrayList()
-    private var eachStepProbs: List<MutableList<Double>> = ArrayList()
+    var scores: MutableList<Double> = arrayListOf(0.0)
+    private var hypotheses: List<MutableList<Int>> = arrayListOf(arrayListOf())
+    private var eachStepProbs: List<MutableList<Double>> = arrayListOf(arrayListOf())
     private val terminatedHypotheses: MutableList<Pair<List<Int>, Double>> = ArrayList()
     private var sortMask: List<Int>? = null
     private val eosIdsSet: Set<Int> = eosIds.toSet()
@@ -130,18 +130,18 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
         val flattenStepLogProbs = stepLogProbs.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }.flatten()
 
-        var samples = topk1d(logProbs1d, min((1 + eosIds.size) * searchSize, logProbs.size))
+        var samples = topk1d(logProbs1d, min((1 + eosIds.size) * searchSize, logProbs1d.size))
+        val sampleScores: MutableList<Double> = logProbs1d.slice(samples).toMutableList()
 
         val samplesStepLogProbs = flattenStepLogProbs.slice(samples)
-        val sortMask = samples.map { floorDiv(it, vocabSize) }
+        val stepSortMask = samples.map { floorDiv(it, vocabSize) }
         samples = samples.map { floorMod(it, vocabSize) }
 
         initSortMask()
-        val sampleScores: MutableList<Double> = logProbs1d.slice(samples).toMutableList()
-        updateState(samples, sampleScores, samplesStepLogProbs, sortMask)
-        length.plus(1)
+        updateState(samples, sampleScores, samplesStepLogProbs, stepSortMask)
+        length += 1
 
-        return sortMask
+        return sortMask!!
     }
 
     @ExperimentalUnsignedTypes
@@ -244,8 +244,8 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
         scores = sampleScores
         for (i in hypotheses.indices) {
-            hypotheses[i].add(samples[i])
-            eachStepProbs[i].add(stepLogProbs[i])
+            hypotheses[i].add(samples[i])  // hypotheses is 5 of one list, should be a copy
+            eachStepProbs[i].add(stepLogProbs[i])  // same
         }
         stashTerminated(samples)
     }
@@ -253,10 +253,10 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     private fun stashTerminated(samples: List<Int>) {
         val toStash = isSampleTerminates(samples.subList(0, searchSize))
 
-        scores = getNormalizedScores().map { kotlin.math.exp(it) }.toMutableList()
+        val normScores = getNormalizedScores().map { kotlin.math.exp(it) }.toMutableList()
 
         val trimmedHypotheses = hypotheses.subList(0, searchSize)
-        val trimmedScores = scores.subList(0, searchSize)
+        val trimmedScores = normScores.subList(0, searchSize)
 
         for (i in trimmedHypotheses.indices.filter { toStash[it] }) {
             assert(trimmedHypotheses[i].size == length.toInt())
@@ -283,8 +283,10 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     private fun applySliceToState(tensorSlice: List<Int>) {
         scores = scores.slice(tensorSlice).toMutableList()
-        hypotheses = hypotheses.slice(tensorSlice)
-        eachStepProbs = eachStepProbs.slice(tensorSlice)
+//        hypotheses = hypotheses.slice(tensorSlice)
+        hypotheses = tensorSlice.map { ArrayList(hypotheses[it]) }
+//        eachStepProbs = eachStepProbs.slice(tensorSlice)
+        eachStepProbs = tensorSlice.map { ArrayList(eachStepProbs[it]) }
         if (sortMask != null) {
             sortMask = sortMask!!.slice(tensorSlice)
         }
