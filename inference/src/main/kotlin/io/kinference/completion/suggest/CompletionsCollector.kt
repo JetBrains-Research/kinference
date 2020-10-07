@@ -1,37 +1,32 @@
 package io.kinference.completion.suggest
 
 import io.kinference.completion.BPETokenizer
+import io.kinference.completion.Config
+import io.kinference.completion.GenerationConfig
 import io.kinference.completion.generating.FairseqGeneration
 import io.kinference.completion.generating.GenerationInfo
-import io.kinference.completion.generating.ModelWrapper
+import io.kinference.completion.generating.OnnxModelWrapper
 
 interface CompletionsCollector {
-    fun collect(context: String, prefix: String = "", minLen: Int, maxLen: Int, numBeams: Int,
-                repetition_penalty: Double, lengthPenalty: Double): List<Pair<String, GenerationInfo>>
+    fun collect(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>>
 
 //    fun prediction_info(context: String, predictions: List<String>): List<GenerationInfo>
 }
 
-abstract class BaseCompletionsCollector(
-    modelWrapperConstructor: (String, String) -> ModelWrapper,
-    modelPath: String, baseModelName: String, val repetitionPenalty: Double = 1.0
-) : CompletionsCollector {
+abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
+    private val maxTokenizerLen = config.tokenizer.maxSeqLen - 4
+    protected val languageModel = OnnxModelWrapper(config.model)
+    protected val tokenizer = BPETokenizer(config.tokenizer.vocabPath, config.tokenizer.mergesPath)
 
-    private val maxTokenizerLen = 1020
-    protected val tokenizer = BPETokenizer(baseModelName, baseModelName) // TODO: fix path to tokenizer
-    protected val languageModel = modelWrapperConstructor(modelPath, baseModelName)
+    abstract fun generate(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>>
 
-    abstract fun generate(context: String, prefix: String = "", maxLen: Int = 1, numBeams: Int = 3,
-                          repetition_penalty: Double? = null): List<Pair<String, GenerationInfo>>
-
-    override fun collect(context: String, prefix: String, minLen: Int, maxLen: Int, numBeams: Int,
-                repetition_penalty: Double, lengthPenalty: Double): List<Pair<String, GenerationInfo>> {
+    override fun collect(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>> {
         if (context.trim().isEmpty()) {
             return emptyList()
         }
 
         val seenCompletions = HashSet<String>()
-        val completions = generate(context, prefix, maxLen, numBeams, repetition_penalty)
+        val completions = generate(context, prefix, config)
         val result = ArrayList<Pair<String, GenerationInfo>>()
 
         for ((completion, gen_info) in completions) {
@@ -40,10 +35,10 @@ abstract class BaseCompletionsCollector(
             val trimmed = trimEnding(completion, gen_info)
             val (trimmedCompletion, trimmedGenInfo) = trimAfterSentenceEnd(trimmed.first, trimmed.second)
 
-            val words = trimmedCompletion.split(' ')
+            val words = trimmedCompletion.trim().split(' ')
             val targetLen = words.size
 
-            if (targetLen < minLen) {
+            if (targetLen < config.minLen) {
                 continue
             }
 
@@ -117,25 +112,15 @@ abstract class BaseCompletionsCollector(
 //    }
 }
 
-class FairseqCompletionsCollector(
-    modelWrapperConstructor: (String, String) -> ModelWrapper,
-    modelPath: String, baseModelName: String, private val numGroups: Int = 1, repetitionPenalty: Double = 1.0,
-    prefixErrLimit: Int = 1, spellProb: Double = 0.02
-) : BaseCompletionsCollector(modelWrapperConstructor, modelPath, baseModelName, repetitionPenalty) {
+class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(config) {
 
-    private val beamSearch = FairseqGeneration(languageModel, tokenizer, prefixErrLimit, spellProb)
+    private val beamSearch = FairseqGeneration(languageModel, tokenizer)
 
-    override fun generate(context: String, prefix: String, maxLen: Int, numBeams: Int,
-                          repetition_penalty: Double?): List<Pair<String, GenerationInfo>> {
-//        repetition_penalty = repetition_penalty or self.repetition_penalty
-//        num_groups = num_groups or self.num_groups
-
+    override fun generate(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>> {
         val result = ArrayList<Pair<String, GenerationInfo>>()
-        val inputIds = makeInputIds(context, maxLen)
+        val inputIds = makeInputIds(context, config.maxLen)
 
-        val completionsByLen = beamSearch.generate(
-            inputIds, prefix, numBeams, maxLen, numGroups, repetition_penalty!!
-        )
+        val completionsByLen = beamSearch.generate(inputIds, prefix, config)
         for ((terminated, not_terminated) in completionsByLen) {
             val completions = decodeSequences(not_terminated)
             result.addAll(completions[0])

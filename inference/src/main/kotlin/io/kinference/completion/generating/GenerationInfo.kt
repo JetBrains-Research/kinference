@@ -1,5 +1,8 @@
 package io.kinference.completion.generating
 
+import java.lang.Integer.max
+import java.lang.Integer.min
+
 class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
     var probs: MutableList<Double>
 
@@ -12,13 +15,17 @@ class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = 
     }
 
     fun trim(left: Int, right: Int? = null): GenerationInfo {
+        var realLeft = left
+        var realRight = 0
         if (right == null) {
-            val realRight = left
-            val realLeft = 0
-            probs = probs.subList(realLeft, realRight)
+            realLeft = 0
+            realRight = min(left, probs.size)
         } else {
-            probs = probs.subList(left, right)
+            realRight = right
         }
+        realLeft = max(0, min(realLeft, probs.size))
+        realRight = max(0, min(realRight, probs.size))
+        probs = probs.subList(realLeft, realRight)
         return this
     }
 

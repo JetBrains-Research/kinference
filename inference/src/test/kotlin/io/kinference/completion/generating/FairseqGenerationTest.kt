@@ -1,6 +1,9 @@
 package io.kinference.completion.generating
 
 import io.kinference.completion.BPETokenizer
+import io.kinference.completion.bpeTokenizer
+import io.kinference.completion.defaultGenerationConfig
+import io.kinference.completion.model27
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
@@ -8,10 +11,9 @@ import org.junit.jupiter.api.Test
 
 class FairseqGenerationTest {
     companion object {
-        const val vocabPath = "/Users/aleksandr.khvorov/.cache/torch/transformers/71cc2431cf0b5bbe7a23601a808ed322c90251c8261b46f04970140a3c2c1cb4.1512018be4ba4e8726e41b9145129dc30651ea4fec86aa61f4b9f40bf94eac71"
-        const val mergesPath = "/Users/aleksandr.khvorov/.cache/torch/transformers/4faf7afb02a1ea7d2944e9ba7a175c7b8de4957cdbae75cd5ddffc7c7643ebbc.70bec105b4158ed9a1747fea67a43f5dee97855c64d62b6ec3742f4cfdb5feda"
-        const val baseDir = "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src"
-        const val modelPath = "$baseDir/completion/big/opt/onnxrt/onnx_models/distilgpt2_l3_h12_d256_int8.onnx"
+        private val tokenizerConfig = bpeTokenizer
+        private val modelConfig = model27
+        private val generationConfig = defaultGenerationConfig
     }
 
 //    class MockModelWrapper : ModelWrapper {
@@ -48,17 +50,21 @@ class FairseqGenerationTest {
     @Test
     @Tag("heavy")
     fun testExecutable() {
-        val model = OnnxModelWrapper(modelPath)
-        val tokenizer = BPETokenizer(vocabPath, mergesPath)
+        val model = OnnxModelWrapper(modelConfig)
+        val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
         val generator = FairseqGeneration(model, tokenizer)
 
         val text = "hello"
         val prefix = " wo"
         val contextIds = tokenizer.encode(text)
-        val result = generator.generate(contextIds, prefix, 5, 3)
+        val result = generator.generate(contextIds, prefix, generationConfig)
         val variants = result.map { it.second[0].map { pair -> tokenizer.decode(pair.first) } }
 
         assertEquals(variants[0].toSet(), setOf(" would", " work", " world", " working", " won"))
+
+//        assertTrue(" would" in variants[0])
+//        assertTrue(" world" in variants[0])
+//        assertTrue(" won" in variants[0])
 
         assertTrue(" would be" in variants[1])
         assertTrue(" would you" in variants[1])

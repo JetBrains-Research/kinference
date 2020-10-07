@@ -1,25 +1,29 @@
 package io.kinference.completion.suggest
 
+import io.kinference.completion.FilterConfig
 import io.kinference.completion.generating.GenerationInfo
 import kotlin.math.pow
 
 interface FilterModel {
     fun filter(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>,
-               min_avg_log_prob: Double? = null, min_prob: Double? = null): List<Pair<String, GenerationInfo>>
+               config: FilterConfig): List<Pair<String, GenerationInfo>>
 }
 
-class ProbFilterModel(val meanLogProbTh: Double = Double.NEGATIVE_INFINITY, val probTh: Double = 0.0, minLen: Int = 3) : FilterModel {
-    private val minLen = minLen + 1
-
-    override fun filter(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>, min_avg_log_prob: Double?, min_prob: Double?): List<Pair<String, GenerationInfo>> {
+class ProbFilterModel : FilterModel {
+    override fun filter(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>,
+                        config: FilterConfig): List<Pair<String, GenerationInfo>> {
         return completions.filter { completion ->
             val prob = Features.prob(completion.second)
             val meanProb = Features.meanProb(completion.second)
-            val startFromWord = completion.first[0] == ' ' && completion.first[0].isLetter()
+            val startFromWord = completion.first[0] == ' ' && completion.first[1].isLetter()
             val symbolLen = completion.first.length - prefix.length
 //            val is_repetition = isRepetition(completion.first, context)
 
-            meanProb >= meanLogProbTh && prob >= probTh && startFromWord && symbolLen >= minLen // && is_repetition
+            meanProb >= config.minAvgLogProb
+                && prob >= config.minProb
+                && symbolLen >= config.minSymbolLen
+                && startFromWord
+//                && is_repetition
         }
     }
 

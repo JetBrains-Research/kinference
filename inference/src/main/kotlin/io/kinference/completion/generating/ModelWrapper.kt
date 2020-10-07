@@ -1,5 +1,6 @@
 package io.kinference.completion.generating
 
+import io.kinference.completion.ModelConfig
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
@@ -25,12 +26,12 @@ interface ModelWrapper {
     }
 }
 
-class OnnxModelWrapper(modelPath: String) : ModelWrapper {
-    val model = Model.load(modelPath)
-    private val numAttentionHeads = 4
-    private val hiddenSize = 256
-    private val numLayer = 3
-    private val vocabSize = 50257
+class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
+    val model = Model.load(config.modelPath)
+    private val numAttentionHeads = config.numAttentionHeads
+    private val hiddenSize = config.hiddenSize
+    private val numLayer = config.numLayer
+    private val vocabSize = config.vocabSize
 //    distilgpt2_l3_h12_d256_int8
 
     @ExperimentalUnsignedTypes

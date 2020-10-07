@@ -1,12 +1,13 @@
 package io.kinference.completion.generating
 
 import io.kinference.completion.BPETokenizer
+import io.kinference.completion.GenerationConfig
 import io.kinference.ndarray.*
 import java.lang.Integer.min
 import kotlin.math.ln
 
-class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPETokenizer, private val prefixErrLimit: Int = 0, spellProb: Double = 0.0001) {
-    private val prefixMatcher = FuzzyPrefixMatcher(tokenizer, prefixErrLimit)
+class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPETokenizer) {
+    private val prefixMatcher = FuzzyPrefixMatcher(tokenizer)
 
     private var prefixes: List<Pair<String, Int>>? = null  // ArrayList()
     private var mems: List<MutableNDArray>? = null
@@ -15,16 +16,16 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
     private val eosTokenId = tokenizer.eosTokenId
     private val vocabSize = tokenizer.vocabSize
 
-    private val logSpellProb = ln(spellProb)
-    private val lenNormBase = 5.0
-    private val lenNormPow = 0.6
-    private val diversityStrength = 1
+    private var logSpellProb = ln(0.0001)
+//    private val lenNormBase = 5.0
+//    private val lenNormPow = 0.6
+//    private val diversityStrength = 1
 
-    private val verbose = false
+//    private val verbose = false
 
 
-    private fun getSearch(numBeams: Int, numGroups: Int = 1, repetitionPenalty: Double = 1.0): Search {
-        if (numGroups > 1) {
+    private fun getSearch(config: GenerationConfig): Search {
+        if (config.numGroups > 1) {
             throw IllegalArgumentException("num groups > 1 is not supported")
 
 //            if (verbose) {
@@ -51,23 +52,23 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
 //                repetition_penalty = repetition_penalty
 //            )
         } else {
-            if (verbose) {
-                print("Using Beam search")
-                print("Search parameters: " +
-                    "vocab_size: $vocabSize, " +
-                    "beam_size: $numBeams, " +
-                    "len_norm_base: $lenNormBase, " +
-                    "len_norm_pow: $lenNormPow, " +
-                    "repetition_penalty: $repetitionPenalty"
-                )
-            }
+//            if (verbose) {
+//                print("Using Beam search")
+//                print("Search parameters: " +
+//                    "vocab_size: $vocabSize, " +
+//                    "beam_size: $numBeams, " +
+//                    "len_norm_base: $lenNormBase, " +
+//                    "len_norm_pow: $lenNormPow, " +
+//                    "repetition_penalty: $repetitionPenalty"
+//                )
+//            }
             return BeamSearch(
                 intArrayOf(eosTokenId),
                 vocabSize,
-                numBeams,
-                lenNormBase,
-                lenNormPow,
-                repetitionPenalty
+                config.numBeams,
+                config.lenNormBase,
+                config.lenNormPow,
+                config.repetitionPenalty
             )
         }
     }
@@ -104,8 +105,9 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return modifyScore(logSoftmax(scores))
     }
 
-    private fun initState(context: List<Int>, prefix: String): List<MutableList<Double>> {
-        prefixes = listOf(Pair(prefix, prefixErrLimit))
+    private fun initState(context: List<Int>, prefix: String, config: GenerationConfig): List<MutableList<Double>> {
+        logSpellProb = ln(config.spellProb)
+        prefixes = listOf(Pair(prefix, config.prefixErrLimit))
         return initLogProbs(context)
     }
 
@@ -171,25 +173,25 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return endOfWords
     }
 
-    fun generate(context: List<Int>, prefix: String, numBeams: Int, numIterations: Int, numGroups: Int = 1, repetitionPenalty: Double = 1.0):
+    fun generate(context: List<Int>, prefix: String, config: GenerationConfig):
         List<Pair<List<List<Pair<List<Int>, GenerationInfo>>>, List<List<Pair<List<Int>, GenerationInfo>>>>> {
-        val search = getSearch(numBeams, numGroups, repetitionPenalty)
+        val search = getSearch(config)
 
-        val one_log_probs = initState(context, prefix)
-        var log_probs = List(search.batchSize()) { one_log_probs[0] }
+        val oneLogProbs = initState(context, prefix, config)
+        var logProbs = List(search.batchSize()) { oneLogProbs[0] }
         sortState(List(search.batchSize()) { 0 })
 
         val result = ArrayList<Pair<List<List<Pair<List<Int>, GenerationInfo>>>, List<List<Pair<List<Int>, GenerationInfo>>>>>()
-        for (i in 0 until numIterations) {
-            val selected_inds = search.step(log_probs, context)
-            sortState(selected_inds)
+        for (i in 0 until config.maxLen) {
+            val selectedInds = search.step(logProbs, context)
+            sortState(selectedInds)
 
-            val last_predictions = search.lastPredictions()
-            updatePrefix(last_predictions)
+            val lastPredictions = search.lastPredictions()
+            updatePrefix(lastPredictions)
 
-            log_probs = getLogProbs(last_predictions)
-            val is_end_of_words = isEndOfWords(log_probs)
-            result.add(Pair(search.terminatedHypotheses(), search.maskedHypotheses(is_end_of_words)))
+            logProbs = getLogProbs(lastPredictions)
+            val isEndOfWords = isEndOfWords(logProbs)
+            result.add(Pair(search.terminatedHypotheses(), search.maskedHypotheses(isEndOfWords)))
         }
 
         resetState()

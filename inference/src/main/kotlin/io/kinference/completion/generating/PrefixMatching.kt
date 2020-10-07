@@ -10,14 +10,14 @@ import kotlin.collections.HashMap
 
 abstract class PrefixMatcher {
     fun prefixTokens(prefix: String): List<Int> {
-        return prefixTokensByErr(prefix, err_limit = 0)[1]
+        return prefixTokensByErr(prefix, errLimit = 0)[1]
     }
 
     fun notPrefixTokens(prefix: String): List<Int> {
-        return prefixTokensByErr(prefix, err_limit = 0)[0]
+        return prefixTokensByErr(prefix, errLimit = 0)[0]
     }
 
-    abstract fun prefixTokensByErr(prefix: String, err_limit: Int): List<List<Int>>
+    abstract fun prefixTokensByErr(prefix: String, errLimit: Int = 0): List<List<Int>>
 
     companion object {
         fun errorsCount(s1: String, s2: String): Int {
@@ -73,7 +73,7 @@ abstract class PrefixMatcher {
     }
 }
 
-class FuzzyPrefixMatcher(val tokenizer: BPETokenizer, errorLimit: Int = 0) : PrefixMatcher() {
+class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
     private val tokens: List<String>
     private val origInds: List<Int>
     private val trie: Trie
@@ -186,7 +186,10 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer, errorLimit: Int = 0) : Pre
             val finish = triple.second
             val errCount = triple.third
 
-            result[0].addAll(origInds.subList(prevStart, triple.first))
+            // TODO: it's tokenizer bug, arguments should be (prevStart, triple.first)
+//            if (prevStart < start) {
+            result[0].addAll(origInds.subList(prevStart, start))
+//            }
             prevStart = finish
             result[errCount + 1].addAll(origInds.subList(start, finish))
         }
