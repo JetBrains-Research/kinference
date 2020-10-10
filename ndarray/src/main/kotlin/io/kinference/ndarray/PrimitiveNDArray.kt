@@ -148,6 +148,22 @@ class PrimitiveTiledArray(val strides: Strides) {
         return array
     }
 
+    private fun indexFor(i: Int): Pair<Int, Int> {
+        val blockIdx = i / blockSize
+        val blockOff = i % blockSize
+        return blockIdx to blockOff
+    }
+
+    operator fun get(i: Int): PrimitiveType {
+        val (blockIdx, blockOff) = indexFor(i)
+        return blocks[blockIdx][blockOff]
+    }
+
+    operator fun set(i: Int, value: PrimitiveType) {
+        val (blockIdx, blockOff) = indexFor(i)
+        blocks[blockIdx][blockOff] = value
+    }
+
     fun copyOf(): PrimitiveTiledArray {
         val copyArray = PrimitiveTiledArray(strides)
 
@@ -174,8 +190,8 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     final override var strides: Strides = strides
         protected set
 
-    override fun get(index: Int): PrimitiveType = array.toArray()[index]
-    override fun get(indices: IntArray): PrimitiveType = array.toArray()[strides.offset(indices)]
+    override fun get(index: Int): PrimitiveType = array[index]
+    override fun get(indices: IntArray): PrimitiveType = array[strides.offset(indices)]
 
     override fun allocateNDArray(strides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
@@ -217,17 +233,15 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
 
     override fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
         zeroPoint as PrimitiveNDArray
-        val zeroPointArray = zeroPoint.array.toArray()
-        val thisArray = array.toArray()
 
         return if (zeroPoint.linearSize == 1) {
-            val zero = zeroPointArray[0].toInt()
-            IntNDArray(IntTiledArray(this.strides) { thisArray[it].toInt() - zero }, strides)
+            val zero = zeroPoint.array[0].toInt()
+            IntNDArray(IntTiledArray(this.strides) { this.array[it].toInt() - zero }, strides)
         } else {
             val blocks = zeroPoint.linearSize
             val blockSize = this.linearSize / blocks
             val arr = IntArray(this.linearSize) { i ->
-                thisArray[i].toInt() - zeroPointArray[i % blockSize].toInt()
+                this.array[i].toInt() - zeroPoint.array[i % blockSize].toInt()
             }
             IntNDArray(IntTiledArray(arr, strides), strides)
         }
@@ -235,16 +249,13 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
 
     override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
         scale as FloatNDArray
-        val zeros = (zeroPoint as? PrimitiveNDArray)?.array?.toArray()
+        val zeros = (zeroPoint as? PrimitiveNDArray)?.array
         val output = MutableFloatNDArray(FloatTiledArray(this.strides), this.strides)
-
-        val thisArray = this.array.toArray()
-        val outputArray = output.array.toArray()
 
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
                 val zero = zeros?.get(0)?.toFloat() ?: 0f
-                for (i in 0 until output.linearSize) outputArray[i] = (thisArray[i].toFloat() - zero) * scale[0]
+                for (i in 0 until output.linearSize) output.array[i] = (this.array[i].toFloat() - zero) * scale[0]
             }
             canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
                 val actualAxis = indexAxis(axis)
@@ -254,16 +265,13 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                 repeat(blockCount) {
                     for (i in 0 until shape[actualAxis]) {
                         val zero = zeros?.get(i)?.toFloat() ?: 0f
-                        for (j in 0 until blockSize) outputArray[j + outOffset] = (thisArray[j + outOffset].toFloat() - zero) * scale[i]
+                        for (j in 0 until blockSize) output.array[j + outOffset] = (this.array[j + outOffset].toFloat() - zero) * scale[i]
                         outOffset += blockSize
                     }
                 }
             }
             else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
         }
-
-        output.array = FloatTiledArray(outputArray, output.strides)
-
         return output
     }
 
@@ -281,10 +289,8 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
         array as LateInitPrimitiveArray
 
-        val thisArray = this.array.toArray()
-
         for (index in range) {
-            array.putNext(thisArray[additionalOffset + index])
+            array.putNext(this.array[additionalOffset + index])
         }
     }
 
@@ -546,10 +552,6 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         require(shape.size == 2 && other.shape.size == 2)
         require(shape[1] == other.shape[0])
 
-        val thisArray = this.array.toArray()
-        val otherArray = other.array.toArray()
-        val destinationArray = destination.array.toArray()
-
         val N = this.shape[0]
         val M = other.shape[1]
         val K = this.shape[1]
@@ -558,15 +560,13 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
             val dIdx = n * M
             val lIdx = n * K
             for (k in 0 until K) {
-                val temp = thisArray[lIdx + k]
+                val temp = this.array[lIdx + k]
                 val rIdx = k * M
                 for (m in 0 until M) {
-                    destinationArray[dIdx + m] = (destinationArray[dIdx + m] + temp * otherArray[rIdx + m]).toPrimitive()
+                    destination.array[dIdx + m] = (destination.array[dIdx + m] + temp * other.array[rIdx + m]).toPrimitive()
                 }
             }
         }
-
-        destination.array = PrimitiveTiledArray(destinationArray, destination.strides)
 
         return destination
     }
@@ -575,15 +575,11 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
         val betaPrimitive = beta.toPrimitive()
 
-        val aArray = this.array.toArray()
-        val bArray = b.array.toArray()
-        val cArray = c.array.toArray()
-
         if (beta != 1.0) {
             for (i in 0 until m) {
                 val cIdx = i * ldc + cOffset
                 for (j in 0 until n) {
-                    cArray[cIdx + j] = (betaPrimitive * cArray[cIdx + j]).toPrimitive()
+                    c.array[cIdx + j] = (betaPrimitive * c.array[cIdx + j]).toPrimitive()
                 }
             }
         }
@@ -597,7 +593,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                         for (i in 0 until k) {
                             val aIdx = i * lda + t + aOffset
                             val bIdx = j * ldb + i + bOffset
-                            cArray[cIdx] = (alphaPrimitive * aArray[aIdx] * bArray[bIdx] + cArray[cIdx]).toPrimitive()
+                            c.array[cIdx] = (alphaPrimitive * array[aIdx] * b.array[bIdx] + c.array[cIdx]).toPrimitive()
                         }
                     }
                 }
@@ -609,7 +605,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                         for (i in 0 until k) {
                             val aIdx = i * lda + t + aOffset
                             val bIdx = i * ldb + j + bOffset
-                            cArray[cIdx] = (alphaPrimitive * aArray[aIdx] * bArray[bIdx] + cArray[cIdx]).toPrimitive()
+                            c.array[cIdx] = (alphaPrimitive * array[aIdx] * b.array[bIdx] + c.array[cIdx]).toPrimitive()
                         }
                     }
                 }
@@ -621,7 +617,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                         val cIdx = t * ldc + j + cOffset
                         val bIdx = j * ldb + bOffset
                         for (i in 0 until k) {
-                            cArray[cIdx] = (alphaPrimitive * aArray[aIdx + i] * bArray[bIdx + i] + cArray[cIdx]).toPrimitive()
+                            c.array[cIdx] = (alphaPrimitive * array[aIdx + i] * b.array[bIdx + i] + c.array[cIdx]).toPrimitive()
                         }
                     }
                 }
@@ -631,17 +627,15 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                     val cIdx = t * ldc + cOffset
                     val aIdx = t * lda + aOffset
                     for (i in 0 until k) {
-                        val temp = (alphaPrimitive * aArray[aIdx + i]).toPrimitive()
+                        val temp = (alphaPrimitive * array[aIdx + i]).toPrimitive()
                         val bIdx = i * ldb + bOffset
                         for (j in 0 until n) {
-                            cArray[cIdx + j] = (temp * bArray[bIdx + j] + cArray[cIdx + j]).toPrimitive()
+                            c.array[cIdx + j] = (temp * b.array[bIdx + j] + c.array[cIdx + j]).toPrimitive()
                         }
                     }
                 }
             }
         }
-
-        c.array = PrimitiveTiledArray(cArray, c.strides)
 
         return c
     }
@@ -675,9 +669,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
 
     override fun set(index: Int, value: Any) {
-        val tempArray = array.toArray()
-        tempArray[index] = value as PrimitiveType
-        array = PrimitiveTiledArray(tempArray, strides)
+        array[index] = value as PrimitiveType
     }
 
     override fun copyIfNotMutable(): MutableNDArray {
