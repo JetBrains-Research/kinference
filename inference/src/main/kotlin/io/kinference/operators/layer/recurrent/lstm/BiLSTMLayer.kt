@@ -35,8 +35,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
         newShape[0] = 2
         val newStrides = Strides(newShape)
         val newArray = allocateNDArray(type!!, newStrides)
-        newArray.placeAllFrom(0, forward.data)
-        newArray.placeAllFrom(forward.data.linearSize, reverse.data)
+        newArray.copyFrom(0, forward.data)
+        newArray.copyFrom(forward.data.linearSize, reverse.data)
         return newArray
     }
 

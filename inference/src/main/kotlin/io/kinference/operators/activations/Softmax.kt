@@ -73,7 +73,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             repeat(matrixRows.size) { i ->
                 val sum = matrixRows[i].sum()
                 matrixRows[i].divAssign(createScalarNDArray(input.type, sum))
-                array.placeAllFrom(i * step, matrixRows[i])
+                array.copyFrom(i * step, matrixRows[i])
             }
             return array
         }

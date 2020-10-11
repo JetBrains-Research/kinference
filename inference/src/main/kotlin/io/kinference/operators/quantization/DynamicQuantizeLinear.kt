@@ -59,14 +59,10 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
         val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
 
         val output = allocateNDArray(DataType.UBYTE, input.strides) as MutableUByteNDArray
-        val outputArray = output.array.toArray()
-        val inputArray = input.array.toArray()
 
         for (i in 0 until input.linearSize) {
-            outputArray[i] = clip((round(inputArray[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
+            output.array[i] = clip((round(input.array[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
         }
-
-        output.array = UByteTiledArray(outputArray, output.strides)
 
         return listOf(
             output.asTensor("y"),

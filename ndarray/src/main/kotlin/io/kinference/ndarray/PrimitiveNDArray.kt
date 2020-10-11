@@ -134,6 +134,17 @@ class PrimitiveTiledArray(val strides: Strides) {
 
         return copyArray
     }
+
+    fun copyInto(dest: PrimitiveTiledArray, destOffset: Int, srcStart: Int, srcEnd: Int) {
+        var dstOffset = destOffset
+        for (i in srcStart until srcEnd) {
+            dest[dstOffset++] = this[i]
+        }
+    }
+
+    fun fill(value: PrimitiveType, from: Int, to: Int) {
+        for (i in from until to) this[i] = value
+    }
 }
 
 @PrimitiveClass
@@ -233,13 +244,11 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     }
 
     override fun row(row: Int): MutableNumberNDArray {
-        val thisArray = this.array.toArray()
-
         val rowLength: Int = linearSize / shape[0]
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
 
-        return MutablePrimitiveNDArray(PrimitiveTiledArray(thisArray.copyOfRange(start, start + rowLength), Strides(dims)), Strides(dims))
+        return MutablePrimitiveNDArray(PrimitiveTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
     }
 
     // TODO check if step == 1 and use Arrays.copy
@@ -303,9 +312,6 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray {
         val output = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
-        val thisArray = this.array.toArray()
-        val outputArray = output.array.toArray()
-
         val actualAxis = indexAxis(axis)
 
         val blockSize = computeBlockSize(fromDim = actualAxis + 1)
@@ -316,9 +322,9 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
             val dstOff = if (!reverse) batchIdx * batchSize else (numBatches - batchIdx) * batchSize - 1
             if (!exclusive) {
                 if (!reverse)
-                    thisArray.copyInto(outputArray, dstOff, dstOff, dstOff + blockSize)
+                    output.copyFrom(dstOff, this, dstOff, dstOff + blockSize)
                 else
-                    thisArray.copyInto(outputArray, dstOff - blockSize + 1, dstOff - blockSize + 1, dstOff + 1)
+                    output.copyFrom(dstOff - blockSize + 1, this, dstOff - blockSize + 1, dstOff + 1)
             }
 
             if (!reverse) {
@@ -326,7 +332,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                     for (j in 0 until blockSize) {
                         val currentOff = dstOff + i * blockSize + j
                         val thisOff = if (!exclusive) currentOff else currentOff - blockSize
-                        outputArray[currentOff] = (outputArray[currentOff - blockSize] + thisArray[thisOff]).toPrimitive()
+                        output.array[currentOff] = (output.array[currentOff - blockSize] + array[thisOff]).toPrimitive()
                     }
                 }
             } else {
@@ -334,13 +340,11 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                     for (j in blockSize - 1 downTo 0) {
                         val currentOff = dstOff - i * blockSize - j
                         val thisOff = if (!exclusive) currentOff else currentOff + blockSize
-                        outputArray[currentOff] = (outputArray[currentOff + blockSize] + thisArray[thisOff]).toPrimitive()
+                        output.array[currentOff] = (output.array[currentOff + blockSize] + array[thisOff]).toPrimitive()
                     }
                 }
             }
         }
-
-        output.array = PrimitiveTiledArray(outputArray, output.strides)
 
         return output
     }
@@ -635,9 +639,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
     override fun fill(value: Any, from: Int, to: Int) {
         value as PrimitiveType
-        val tempArray = array.toArray()
-        tempArray.fill(value, from, to)
-        array = PrimitiveTiledArray(tempArray, strides)
+        array.fill(value, from, to)
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
@@ -789,26 +791,9 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
     }
 
-    override fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
+    override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
         other as PrimitiveNDArray
-
-        val thisArray = this.array.toArray()
-        val otherArray = other.array.toArray()
-
-        otherArray.copyInto(thisArray, offset, startInOther, endInOther)
-
-        this.array = PrimitiveTiledArray(thisArray, strides)
-    }
-
-    override fun placeAllFrom(offset: Int, other: NDArray) {
-        other as PrimitiveNDArray
-
-        val thisArray = this.array.toArray()
-        val otherArray = other.array.toArray()
-
-        otherArray.copyInto(thisArray, offset)
-
-        this.array = PrimitiveTiledArray(thisArray, strides)
+        other.array.copyInto(this.array, offset, startInOther, endInOther)
     }
 
     override fun reshape(strides: Strides): MutableNumberNDArray {

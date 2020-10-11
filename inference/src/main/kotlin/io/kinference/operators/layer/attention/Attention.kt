@@ -68,7 +68,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 //broadcast biases for each
                 repeat(seqLen) {
                     val offset = qkvOffset + it * attentionHeadSize
-                    qkv[qkvIdx].placeFrom(offset, bias, weightsOffset, weightsOffset + attentionHeadSize)
+                    qkv[qkvIdx].copyFrom(offset, bias, weightsOffset, weightsOffset + attentionHeadSize)
                 }
 
                 //x * W[q|k|v] + bias and apply mask
@@ -110,7 +110,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 //broadcast mask block
                 for (seqIdx in 1 until seqLen) {
                     val start = seqIdx * fullSeqLen + i * maskOffset
-                    mask.placeFrom(start, mask, i * maskOffset, i * maskOffset + fullSeqLen)
+                    mask.copyFrom(start, mask, i * maskOffset, i * maskOffset + fullSeqLen)
                 }
 
                 if (unidir) {
@@ -132,10 +132,10 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             var presentPos = presentStart
             if (past != null) {
                 val srcPast = i * pastBlockSize + pastOffset
-                this.placeFrom(presentPos, past, srcPast, srcPast + pastBlockSize)
+                this.copyFrom(presentPos, past, srcPast, srcPast + pastBlockSize)
                 presentPos += pastBlockSize
             }
-            this.placeFrom(presentPos, currentState, currentOffset, currentOffset + presentBlockSize - pastBlockSize)
+            this.copyFrom(presentPos, currentState, currentOffset, currentOffset + presentBlockSize - pastBlockSize)
 
             return this to presentStart
         }
@@ -157,7 +157,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 val batchIdx = i / numHeads
                 if (maskData != null) {
                     val start = batchIdx * seqLen * allSeqLen
-                    scores.placeFrom(seqLen * allSeqLen * i, maskData, start, start + seqLen * allSeqLen)
+                    scores.copyFrom(seqLen * allSeqLen * i, maskData, start, start + seqLen * allSeqLen)
                 }
                 val (k, kOffset) = present.updateState(past, keys, pastBlockSize, presentBlockSize, i, 0, 0, inputBlockSize * i)
 
@@ -198,7 +198,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 var dstOffset = (batchIdx * seqLen * numHeads + headIdx) * headSize
                 //transpose along last two axes
                 repeat(seqLen) {
-                    output.placeFrom(dstOffset, tmp, srcOffset, srcOffset + headSize)
+                    output.copyFrom(dstOffset, tmp, srcOffset, srcOffset + headSize)
                     srcOffset += headSize
                     dstOffset += hiddenSize
                 }

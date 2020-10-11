@@ -94,12 +94,12 @@ fun broadcast(leftInfo: BroadcastingInfo,
               temp: BroadcastingTemp, index: Int,
               op: (NDArray, NDArray, MutableNDArray) -> Unit) {
     if (leftInfo.array.shape.contentEquals(rightInfo.array.shape, index)) {
-        temp.leftTemp.placeFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
-        temp.rightTemp.placeFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
+        temp.leftTemp.copyFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
+        temp.rightTemp.copyFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
 
         op(temp.leftTemp, temp.rightTemp, temp.destinationTemp)
 
-        destinationInfo.array.placeAllFrom(destinationInfo.offset, temp.destinationTemp)
+        destinationInfo.array.copyFrom(destinationInfo.offset, temp.destinationTemp)
     } else {
         innerBroadcast(leftInfo, rightInfo, destinationInfo, index) { fstArray, sndArray, dest -> broadcast(fstArray, sndArray, dest, temp, index + 1, op) }
     }

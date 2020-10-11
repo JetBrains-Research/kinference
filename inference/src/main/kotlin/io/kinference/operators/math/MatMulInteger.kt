@@ -33,12 +33,10 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
         private fun NumberNDArray.toIntNDArray() = when (this) {
             is UByteNDArray -> {
-                val thisArray = this.array.toArray()
-                IntNDArray(IntTiledArray(this.strides) { thisArray[it].toInt() }, strides)
+                IntNDArray(IntTiledArray(this.strides) { this[it].toInt() }, strides)
             }
             is ByteNDArray -> {
-                val thisArray = this.array.toArray()
-                IntNDArray(IntTiledArray(this.strides) { thisArray[it].toInt() }, strides)
+                IntNDArray(IntTiledArray(this.strides) { this[it].toInt() }, strides)
             }
             else -> error("Unsupported data type: $type")
         }

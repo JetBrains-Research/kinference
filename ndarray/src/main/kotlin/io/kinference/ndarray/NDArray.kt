@@ -1,6 +1,7 @@
 package io.kinference.ndarray
 
 import io.kinference.primitives.types.DataType
+import kotlin.math.min
 
 
 interface LateInitArray
@@ -42,8 +43,7 @@ interface MutableNDArray : NDArray {
 
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
-    fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int)
-    fun placeAllFrom(offset: Int, other: NDArray)
+    fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
 
     fun reshape(strides: Strides): MutableNDArray

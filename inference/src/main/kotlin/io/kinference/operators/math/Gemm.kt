@@ -61,10 +61,10 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
                     dstArray.fill(array[i], dstOffsetBase, dstOffsetBase + targetBlockSize)
                 }
             } else {
-                dstArray.placeAllFrom(0, array)
+                dstArray.copyFrom(0, array)
             }
 
-            for (i in 1 until targetShape[0]) dstArray.placeFrom(i * targetShape[1], dstArray, 0, targetShape[1])
+            for (i in 1 until targetShape[0]) dstArray.copyFrom(i * targetShape[1], dstArray, 0, targetShape[1])
             return dstArray
         }
     }

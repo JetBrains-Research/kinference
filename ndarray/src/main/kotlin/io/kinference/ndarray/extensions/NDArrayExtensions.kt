@@ -86,8 +86,8 @@ fun NDArray.concatenate(other: NDArray, axis: Int = 0): MutableNDArray {
     }
 
     return allocateNDArray(Strides(newShape)).apply {
-        placeAllFrom(0, this@concatenate)
-        placeAllFrom(this@concatenate.linearSize, other)
+        copyFrom(0, this@concatenate)
+        copyFrom(this@concatenate.linearSize, other)
     }
 }
 
@@ -115,7 +115,7 @@ fun NDArray.as2DList(): List<NDArray> {
     return List(strides.linearSize / matrixSize) { index ->
         allocateNDArray(matrixStrides).apply {
             val start = matrixSize * index
-            placeFrom(0, this@as2DList, start, start + matrixSize)
+            copyFrom(0, this@as2DList, start, start + matrixSize)
         }
     }
 }

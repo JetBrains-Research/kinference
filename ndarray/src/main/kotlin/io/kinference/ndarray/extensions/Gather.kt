@@ -4,7 +4,6 @@ import io.kinference.ndarray.MutableNDArray
 import io.kinference.ndarray.NDArray
 import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
-import io.kinference.ndarray.*
 
 fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
@@ -45,7 +44,7 @@ fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
         val srcOffset = numBatch * dataBatch + idx * block
         val dstOffset = numBatch * gatheredBatch + i * block
 
-        dst.placeFrom(dstOffset, this, srcOffset, srcOffset + block)
+        dst.copyFrom(dstOffset, this, srcOffset, srcOffset + block)
     }
     return dst
 }

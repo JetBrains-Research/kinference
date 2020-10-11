@@ -105,14 +105,14 @@ data class State(var output: MutableNDArray, val cellState: MutableNDArray, var 
 
             if (initialOutput != null) {
                 for (i in allocatedStates.indices) {
-                    allocatedStates[i].output.placeAllFrom(0, initialOutput[i])
+                    allocatedStates[i].output.copyFrom(0, initialOutput[i])
                     allocatedStates[i].isOutputZero = false
                 }
             }
 
             if (initialCellState != null) {
                 for (i in allocatedStates.indices) {
-                    allocatedStates[i].cellState.placeAllFrom(0, initialCellState[i])
+                    allocatedStates[i].cellState.copyFrom(0, initialCellState[i])
                     allocatedStates[i].isCellStateZero = false
                 }
             }

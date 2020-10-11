@@ -80,7 +80,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
         lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
 
-        output.placeAllFrom(outputOffset, lastState.output)
+        output.copyFrom(outputOffset, lastState.output)
 
         lastState.isOutputZero = false
         lastState.isCellStateZero = false
@@ -132,8 +132,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
         for (i in this.indices) {
             val offset = i * hiddenSize
-            outputArray.placeAllFrom(offset, this[i].output)
-            cellStateArray.placeAllFrom(offset, this[i].cellState)
+            outputArray.copyFrom(offset, this[i].output)
+            cellStateArray.copyFrom(offset, this[i].cellState)
         }
 
         return State(outputArray, cellStateArray, false, false)

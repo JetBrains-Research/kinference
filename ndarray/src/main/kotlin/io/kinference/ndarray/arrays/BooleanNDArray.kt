@@ -125,14 +125,9 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
         return this
     }
 
-    override fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
+    override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
         other as BooleanNDArray
         other.array.copyInto(this.array, offset, startInOther, endInOther)
-    }
-
-    override fun placeAllFrom(offset: Int, other: NDArray) {
-        other as BooleanNDArray
-        other.array.copyInto(this.array, offset)
     }
 
     override fun fill(value: Any, from: Int, to: Int) {

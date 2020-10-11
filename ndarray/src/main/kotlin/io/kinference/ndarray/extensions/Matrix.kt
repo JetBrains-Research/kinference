@@ -34,12 +34,12 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
                destinationInfo: MutableBroadcastingInfo,
                temp: BroadcastingTemp, index: Int) {
         if (leftInfo.array.shape.size - index == 2) {
-            temp.leftTemp.placeFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
-            temp.rightTemp.placeFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
+            temp.leftTemp.copyFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
+            temp.rightTemp.copyFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
 
             (temp.leftTemp as NumberNDArray).dotFunc(temp.rightTemp as NumberNDArray, temp.destinationTemp as MutableNumberNDArray)
 
-            destinationInfo.array.placeAllFrom(destinationInfo.offset, temp.destinationTemp)
+            destinationInfo.array.copyFrom(destinationInfo.offset, temp.destinationTemp)
             temp.destinationTemp.clean()
         } else {
             innerBroadcast(leftInfo, rightInfo, destinationInfo, index) { fstArray, sndArray, dest -> matmul(fstArray, sndArray, dest, temp, index + 1) }
