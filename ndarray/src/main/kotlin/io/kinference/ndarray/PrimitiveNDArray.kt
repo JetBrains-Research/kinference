@@ -17,6 +17,8 @@ class PrimitiveTiledArray(val strides: Strides) {
     }
 
     val size: Int = strides.linearSize
+    val colSize: Int
+
     val blockSize: Int
     val blocksNum: Int
     val blocksInRow: Int
@@ -29,11 +31,13 @@ class PrimitiveTiledArray(val strides: Strides) {
                 blockSize = 0
                 blocksNum = 0
                 blocksInRow = 0
+                colSize = 0
             }
             strides.shape.isEmpty() -> {
                 blockSize = 1
                 blocksNum = 1
                 blocksInRow = 1
+                colSize = 1
                 blocks = Array(1) { PrimitiveArray(1) }
             }
             else -> {
@@ -47,6 +51,7 @@ class PrimitiveTiledArray(val strides: Strides) {
                 blocksInRow = rowSize / blockSize
                 blocksNum = size / blockSize
                 blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
+                colSize = strides.shape.getOrElse(strides.shape.lastIndex - 1) { 1 }
             }
         }
     }
@@ -508,23 +513,51 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         return destination
     }
 
+    private fun resortBlocks(blocks: Array<PrimitiveArray>, colSize: Int, blocksInRow: Int): Array<PrimitiveArray> {
+        val result = blocks.copyOf()
+
+        for (i in 0 until blocksInRow) {
+            for (j in 0 until colSize) {
+                result[i * colSize + j] = blocks[j * blocksInRow + i]
+            }
+        }
+
+        return result
+    }
+
     override fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
         require(shape.size == 2 && other.shape.size == 2)
         require(shape[1] == other.shape[0])
 
-        val N = this.shape[0]
-        val M = other.shape[1]
-        val K = this.shape[1]
+        val n = this.shape[0]
+        val m = other.shape[1]
+        val t = this.shape[1]
 
-        for (n in 0 until N) {
-            val dIdx = n * M
-            val lIdx = n * K
-            for (k in 0 until K) {
-                val temp = this.array[lIdx + k]
-                val rIdx = k * M
-                for (m in 0 until M) {
-                    destination.array[dIdx + m] = (destination.array[dIdx + m] + temp * other.array[rIdx + m]).toPrimitive()
+        val resortedLeft = resortBlocks(this.array.blocks, this.array.colSize, this.array.blocksInRow)
+        val resortedRight = resortBlocks(other.array.blocks, other.array.colSize, other.array.blocksInRow)
+        val resortedDest = resortBlocks(destination.array.blocks, destination.array.colSize, destination.array.blocksInRow)
+
+        val rdBlockSize = destination.array.blockSize
+        for (rdCol in 0 until other.array.blocksInRow) {
+            val rightIdx = rdCol * t
+            val destIdx = rdCol * n
+
+            for (i in 0 until n) {
+                val destBlock = resortedDest[destIdx + i]
+
+                for (lCol in 0 until this.array.blocksInRow) {
+                    val leftBlock = resortedLeft[i + lCol * n]
+                    val rightIdxOffset = rightIdx + this.array.blockSize * lCol
+
+                    for (k in 0 until this.array.blockSize) {
+                        val temp = leftBlock[k]
+                        val rightBlock = resortedRight[rightIdxOffset + k]
+
+                        for (j in 0 until rdBlockSize) {
+                            destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
+                        }
+                    }
                 }
             }
         }
