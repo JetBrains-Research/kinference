@@ -141,9 +141,31 @@ class PrimitiveTiledArray(val strides: Strides) {
     }
 
     fun copyInto(dest: PrimitiveTiledArray, destOffset: Int, srcStart: Int, srcEnd: Int) {
-        var dstOffset = destOffset
+        if (srcStart == srcEnd)
+            return
+
+        var (leftBlock, leftOffset) = indexFor(srcStart)
+        var (rightBlock, rightOffset) = dest.indexFor(destOffset)
+
+        var tempLeftBlock = blocks[leftBlock]
+        var tempRightBlock = dest.blocks[rightBlock]
+
         for (i in srcStart until srcEnd) {
-            dest[dstOffset++] = this[i]
+            tempRightBlock[rightOffset++] = tempLeftBlock[leftOffset++]
+
+            if (leftOffset == this.blockSize) {
+                leftOffset = 0
+
+                if (++leftBlock < blocksNum)
+                    tempLeftBlock = blocks[leftBlock]
+            }
+
+            if (rightOffset == dest.blockSize) {
+                rightOffset = 0
+
+                if (++rightBlock < dest.blocksNum)
+                    tempRightBlock = dest.blocks[rightBlock]
+            }
         }
     }
 
