@@ -59,26 +59,12 @@ class PrimitiveTiledArray(val strides: Strides) {
             return
         }
 
-        val actualShape = if (strides.shape.size == 1) intArrayOf(1, strides.shape[0]) else strides.shape
-        val countMatrices = actualShape.slice(0 until actualShape.lastIndex - 1).fold(1) { acc, i -> acc * i }
-
-        val rowSize = actualShape[actualShape.lastIndex]
-        val colSize = actualShape[actualShape.lastIndex - 1]
-
-        val blocksInMatrix = blocksInRow * colSize
-
-        var counter = 0
-        for (matrixNum in 0 until countMatrices) {
-            val matrixOffset = matrixNum * blocksInMatrix
-            for (row in 0 until colSize) {
-                for (col in 0 until blocksInRow) {
-                    val block = blocks[matrixOffset + row + col * colSize]
-                    for (idx in block.indices) {
-                        block[idx] = array[counter]
-                        counter++
-                    }
-                }
-            }
+        var startIndex = 0
+        var endIndex = blockSize
+        for (block in blocks) {
+            array.copyInto(block, 0, startIndex, endIndex)
+            startIndex = endIndex
+            endIndex += blockSize
         }
     }
 
@@ -88,25 +74,12 @@ class PrimitiveTiledArray(val strides: Strides) {
             return
         }
 
-        val actualShape = if (strides.shape.size == 1) intArrayOf(1, strides.shape[0]) else strides.shape
-        val countMatrices = actualShape.slice(0 until actualShape.lastIndex - 1).fold(1) { acc, i -> acc * i }
-
-        val rowSize = actualShape[actualShape.lastIndex]
-        val colSize = actualShape[actualShape.lastIndex - 1]
-
-        val blocksInMatrix = blocksInRow * colSize
-
         var counter = 0
-        for (matrixNum in 0 until countMatrices) {
-            val matrixOffset = matrixNum * blocksInMatrix
-            for (row in 0 until colSize) {
-                for (col in 0 until blocksInRow) {
-                    val block = blocks[matrixOffset + row + col * colSize]
-                    for (idx in block.indices) {
-                        block[idx] = init(counter)
-                        counter++
-                    }
-                }
+
+        for (block in blocks) {
+            for (idx in 0 until blockSize) {
+                block[idx] = init(counter)
+                counter++
             }
         }
     }
@@ -122,29 +95,14 @@ class PrimitiveTiledArray(val strides: Strides) {
             return output
         }
 
-        val actualShape = if (strides.shape.size == 1) intArrayOf(1, strides.shape[0]) else strides.shape
-        val countMatrices = actualShape.slice(0 until actualShape.lastIndex - 1).fold(1) { acc, i -> acc * i }
+        val array = PrimitiveArray(strides.linearSize)
+        var offset = 0
 
-        val rowSize = actualShape[actualShape.lastIndex]
-        val colSize = actualShape[actualShape.lastIndex - 1]
-
-        val array = PrimitiveArray(rowSize * colSize * countMatrices)
-
-        val blocksInMatrix = blocksInRow * colSize
-
-        var counter = 0
-        for (matrixNum in 0 until countMatrices) {
-            val matrixOffset = matrixNum * blocksInMatrix
-            for (row in 0 until colSize) {
-                for (col in 0 until blocksInRow) {
-                    val block = blocks[matrixOffset + row + col * colSize]
-                    for (idx in block.indices) {
-                        array[counter] = block[idx]
-                        counter++
-                    }
-                }
-            }
+        for (block in blocks) {
+            block.copyInto(array, offset)
+            offset += blockSize
         }
+
         return array
     }
 
@@ -170,9 +128,8 @@ class PrimitiveTiledArray(val strides: Strides) {
         for (blockNum in 0 until blocksNum) {
             val thisBlock = this.blocks[blockNum]
             val destBlock = copyArray.blocks[blockNum]
-            for (idx in thisBlock.indices) {
-                destBlock[idx] = thisBlock[idx]
-            }
+
+            thisBlock.copyInto(destBlock)
         }
 
         return copyArray
