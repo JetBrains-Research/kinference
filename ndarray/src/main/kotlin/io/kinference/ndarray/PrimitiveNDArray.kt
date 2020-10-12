@@ -268,8 +268,13 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         zeroPoint as PrimitiveNDArray
 
         return if (zeroPoint.linearSize == 1) {
-            val zero = zeroPoint.array[0].toInt()
-            IntNDArray(IntTiledArray(this.strides) { this.array[it].toInt() - zero }, strides)
+            val zero = zeroPoint.array.blocks[0][0].toInt()
+            val arr = IntTiledArray(this.strides)
+            for (i in 0 until array.blocksNum) {
+                val currentBlock = array.blocks[i]
+                for (j in currentBlock.indices) arr.blocks[i][j] = currentBlock[j].toInt() - zero
+            }
+            IntNDArray(arr, strides)
         } else {
             val blocks = zeroPoint.linearSize
             val blockSize = this.linearSize / blocks
@@ -288,7 +293,10 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
                 val zero = zeros?.get(0)?.toFloat() ?: 0f
-                for (i in 0 until output.linearSize) output.array[i] = (this.array[i].toFloat() - zero) * scale[0]
+                for (i in 0 until array.blocksNum) {
+                    val currentBlock = array.blocks[i]
+                    for (j in currentBlock.indices) output.array.blocks[i][j] = (currentBlock[j].toFloat() - zero) * scale[0]
+                }
             }
             canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
                 val actualAxis = indexAxis(axis)
