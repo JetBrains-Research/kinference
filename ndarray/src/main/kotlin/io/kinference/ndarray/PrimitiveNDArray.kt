@@ -150,6 +150,44 @@ class PrimitiveTiledArray(val strides: Strides) {
         var tempLeftBlock = blocks[leftBlock]
         var tempRightBlock = dest.blocks[rightBlock]
 
+        if (this.blockSize == dest.blockSize && leftOffset == rightOffset) {
+            val (endLeftBlock, endLeftOffset) = indexFor(srcEnd)
+
+            if (leftBlock == endLeftBlock) {
+                for (idx in leftOffset until endLeftOffset) {
+                    tempRightBlock[idx] = tempLeftBlock[idx]
+                }
+                return
+            }
+
+            for (idx in leftOffset until blockSize) {
+                tempRightBlock[idx] = tempLeftBlock[idx]
+            }
+            leftBlock++
+            rightBlock++
+
+            for (i in 0 until endLeftBlock - leftBlock) {
+                tempLeftBlock = this.blocks[leftBlock]
+                tempRightBlock = dest.blocks[rightBlock]
+
+                tempLeftBlock.copyInto(tempRightBlock)
+                leftBlock++
+                rightBlock++
+            }
+
+            if (leftBlock >= blocksNum || rightBlock >= dest.blocksNum)
+                return
+
+            tempLeftBlock = this.blocks[leftBlock]
+            tempRightBlock = dest.blocks[rightBlock]
+
+            for (idx in 0 until endLeftOffset) {
+                tempRightBlock[idx] = tempLeftBlock[idx]
+            }
+
+            return
+        }
+
         for (i in srcStart until srcEnd) {
             tempRightBlock[rightOffset++] = tempLeftBlock[leftOffset++]
 
