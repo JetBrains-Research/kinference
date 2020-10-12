@@ -140,7 +140,7 @@ class PrimitiveTiledArray(val strides: Strides) {
         return copyArray
     }
 
-    fun copyInto(dest: PrimitiveTiledArray, destOffset: Int, srcStart: Int, srcEnd: Int) {
+    fun copyInto(dest: PrimitiveTiledArray, destOffset: Int = 0, srcStart: Int = 0, srcEnd: Int = size) {
         if (srcStart == srcEnd)
             return
 
@@ -852,8 +852,12 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     }
 
     override fun reshape(strides: Strides): MutableNumberNDArray {
-        val tempArray = array.toArray()
-        this.array = PrimitiveTiledArray(tempArray, strides)
+        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
+            val newArray = PrimitiveTiledArray(strides)
+
+            this.array.copyInto(newArray)
+            this.array = newArray
+        }
 
         this.strides = strides
         return this
