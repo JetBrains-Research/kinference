@@ -86,6 +86,7 @@ complexity:
     threshold: 6
   NestedBlockDepth:
     active: true
+    excludes: "**/*NDArray.kt"
     threshold: 4
   StringLiteralDuplication:
     active: false
