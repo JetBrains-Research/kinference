@@ -111,7 +111,7 @@ class PrimitiveTiledArray(val strides: Strides) {
         return array
     }
 
-    private fun indexFor(i: Int): Pair<Int, Int> {
+    fun indexFor(i: Int): Pair<Int, Int> {
         val blockIdx = i / blockSize
         val blockOff = i % blockSize
         return blockIdx to blockOff
@@ -910,7 +910,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     }
 
     // TODO separate from PrimitiveArray (maybe LateInitArray will help)
-    private fun transposeRec(prevArray: PrimitiveArray, newArray: PrimitiveArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
+    private fun transposeRec(prevArray: PrimitiveTiledArray, newArray: PrimitiveTiledArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
         if (index != newStrides.shape.lastIndex) {
             val temp = prevStrides.strides[permutation[index]]
             val temp2 = newStrides.strides[index]
@@ -922,8 +922,34 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
             if (temp == 1) {
                 prevArray.copyInto(newArray, newOffset, prevOffset, prevOffset + newStrides.shape[index])
             } else {
+                var (newArrayBlock, newArrayOffset) = newArray.indexFor(newOffset)
+                var (prevArrayBlock, prevArrayOffset) = prevArray.indexFor(prevOffset)
+
+                val (deltaBlock, deltaOffset) = prevArray.indexFor(temp)
+
+                var tempNewBlock = newArray.blocks[newArrayBlock]
+                var tempPrevBlock = prevArray.blocks[prevArrayBlock]
+
                 for (i in 0 until newStrides.shape[index]) {
-                    newArray[newOffset + i] = prevArray[prevOffset + i * temp]
+                    tempNewBlock[newArrayOffset++] = tempPrevBlock[prevArrayOffset]
+
+                    prevArrayBlock += deltaBlock
+                    prevArrayOffset += deltaOffset
+
+                    if (prevArrayOffset >= prevArray.blockSize) {
+                        prevArrayBlock += prevArrayOffset / prevArray.blockSize
+                        prevArrayOffset %= prevArray.blockSize
+                    }
+
+                    if (prevArrayBlock < prevArray.blocksNum)
+                        tempPrevBlock = prevArray.blocks[prevArrayBlock]
+
+                    if (newArrayOffset >= newArray.blockSize) {
+                        newArrayOffset = 0
+
+                        if (++newArrayBlock < newArray.blocksNum)
+                            tempNewBlock = newArray.blocks[newArrayBlock]
+                    }
                 }
             }
         }
@@ -931,14 +957,14 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
     override fun transpose(permutations: IntArray): MutableNumberNDArray {
         val newStrides = strides.transpose(permutations)
+        val newArray = PrimitiveTiledArray(newStrides)
+        array.copyInto(newArray)
 
-        val tempArray = array.toArray()
+        transposeRec(array, newArray, strides, newStrides, 0, 0, 0, permutations)
 
-        transposeRec(tempArray.copyOf(), tempArray, strides, newStrides, 0, 0, 0, permutations)
-
-        this.array = PrimitiveTiledArray(tempArray, newStrides)
-
-        return this.reshape(newStrides)
+        this.strides = newStrides
+        this.array = newArray
+        return this
     }
 
     override fun transpose2D(): MutableNDArray {
@@ -946,20 +972,26 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
         val newShape = shape.reversedArray()
         val newStrides = Strides(newShape)
+        val newArray = PrimitiveTiledArray(newStrides)
 
-        val thisArray = this.array.toArray()
+        var blockNum = 0
 
-        val tmp = thisArray.copyOf()
-        for (j in (0 until shape[1])) {
-            val ind = j * shape[0]
-            for (i in (0 until shape[0])) {
-                thisArray[ind + i] = (tmp[i * shape[1] + j]).toPrimitive()
+        for (row in 0 until newShape[0]) {
+            val (blockOffset, offset) = array.indexFor(row)
+            var col = 0
+            for (i in 0 until newArray.blocksInRow) {
+                val block = newArray.blocks[blockNum++]
+                for (idx in 0 until newArray.blockSize) {
+                    block[idx] = this.array.blocks[blockOffset + col * this.array.blocksInRow][offset]
+                    col++
+                }
             }
         }
 
-        this.array = PrimitiveTiledArray(thisArray, newStrides)
+        this.array = newArray
+        this.strides = newStrides
 
-        return this.reshape(newStrides)
+        return this
     }
 
     override fun clean() {
