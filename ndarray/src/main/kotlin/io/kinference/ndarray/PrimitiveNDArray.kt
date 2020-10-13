@@ -207,8 +207,44 @@ class PrimitiveTiledArray(val strides: Strides) {
         }
     }
 
-    fun fill(value: PrimitiveType, from: Int, to: Int) {
-        for (i in from until to) this[i] = value
+    fun fill(value: PrimitiveType, from: Int = 0, to: Int = size) {
+        if (from == to)
+            return
+
+        var (block, offset) = indexFor(from)
+        val (endBlock, endOffset) = indexFor(to)
+
+        var tempBlock = blocks[block]
+
+        if (block == endBlock) {
+            for (idx in offset until endOffset) {
+                tempBlock[idx] = value
+            }
+
+            return
+        }
+
+        for (idx in offset until blockSize) {
+            tempBlock[idx] = value
+        }
+
+        block++
+
+        for (blockNum in block until endBlock) {
+            tempBlock = blocks[blockNum]
+
+            for (idx in 0 until blockSize) {
+                tempBlock[idx] = value
+            }
+        }
+
+        if (endBlock < blocksNum) {
+            tempBlock = blocks[endBlock]
+
+            for (idx in 0 until endOffset) {
+                tempBlock[idx] = value
+            }
+        }
     }
 }
 
