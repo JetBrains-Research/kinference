@@ -26,6 +26,10 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return PrimitiveNDArray(array, Strides(newShape), offset + additionalOffset)
     }
 
+    override fun reshapeView(newShape: IntArray): NDArray {
+        return PrimitiveNDArray(array, Strides(newShape), offset)
+    }
+
     override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNumberNDArray = MutablePrimitiveNDArray(array.copyOfRange(offset + additionalOffset, offset + additionalOffset + newStrides.linearSize), newStrides)
 
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
@@ -47,6 +51,21 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         val sum = t * (ERF_COEF[0] + t * (ERF_COEF[1] + t * (ERF_COEF[2] + t * (ERF_COEF[3] + t * ERF_COEF[4]))))
 
         return (sign * (1.0 - sum * exp(- doubleValue * doubleValue))).toPrimitive()
+    }
+
+    override fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
+        zeroPoint as PrimitiveNDArray
+        return if (zeroPoint.linearSize == 1) {
+            val zero = zeroPoint.array[0].toInt()
+            IntNDArray(IntArray(this.linearSize) { this.array[it].toInt() - zero }, strides, offset)
+        } else {
+            val blocks = zeroPoint.linearSize
+            val blockSize = this.linearSize / blocks
+            val arr = IntArray(this.linearSize) { i ->
+                this.array[i].toInt() - zeroPoint.array[i % blockSize].toInt()
+            }
+            IntNDArray(arr, strides, offset)
+        }
     }
 
     override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
@@ -297,30 +316,6 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
                 val rIdx = k * M + other.offset
                 for (m in 0 until M) {
                     destination.array[dIdx + m] = (destination.array[dIdx + m] + temp * other.array[rIdx + m]).toPrimitive()
-                }
-            }
-        }
-
-        return destination
-    }
-
-    override fun dotInteger(other: NumberNDArray, destination: MutableIntNDArray): MutableNumberNDArray {
-        other as PrimitiveNDArray
-        require(shape.size == 2 && other.shape.size == 2)
-        require(shape[1] == other.shape[0])
-
-        val N = this.shape[0]
-        val M = other.shape[1]
-        val K = this.shape[1]
-
-        for (n in 0 until N) {
-            val dIdx = n * M + destination.offset
-            val lIdx = n * K + this.offset
-            for (k in 0 until K) {
-                val temp = this.array[lIdx + k]
-                val rIdx = k * M + other.offset
-                for (m in 0 until M) {
-                    destination.array[dIdx + m] = destination.array[dIdx + m] + (temp * other.array[rIdx + m]).toInt()
                 }
             }
         }

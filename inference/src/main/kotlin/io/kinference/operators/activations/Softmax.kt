@@ -47,7 +47,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             else -> error("Unsupported data type")
         }
 
-        private fun expMatrixRows(input: MutableNDArray, axis: Int): Array<MutableNumberNDArray> {
+        private fun expMatrixRows(input: NDArray, axis: Int): Array<MutableNumberNDArray> {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -55,7 +55,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val rows = resolveDims(shape.sliceArray(rowIdx))
             val columns = resolveDims(shape.sliceArray(columnIdx))
 
-            val matrixRows = input.reshape(intArrayOf(rows, columns)).rows
+            val matrixRows = input.reshapeView(intArrayOf(rows, columns)).rows
             return Array(matrixRows.size) { i ->
                 (matrixRows[i] as MutableNumberNDArray).apply {
                     val max = createScalarNDArray(input.type, this.max())
@@ -65,7 +65,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             }
         }
 
-        fun softmax(input: MutableNDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
+        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
             val matrixRows = expMatrixRows(input, axis)
 
             val step = matrixRows[0].linearSize
@@ -82,6 +82,6 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
     private val axis: Int by attribute("axis") { it: Number -> it.toInt() }
 
     override fun activate(input: NDArray): NDArray {
-        return softmax(input.toMutable(), axis, input.strides)
+        return softmax(input, axis, input.strides)
     }
 }

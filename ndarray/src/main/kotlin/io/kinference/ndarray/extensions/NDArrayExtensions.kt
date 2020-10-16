@@ -101,7 +101,7 @@ fun Array<NDArray>.stack(axis: Int): NDArray {
     fstShape.copyInto(newShape, 0, 0, axis)
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
-    return this.map { it.copyIfNotMutable().reshape(newShape) }.concatenate(axis)
+    return this.map { it.reshapeView(newShape) }.concatenate(axis)
 }
 
 fun NDArray.as2DList(): List<NDArray> {

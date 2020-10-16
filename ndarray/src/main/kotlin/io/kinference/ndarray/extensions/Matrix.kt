@@ -26,12 +26,6 @@ infix fun NumberNDArray.matmul(other: NumberNDArray): MutableNumberNDArray {
     return matmul(other, outputArray) { otherArray, dest -> this.dot(otherArray, dest) }
 }
 
-infix fun NumberNDArray.matMulInteger(other: NumberNDArray): MutableNumberNDArray {
-    val outputStrides = getOutputStrides(other)
-    val outputArray = MutableIntNDArray(IntArray(outputStrides.linearSize), outputStrides)
-    return matmul(other, outputArray) { otherArray, dest -> this.dotInteger(otherArray, dest as MutableIntNDArray) }
-}
-
 private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArray,
                          dotFunc: NumberNDArray.(NumberNDArray, MutableNumberNDArray) -> MutableNumberNDArray): MutableNumberNDArray {
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
@@ -44,17 +38,17 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
     }
 
     if (rank <= 2 && other.rank <= 2) {
-        val actualThis: NumberNDArray = if (rank == 1) this.toMutable().reshape(1.concat(shape)) else this
-        val actualOther = if (other.rank == 1) this.toMutable().reshape(other.shape.concat(1)) else other
+        val actualThis = if (rank == 1) this.reshapeView(1.concat(shape)) as NumberNDArray else this
+        val actualOther = if (other.rank == 1) this.reshapeView(other.shape.concat(1)) else other
 
-        return actualThis.dotFunc(actualOther, dest)
+        return actualThis.dotFunc(actualOther as NumberNDArray, dest)
     }
 
     val leftWrapShape = unsqueezeFirst(shape, dest.rank)
     val rightWrapShape = unsqueezeFirst(other.shape, dest.rank)
 
-    val leftWrapped = this.toMutable(Strides(leftWrapShape))
-    val rightWrapped = other.toMutable(Strides(rightWrapShape))
+    val leftWrapped = this.reshapeView(leftWrapShape)
+    val rightWrapped = other.reshapeView(rightWrapShape)
 
     matmul(leftWrapped, rightWrapped, dest)
     return dest

@@ -53,11 +53,11 @@ fun Collection<Tensor>.stack(axis: Int): Tensor {
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
 
-    return this.map { it.data.toMutable().reshape(newShape) }.concatenate(axis).asTensor()
+    return this.map { it.data.reshapeView(newShape) }.concatenate(axis).asTensor()
 }
 
 fun List<Tensor>.concatenate(axis: Int): Tensor {
-    var acc = this[0].data.toMutable()
+    var acc = this[0].data
     for (i in 1 until this.size) {
         acc = acc.concatenate(this[i].data, axis)
     }
