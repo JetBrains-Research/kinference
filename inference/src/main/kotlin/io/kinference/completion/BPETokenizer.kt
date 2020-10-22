@@ -83,13 +83,13 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
         return tokens.map { postprocess(it) }
     }
 
-    fun encode(s: String): List<Int> {
+    fun encode(s: String): IntArray {
         val tokens = internalTokenize(preprocess(s))
-        return tokens.map { vocab.getOrDefault(it, 0) }
+        return IntArray(tokens.size) { vocab.getOrDefault(tokens[it], 0) }
     }
 
-    fun decode(ids: List<Int>): String {
-        return postprocess(ids.map { reversedVocab.getOrDefault(it, "") }.joinToString(""))
+    fun decode(ids: IntArray): String {
+        return postprocess(ids.joinToString("") { reversedVocab.getOrDefault(it, "") })
     }
 
     fun decode(id: Int): String {

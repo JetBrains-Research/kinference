@@ -73,7 +73,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         }
     }
 
-    private fun modifyScore(scores: List<MutableList<Double>>): List<MutableList<Double>> {
+    private fun modifyScore(scores: Array<DoubleArray>): Array<DoubleArray> {
         // prefix
 
         prefixes!!.forEachIndexed { i, (prefix, err_limit) ->
@@ -97,48 +97,52 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return scores
     }
 
-    private fun initLogProbs(context: List<Int>): List<MutableList<Double>> {
-        val logProbs = model.initLastLogProbs(listOf(context))
+    private fun initLogProbs(context: IntArray): Array<DoubleArray> {
+        val logProbs = model.initLastLogProbs(arrayOf(context))
         val scores = logProbs.first
         mems = logProbs.second
 
         return modifyScore(logSoftmax(scores))
     }
 
-    private fun initState(context: List<Int>, prefix: String, config: GenerationConfig): List<MutableList<Double>> {
+    private fun initState(context: IntArray, prefix: String, config: GenerationConfig): Array<DoubleArray> {
         logSpellProb = ln(config.spellProb)
         prefixes = listOf(Pair(prefix, config.prefixErrLimit))
         return initLogProbs(context)
     }
 
     @ExperimentalUnsignedTypes
-    private fun sortState(sortMask: List<Int>) {
+    private fun sortState(sortMask: IntArray) {
         // mems = [mem[:, sort_mask].contiguous() for mem in mems]
         mems = mems!!.map { mem ->
             val shape = mem.shape
-            val size = mem.linearSize * sortMask.size / shape[1]
-            val values: MutableList<Float> = ArrayList(size)
-
+            val outputStrides  = Strides(intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4]))
+            val array = MutableFloatNDArray(FloatArray(outputStrides.linearSize), outputStrides)
+            val rowLen = mem.linearSize / shape[0]
+            val localRowLen = rowLen / shape[1]
+            var off = 0
             for (i in 0 until shape[0]) {
-                val row = mem.row(i)
+                val rowStart = i * rowLen
                 for (j in sortMask.indices) {
-                    values.addAll((row.row(sortMask[j]) as FloatNDArray).array.toList())
+                    val totalRowOffset = rowStart + localRowLen * sortMask[j]
+                    array.placeFrom(off, mem, totalRowOffset, totalRowOffset + localRowLen)
+                    off += localRowLen
                 }
             }
-            MutableFloatNDArray(values.toFloatArray(), Strides(intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4])))
+            array
         }
 
         prefixes = prefixes!!.slice(sortMask)
     }
 
-    private fun getLogProbs(data: List<Int>): List<MutableList<Double>> {
+    private fun getLogProbs(data: IntArray): Array<DoubleArray> {
         val logProbs = model.getLastLogProbs(data, mems!!)
         val scores = logProbs.first
         mems = logProbs.second
         return modifyScore(logSoftmax(scores))
     }
 
-    private fun updatePrefix(newTokensIds: List<Int>) {
+    private fun updatePrefix(newTokensIds: IntArray) {
         if (prefixes != null) {
             val result = ArrayList<Pair<String, Int>>(prefixes!!.size)
 
@@ -159,29 +163,29 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         prefixes = null
     }
 
-    private fun isEndOfWords(trueScores: List<List<Double>>): List<Boolean> {
-        val endOfWords = ArrayList<Boolean>()
+    private fun isEndOfWords(trueScores: Array<DoubleArray>): BooleanArray {
+        val endOfWords = BooleanArray(prefixes!!.size)
         val tokensIds = topk2d(trueScores, 3, dim = 1)  // both (batch_size * num_beams, 3)
 
         prefixes!!.forEachIndexed { batch_id, (prefix, err_limit) ->
             val tokenIds = tokensIds[batch_id]
             val tokens = tokenIds.map { tokenizer.decode(it) }
             val isEndOfWord = tokens.map { !it[0].isLetter() && PrefixMatcher.levenshtein(it, prefix) <= err_limit }.any()
-            endOfWords.add(isEndOfWord)
+            endOfWords[batch_id] = isEndOfWord
         }
 
         return endOfWords
     }
 
-    fun generate(context: List<Int>, prefix: String, config: GenerationConfig):
-        List<Pair<List<List<Pair<List<Int>, GenerationInfo>>>, List<List<Pair<List<Int>, GenerationInfo>>>>> {
+    fun generate(context: IntArray, prefix: String, config: GenerationConfig):
+        List<Pair<List<List<Pair<IntArray, GenerationInfo>>>, List<List<Pair<IntArray, GenerationInfo>>>>> {
         val search = getSearch(config)
 
         val oneLogProbs = initState(context, prefix, config)
-        var logProbs = List(search.batchSize()) { oneLogProbs[0] }
-        sortState(List(search.batchSize()) { 0 })
+        var logProbs = Array(search.batchSize) { oneLogProbs[0] }
+        sortState(IntArray(search.batchSize))
 
-        val result = ArrayList<Pair<List<List<Pair<List<Int>, GenerationInfo>>>, List<List<Pair<List<Int>, GenerationInfo>>>>>()
+        val result = ArrayList<Pair<List<List<Pair<IntArray, GenerationInfo>>>, List<List<Pair<IntArray, GenerationInfo>>>>>()
         for (i in 0 until config.maxLen) {
             val selectedInds = search.step(logProbs, context)
             sortState(selectedInds)

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 @Tag("heavy")
-class PrefixMatchingTests {
+class PrefixMatchingTest {
     companion object {
         private val tokenizerConfig = bpeTokenizer
     }
@@ -63,7 +63,7 @@ class PrefixMatchingTests {
 
         prefixes.forEach { prefix ->
             val r = matcher.prefixTokensByErr(prefix, 1)
-            val tokens = r.subList(1, r.size).map { it.map { id -> tokenizer.decode(id) } }
+            val tokens = r.copyOfRange(1, r.size).map { it.map { id -> tokenizer.decode(id) } }
 
             assert(r.map { it.size }.sum() == tokenizer.vocabSize)
             assert(r.size == 3)

@@ -54,11 +54,11 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
         return result
     }
 
-    protected fun makeInputIds(context: String, maxLen: Int): List<Int> {
+    protected fun makeInputIds(context: String, maxLen: Int): IntArray {
         var inputIds = tokenizer.encode(context)
 
         if (inputIds.size >= maxTokenizerLen - 2 - maxLen) {
-            inputIds = inputIds.subList(inputIds.size - (maxTokenizerLen - 2 - maxLen), inputIds.size)
+            inputIds = inputIds.copyOfRange(inputIds.size - (maxTokenizerLen - 2 - maxLen), inputIds.size)
         }
 
         return inputIds
@@ -77,7 +77,7 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
         val codedTrimmed = tokenizer.encode(completion.substring(0, completion.length - i))
 
         var trimmedCompletion = completion
-        if (codedTrimmed == codedAll.subList(0, codedTrimmed.size)) {
+        if (codedTrimmed.contentEquals(codedAll.copyOfRange(0, codedTrimmed.size))) {
             trimmedCompletion = completion.substring(0, completion.length - i)
             genInfo.trim(codedTrimmed.size)
         }
@@ -98,7 +98,7 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
         if (i < completion.length) {
             val codedAll = tokenizer.encode(completion)
             val codedTrimmed = tokenizer.encode(completion.substring(0, i))
-            if (codedTrimmed == codedAll.subList(0, codedTrimmed.size)) {
+            if (codedTrimmed.contentEquals(codedAll.copyOfRange(0, codedTrimmed.size))) {
                 trimmedCompletion = completion.substring(0, i)
                 genInfo.trim(codedTrimmed.size)
             }
@@ -129,7 +129,7 @@ class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(con
         return result
     }
 
-    private fun decodeSequences(sequences: List<List<Pair<List<Int>, GenerationInfo>>>): List<List<Pair<String, GenerationInfo>>> {
+    private fun decodeSequences(sequences: List<List<Pair<IntArray, GenerationInfo>>>): List<List<Pair<String, GenerationInfo>>> {
         val result: MutableList<List<Pair<String, GenerationInfo>>> = ArrayList()
         for (group in sequences) {
             val decodedStrings = group.map { tokenizer.decode(it.first) }

@@ -9,15 +9,15 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 abstract class PrefixMatcher {
-    fun prefixTokens(prefix: String): List<Int> {
+    fun prefixTokens(prefix: String): IntArray {
         return prefixTokensByErr(prefix, errLimit = 0)[1]
     }
 
-    fun notPrefixTokens(prefix: String): List<Int> {
+    fun notPrefixTokens(prefix: String): IntArray {
         return prefixTokensByErr(prefix, errLimit = 0)[0]
     }
 
-    abstract fun prefixTokensByErr(prefix: String, errLimit: Int = 0): List<List<Int>>
+    abstract fun prefixTokensByErr(prefix: String, errLimit: Int = 0): Array<IntArray>
 
     companion object {
         fun errorsCount(s1: String, s2: String): Int {
@@ -36,7 +36,7 @@ abstract class PrefixMatcher {
                 return 0
             }
 
-            val matrix = MutableList(s2.length + 1) { MutableList(s1.length + 1) { 0 } }
+            val matrix = Array(s2.length + 1) { IntArray(s1.length + 1) }
             var prevColumn = matrix[0]
 
             for (i in s1.indices) {
@@ -65,17 +65,17 @@ abstract class PrefixMatcher {
                 }
             }
 
-            val lastValues = matrix.map { it[it.size - 1] }.toMutableList()
-            lastValues.addAll(currColumn)
+            var minValue = Int.MAX_VALUE
+            for (row in matrix) minValue = min(row[row.size - 1], minValue)
 
-            return Collections.min(lastValues)
+            return min(minValue, currColumn.min() ?: Int.MAX_VALUE)
         }
     }
 }
 
 class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
     private val tokens: List<String>
-    private val origInds: List<Int>
+    private val origInds: IntArray
     private val trie: Trie
 
     inner class Trie {
@@ -143,15 +143,12 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
     }
 
     init {
-        val tokensInds = (0 until tokenizer.vocabSize)
-            .map { tokenizer.decode(it) }
-            .mapIndexed { index, s -> Pair(index, s) }
-            .sortedBy { it.second }
+        val tokensInds = Array(tokenizer.vocabSize) { Pair(it, tokenizer.decode(it)) }.sortedBy { it.second }
 //        val allTokens = (0 until tokenizer.vocabSize)
 //            .map { tokenizer.decode(it) }
 //        val tokensInds = allTokens.mapIndexed { index, s -> Pair(index, s) }
 //            .sortedBy { it.second }
-        origInds = tokensInds.map { it.first }
+        origInds = IntArray(tokensInds.size) { tokensInds[it].first }
         tokens = tokensInds.map { it.second }
 
         trie = Trie()
@@ -170,16 +167,16 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
 //    }
 
     //    @lru_cache(maxsize = 50)
-    override fun prefixTokensByErr(prefix: String, errLimit: Int): List<List<Int>> {
+    override fun prefixTokensByErr(prefix: String, errLimit: Int): Array<IntArray> {
         if (errLimit < 0) {
-            return listOf(origInds)
+            return arrayOf(origInds)
         }
 
-        val edges = trie.prefixInds(prefix, errLimit).toSet().toList().sortedBy { it.first * tokenizer.vocabSize + it.second }  //  * tokenizer.vocabSize * tokenizer.vocabSize + it.second * tokenizer.vocabSize + it.third
+        val edges = trie.prefixInds(prefix, errLimit).sortedBy { it.first * tokenizer.vocabSize + it.second }  //  * tokenizer.vocabSize * tokenizer.vocabSize + it.second * tokenizer.vocabSize + it.third
         val bad = edges.filterIndexed { index, triple -> index < edges.size - 1 && triple.second > edges[index + 1].first || index > 0 && triple.first < edges[index - 1].second }
 
         var prevStart = 0
-        val result = MutableList<MutableList<Int>>(errLimit + 2) { ArrayList() }
+        val result = Array<MutableList<Int>>(errLimit + 2) { ArrayList() }
 
         for (triple in edges) {
             val start = triple.first
@@ -188,14 +185,14 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
 
             // TODO: it's tokenizer bug, arguments should be (prevStart, triple.first)
 //            if (prevStart < start) {
-            result[0].addAll(origInds.subList(prevStart, start))
+            result[0].addAll(origInds.slice(prevStart until start))
 //            }
             prevStart = finish
-            result[errCount + 1].addAll(origInds.subList(start, finish))
+            result[errCount + 1].addAll(origInds.slice(start until finish))
         }
 
-        result[0].addAll(origInds.subList(prevStart, origInds.size))
+        result[0].addAll(origInds.slice(prevStart until origInds.size))
 
-        return result
+        return Array(result.size) { result[it].toIntArray() }
     }
 }

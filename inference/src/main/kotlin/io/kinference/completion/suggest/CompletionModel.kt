@@ -24,6 +24,6 @@ class CompletionModel(private val completionsCollector: CompletionsCollector, pr
         if (postFilterModel != null) {
             completions = postFilterModel.filter(trimmedContext, prefix, completions, config.filter)
         }
-        return completions.map { it.first }.subList(0, min(config.numSeqs, completions.size))
+        return completions.take(min(config.numSeqs, completions.size)).map { it.first }
     }
 }

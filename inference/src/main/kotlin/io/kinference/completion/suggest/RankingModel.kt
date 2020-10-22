@@ -6,7 +6,7 @@ interface RankingModel {
     fun rank(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>): List<Pair<String, GenerationInfo>>
 }
 
-class FirstProbRankingModel() : RankingModel {
+class FirstProbRankingModel : RankingModel {
     override fun rank(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>): List<Pair<String, GenerationInfo>> {
         val comparatorBase = 100
         return completions.sortedBy { completion ->

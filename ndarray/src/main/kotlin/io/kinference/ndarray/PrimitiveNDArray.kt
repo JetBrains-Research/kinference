@@ -103,6 +103,10 @@ open class PrimitiveNDArray(val array: PrimitiveArray, strides: Strides = Stride
         return MutablePrimitiveNDArray(array.copyOfRange(start, start + rowLength), Strides(dims))
     }
 
+    override fun copyOfRange(start: Int, end: Int): PrimitiveArray {
+        return array.copyOfRange(start, end)
+    }
+
     // TODO check if step == 1 and use Arrays.copy
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
         array as LateInitPrimitiveArray

@@ -5,6 +5,7 @@ import java.lang.Integer.min
 
 class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
     var probs: MutableList<Double>
+        private set
 
     init {
         probs = initProbs.toMutableList()
@@ -16,7 +17,7 @@ class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = 
 
     fun trim(left: Int, right: Int? = null): GenerationInfo {
         var realLeft = left
-        var realRight = 0
+        var realRight: Int
         if (right == null) {
             realLeft = 0
             realRight = min(left, probs.size)

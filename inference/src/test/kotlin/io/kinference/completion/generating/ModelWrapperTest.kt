@@ -16,7 +16,7 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testInit() {
         val model = OnnxModelWrapper(config)
-        val result1 = model.initLogProbs(listOf(listOf(1, 2, 3, 452)))
+        val result1 = model.initLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
         val targetProb1 = -23.7406
         assertTrue(kotlin.math.abs(result1.first[0][result1.first[0].size - 1][234] - targetProb1) < 0.1)
     }
@@ -26,7 +26,7 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testInitLast() {
         val model = OnnxModelWrapper(config)
-        val result1 = model.initLastLogProbs(listOf(listOf(1, 2, 3, 452)))
+        val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
         val targetProb1 = -23.7406
         assertTrue(kotlin.math.abs(result1.first[0][234] - targetProb1) < 0.1)
     }
@@ -36,9 +36,9 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testGetLogsOne() {
         val model = OnnxModelWrapper(config)
-        val result1 = model.initLastLogProbs(listOf(listOf(1, 2, 3, 452)))
+        val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
-        val result2 = model.getLogProbs(listOf(listOf(578)), result1.second)
+        val result2 = model.getLogProbs(arrayOf(intArrayOf(578)), result1.second)
         val targetProb2 = -20.3615
         assertTrue(kotlin.math.abs(result2.first[0][0][234] - targetProb2) < 0.3)
     }
@@ -48,11 +48,11 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testGetLogsFew() {
         val model = OnnxModelWrapper(config)
-        val result1 = model.initLastLogProbs(listOf(listOf(1, 2, 3, 452)))
+        val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
         val doublePast = reorderPastStates(result1.second, listOf(0, 0))
 
-        val result3 = model.getLogProbs(listOf(listOf(578), listOf(23)), doublePast)
+        val result3 = model.getLogProbs(arrayOf(intArrayOf(578), intArrayOf(23)), doublePast)
         val targetProb30 = -20.3615
         val targetProb31 = -16.4451
         assertTrue(kotlin.math.abs(result3.first[0][0][234] - targetProb30) < 0.3)
@@ -64,11 +64,11 @@ class ModelWrapperTest {
     @Tag("heavy")
     fun testGetLastLogsFew() {
         val model = OnnxModelWrapper(config)
-        val result1 = model.initLastLogProbs(listOf(listOf(1, 2, 3, 452)))
+        val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
         val doublePast = reorderPastStates(result1.second, listOf(0, 0))
 
-        val result4 = model.getLastLogProbs(listOf(578, 23), doublePast)
+        val result4 = model.getLastLogProbs(intArrayOf(578, 23), doublePast)
         val targetProb40 = -20.3615
         val targetProb41 = -16.4451
         assertTrue(kotlin.math.abs(result4.first[0][234] - targetProb40) < 0.3)

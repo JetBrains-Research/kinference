@@ -1,7 +1,6 @@
 package io.kinference.completion.suggest
 
 import io.kinference.completion.generating.GenerationInfo
-import kotlin.math.roundToInt
 
 class OneVariantFeatures(val context: String, completion: Pair<String, GenerationInfo>, val prefix: String = "") {
 
@@ -55,18 +54,11 @@ class OneVariantFeatures(val context: String, completion: Pair<String, Generatio
 class Features {
     companion object {
         fun prob(generationInfo: GenerationInfo): Double {
-            var prob = 1.0
-            generationInfo.probs.forEach {
-                prob *= it
-            }
-            return prob
+            return generationInfo.probs.reduce(Double::times)
         }
 
         fun meanProb(generationInfo: GenerationInfo): Double {
-            var probsSum = 0.0
-            generationInfo.probs.forEach {
-                probsSum += it
-            }
+            val probsSum = generationInfo.probs.reduce(Double::plus)
             return probsSum / generationInfo.probs.size
         }
 
