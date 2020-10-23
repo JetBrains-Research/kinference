@@ -193,9 +193,12 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
             val lastPredictions = search.lastPredictions()
             updatePrefix(lastPredictions)
 
-            logProbs = getLogProbs(lastPredictions)
-            val isEndOfWords = isEndOfWords(logProbs)
-            result.add(Pair(search.terminatedHypotheses(), search.maskedHypotheses(isEndOfWords)))
+            if (i < config.maxLen - 1) {
+                logProbs = getLogProbs(lastPredictions)
+            }
+//            val isEndOfWords = isEndOfWords(logProbs)
+//            result.add(Pair(search.terminatedHypotheses(), search.maskedHypotheses(isEndOfWords)))
+            result.add(Pair(search.terminatedHypotheses(), search.currentHypotheses()))
         }
 
         resetState()
