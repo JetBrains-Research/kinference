@@ -15,6 +15,4 @@ tasks.compileKotlin {
 dependencies {
     api(kotlin("stdlib"))
     api("io.kinference.primitives","primitives-annotations","0.1.1")
-
-    implementation("com.beust", "klaxon", "5.0.1")
 }

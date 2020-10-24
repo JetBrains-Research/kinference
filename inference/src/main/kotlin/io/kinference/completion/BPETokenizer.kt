@@ -1,7 +1,7 @@
 package io.kinference.completion
 
-import com.beust.klaxon.Parser
-import com.beust.klaxon.JsonObject
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -175,10 +175,10 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
     }
 
     init {
-        val parser: Parser = Parser.default()
-        val vocabJson: JsonObject = parser.parse(vocabPath) as JsonObject
-        for (pair in vocabJson.map.entries) {
-            val value = pair.value as Int
+        val mapType = object : TypeReference<HashMap<String, Int>>() {}
+        val vocabJson = ObjectMapper().readValue(File(vocabPath), mapType)
+        for (pair in vocabJson.entries) {
+            val value = pair.value
             vocab[pair.key] = value
             reversedVocab[value] = pair.key
         }
@@ -213,7 +213,7 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
         var merges = File(mergesPath).readLines()
 //        val merges: JsonArray<String> = parser.parse(mergesPath) as JsonArray<String>
         if (merges[0][0] == '#') {
-            merges = merges.subList(1, merges.size)
+            merges = merges.drop(1)
         }
         for (line in merges) {
             val words = line.split(" ")
