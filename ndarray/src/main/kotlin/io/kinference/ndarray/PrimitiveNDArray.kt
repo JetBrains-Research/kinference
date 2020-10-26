@@ -6,6 +6,7 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
+import java.lang.IllegalStateException
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.sign
@@ -14,6 +15,108 @@ import kotlin.math.sign
 class PrimitiveTiledArray(val strides: Strides) {
     companion object {
         const val MIN_BLOCK_SIZE = 1024
+    }
+
+    data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
+    class Iterator {
+        val array: PrimitiveTiledArray
+
+        var blockNum: Int
+        var indexInBlock: Int
+
+        var currentBlock: PrimitiveArray
+
+        constructor(array: PrimitiveTiledArray, startIndex: Int = 0) {
+            require(startIndex >= 0 && startIndex < array.size) { "Start index of Iterator must be >= 0 and < array size" }
+            this.array = array
+            this.blockNum = startIndex / array.blockSize
+            this.indexInBlock = startIndex % array.blockSize
+            this.currentBlock = array.blocks[blockNum]
+        }
+
+        var linearIndex: Int
+            get() = blockNum * array.blockSize + indexInBlock
+            set(value) {
+                require(value >= 0 && value < array.size) { "Linear index of Iterator must be >= 0 and < array size" }
+                this.blockNum = value / array.blockSize
+                this.indexInBlock = value % array.blockSize
+                this.currentBlock = array.blocks[blockNum]
+            }
+
+        fun set(value: PrimitiveType) {
+            currentBlock[indexInBlock] = value
+        }
+
+        fun get(): PrimitiveType {
+            return currentBlock[indexInBlock]
+        }
+
+        fun block(): BlockWithOffset {
+            return BlockWithOffset(currentBlock, indexInBlock)
+        }
+
+        fun next(): PrimitiveType {
+            when {
+                indexInBlock < array.blockSize - 1 -> indexInBlock++
+                blockNum < array.blocksNum - 1 -> {
+                    blockNum++
+                    indexInBlock = 0
+                    currentBlock = array.blocks[blockNum]
+                }
+                else -> throw IllegalStateException("No more elements in array")
+            }
+
+            return currentBlock[indexInBlock]
+        }
+
+        fun hasNext(): Boolean = blockNum < array.blocksNum - 1 || indexInBlock < array.blockSize - 1
+
+        fun nextBlock(): BlockWithOffset {
+            if (blockNum < array.blocksNum - 1){
+                blockNum++
+                indexInBlock = 0
+                currentBlock = array.blocks[blockNum]
+                return BlockWithOffset(currentBlock, indexInBlock)
+            } else throw IllegalStateException("No more blocks in array")
+        }
+
+        fun hasNextBlock(): Boolean = blockNum < array.blocksNum - 1
+
+        fun prev(): PrimitiveType {
+            when {
+                indexInBlock > 0 -> indexInBlock--
+                blockNum > 0 -> {
+                    blockNum--
+                    indexInBlock = array.blockSize - 1
+                    currentBlock = array.blocks[blockNum]
+                }
+                else -> throw IllegalStateException("No more elements in array")
+            }
+
+            return currentBlock[indexInBlock]
+        }
+
+        fun hasPrev(): Boolean = blockNum > 0 || indexInBlock > 0
+
+        inline fun accept(other: Iterator, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
+            require(this.indexInBlock == other.indexInBlock) { "Iterators must have same offsets in block" }
+            require(this.array.blockSize == other.array.blockSize) { "Arrays must have same block sizes" }
+            require(this.array.size - this.linearIndex >= count) { "Not enough elements for operation in array" }
+            require(other.array.size - other.linearIndex >= count) { "Not enough elements for operation in array" }
+
+            var dst = this.block()
+            var src = other.block()
+            var end = count
+            while (this.hasNextBlock()) {
+                for (index in dst.offset until Math.min(dst.block.size, end)) {
+                    dst.block[index] = action(dst.block[index], src.block[index])
+                }
+
+                dst = this.nextBlock()
+                src = other.nextBlock()
+                end -= dst.block.size
+            }
+        }
     }
 
     val size: Int = strides.linearSize
@@ -88,6 +191,8 @@ class PrimitiveTiledArray(val strides: Strides) {
             }
         }
     }
+
+    fun iterator(startIndex: Int = 0) = Iterator(this, startIndex)
 
     fun toArray(): PrimitiveArray {
         if (size == 0) {
