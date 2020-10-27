@@ -29,16 +29,4 @@ class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = 
         probs = probs.subList(realLeft, realRight)
         return this
     }
-
-//    fun probs(): List<Float> {
-//        return probs
-//    }
-
-//    fun toDict() {
-//        return {"probs": self._probs, "word_len": self.word_len}
-//    }
-//
-//    @staticmethod
-//    def from_dict(dict):
-//    return GenerationInfo(dict["probs"], dict["word_len"])
 }

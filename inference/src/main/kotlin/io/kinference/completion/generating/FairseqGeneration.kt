@@ -12,7 +12,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
     private var prefixes: List<Pair<String, Int>>? = null  // ArrayList()
     private var mems: List<MutableNDArray>? = null
 
-    private val padTokenId = tokenizer.eosTokenId
     private val eosTokenId = tokenizer.eosTokenId
     private val vocabSize = tokenizer.vocabSize
 
@@ -28,19 +27,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         if (config.numGroups > 1) {
             throw IllegalArgumentException("num groups > 1 is not supported")
 
-//            if (verbose) {
-//                print("\nUsing Diverse search")
-//                print(
-//                    f"Search parameters: "
-//                    f "vocab_size: {self.vocab_size}, "
-//                    f "beam_size: {num_beams}, "
-//                    f "num_groups: {num_groups}, "
-//                    f "diversity_strength: {self._diversity_strength}, "
-//                    f "len_norm_base: {self._len_norm_base}, "
-//                    f "len_norm_pow: {self._len_norm_pow}, "
-//                    f "repetition_penalty: {repetition_penalty}"
-//                )
-//            }
 //            return DiverseBeamSearch(
 //                eos_ids = [self.eos_token_id],
 //                vocab_size = self.vocab_size,
@@ -52,16 +38,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
 //                repetition_penalty = repetition_penalty
 //            )
         } else {
-//            if (verbose) {
-//                print("Using Beam search")
-//                print("Search parameters: " +
-//                    "vocab_size: $vocabSize, " +
-//                    "beam_size: $numBeams, " +
-//                    "len_norm_base: $lenNormBase, " +
-//                    "len_norm_pow: $lenNormPow, " +
-//                    "repetition_penalty: $repetitionPenalty"
-//                )
-//            }
             return BeamSearch(
                 intArrayOf(eosTokenId),
                 vocabSize,
@@ -74,8 +50,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
     }
 
     private fun modifyScore(scores: Array<DoubleArray>): Array<DoubleArray> {
-        // prefix
-
         prefixes!!.forEachIndexed { i, (prefix, err_limit) ->
             if (prefix != "") {
                 val prefixIndsByErr = prefixMatcher.prefixTokensByErr(prefix, err_limit)

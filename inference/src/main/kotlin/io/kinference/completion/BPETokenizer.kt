@@ -183,35 +183,7 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
             reversedVocab[value] = pair.key
         }
 
-//        var vocabLine = File(vocabPath).readLines()[0]
-//        vocabLine = vocabLine.substring(1, vocabLine.length - 2)
-//        val pieces = vocabLine.split("\"")
-//        var i = 1
-//        var lastInd = 1
-//        var key: String?
-//        var value: Int?
-//        val g = 'Ġ'
-//        while (i < pieces.size) {
-//            val s = pieces[i]
-//            if (s.endsWith("Model")) {
-//                var a = 0
-//            }
-//            if (s.matches(Regex(": [0-9]+, "))) {
-//                value = s.substring(2, s.indexOf(',')).toInt()
-//                key = pieces.subList(lastInd, i).joinToString("\"")
-//                lastInd = i + 1
-//
-//                vocab[key] = value
-//                reversedVocab[value] = key
-//            }
-//            i += 1
-//            if (i % 100 == 0) {
-//                var a = 0
-//            }
-//        }
-
         var merges = File(mergesPath).readLines()
-//        val merges: JsonArray<String> = parser.parse(mergesPath) as JsonArray<String>
         if (merges[0][0] == '#') {
             merges = merges.drop(1)
         }

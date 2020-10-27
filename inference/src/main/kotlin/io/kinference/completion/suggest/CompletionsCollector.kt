@@ -106,10 +106,6 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
 
         return Pair(trimmedCompletion, genInfo)
     }
-
-//    override fun prediction_info(context: String, predictions: List<String>): List<GenerationInfo> {
-//        return listOf()
-//    }
 }
 
 class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(config) {

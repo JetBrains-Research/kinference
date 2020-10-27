@@ -14,9 +14,6 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
      */
     abstract val batchSize: Int
 
-    @ExperimentalUnsignedTypes
-    abstract fun ndStep(ndStepLogProbs: MutableNumberNDArray, context: IntArray): IntArray
-
     abstract fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): IntArray
 
     protected fun stepCheck(logProbs: NDArray) {
@@ -64,68 +61,9 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     private var sortMask: IntArray? = null
     private val eosIdsSet: Set<Int> = eosIds.toSet()
 
-    private fun initState(type: DataType) {
-//        scores = torch.zeros(1, dtype = type)
-//        hypotheses = torch.empty(1, 0, dtype = torch.long)
-//        each_step_probs = torch.empty(1, 0, dtype = dtype)
-//        eos_tensor = torch.tensor(self._eos_ids, dtype = torch.long).unsqueeze(1)
-    }
-
-    private fun toDoubleList2d(data: NumberNDArray): Array<DoubleArray> {
-        assert(data.shape.size == 2)
-
-        val rowLength: Int = data.linearSize / data.shape[0]
-        return Array(data.shape[0]) {
-            val rowStart = it * rowLength
-            data.copyOfRange(rowStart, rowLength + rowLength) as DoubleArray
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    override fun ndStep(ndStepLogProbs: MutableNumberNDArray, context: IntArray): IntArray {
-        ndModifyScore(ndStepLogProbs, context)
-        super.stepCheck(ndStepLogProbs)
-
-//        if (scores == null) {
-//            initState(stepLogProbs.type)
-//        }
-
-        val stepLogProbs = toDoubleList2d(ndStepLogProbs)
-
-        val ndScores = DoubleNDArray(scores.toDoubleArray(), Strides(intArrayOf(scores.size)))
-        val ndLogProbs = ndStepLogProbs.plus(ndScores) as DoubleNDArray
-        val logProbs = ndLogProbs.array
-
-        //val flattenStepLogProbs = stepLogProbs.map { it.map { e -> kotlin.math.exp(e) }.toMutableList() }.flatten()
-        val stepLogProbsLinearSize = stepLogProbs.sumBy { it.size }
-        var offset = 0
-        val expStepLogProbs = DoubleArray(stepLogProbsLinearSize)
-        for (probs in stepLogProbs) {
-            for (value in probs) expStepLogProbs[offset++] = kotlin.math.exp(value)
-        }
-
-        var samples = topk1d(logProbs, min((1 + eosIds.size) * searchSize, ndLogProbs.shape[0]))
-
-        val samplesStepLogProbs = expStepLogProbs.sliceArray(samples)
-        val sortMask = IntArray(samples.size) { floorDiv(samples[it], vocabSize) }
-        samples = IntArray(samples.size) { floorMod(samples[it], vocabSize) }
-
-        initSortMask()
-        val sampleScores = logProbs.sliceArray(samples)
-        updateState(samples, sampleScores, samplesStepLogProbs, sortMask)
-        length.plus(1)
-
-        return sortMask
-    }
-
     override fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): IntArray {
         modifyScore(stepLogProbs, context)
-        // TODO: check
-//        super.stepCheck(stepLogProbs)
 
-//        if (scores == null) {
-//            initState(stepLogProbs.type)
-//        }
         val stepLogProbsLinearSize = stepLogProbs.sumBy { it.size }
         val logProbs = DoubleArray(stepLogProbsLinearSize)
         val expStepLogProbs = DoubleArray(stepLogProbsLinearSize)
@@ -154,24 +92,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         return sortMask!!
     }
 
-    @ExperimentalUnsignedTypes
-    private fun ndModifyScore(scores: MutableNumberNDArray, context: IntArray) {
-        // repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
-
-        if (repetitionPenalty != 1.0) {
-            for (i in 0 until scores.shape[0]) {
-                ndPessimizeScore(scores, i, context.toSet())
-            }
-
-            for (i in hypotheses.indices) {
-                ndPessimizeScore(scores, i, hypotheses[i].toSet())
-            }
-        }
-    }
-
     private fun modifyScore(scores: Array<DoubleArray>, context: IntArray) {
-        // repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
-
         if (repetitionPenalty != 1.0) {
             val uniqueTokens = context.toSet()
             for (i in scores.indices) {
@@ -182,17 +103,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
                 pessimizeScore(scores, i, hypotheses[i].toSet())
             }
         }
-    }
-
-    private fun ndPessimizeScore(scores: MutableNumberNDArray, ind: Int, uniqueTokens: Set<Int>) {
-        val row = scores[ind] as MutableNumberNDArray
-
-        for (previousToken in uniqueTokens) {
-            val score = row[previousToken] as Double
-            row[previousToken] = score * if (score < 0.0) repetitionPenalty else 1.0 / repetitionPenalty
-        }
-
-        scores[ind] = row
     }
 
     private fun pessimizeScore(scores: Array<DoubleArray>, ind: Int, uniqueTokens: Set<Int>) {
@@ -210,7 +120,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
                 ans.add(Pair(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i], score[i])))
             }
         }
-//        ans.sortBy { -it.second.score }
 
         return listOf(ans)
     }
@@ -221,7 +130,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
             ans.add(Pair(hypothesis.first.toIntArray(), GenerationInfo(score = hypothesis.second)))
         }
 
-        // ans.sortBy { -it.second.score }
         return listOf(ans)
     }
 
@@ -231,7 +139,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
             Pair(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it], score[it]))
         }
 
-        // ans.sortBy { -it.second.score }
         return listOf(ans)
     }
 
@@ -249,8 +156,8 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
         scores = sampleScores.toMutableList()
         for (i in hypotheses.indices) {
-            hypotheses[i].add(samples[i])  // hypotheses is 5 of one list, should be a copy
-            eachStepProbs[i].add(stepLogProbs[i])  // same
+            hypotheses[i].add(samples[i])
+            eachStepProbs[i].add(stepLogProbs[i])
         }
         stashTerminated(samples)
     }
@@ -288,9 +195,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     private fun applySliceToState(tensorSlice: IntArray) {
         scores = scores.slice(tensorSlice).toMutableList()
-//        hypotheses = hypotheses.slice(tensorSlice)
         hypotheses = tensorSlice.map { ArrayList(hypotheses[it]) }
-//        eachStepProbs = eachStepProbs.slice(tensorSlice)
         eachStepProbs = tensorSlice.map { ArrayList(eachStepProbs[it]) }
         if (sortMask != null) {
             sortMask = sortMask!!.sliceArray(tensorSlice)

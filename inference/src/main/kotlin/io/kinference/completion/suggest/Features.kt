@@ -30,25 +30,6 @@ class OneVariantFeatures(val context: String, completion: Pair<String, Generatio
         features[prob] = completion.second.probs.foldRight(1.0) { x, y -> x * y }
         features[mean_log_prob] = 1.0
     }
-
-//    self.values = OrderedDict(
-//    {OneVariantFeatures.prob: np.prod(self.generation_info.probs()),
-//        OneVariantFeatures.probs: self.generation_info.probs().copy(),
-//        OneVariantFeatures.mean_log_prob: avg_log_prob(self.generation_info.probs()),
-//        OneVariantFeatures.match_prefix: prefix_matched_count(self.prefix, self.completion) == len(self.prefix),
-//        OneVariantFeatures.prefix_matched_cnt: prefix_matched_count(self.prefix, self.completion),
-//        OneVariantFeatures.first_token_prob: self.generation_info.probs()[0],
-//        OneVariantFeatures.max_prob: max(self.generation_info.probs()),
-//        OneVariantFeatures.min_prob: min(self.generation_info.probs()),
-//        OneVariantFeatures.tokens_len: len(self.generation_info.probs()),
-//        OneVariantFeatures.word_len: self.generation_info.word_len,
-//        OneVariantFeatures.symbol_len: len(self.completion) - len(prefix),
-//        OneVariantFeatures.alphas_ration: sum(c.isalpha() for c in self.completion) / len(self.completion),
-//        OneVariantFeatures.context_len: len(self.context),
-//        OneVariantFeatures.start_from_word: self.completion[0] == ' ' and self.completion[1].isalpha(),
-//        OneVariantFeatures.is_repetition: is_repetition(self.completion, context)
-//    }
-//    )
 }
 
 class Features {

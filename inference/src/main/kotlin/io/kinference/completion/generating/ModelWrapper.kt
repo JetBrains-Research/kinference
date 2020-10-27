@@ -12,7 +12,6 @@ interface ModelWrapper {
 
     fun initLastLogProbs(inputIds: Array<IntArray>): Pair<Array<DoubleArray>, List<MutableNDArray>> {
         val (score, mems) = initLogProbs(inputIds)
-        // (batchSize, seqLen, vocabSize) -> (batchSize, vocabSize)
         val lastProbs: Array<DoubleArray> = Array(score.size) { score[it].last() }
         return Pair(lastProbs, mems)
     }
@@ -21,7 +20,6 @@ interface ModelWrapper {
 
     fun getLastLogProbs(inputIds: IntArray, past: List<MutableNDArray>): Pair<Array<DoubleArray>, List<MutableNDArray>> {
         val (score, mems) = getLogProbs(Array(inputIds.size) { intArrayOf(inputIds[it]) }, past)
-        // (batchSize, seqLen, vocabSize) -> (batchSize, vocabSize)
         val lastProbs: Array<DoubleArray> = Array(score.size) { score[it].last() }
         return Pair(lastProbs, mems)
     }
