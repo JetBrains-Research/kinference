@@ -5,6 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.*
+import java.lang.System.currentTimeMillis
 
 interface ModelWrapper {
     fun initLogProbs(inputIds: Array<IntArray>): Pair<List<Array<DoubleArray>>, List<MutableNDArray>>
@@ -32,6 +33,8 @@ class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
     private val hiddenSize = config.hiddenSize
     private val numLayer = config.numLayer
     private val vocabSize = config.vocabSize
+    var time = 0.0
+    var timeCnt = 0
 //    distilgpt2_l3_h12_d256_int8
 
     @ExperimentalUnsignedTypes
@@ -83,7 +86,11 @@ class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
     }
 
     private fun process(input: ArrayList<Tensor>, batchSize: Int, seqLen: Int): Pair<List<Array<DoubleArray>>, List<MutableNDArray>> {
+        val start = currentTimeMillis()
         val output = model.predict(input)
+        timeCnt += 1
+        time += currentTimeMillis() - start
+        println("Time: ${time / timeCnt}, ${currentTimeMillis() - start}\r")
         val ndProbs = (output[0] as Tensor).data
 
         val probs: List<Array<DoubleArray>> = List(batchSize) { Array(seqLen) { DoubleArray(vocabSize) } }
