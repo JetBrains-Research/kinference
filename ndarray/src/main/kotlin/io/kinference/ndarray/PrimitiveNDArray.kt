@@ -12,10 +12,56 @@ import java.lang.IllegalStateException
 import kotlin.math.*
 
 @PrimitiveClass
-class PrimitiveTiledArray(val strides: Strides) {
+class PrimitiveTiledArray(val size: Int, val blockSize: Int) {
     companion object {
         const val MIN_BLOCK_SIZE = 64
         val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
+
+        operator fun invoke(strides: Strides): PrimitiveTiledArray {
+            return when {
+                strides.linearSize == 0 -> PrimitiveTiledArray(0, 0)
+                strides.shape.isEmpty() -> PrimitiveTiledArray(1, 1)
+                else -> {
+                    val rowSize = strides.shape.last()
+                    val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
+                        var num = rowSize / MIN_BLOCK_SIZE
+                        while (rowSize % num != 0) num--
+                        rowSize / num
+                    }
+
+                    PrimitiveTiledArray(strides.linearSize, blockSize)
+                }
+            }
+        }
+
+        operator fun invoke(array: PrimitiveArray, strides: Strides): PrimitiveTiledArray {
+            require(strides.linearSize == array.size)
+
+            val tiledArray = PrimitiveTiledArray(strides)
+
+            var startIndex = 0
+            var endIndex = tiledArray.blockSize
+            for (block in tiledArray.blocks) {
+                array.copyInto(block, 0, startIndex, endIndex)
+                startIndex = endIndex
+                endIndex += tiledArray.blockSize
+            }
+
+            return tiledArray
+        }
+
+        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+            val tiledArray = PrimitiveTiledArray(strides)
+
+            var count = 0
+            for (block in tiledArray.blocks) {
+                for (idx in 0 until tiledArray.blockSize) {
+                    block[idx] = init(count++)
+                }
+            }
+
+            return tiledArray
+        }
     }
 
     data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
@@ -172,75 +218,19 @@ class PrimitiveTiledArray(val strides: Strides) {
         }
     }
 
-    val size: Int = strides.linearSize
-    val colSize: Int
-
-    val blockSize: Int
-    val blocksNum: Int
-    val blocksInRow: Int
-    val blocks: Array<PrimitiveArray>
-
     init {
-        when {
-            strides.linearSize == 0 -> {
-                blocks = emptyArray()
-                blockSize = 0
-                blocksNum = 0
-                blocksInRow = 0
-                colSize = 0
-            }
-            strides.shape.isEmpty() -> {
-                blockSize = 1
-                blocksNum = 1
-                blocksInRow = 1
-                colSize = 1
-                blocks = Array(1) { PrimitiveArray(1) }
-            }
-            else -> {
-                val rowSize = strides.shape.last()
-                blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
-                    var num = rowSize / MIN_BLOCK_SIZE
-                    while (rowSize % num != 0) num--
-                    rowSize / num
-                }
-
-                blocksInRow = rowSize / blockSize
-                blocksNum = size / blockSize
-                blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
-                colSize = strides.shape.getOrElse(strides.shape.lastIndex - 1) { 1 }
-            }
-        }
+        if (blockSize != 0)
+            require(size % blockSize == 0) { "Size must divide blockSize" }
     }
 
-    constructor(array: PrimitiveArray, strides: Strides) : this(strides) {
-        require(strides.linearSize == array.size)
+    val blocksNum = if (blockSize == 0) 0 else size / blockSize
+    val blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
 
-        if (strides.shape.isEmpty()) {
-            blocks[0][0] = array[0]
-            return
-        }
-
-        var startIndex = 0
-        var endIndex = blockSize
-        for (block in blocks) {
-            array.copyInto(block, 0, startIndex, endIndex)
-            startIndex = endIndex
-            endIndex += blockSize
-        }
-    }
-
-    constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(strides) {
-        if (strides.shape.isEmpty()) {
-            blocks[0][0] = init(0)
-            return
-        }
-
-        var counter = 0
-
+    constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
+        var count = 0
         for (block in blocks) {
             for (idx in 0 until blockSize) {
-                block[idx] = init(counter)
-                counter++
+                block[idx] = init(count++)
             }
         }
     }
@@ -253,13 +243,7 @@ class PrimitiveTiledArray(val strides: Strides) {
             return PrimitiveArray(0)
         }
 
-        if (strides.shape.isEmpty()) {
-            val output = PrimitiveArray(1)
-            output[0] = blocks[0][0]
-            return output
-        }
-
-        val array = PrimitiveArray(strides.linearSize)
+        val array = PrimitiveArray(size)
         var offset = 0
 
         for (block in blocks) {
@@ -287,7 +271,7 @@ class PrimitiveTiledArray(val strides: Strides) {
     }
 
     fun copyOf(): PrimitiveTiledArray {
-        val copyArray = PrimitiveTiledArray(strides)
+        val copyArray = PrimitiveTiledArray(size, blockSize)
 
         for (blockNum in 0 until blocksNum) {
             val thisBlock = this.blocks[blockNum]
@@ -412,6 +396,13 @@ class PrimitiveTiledArray(val strides: Strides) {
 //TODO: var at array to val
 open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : NumberNDArray {
     constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
+
+    protected val blocksInRow: Int
+        get() = when {
+            strides.linearSize == 0 -> 0
+            strides.shape.isEmpty() -> 1
+            else -> strides.shape.last() / array.blockSize
+        }
 
     override val type = DataType.UNKNOWN
 
@@ -620,7 +611,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
 
     private fun plusScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.strides.shape.contentEquals(destination.strides.shape))
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
 
         for (blockNum in 0 until array.blocksNum) {
             val arrayBlock = array.blocks[blockNum]
@@ -699,7 +690,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     override fun times(other: NumberNDArray): MutableNumberNDArray = times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
 
     private fun timesScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.strides.shape.contentEquals(destination.strides.shape))
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
 
         for (blockNum in 0 until array.blocksNum) {
             val arrayBlock = array.blocks[blockNum]
@@ -797,19 +788,19 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         val m = other.shape[1]
         val t = this.shape[1]
 
-        val resortedLeft = resortBlocks(this.array.blocks, this.array.colSize, this.array.blocksInRow)
-        val resortedRight = resortBlocks(other.array.blocks, other.array.colSize, other.array.blocksInRow)
-        val resortedDest = resortBlocks(destination.array.blocks, destination.array.colSize, destination.array.blocksInRow)
+        val resortedLeft = resortBlocks(this.array.blocks, this.shape[0], this.blocksInRow)
+        val resortedRight = resortBlocks(other.array.blocks, other.shape[0], other.blocksInRow)
+        val resortedDest = resortBlocks(destination.array.blocks, destination.shape[0], destination.blocksInRow)
 
         val rdBlockSize = destination.array.blockSize
-        for (rdCol in 0 until other.array.blocksInRow) {
+        for (rdCol in 0 until other.blocksInRow) {
             val rightIdx = rdCol * t
             val destIdx = rdCol * n
 
             for (i in 0 until n) {
                 val destBlock = resortedDest[destIdx + i]
 
-                for (lCol in 0 until this.array.blocksInRow) {
+                for (lCol in 0 until this.blocksInRow) {
                     val leftBlock = resortedLeft[i + lCol * n]
                     val rightIdxOffset = rightIdx + this.array.blockSize * lCol
 
@@ -1178,15 +1169,17 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         val newStrides = Strides(newShape)
         val newArray = PrimitiveTiledArray(newStrides)
 
+        val newBlocksInRow = newShape[1] / newArray.blockSize
+
         var blockNum = 0
 
         for (row in 0 until newShape[0]) {
             val (blockOffset, offset) = array.indexFor(row)
             var col = 0
-            for (i in 0 until newArray.blocksInRow) {
+            for (i in 0 until newBlocksInRow) {
                 val block = newArray.blocks[blockNum++]
                 for (idx in 0 until newArray.blockSize) {
-                    block[idx] = this.array.blocks[blockOffset + col * this.array.blocksInRow][offset]
+                    block[idx] = this.array.blocks[blockOffset + col * this.blocksInRow][offset]
                     col++
                 }
             }
