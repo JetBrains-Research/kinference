@@ -7,26 +7,25 @@ import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
 import java.lang.IllegalStateException
-import kotlin.math.abs
-import kotlin.math.exp
-import kotlin.math.sign
+import kotlin.math.*
 
 @PrimitiveClass
 class PrimitiveTiledArray(val strides: Strides) {
     companion object {
-        const val MIN_BLOCK_SIZE = 1024
+        const val MIN_BLOCK_SIZE = 64
     }
 
     data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
-    class Iterator {
+    abstract class BaseIterator {
         val array: PrimitiveTiledArray
 
-        var blockNum: Int
-        var indexInBlock: Int
+        protected var blockNum: Int
+        protected var indexInBlock: Int
 
-        var currentBlock: PrimitiveArray
+        protected var currentBlock: PrimitiveArray
+        protected var isInitialized: Boolean = false
 
-        constructor(array: PrimitiveTiledArray, startIndex: Int = 0) {
+        constructor(array: PrimitiveTiledArray, startIndex: Int) {
             require(startIndex >= 0 && startIndex < array.size) { "Start index of Iterator must be >= 0 and < array size" }
             this.array = array
             this.blockNum = startIndex / array.blockSize
@@ -38,25 +37,32 @@ class PrimitiveTiledArray(val strides: Strides) {
             get() = blockNum * array.blockSize + indexInBlock
             set(value) {
                 require(value >= 0 && value < array.size) { "Linear index of Iterator must be >= 0 and < array size" }
+                this.isInitialized = false
                 this.blockNum = value / array.blockSize
                 this.indexInBlock = value % array.blockSize
                 this.currentBlock = array.blocks[blockNum]
             }
+    }
 
+    class Iterator(array: PrimitiveTiledArray, startIndex: Int = 0): BaseIterator(array, startIndex) {
         fun set(value: PrimitiveType) {
+            require(isInitialized) { "Iterator not initialized" }
             currentBlock[indexInBlock] = value
         }
 
         fun get(): PrimitiveType {
+            require(isInitialized) { "Iterator not initialized" }
             return currentBlock[indexInBlock]
         }
 
         fun block(): BlockWithOffset {
+            require(isInitialized) { "Iterator not initialized" }
             return BlockWithOffset(currentBlock, indexInBlock)
         }
 
         fun next(): PrimitiveType {
             when {
+                !isInitialized -> isInitialized = true
                 indexInBlock < array.blockSize - 1 -> indexInBlock++
                 blockNum < array.blocksNum - 1 -> {
                     blockNum++
@@ -70,50 +76,63 @@ class PrimitiveTiledArray(val strides: Strides) {
         }
 
         fun hasNext(): Boolean = blockNum < array.blocksNum - 1 || indexInBlock < array.blockSize - 1
+    }
 
-        fun nextBlock(): BlockWithOffset {
-            if (blockNum < array.blocksNum - 1){
-                blockNum++
-                indexInBlock = 0
-                currentBlock = array.blocks[blockNum]
-                return BlockWithOffset(currentBlock, indexInBlock)
-            } else throw IllegalStateException("No more blocks in array")
+    class BlockIterator(array: PrimitiveTiledArray, startIndex: Int = 0): BaseIterator(array, startIndex) {
+        fun get(): BlockWithOffset {
+            require(isInitialized) { "Iterator not initialized" }
+            return BlockWithOffset(currentBlock, indexInBlock)
         }
 
-        fun hasNextBlock(): Boolean = blockNum < array.blocksNum - 1
-
-        fun prev(): PrimitiveType {
+        fun next(): BlockWithOffset {
             when {
-                indexInBlock > 0 -> indexInBlock--
-                blockNum > 0 -> {
-                    blockNum--
-                    indexInBlock = array.blockSize - 1
+                !isInitialized -> isInitialized = true
+                blockNum < array.blocksNum - 1 -> {
+                    blockNum++
+                    indexInBlock = 0
                     currentBlock = array.blocks[blockNum]
                 }
-                else -> throw IllegalStateException("No more elements in array")
+                else -> throw IllegalStateException("No more blocks in array")
             }
 
-            return currentBlock[indexInBlock]
+            return BlockWithOffset(currentBlock, indexInBlock)
         }
 
-        fun hasPrev(): Boolean = blockNum > 0 || indexInBlock > 0
+        fun hasNext(): Boolean = blockNum < array.blocksNum - 1
 
-        inline fun accept(other: Iterator, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
-            require(this.indexInBlock == other.indexInBlock) { "Iterators must have same offsets in block" }
-            require(this.array.blockSize == other.array.blockSize) { "Arrays must have same block sizes" }
-            require(this.array.size - this.linearIndex >= count) { "Not enough elements for operation in array" }
-            require(other.array.size - other.linearIndex >= count) { "Not enough elements for operation in array" }
+        fun isCompatibleWith(other: BlockIterator, requestedSize: Int): Boolean {
+            return this.indexInBlock == other.indexInBlock &&
+                this.array.blockSize == other.array.blockSize &&
+                this.array.size - this.linearIndex >= requestedSize &&
+                other.array.size - other.linearIndex >= requestedSize
+        }
 
-            var dst = this.block()
-            var src = other.block()
+        inline fun accept(other: BlockIterator, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
+            require(this.isCompatibleWith(other, count)) { "Iterators not compatible" }
             var end = count
-            while (this.hasNextBlock()) {
-                for (index in dst.offset until Math.min(dst.block.size, end)) {
+            while (end > 0) {
+                val dst = this.next()
+                val src = other.next()
+
+                for (index in dst.offset until min(dst.block.size, end)) {
                     dst.block[index] = action(dst.block[index], src.block[index])
                 }
 
-                dst = this.nextBlock()
-                src = other.nextBlock()
+                end -= dst.block.size
+            }
+        }
+
+        inline fun combine(other: BlockIterator, count: Int, action: (first: PrimitiveType, second: PrimitiveType) -> Unit) {
+            require(this.isCompatibleWith(other, count)) { "Iterators not compatible" }
+            var end = count
+            while (end > 0) {
+                val dst = this.next()
+                val src = other.next()
+
+                for (index in dst.offset until min(dst.block.size, end)) {
+                    action(dst.block[index], src.block[index])
+                }
+
                 end -= dst.block.size
             }
         }
@@ -193,6 +212,7 @@ class PrimitiveTiledArray(val strides: Strides) {
     }
 
     fun iterator(startIndex: Int = 0) = Iterator(this, startIndex)
+    fun blockIterator(startIndex: Int = 0) = BlockIterator(this, startIndex)
 
     fun toArray(): PrimitiveArray {
         if (size == 0) {
@@ -816,11 +836,15 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
             transposeB -> {
                 for (t in 0 until m) {
                     val aIdx = t * lda + aOffset
+                    val cIt = c.array.iterator(t * ldc + cOffset)
                     for (j in 0 until n) {
-                        val cIdx = t * ldc + j + cOffset
                         val bIdx = j * ldb + bOffset
-                        for (i in 0 until k) {
-                            c.array[cIdx] = (alphaPrimitive * array[aIdx + i] * b.array[bIdx + i] + c.array[cIdx]).toPrimitive()
+                        val aIt = array.blockIterator(aIdx)
+                        val bIt = b.array.blockIterator(bIdx)
+
+                        cIt.next()
+                        aIt.combine(bIt, k) { elementInA, elementInB ->
+                            cIt.set((alphaPrimitive * elementInA * elementInB + cIt.get()).toPrimitive())
                         }
                     }
                 }
@@ -829,11 +853,16 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                 for (t in 0 until m) {
                     val cIdx = t * ldc + cOffset
                     val aIdx = t * lda + aOffset
+                    val aIt = array.iterator(aIdx)
                     for (i in 0 until k) {
-                        val temp = (alphaPrimitive * array[aIdx + i]).toPrimitive()
+                        val temp = (alphaPrimitive * aIt.next()).toPrimitive()
                         val bIdx = i * ldb + bOffset
-                        for (j in 0 until n) {
-                            c.array[cIdx + j] = (temp * b.array[bIdx + j] + c.array[cIdx + j]).toPrimitive()
+
+                        val bIt = b.array.blockIterator(bIdx)
+                        val cIt = c.array.blockIterator(cIdx)
+
+                        cIt.accept(bIt, n) { elementInC, elementInB ->
+                            (temp * elementInB + elementInC).toPrimitive()
                         }
                     }
                 }
