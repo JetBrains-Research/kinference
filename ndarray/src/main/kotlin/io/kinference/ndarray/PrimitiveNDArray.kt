@@ -6,6 +6,8 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.lang.IllegalStateException
 import kotlin.math.*
 
@@ -13,6 +15,7 @@ import kotlin.math.*
 class PrimitiveTiledArray(val strides: Strides) {
     companion object {
         const val MIN_BLOCK_SIZE = 64
+        val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
     }
 
     data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
@@ -33,6 +36,13 @@ class PrimitiveTiledArray(val strides: Strides) {
             this.currentBlock = array.blocks[blockNum]
         }
 
+        constructor(other: BaseIterator) {
+            this.array = other.array
+            this.blockNum = other.blockNum
+            this.indexInBlock = other.indexInBlock
+            this.currentBlock = other.currentBlock
+        }
+
         var linearIndex: Int
             get() = blockNum * array.blockSize + indexInBlock
             set(value) {
@@ -44,7 +54,10 @@ class PrimitiveTiledArray(val strides: Strides) {
             }
     }
 
-    class Iterator(array: PrimitiveTiledArray, startIndex: Int = 0): BaseIterator(array, startIndex) {
+    class Iterator: BaseIterator {
+        constructor(array: PrimitiveTiledArray, startIndex: Int = 0): super(array, startIndex)
+        constructor(other: BaseIterator): super(other)
+
         fun set(value: PrimitiveType) {
             require(isInitialized) { "Iterator not initialized" }
             currentBlock[indexInBlock] = value
@@ -78,7 +91,10 @@ class PrimitiveTiledArray(val strides: Strides) {
         fun hasNext(): Boolean = blockNum < array.blocksNum - 1 || indexInBlock < array.blockSize - 1
     }
 
-    class BlockIterator(array: PrimitiveTiledArray, startIndex: Int = 0): BaseIterator(array, startIndex) {
+    class BlockIterator: BaseIterator {
+        constructor(array: PrimitiveTiledArray, startIndex: Int = 0): super(array, startIndex)
+        constructor(other: BaseIterator): super(other)
+
         fun get(): BlockWithOffset {
             require(isInitialized) { "Iterator not initialized" }
             return BlockWithOffset(currentBlock, indexInBlock)
@@ -108,32 +124,50 @@ class PrimitiveTiledArray(val strides: Strides) {
         }
 
         inline fun accept(other: BlockIterator, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
-            require(this.isCompatibleWith(other, count)) { "Iterators not compatible" }
             var end = count
-            while (end > 0) {
-                val dst = this.next()
-                val src = other.next()
+            if (this.isCompatibleWith(other, count)) {
+                while (end > 0) {
+                    val dst = this.next()
+                    val src = other.next()
 
-                for (index in dst.offset until min(dst.block.size, end)) {
-                    dst.block[index] = action(dst.block[index], src.block[index])
+                    for (index in dst.offset until min(dst.block.size, end)) {
+                        dst.block[index] = action(dst.block[index], src.block[index])
+                    }
+
+                    end -= dst.block.size
                 }
-
-                end -= dst.block.size
+            } else {
+                logger.warn("BlockIterators not compatible: rollback to Iterator")
+                val dstIt = Iterator(this)
+                val srcIt = Iterator(other)
+                while (end > 0) {
+                    dstIt.set(action(dstIt.next(), srcIt.next()))
+                    end--
+                }
             }
         }
 
         inline fun combine(other: BlockIterator, count: Int, action: (first: PrimitiveType, second: PrimitiveType) -> Unit) {
-            require(this.isCompatibleWith(other, count)) { "Iterators not compatible" }
             var end = count
-            while (end > 0) {
-                val dst = this.next()
-                val src = other.next()
+            if (this.isCompatibleWith(other, count)) {
+                while (end > 0) {
+                    val fst = this.next()
+                    val snd = other.next()
 
-                for (index in dst.offset until min(dst.block.size, end)) {
-                    action(dst.block[index], src.block[index])
+                    for (index in fst.offset until min(fst.block.size, end)) {
+                        action(fst.block[index], snd.block[index])
+                    }
+
+                    end -= fst.block.size
                 }
-
-                end -= dst.block.size
+            } else {
+                logger.warn("BlockIterators not compatible: rollback to Iterator")
+                val fstIt = Iterator(this)
+                val sndIt = Iterator(other)
+                while (end > 0) {
+                    action(fstIt.next(), sndIt.next())
+                    end--
+                }
             }
         }
     }
