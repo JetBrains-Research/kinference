@@ -176,7 +176,7 @@ class PrimitiveTiledArray(val size: Int, val blockSize: Int) {
                     val dst = this.next()
                     val src = other.next()
 
-                    for (index in dst.offset until min(dst.block.size, end)) {
+                    for (index in dst.offset until min(dst.block.size, dst.offset + end)) {
                         dst.block[index] = action(dst.block[index], src.block[index])
                     }
 
@@ -200,7 +200,7 @@ class PrimitiveTiledArray(val size: Int, val blockSize: Int) {
                     val fst = this.next()
                     val snd = other.next()
 
-                    for (index in fst.offset until min(fst.block.size, end)) {
+                    for (index in fst.offset until min(fst.block.size, fst.offset + end)) {
                         action(fst.block[index], snd.block[index])
                     }
 
@@ -287,106 +287,25 @@ class PrimitiveTiledArray(val size: Int, val blockSize: Int) {
         if (srcStart == srcEnd)
             return
 
-        var (leftBlock, leftOffset) = indexFor(srcStart)
-        var (rightBlock, rightOffset) = dest.indexFor(destOffset)
+        val thisIter = BlockIterator(this, srcStart)
+        val destIter = BlockIterator(dest, destOffset)
 
-        var tempLeftBlock = blocks[leftBlock]
-        var tempRightBlock = dest.blocks[rightBlock]
-
-        if (this.blockSize == dest.blockSize && leftOffset == rightOffset) {
-            val (endLeftBlock, endLeftOffset) = indexFor(srcEnd)
-
-            if (leftBlock == endLeftBlock) {
-                for (idx in leftOffset until endLeftOffset) {
-                    tempRightBlock[idx] = tempLeftBlock[idx]
-                }
-                return
-            }
-
-            for (idx in leftOffset until blockSize) {
-                tempRightBlock[idx] = tempLeftBlock[idx]
-            }
-            leftBlock++
-            rightBlock++
-
-            for (i in 0 until endLeftBlock - leftBlock) {
-                tempLeftBlock = this.blocks[leftBlock]
-                tempRightBlock = dest.blocks[rightBlock]
-
-                tempLeftBlock.copyInto(tempRightBlock)
-                leftBlock++
-                rightBlock++
-            }
-
-            if (leftBlock >= blocksNum || rightBlock >= dest.blocksNum)
-                return
-
-            tempLeftBlock = this.blocks[leftBlock]
-            tempRightBlock = dest.blocks[rightBlock]
-
-            for (idx in 0 until endLeftOffset) {
-                tempRightBlock[idx] = tempLeftBlock[idx]
-            }
-
-            return
-        }
-
-        for (i in srcStart until srcEnd) {
-            tempRightBlock[rightOffset++] = tempLeftBlock[leftOffset++]
-
-            if (leftOffset == this.blockSize) {
-                leftOffset = 0
-
-                if (++leftBlock < blocksNum)
-                    tempLeftBlock = blocks[leftBlock]
-            }
-
-            if (rightOffset == dest.blockSize) {
-                rightOffset = 0
-
-                if (++rightBlock < dest.blocksNum)
-                    tempRightBlock = dest.blocks[rightBlock]
-            }
-        }
+        destIter.accept(thisIter, srcEnd - srcStart) { dst, src -> src }
     }
 
     fun fill(value: PrimitiveType, from: Int = 0, to: Int = size) {
         if (from == to)
             return
 
-        var (block, offset) = indexFor(from)
-        val (endBlock, endOffset) = indexFor(to)
+        val blockIterator = BlockIterator(this, from)
 
-        var tempBlock = blocks[block]
+        var count = to - from
 
-        if (block == endBlock) {
-            for (idx in offset until endOffset) {
-                tempBlock[idx] = value
-            }
+        while (count > 0) {
+            val blockWithOffset = blockIterator.next()
+            blockWithOffset.block.fill(value, blockWithOffset.offset, min(blockSize, count))
 
-            return
-        }
-
-        for (idx in offset until blockSize) {
-            tempBlock[idx] = value
-        }
-
-        block++
-
-        for (blockNum in block until endBlock) {
-            tempBlock = blocks[blockNum]
-
-            for (idx in 0 until blockSize) {
-                tempBlock[idx] = value
-            }
-        }
-
-        if (endBlock < blocksNum) {
-            tempBlock = blocks[endBlock]
-
-            for (idx in 0 until endOffset) {
-                tempBlock[idx] = value
-            }
+            count -= blockSize
         }
     }
 }
