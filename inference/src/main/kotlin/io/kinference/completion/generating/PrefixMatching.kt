@@ -78,6 +78,8 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
     private val origInds: IntArray
     private val trie: Trie
 
+    data class MatchedSubtrie(val start: Int, val finish: Int, var errorsCount: Int)
+
     inner class Trie {
         var start = tokenizer.vocabSize
         var finish = 0
@@ -96,12 +98,12 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
             dict[word[0]]!!.add(word.substring(1), ind)
         }
 
-        fun prefixInds(word: String, errLimit: Int = 0): List<Triple<Int, Int, Int>> {
+        fun prefixInds(word: String, errLimit: Int = 0): List<MatchedSubtrie> {
             if (word.isEmpty() || dict.isEmpty()) {
                 if (start == 47623) {
                     val a = 0
                 }
-                return listOf(Triple(start, finish + 1, 0))
+                return listOf(MatchedSubtrie(start, finish + 1, 0))
             }
 
             if (!dict.containsKey(word[0])) {
@@ -112,14 +114,14 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
                 if (start == 47623) {
                     val a = 0
                 }
-                return listOf(Triple(start, minWithSuffix, 0))
+                return listOf(MatchedSubtrie(start, minWithSuffix, 0))
             }
 
             if (word[0] == ' ') {
                 return dict[word[0]]!!.prefixInds(word.substring(1), errLimit)
             }
 
-            var result: MutableList<Triple<Int, Int, Int>> = ArrayList()
+            val result: MutableList<MatchedSubtrie> = ArrayList()
 
             if (errLimit > 0) {
                 for (symbol in dict.keys) {
@@ -132,8 +134,7 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
                 }
 
                 result.addAll(prefixInds(word.substring(1), errLimit - 1))  // delete
-
-                result = result.map { Triple(it.first, it.second, it.third + 1) }.toMutableList()
+                result.onEach { it.errorsCount++ }
             }
 
             result.addAll(dict[word[0]]!!.prefixInds(word.substring(1), errLimit))  // correct
@@ -172,23 +173,19 @@ class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
             return arrayOf(origInds)
         }
 
-        val edges = trie.prefixInds(prefix, errLimit).sortedBy { it.first * tokenizer.vocabSize + it.second }  //  * tokenizer.vocabSize * tokenizer.vocabSize + it.second * tokenizer.vocabSize + it.third
-        val bad = edges.filterIndexed { index, triple -> index < edges.size - 1 && triple.second > edges[index + 1].first || index > 0 && triple.first < edges[index - 1].second }
+        val edges = trie.prefixInds(prefix, errLimit).sortedBy { it.start * tokenizer.vocabSize + it.finish }  //  * tokenizer.vocabSize * tokenizer.vocabSize + it.second * tokenizer.vocabSize + it.third
+        //val bad = edges.filterIndexed { index, triple -> index < edges.size - 1 && triple.second > edges[index + 1].first || index > 0 && triple.first < edges[index - 1].second }
 
         var prevStart = 0
         val result = Array<MutableList<Int>>(errLimit + 2) { ArrayList() }
 
-        for (triple in edges) {
-            val start = triple.first
-            val finish = triple.second
-            val errCount = triple.third
-
+        for (subtrie in edges) {
             // TODO: it's tokenizer bug, arguments should be (prevStart, triple.first)
 //            if (prevStart < start) {
-            result[0].addAll(origInds.slice(prevStart until start))
+            result[0].addAll(origInds.slice(prevStart until subtrie.start))
 //            }
-            prevStart = finish
-            result[errCount + 1].addAll(origInds.slice(start until finish))
+            prevStart = subtrie.finish
+            result[subtrie.errorsCount + 1].addAll(origInds.slice(subtrie.start until subtrie.finish))
         }
 
         result[0].addAll(origInds.slice(prevStart until origInds.size))

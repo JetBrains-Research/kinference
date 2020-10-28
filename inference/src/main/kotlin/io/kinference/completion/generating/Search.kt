@@ -1,10 +1,11 @@
 package io.kinference.completion.generating
 
 import io.kinference.ndarray.*
-import io.kinference.primitives.types.DataType
-import java.lang.Math.*
-import kotlin.math.min
-import kotlin.math.pow
+import java.lang.Math.floorDiv
+import java.lang.Math.floorMod
+import kotlin.math.*
+
+data class HypothesisInfo(val hypothesis: IntArray, val info: GenerationInfo)
 
 abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: Int,
                       val lenNormBase: Double = 0.0, val lenNormPow: Double = 0.0, val repetitionPenalty: Double = 1.0) {
@@ -27,17 +28,12 @@ abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: 
     /**
      * List of list of tuples of current hypotheses and theirs scores
      */
-    abstract fun maskedHypotheses(mask: BooleanArray): List<List<Pair<IntArray, GenerationInfo>>>
-
-    /**
-     * List of list of tuples of terminated hypotheses and theirs scores
-     */
-    abstract fun terminatedHypotheses(): List<List<Pair<IntArray, GenerationInfo>>>
+    abstract fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>>
 
     /**
      * List of list of tuples of current hypotheses and theirs scores
      */
-    abstract fun currentHypotheses(): List<List<Pair<IntArray, GenerationInfo>>>
+    abstract fun currentHypotheses(): List<List<HypothesisInfo>>
 
     /**
      * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
@@ -57,7 +53,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
 
     private var hypotheses: List<MutableList<Int>> = arrayListOf(arrayListOf())
     private var eachStepProbs: List<MutableList<Double>> = arrayListOf(arrayListOf())
-    private val terminatedHypotheses: MutableList<Pair<List<Int>, Double>> = ArrayList()
     private var sortMask: IntArray? = null
     private val eosIdsSet: Set<Int> = eosIds.toSet()
 
@@ -112,31 +107,22 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         }
     }
 
-    override fun maskedHypotheses(mask: BooleanArray): List<List<Pair<IntArray, GenerationInfo>>> {
-        val ans = ArrayList<Pair<IntArray, GenerationInfo>>()
-        val score = getNormalizedScores().map { kotlin.math.exp(it) }
+    override fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>> {
+        val ans = ArrayList<HypothesisInfo>()
+        val score = getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
         for (i in hypotheses.indices) {
             if (mask[i]) {
-                ans.add(Pair(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i], score[i])))
+                ans.add(HypothesisInfo(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i], score[i])))
             }
         }
 
         return listOf(ans)
     }
 
-    override fun terminatedHypotheses(): List<List<Pair<IntArray, GenerationInfo>>> {
-        val ans = ArrayList<Pair<IntArray, GenerationInfo>>()
-        for (hypothesis in terminatedHypotheses) {
-            ans.add(Pair(hypothesis.first.toIntArray(), GenerationInfo(score = hypothesis.second)))
-        }
-
-        return listOf(ans)
-    }
-
-    override fun currentHypotheses(): List<List<Pair<IntArray, GenerationInfo>>> {
-        val score = getNormalizedScores().apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }
+    override fun currentHypotheses(): List<List<HypothesisInfo>> {
+        val score = getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
         val ans = List(hypotheses.size) {
-            Pair(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it], score[it]))
+            HypothesisInfo(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it], score[it]))
         }
 
         return listOf(ans)
@@ -163,18 +149,6 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     }
 
     private fun stashTerminated(samples: IntArray) {
-        val toStash = isSampleTerminates(samples.copyOfRange(0, searchSize))
-
-        val normScores = getNormalizedScores().apply { for (i in this.indices) this[i] = kotlin.math.exp(this[i]) }
-
-        val trimmedHypotheses = hypotheses.subList(0, searchSize)
-        val trimmedScores = normScores.copyOfRange(0, searchSize)
-
-        for (i in trimmedHypotheses.indices.filter { toStash[it] }) {
-            assert(trimmedHypotheses[i].size == length.toInt())
-            terminatedHypotheses.add(Pair(ArrayList(trimmedHypotheses[i]), trimmedScores[i]))
-        }
-
         val terminated = isSampleTerminates(samples)
         val notTerminatedInds = (terminated.indices).filter { !terminated[it] }.toIntArray()
         applySliceToState(notTerminatedInds)

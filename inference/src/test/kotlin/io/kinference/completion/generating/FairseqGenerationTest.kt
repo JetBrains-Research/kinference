@@ -50,7 +50,7 @@ class FairseqGenerationTest {
     @Test
     @Tag("heavy")
     fun testExecutable() {
-        val model = OnnxModelWrapper(modelConfig)
+        val model = GPT2ModelWrapper(modelConfig)
         val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
         val generator = FairseqGeneration(model, tokenizer)
 
@@ -58,7 +58,7 @@ class FairseqGenerationTest {
         val prefix = " wo"
         val contextIds = tokenizer.encode(text)
         val result = generator.generate(contextIds, prefix, generationConfig)
-        val variants = result.map { it.second[0].map { pair -> tokenizer.decode(pair.first) } }
+        val variants = result.map { it[0].map { h -> tokenizer.decode(h.hypothesis) } }
 
         assertEquals(variants[0].toSet(), setOf(" would", " work", " world", " working", " won"))
 

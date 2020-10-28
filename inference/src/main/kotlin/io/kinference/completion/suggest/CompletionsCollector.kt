@@ -3,52 +3,43 @@ package io.kinference.completion.suggest
 import io.kinference.completion.BPETokenizer
 import io.kinference.completion.Config
 import io.kinference.completion.GenerationConfig
-import io.kinference.completion.generating.FairseqGeneration
-import io.kinference.completion.generating.GenerationInfo
-import io.kinference.completion.generating.OnnxModelWrapper
+import io.kinference.completion.generating.*
 
 interface CompletionsCollector {
-    fun collect(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>>
+    fun collect(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
 
 //    fun prediction_info(context: String, predictions: List<String>): List<GenerationInfo>
 }
 
 abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
     private val maxTokenizerLen = config.tokenizer.maxSeqLen - 4
-    protected val languageModel = OnnxModelWrapper(config.model)
+    protected val languageModel = GPT2ModelWrapper(config.model)
     protected val tokenizer = BPETokenizer(config.tokenizer.vocabPath, config.tokenizer.mergesPath)
 
-    abstract fun generate(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>>
+    abstract fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
 
-    override fun collect(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>> {
+    override fun collect(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
         if (context.trim().isEmpty()) {
             return emptyList()
         }
 
         val seenCompletions = HashSet<String>()
         val completions = generate(context, prefix, config)
-        val result = ArrayList<Pair<String, GenerationInfo>>()
+        val result = ArrayList<CompletionInfo>()
 
-        for ((completion, gen_info) in completions) {
+        for (completion in completions) {
 
             // TODO: convert to one function?
-            val trimmed = trimEnding(completion, gen_info)
-            val (trimmedCompletion, trimmedGenInfo) = trimAfterSentenceEnd(trimmed.first, trimmed.second)
+            val trimmedCompletion = completion.trimEnding().trimAfterSentenceEnd()
 
-            val words = trimmedCompletion.trim().split(' ')
+            val words = trimmedCompletion.text.trim().split(' ')
             val targetLen = words.size
 
-            if (targetLen < config.minLen) {
-                continue
-            }
+            if (targetLen < config.minLen || trimmedCompletion.text in seenCompletions) continue
+            trimmedCompletion.info.wordLen = targetLen
 
-            if (trimmedCompletion in seenCompletions) {
-                continue
-            }
-            trimmedGenInfo.wordLen = targetLen
-            seenCompletions.add(trimmedCompletion)
-
-            result.add(Pair(trimmedCompletion, trimmedGenInfo))
+            seenCompletions.add(trimmedCompletion.text)
+            result.add(trimmedCompletion)
         }
 
         return result
@@ -64,47 +55,47 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
         return inputIds
     }
 
-    private fun trimEnding(completion: String, genInfo: GenerationInfo): Pair<String, GenerationInfo> {
-        if (completion.isEmpty() || completion[completion.lastIndex].isLetterOrDigit()) {
-            return Pair(completion, genInfo)
+    private fun CompletionInfo.trimEnding(): CompletionInfo {
+        if (this.text.isEmpty() || this.text[text.lastIndex].isLetterOrDigit()) {
+            return this
         }
         var i = 1
-        while (i <= completion.length && !completion[completion.length - i].isLetterOrDigit()) {
+        while (i <= this.text.length && !this.text[text.length - i].isLetterOrDigit()) {
             i += 1
         }
         i -= 1
-        val codedAll = tokenizer.encode(completion)
-        val codedTrimmed = tokenizer.encode(completion.substring(0, completion.length - i))
+        val codedAll = tokenizer.encode(this.text)
+        val codedTrimmed = tokenizer.encode(this.text.substring(0, this.text.length - i))
 
-        var trimmedCompletion = completion
+        var trimmedCompletion = this.text
         if (codedTrimmed.contentEquals(codedAll.copyOfRange(0, codedTrimmed.size))) {
-            trimmedCompletion = completion.substring(0, completion.length - i)
-            genInfo.trim(codedTrimmed.size)
+            trimmedCompletion = trimmedCompletion.substring(0, trimmedCompletion.length - i)
+            this.info.trim(codedTrimmed.size)
         }
-        return Pair(trimmedCompletion, genInfo)
+        return CompletionInfo(trimmedCompletion, this.info)
     }
 
-    private fun trimAfterSentenceEnd(completion: String, genInfo: GenerationInfo): Pair<String, GenerationInfo> {
-        if (completion.isEmpty()) {
-            return Pair(completion, genInfo)
+    private fun CompletionInfo.trimAfterSentenceEnd(): CompletionInfo {
+        if (this.text.isEmpty()) {
+            return this
         }
 
         var i = 0
-        while (i < completion.length && (completion[i].isLetterOrDigit() || completion[i] in " ,")) {
+        while (i < this.text.length && (this.text[i].isLetterOrDigit() || this.text[i] in " ,")) {
             i += 1
         }
 
-        var trimmedCompletion = completion
-        if (i < completion.length) {
-            val codedAll = tokenizer.encode(completion)
-            val codedTrimmed = tokenizer.encode(completion.substring(0, i))
+        var trimmedCompletion = this.text
+        if (i < this.text.length) {
+            val codedAll = tokenizer.encode(this.text)
+            val codedTrimmed = tokenizer.encode(this.text.substring(0, i))
             if (codedTrimmed.contentEquals(codedAll.copyOfRange(0, codedTrimmed.size))) {
-                trimmedCompletion = completion.substring(0, i)
-                genInfo.trim(codedTrimmed.size)
+                trimmedCompletion = this.text.substring(0, i)
+                this.info.trim(codedTrimmed.size)
             }
         }
 
-        return Pair(trimmedCompletion, genInfo)
+        return CompletionInfo(trimmedCompletion, this.info)
     }
 }
 
@@ -112,24 +103,24 @@ class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(con
 
     private val beamSearch = FairseqGeneration(languageModel, tokenizer)
 
-    override fun generate(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>> {
-        val result = ArrayList<Pair<String, GenerationInfo>>()
+    override fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
+        val result = ArrayList<CompletionInfo>()
         val inputIds = makeInputIds(context, config.maxLen)
 
         val completionsByLen = beamSearch.generate(inputIds, prefix, config)
-        for ((terminated, not_terminated) in completionsByLen) {
-            val completions = decodeSequences(not_terminated)
+        for (completionsGroup in completionsByLen) {
+            val completions = decodeSequences(completionsGroup)
             result.addAll(completions[0])
         }
 
         return result
     }
 
-    private fun decodeSequences(sequences: List<List<Pair<IntArray, GenerationInfo>>>): List<List<Pair<String, GenerationInfo>>> {
-        val result: MutableList<List<Pair<String, GenerationInfo>>> = ArrayList()
+    private fun decodeSequences(sequences: List<List<HypothesisInfo>>): List<List<CompletionInfo>> {
+        val result: MutableList<List<CompletionInfo>> = ArrayList()
         for (group in sequences) {
-            val decodedStrings = group.map { tokenizer.decode(it.first) }
-            result.add(group.mapIndexed { i, (_, info) -> Pair(decodedStrings[i], info) })
+            val decodedStrings = group.map { tokenizer.decode(it.hypothesis) }
+            result.add(group.mapIndexed { i, (_, info) -> CompletionInfo(decodedStrings[i], info) })
         }
         return result
     }

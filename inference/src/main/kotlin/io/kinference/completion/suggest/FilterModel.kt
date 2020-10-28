@@ -5,18 +5,16 @@ import io.kinference.completion.generating.GenerationInfo
 import kotlin.math.pow
 
 interface FilterModel {
-    fun filter(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>,
-               config: FilterConfig): List<Pair<String, GenerationInfo>>
+    fun filter(context: String, prefix: String, completions: List<CompletionInfo>, config: FilterConfig): List<CompletionInfo>
 }
 
 class ProbFilterModel : FilterModel {
-    override fun filter(context: String, prefix: String, completions: List<Pair<String, GenerationInfo>>,
-                        config: FilterConfig): List<Pair<String, GenerationInfo>> {
+    override fun filter(context: String, prefix: String, completions: List<CompletionInfo>, config: FilterConfig): List<CompletionInfo> {
         return completions.filter { completion ->
-            val prob = Features.prob(completion.second)
-            val meanProb = Features.meanProb(completion.second)
-            val startFromWord = completion.first[0] == ' ' && completion.first[1].isLetter()
-            val symbolLen = completion.first.length - prefix.length
+            val prob = Features.prob(completion.info)
+            val meanProb = Features.meanProb(completion.info)
+            val startFromWord = completion.text[0] == ' ' && completion.text[1].isLetter()
+            val symbolLen = completion.text.length - prefix.length
 //            val is_repetition = isRepetition(completion.first, context)
 
             meanProb >= config.minAvgLogProb

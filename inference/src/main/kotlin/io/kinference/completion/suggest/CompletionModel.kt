@@ -6,11 +6,13 @@ import io.kinference.completion.generating.GenerationInfo
 import java.lang.Integer.max
 import java.lang.Integer.min
 
+data class CompletionInfo(val text: String, val info: GenerationInfo)
+
 class CompletionModel(private val completionsCollector: CompletionsCollector, private val rankingModel: RankingModel,
                       private val filterModel: FilterModel, private val postFilterModel: FilterModel? = null) {
 
     // @lru_cache(maxsize=200)
-    private fun generate(context: String, prefix: String, config: GenerationConfig): List<Pair<String, GenerationInfo>> {
+    private fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
         return completionsCollector.collect(context, prefix, config)
     }
 
@@ -24,6 +26,6 @@ class CompletionModel(private val completionsCollector: CompletionsCollector, pr
         if (postFilterModel != null) {
             completions = postFilterModel.filter(trimmedContext, prefix, completions, config.filter)
         }
-        return completions.take(min(config.numSeqs, completions.size)).map { it.first }
+        return completions.take(min(config.numSeqs, completions.size)).map { it.text }
     }
 }

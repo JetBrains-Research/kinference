@@ -2,7 +2,7 @@ package io.kinference.completion.suggest
 
 import io.kinference.completion.generating.GenerationInfo
 
-class OneVariantFeatures(val context: String, completion: Pair<String, GenerationInfo>, val prefix: String = "") {
+class OneVariantFeatures(val context: String, val completion: CompletionInfo, val prefix: String = "") {
 
     companion object {
         const val prob = "prob"
@@ -22,12 +22,10 @@ class OneVariantFeatures(val context: String, completion: Pair<String, Generatio
         const val is_repetition = "is_repetition"
     }
 
-    private val completion = completion.first
-    private val generation_info = completion.second
     private val features: MutableMap<String, Double> = HashMap()
 
     init {
-        features[prob] = completion.second.probs.foldRight(1.0) { x, y -> x * y }
+        features[prob] = completion.info.probs.foldRight(1.0) { x, y -> x * y }
         features[mean_log_prob] = 1.0
     }
 }

@@ -3,17 +3,22 @@ package io.kinference.completion.generating
 import io.kinference.completion.BPETokenizer
 import io.kinference.completion.GenerationConfig
 import io.kinference.ndarray.*
-import java.lang.Integer.min
 import kotlin.math.ln
+import kotlin.math.min
 
 class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPETokenizer) {
     private val prefixMatcher = FuzzyPrefixMatcher(tokenizer)
 
-    private var prefixes: List<Pair<String, Int>>? = null  // ArrayList()
-    private var mems: List<MutableNDArray>? = null
+    data class PrefixInfo(val text: String, val errLimit: Int)
 
-    private val eosTokenId = tokenizer.eosTokenId
-    private val vocabSize = tokenizer.vocabSize
+    private var prefixes: List<PrefixInfo>? = null
+    private var mems: List<NDArray>? = null
+
+    private val eosTokenId: Int
+        get() = tokenizer.eosTokenId
+
+    private val vocabSize: Int
+        get() = tokenizer.vocabSize
 
     private var logSpellProb = ln(0.0001)
 //    private val lenNormBase = 5.0
@@ -59,10 +64,8 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
 
                 for (err_num in 1 until prefixIndsByErr.size) {
                     val prefixToken = prefixIndsByErr[err_num]
-                    if (err_num != 0) {
-                        for (j in prefixToken) {
-                            scores[i][j] = scores[i][j] + err_num * logSpellProb
-                        }
+                    for (j in prefixToken) {
+                        scores[i][j] = scores[i][j] + err_num * logSpellProb
                     }
                 }
             }
@@ -73,15 +76,14 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
 
     private fun initLogProbs(context: IntArray): Array<DoubleArray> {
         val logProbs = model.initLastLogProbs(arrayOf(context))
-        val scores = logProbs.first
-        mems = logProbs.second
+        mems = logProbs.pastStates
 
-        return modifyScore(logSoftmax(scores))
+        return modifyScore(logSoftmax(logProbs.logProbs))
     }
 
     private fun initState(context: IntArray, prefix: String, config: GenerationConfig): Array<DoubleArray> {
         logSpellProb = ln(config.spellProb)
-        prefixes = listOf(Pair(prefix, config.prefixErrLimit))
+        prefixes = listOf(PrefixInfo(prefix, config.prefixErrLimit))
         return initLogProbs(context)
     }
 
@@ -111,21 +113,21 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
 
     private fun getLogProbs(data: IntArray): Array<DoubleArray> {
         val logProbs = model.getLastLogProbs(data, mems!!)
-        val scores = logProbs.first
-        mems = logProbs.second
-        return modifyScore(logSoftmax(scores))
+        mems = logProbs.pastStates
+
+        return modifyScore(logSoftmax(logProbs.logProbs))
     }
 
     private fun updatePrefix(newTokensIds: IntArray) {
         if (prefixes != null) {
-            val result = ArrayList<Pair<String, Int>>(prefixes!!.size)
+            val result = ArrayList<PrefixInfo>(prefixes!!.size)
 
             prefixes!!.forEachIndexed { i, (prefix, errLimit) ->
                 val tokenId = newTokensIds[i]
                 val token = tokenizer.decode(tokenId)
                 val errCnt = PrefixMatcher.levenshtein(prefix, token)
                 val newPrefix = prefix.substring(min(prefix.length, token.length))
-                result.add(Pair(newPrefix, min(errLimit - errCnt, newPrefix.length)))
+                result.add(PrefixInfo(newPrefix, min(errLimit - errCnt, newPrefix.length)))
             }
 
             prefixes = result
@@ -151,15 +153,14 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return endOfWords
     }
 
-    fun generate(context: IntArray, prefix: String, config: GenerationConfig):
-        List<Pair<List<List<Pair<IntArray, GenerationInfo>>>, List<List<Pair<IntArray, GenerationInfo>>>>> {
+    fun generate(context: IntArray, prefix: String, config: GenerationConfig): List<List<List<HypothesisInfo>>> {
         val search = getSearch(config)
 
         val oneLogProbs = initState(context, prefix, config)
         var logProbs = Array(search.batchSize) { oneLogProbs[0] }
         sortState(IntArray(search.batchSize))
 
-        val result = ArrayList<Pair<List<List<Pair<IntArray, GenerationInfo>>>, List<List<Pair<IntArray, GenerationInfo>>>>>()
+        val result = ArrayList<List<List<HypothesisInfo>>>()
         for (i in 0 until config.maxLen) {
             val selectedInds = search.step(logProbs, context)
             sortState(selectedInds)
@@ -172,7 +173,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
             }
 //            val isEndOfWords = isEndOfWords(logProbs)
 //            result.add(Pair(search.terminatedHypotheses(), search.maskedHypotheses(isEndOfWords)))
-            result.add(Pair(search.terminatedHypotheses(), search.currentHypotheses()))
+            result.add(search.currentHypotheses())
         }
 
         resetState()

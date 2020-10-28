@@ -5,41 +5,43 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.*
-import java.lang.System.currentTimeMillis
 
-interface ModelWrapper {
-    fun initLogProbs(inputIds: Array<IntArray>): Pair<List<Array<DoubleArray>>, List<MutableNDArray>>
+data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>)
 
-    fun initLastLogProbs(inputIds: Array<IntArray>): Pair<Array<DoubleArray>, List<MutableNDArray>> {
-        val (score, mems) = initLogProbs(inputIds)
-        val lastProbs: Array<DoubleArray> = Array(score.size) { score[it].last() }
-        return Pair(lastProbs, mems)
-    }
-
-    fun getLogProbs(inputIds: Array<IntArray>, past: List<MutableNDArray>): Pair<List<Array<DoubleArray>>, List<MutableNDArray>>
-
-    fun getLastLogProbs(inputIds: IntArray, past: List<MutableNDArray>): Pair<Array<DoubleArray>, List<MutableNDArray>> {
-        val (score, mems) = getLogProbs(Array(inputIds.size) { intArrayOf(inputIds[it]) }, past)
-        val lastProbs: Array<DoubleArray> = Array(score.size) { score[it].last() }
-        return Pair(lastProbs, mems)
+data class ModelOutputSeq(val logProbs: List<Array<DoubleArray>> = emptyList(), val pastStates: List<NDArray> = emptyList()) {
+    fun lastLogProbs(): ModelOutput {
+        val lastProbs: Array<DoubleArray> = Array(logProbs.size) { logProbs[it].last() }
+        return ModelOutput(lastProbs, pastStates)
     }
 }
 
-class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
+interface ModelWrapper {
+    fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq
+
+    fun initLastLogProbs(inputIds: Array<IntArray>): ModelOutput {
+        return initLogProbs(inputIds).lastLogProbs()
+    }
+
+    fun getLogProbs(inputIds: Array<IntArray>, past: List<NDArray>): ModelOutputSeq
+
+    fun getLastLogProbs(inputIds: IntArray, past: List<NDArray>): ModelOutput {
+        return getLogProbs(Array(inputIds.size) { intArrayOf(inputIds[it]) }, past).lastLogProbs()
+    }
+}
+
+class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
     val model = Model.load(config.modelPath)
     private val numAttentionHeads = config.numAttentionHeads
     private val hiddenSize = config.hiddenSize
     private val numLayer = config.numLayer
     private val vocabSize = config.vocabSize
-    var time = 0.0
-    var timeCnt = 0
 //    distilgpt2_l3_h12_d256_int8
 
     @ExperimentalUnsignedTypes
-    override fun initLogProbs(inputIds: Array<IntArray>): Pair<List<Array<DoubleArray>>, List<MutableNDArray>> {
+    override fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq {
         val batchSize = inputIds.size
         if (batchSize == 0) {
-            return Pair(emptyList(), emptyList())
+            return ModelOutputSeq()
         }
 
         val seqLen = inputIds[0].size
@@ -59,10 +61,10 @@ class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
     }
 
     @ExperimentalUnsignedTypes
-    override fun getLogProbs(inputIds: Array<IntArray>, past: List<MutableNDArray>): Pair<List<Array<DoubleArray>>, List<MutableNDArray>> {
+    override fun getLogProbs(inputIds: Array<IntArray>, past: List<NDArray>): ModelOutputSeq {
         val batchSize = inputIds.size
         if (batchSize == 0) {
-            return Pair(emptyList(), emptyList())
+            return ModelOutputSeq()
         }
 
         val seqLen = inputIds[0].size
@@ -83,23 +85,21 @@ class OnnxModelWrapper(config: ModelConfig) : ModelWrapper {
         return process(input, batchSize, seqLen)
     }
 
-    private fun process(input: ArrayList<Tensor>, batchSize: Int, seqLen: Int): Pair<List<Array<DoubleArray>>, List<MutableNDArray>> {
-        val start = currentTimeMillis()
-        val output = model.predict(input)
-        timeCnt += 1
-        time += currentTimeMillis() - start
-        println("Time: ${time / timeCnt}, ${currentTimeMillis() - start}\r")
-        val ndProbs = (output[0] as Tensor).data
+    private fun process(input: ArrayList<Tensor>, batchSize: Int, seqLen: Int): ModelOutputSeq {
+        val output = model.predict(input).map { (it as Tensor).data }
+        val ndProbs = (output[0] as FloatNDArray).array
 
-        val probs: List<Array<DoubleArray>> = List(batchSize) { Array(seqLen) { DoubleArray(vocabSize) } }
+        val probs = List(batchSize) { Array(seqLen) { DoubleArray(vocabSize) } }
         for (batch in 0 until batchSize) {
+            val batchOff = batch * seqLen * vocabSize
             for (pos in 0 until seqLen) {
+                val posOff = batchOff + pos * vocabSize
                 for (id in 0 until vocabSize) {
-                    probs[batch][pos][id] = (ndProbs[intArrayOf(batch, pos, id)] as Float).toDouble()
+                    probs[batch][pos][id] = (ndProbs[posOff + id]).toDouble()
                 }
             }
         }
 
-        return Pair(probs, output.subList(1, output.size).map { (it as Tensor).data.toMutable() })
+        return ModelOutputSeq(probs, output.drop(1))
     }
 }

@@ -4,21 +4,46 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.IOException
-import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-
 class BPETokenizer(vocabPath: String, mergesPath: String) {
+    private data class MergeCandidate(val word1: String, val word2: String) {
+        fun merged(): String = word1 + word2
+    }
+    private data class MergeCandidateInfo(val vocabIndex: Int?, val position: Int, val mergePair: MergeCandidate)
+
     private val vocab: MutableMap<String, Int> = HashMap()
     private val reversedVocab: MutableMap<Int, String> = HashMap()
-    private val codes: MutableMap<Pair<String, String>, Int> = HashMap()
-    private val reversedCodes: MutableMap<String, Pair<String, String>> = HashMap()
+    private val codes: MutableMap<MergeCandidate, Int> = HashMap()
+    private val reversedCodes: MutableMap<String, MergeCandidate> = HashMap()
 
     val eosTokenId = 50256
     val vocabSize: Int
         get() {
             return vocab.size
         }
+
+    init {
+        val mapType = object : TypeReference<HashMap<String, Int>>() {}
+        val vocabJson = ObjectMapper().readValue(File(vocabPath), mapType)
+        for (pair in vocabJson.entries) {
+            val value = pair.value
+            vocab[pair.key] = value
+            reversedVocab[value] = pair.key
+        }
+
+        var merges = File(mergesPath).readLines()
+        if (merges[0][0] == '#') {
+            merges = merges.drop(1)
+        }
+        for (line in merges) {
+            val words = line.split(" ")
+            val pair = MergeCandidate(words[0], words[1])
+            codes[pair] = codes.size
+            reversedCodes[words[0] + words[1]] = pair
+        }
+    }
 
     private fun preprocess(s: String): String {
         return s.replace(' ', 'Ġ')
@@ -32,41 +57,37 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
         if (word.length == 1) {
             return listOf(word)
         }
-        var pieces: MutableList<String> = ArrayList()
-        for (element in word) {
-            pieces.add("" + element)
-        }
+        var pieces = MutableList(word.length) { "" + word[it] }
 
         while (pieces.size > 1) {
-            val pairs: MutableList<Triple<Int?, Int, Pair<String, String>>> = ArrayList(pieces.size)
+            val merges = ArrayList<MergeCandidateInfo>(pieces.size)
             for (i in 0 until pieces.size - 1) {
                 val current = pieces[i]
                 val next = pieces[i + 1]
-                val pair = Pair(current, next)
-                if (pair in codes) {
-                    pairs.add(Triple(codes[pair], i, pair))
+                val merge = MergeCandidate(current, next)
+                if (merge in codes) {
+                    merges.add(MergeCandidateInfo(codes[merge], i, merge))
                 }
             }
-            if (pairs.isEmpty()) {
+            if (merges.isEmpty()) {
                 break
             }
 
-            pairs.sortWith(compareBy({ it.first }, { it.second }))
-            val bigram = pairs[0].third
-            val positions = pairs.filter { it.third == bigram }.map { it.second }
+            merges.sortWith(compareBy({ it.vocabIndex }, { it.position }))
+            val bigram = merges[0].mergePair
+            val positions = merges.filter { it.mergePair == bigram }.map { it.position }
 
             var i = 0
             val newPieces: MutableList<String> = ArrayList()
-            val strBigram = java.lang.String.join("", bigram.component1(), bigram.component2())
+            val strBigram = bigram.merged()
             for (j in positions) {
-                if (j < i) {
-                    continue
-                }
-                newPieces.addAll(pieces.subList(i, j))
+                if (j < i) continue
+
+                for (k in i until j) newPieces.add(pieces[k])
                 newPieces.add(strBigram)
                 i = j + 2
             }
-            newPieces.addAll(pieces.subList(i, pieces.size))
+            for (k in i until pieces.size) newPieces.add(pieces[k])
             pieces = newPieces
         }
 
@@ -103,22 +124,19 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
     private fun recursiveSplit(segment: String, isFinal: Boolean): List<String> {
         val result: MutableList<String> = ArrayList()
         val left: String
-        var right: String
+        val right: String
         if (isFinal) {
             if ("$segment</w>" !in reversedCodes) {
                 return listOf(segment)
             }
             val pair = reversedCodes["$segment</w>"]!!
-            left = pair.component1()
-            right = pair.component2()
-            right = right.substring(0, right.length - 4)
+            left = pair.word1; right = pair.word2.substring(0, pair.word2.length - 4)
         } else {
             if (segment !in reversedCodes) {
                 return listOf(segment)
             }
             val pair = reversedCodes[segment]!!
-            left = pair.component1()
-            right = pair.component2()
+            left = pair.word1; right = pair.word2
         }
         if (left in vocab) {
             result.add(left)
@@ -138,8 +156,9 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
     and segment OOV segments into smaller units by reversing the BPE merge operations"""
      */
     private fun checkVocabAndSplit(pieces: List<String>): MutableList<String> {
-        val out: MutableList<String> = ArrayList()
-        for (segment in pieces.subList(0, pieces.size - 1)) {
+        val out = ArrayList<String>()
+        for (i in 0 until pieces.size - 1) {
+            val segment = pieces[i]
             if (segment in vocab) {
                 out.add(segment)
             } else {
@@ -171,27 +190,6 @@ class BPETokenizer(vocabPath: String, mergesPath: String) {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-        }
-    }
-
-    init {
-        val mapType = object : TypeReference<HashMap<String, Int>>() {}
-        val vocabJson = ObjectMapper().readValue(File(vocabPath), mapType)
-        for (pair in vocabJson.entries) {
-            val value = pair.value
-            vocab[pair.key] = value
-            reversedVocab[value] = pair.key
-        }
-
-        var merges = File(mergesPath).readLines()
-        if (merges[0][0] == '#') {
-            merges = merges.drop(1)
-        }
-        for (line in merges) {
-            val words = line.split(" ")
-            val pair = Pair(words[0], words[1])
-            codes[pair] = codes.size
-            reversedCodes[words[0] + words[1]] = pair
         }
     }
 }
