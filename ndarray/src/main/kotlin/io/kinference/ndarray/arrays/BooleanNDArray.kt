@@ -31,6 +31,10 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
     final override var strides: Strides = strides
         protected set
 
+    override fun view(vararg axes: Int): NDArray {
+        TODO("Not yet implemented")
+    }
+
     override fun get(index: Int): Boolean {
         return array[index]
     }
@@ -110,6 +114,10 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
 class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
     override fun set(index: Int, value: Any) {
         array[index] = value as Boolean
+    }
+
+    override fun viewMutable(vararg axes: Int): MutableNDArray {
+        TODO()
     }
 
     override fun copyIfNotMutable(): MutableNDArray {

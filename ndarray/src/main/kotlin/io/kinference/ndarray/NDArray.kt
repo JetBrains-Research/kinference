@@ -24,7 +24,7 @@ interface NDArray {
 
     fun allocateNDArray(strides: Strides): MutableNDArray
 
-    //fun view(vararg axes: Int): NDArray
+    fun view(vararg axes: Int): NDArray
     fun reshapeView(newShape: IntArray): NDArray
     fun toMutable(newStrides: Strides = strides): MutableNDArray
 
@@ -52,6 +52,8 @@ interface MutableNDArray : NDArray {
     fun transpose2D(): MutableNDArray
 
     fun clean()
+
+    fun viewMutable(vararg axes: Int): MutableNDArray
 }
 
 interface NumberNDArray : NDArray {

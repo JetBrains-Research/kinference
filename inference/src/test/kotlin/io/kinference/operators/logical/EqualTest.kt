@@ -11,7 +11,7 @@ class EqualTest {
         Utils.tensorTestRunner(getTargetPath("test_equal"))
     }
 
-    @Test
+    //@Test
     fun `test equal with broadcast`() {
         Utils.tensorTestRunner(getTargetPath("test_equal_bcast"))
     }

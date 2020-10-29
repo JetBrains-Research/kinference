@@ -29,20 +29,17 @@ infix fun NumberNDArray.matmul(other: NumberNDArray): MutableNumberNDArray {
 private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArray,
                          dotFunc: NumberNDArray.(NumberNDArray, MutableNumberNDArray) -> MutableNumberNDArray): MutableNumberNDArray {
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
-    fun matmul(leftInfo: BroadcastingInfo,
-               rightInfo: BroadcastingInfo,
-               destinationInfo: MutableBroadcastingInfo,
-               temp: BroadcastingTemp, index: Int) {
-        if (leftInfo.array.shape.size - index == 2) {
-            temp.leftTemp.copyFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
-            temp.rightTemp.copyFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
+    fun matmul(
+        left: NDArray,
+        right: NDArray,
+        destination: MutableNDArray
+    ) {
+        if (left.rank == 2) {
 
-            (temp.leftTemp as NumberNDArray).dotFunc(temp.rightTemp as NumberNDArray, temp.destinationTemp as MutableNumberNDArray)
+            (left as NumberNDArray).dotFunc(right as NumberNDArray, destination as MutableNumberNDArray)
 
-            destinationInfo.array.copyFrom(destinationInfo.offset, temp.destinationTemp)
-            temp.destinationTemp.clean()
         } else {
-            innerBroadcast(leftInfo, rightInfo, destinationInfo, index) { fstArray, sndArray, dest -> matmul(fstArray, sndArray, dest, temp, index + 1) }
+            innerBroadcast(left, right, destination, ::matmul) //{ fstArray, sndArray, dest -> matmul(fstArray, sndArray, dest, temp, index + 1) }
         }
     }
 
@@ -56,21 +53,14 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
     val leftWrapShape = unsqueezeFirst(shape, dest.rank)
     val rightWrapShape = unsqueezeFirst(other.shape, dest.rank)
 
-    val leftTempMatrixShape = intArrayOf(leftWrapShape[leftWrapShape.lastIndex - 1], leftWrapShape[leftWrapShape.lastIndex])
-    val rightTempMatrixShape = intArrayOf(rightWrapShape[rightWrapShape.lastIndex - 1], rightWrapShape[rightWrapShape.lastIndex])
-    val destinationTempMatrixShape = intArrayOf(leftTempMatrixShape[0], rightTempMatrixShape[1])
-
-    val leftTempMatrix = allocateNDArray(this.type, leftTempMatrixShape)
-    val rightTempMatrix = allocateNDArray(other.type, rightTempMatrixShape)
-    val destinationTempMatrix = allocateNDArray(dest.type, destinationTempMatrixShape)
-
-    val broadcastingTemp = BroadcastingTemp(leftTempMatrix, rightTempMatrix, destinationTempMatrix)
 
     val leftWrapped = this.reshapeView(leftWrapShape)
     val rightWrapped = other.reshapeView(rightWrapShape)
 
-    matmul(BroadcastingInfo(leftWrapped),
-        BroadcastingInfo(rightWrapped),
-        MutableBroadcastingInfo(dest), broadcastingTemp, 0)
+    matmul(
+        leftWrapped,
+        rightWrapped,
+        dest
+    )
     return dest
 }

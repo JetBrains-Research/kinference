@@ -6,16 +6,6 @@ import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 
-data class BroadcastingTemp(val leftTemp: MutableNDArray, val rightTemp: MutableNDArray, val destinationTemp: MutableNDArray)
-
-data class BroadcastingInfo(val array: NDArray, val offset: Int = 0) {
-    fun move(additionalOffset: Int): BroadcastingInfo = BroadcastingInfo(array, offset + additionalOffset)
-}
-
-data class MutableBroadcastingInfo(val array: MutableNDArray, val offset: Int = 0) {
-    fun move(additionalOffset: Int): MutableBroadcastingInfo = MutableBroadcastingInfo(array, offset + additionalOffset)
-}
-
 fun broadcastShape(firstShape: IntArray, secondShape: IntArray): IntArray {
     val totalShapeLength = max(firstShape.size, secondShape.size)
 
@@ -57,19 +47,12 @@ fun NDArray.applyWithBroadcast(other: NDArray, destination: MutableNDArray, orde
     val leftReshaped = this.reshapeView(leftShape)
     val rightReshaped = other.reshapeView(rightShape)
 
-    val tempShape = tempShape(leftShape, rightShape)
-
-    val leftTempArray = allocateNDArray(this.type, tempShape)
-    val rightTempArray = allocateNDArray(other.type, tempShape)
-    val destinationTempArray = allocateNDArray(destination.type, tempShape)
-
-    val broadcastingTemp = BroadcastingTemp(leftTempArray, rightTempArray, destinationTempArray)
-
     broadcast(
-        BroadcastingInfo(leftReshaped),
-        BroadcastingInfo(rightReshaped),
-        MutableBroadcastingInfo(destination),
-        broadcastingTemp, 0, op)
+        leftReshaped,
+        rightReshaped,
+        destination,
+        op
+    )
     return destination
 }
 
@@ -88,52 +71,45 @@ fun IntArray.contentEquals(other: IntArray, offset: Int): Boolean {
     return true
 }
 
-fun broadcast(leftInfo: BroadcastingInfo,
-              rightInfo: BroadcastingInfo,
-              destinationInfo: MutableBroadcastingInfo,
-              temp: BroadcastingTemp, index: Int,
-              op: (NDArray, NDArray, MutableNDArray) -> Unit) {
-    if (leftInfo.array.shape.contentEquals(rightInfo.array.shape, index)) {
-        temp.leftTemp.copyFrom(0, leftInfo.array, leftInfo.offset, leftInfo.offset + temp.leftTemp.linearSize)
-        temp.rightTemp.copyFrom(0, rightInfo.array, rightInfo.offset, rightInfo.offset + temp.rightTemp.linearSize)
-
-        op(temp.leftTemp, temp.rightTemp, temp.destinationTemp)
-
-        destinationInfo.array.copyFrom(destinationInfo.offset, temp.destinationTemp)
+fun broadcast(
+    left: NDArray,
+    right: NDArray,
+    destination: MutableNDArray,
+    op: (NDArray, NDArray, MutableNDArray) -> Unit
+) {
+    if (left.shape.contentEquals(right.shape)) {
+        op(left, right, destination)
     } else {
-        innerBroadcast(leftInfo, rightInfo, destinationInfo, index) { fstArray, sndArray, dest -> broadcast(fstArray, sndArray, dest, temp, index + 1, op) }
+        innerBroadcast(left, right, destination) { fstArray, sndArray, dest -> broadcast(fstArray, sndArray, dest, op) }
     }
 }
 
-fun innerBroadcast(leftInfo: BroadcastingInfo,
-                   rightInfo: BroadcastingInfo,
-                   destinationInfo: MutableBroadcastingInfo,
-                   index: Int, recurrentBack: (BroadcastingInfo, BroadcastingInfo, MutableBroadcastingInfo) -> Unit) {
-    if (leftInfo.array.shape[index] != rightInfo.array.shape[index]) {
-        val arrayWithOne = if (leftInfo.array.shape[index] == 1) leftInfo else rightInfo
-        val arrayWithoutOne = if (leftInfo.array.shape[index] != 1) leftInfo else rightInfo
+fun innerBroadcast(
+    left: NDArray,
+    right: NDArray,
+    destination: MutableNDArray,
+    recurrentBack: (NDArray, NDArray, MutableNDArray) -> Unit
+) {
+    if (left.shape[0] != right.shape[0]) {
+        val arrayWithOne = if (left.shape[0] == 1) left else right
+        val arrayWithoutOne = if (left.shape[0] != 1) left else right
 
-        for (i in 0 until arrayWithoutOne.array.shape[index]) {
-            val additionalOffsetWithoutOne = i * arrayWithoutOne.array.strides.strides[index]
-            val additionalOffsetDestination = i * destinationInfo.array.strides.strides[index]
+        val viewedArrayWithOne = arrayWithOne.view(0)
 
-            val movedArrayWithoutOne = arrayWithoutOne.move(additionalOffsetWithoutOne)
-            val movedDestination = destinationInfo.move(additionalOffsetDestination)
+        for (i in 0 until arrayWithoutOne.shape[0]) {
+            val movedWithoutOne = arrayWithoutOne.view(i)
+            val movedDestination = destination.viewMutable(i)
 
-            if (arrayWithOne === leftInfo)
-                recurrentBack(arrayWithOne, movedArrayWithoutOne, movedDestination)
+            if (arrayWithOne === left)
+                recurrentBack(viewedArrayWithOne, movedWithoutOne, movedDestination)
             else
-                recurrentBack(movedArrayWithoutOne, arrayWithOne, movedDestination)
+                recurrentBack(movedWithoutOne, viewedArrayWithOne, movedDestination)
         }
     } else {
-        for (i in 0 until leftInfo.array.shape[index]) {
-            val leftAdditionalOffset = i * leftInfo.array.strides.strides[index]
-            val rightAdditionalOffset = i * rightInfo.array.strides.strides[index]
-            val destinationAdditionalOffset = i * destinationInfo.array.strides.strides[index]
-
-            val movedLeft = leftInfo.move(leftAdditionalOffset)
-            val movedRight = rightInfo.move(rightAdditionalOffset)
-            val movedDestination = destinationInfo.move(destinationAdditionalOffset)
+        for (i in 0 until left.shape[0]) {
+            val movedLeft = left.view(i)
+            val movedRight = right.view(i)
+            val movedDestination = destination.viewMutable(i)
 
             recurrentBack(movedLeft, movedRight, movedDestination)
         }
