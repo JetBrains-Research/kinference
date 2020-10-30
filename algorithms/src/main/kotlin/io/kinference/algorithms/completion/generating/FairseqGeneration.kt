@@ -101,7 +101,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
                 val rowStart = i * rowLen
                 for (j in sortMask.indices) {
                     val totalRowOffset = rowStart + localRowLen * sortMask[j]
-                    array.placeFrom(off, mem, totalRowOffset, totalRowOffset + localRowLen)
+                    array.copyFrom(off, mem, totalRowOffset, totalRowOffset + localRowLen)
                     off += localRowLen
                 }
             }

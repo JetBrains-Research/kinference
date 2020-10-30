@@ -313,6 +313,17 @@ class PrimitiveTiledArray {
         destIter.accept(thisIter, srcEnd - srcStart) { dst, src -> src }
     }
 
+    fun copyOfRange(fromIndex: Int, toIndex: Int): PrimitiveArray {
+        val array = PrimitiveArray(toIndex - fromIndex)
+        val thisIterator = Iterator(this, fromIndex)
+
+        for (i in array.indices) {
+            array[i] = thisIterator.next()
+        }
+
+        return array
+    }
+
     fun fill(value: PrimitiveType, from: Int = 0, to: Int = size) {
         if (from == to)
             return
