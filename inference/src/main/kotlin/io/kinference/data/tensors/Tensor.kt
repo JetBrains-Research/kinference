@@ -30,7 +30,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
     @ExperimentalUnsignedTypes
     fun mapElements(type: DataType = this.info.type, func: (Any) -> Any): Tensor {
         val localType = type.resolveLocalDataType()
-        val buffer = createArray(localType, data.linearSize) { func(data[it]) }
+        val buffer = createArray(localType, data.shape) { func(data[it]) }
         return createNDArray(localType, buffer, data.shape).asTensor()
     }
 
@@ -128,8 +128,10 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
 
         @ExperimentalUnsignedTypes
         operator fun invoke(dims: List<Long>, value: List<*>, type: DataType, name: String?): Tensor {
-            val data = createArray(type.resolveLocalDataType(), value.size) { i -> value[i]!! }
-            return Tensor(data, type, dims.toIntArray(), name)
+            val shape = dims.toIntArray()
+
+            val data = createArray(type.resolveLocalDataType(), shape) { i -> value[i]!! }
+            return Tensor(data, type, shape, name)
         }
 
 
@@ -154,7 +156,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
         @ExperimentalUnsignedTypes
         operator fun invoke(value: List<Any>, type: DataType): Tensor {
             val dims = intArrayOf(value.size)
-            val data = createArray(type.resolveLocalDataType(), value.size) { i -> value[i] }
+            val data = createArray(type.resolveLocalDataType(), dims) { i -> value[i] }
             return Tensor(data, type, dims)
         }
 

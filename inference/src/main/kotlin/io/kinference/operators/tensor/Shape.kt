@@ -5,6 +5,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.ndarray.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.IOInfo
@@ -27,7 +28,9 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val shape = tensor.data.shape
-        val data = LongArray(shape.size) { shape[it].toLong() }
-        return listOf(createNDArray(DataType.LONG, data, intArrayOf(data.size)).asTensor("shape"))
+
+        val outputTensorShape = intArrayOf(shape.size)
+        val data = LongTiledArray(outputTensorShape) { shape[it].toLong() }
+        return listOf(createNDArray(DataType.LONG, data, outputTensorShape).asTensor("shape"))
     }
 }
