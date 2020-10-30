@@ -21,6 +21,7 @@ interface NDArray {
 
     operator fun get(index: Int): Any
     operator fun get(indices: IntArray): Any
+    fun copyOfRange(start: Int, end: Int): Any
 
     fun allocateNDArray(strides: Strides): MutableNDArray
 

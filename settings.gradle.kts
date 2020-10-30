@@ -1,5 +1,6 @@
 rootProject.name = "kinference"
 
+include(":algorithms")
 include(":inference")
 include(":ndarray")
 

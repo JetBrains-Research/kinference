@@ -41,6 +41,10 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         return array[strides.offset(indices)]
     }
 
+    override fun copyOfRange(start: Int, end: Int): Any {
+        return array.copyOfRange(start, end)
+    }
+
     override fun allocateNDArray(strides: Strides): MutableNDArray {
         return MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
     }
