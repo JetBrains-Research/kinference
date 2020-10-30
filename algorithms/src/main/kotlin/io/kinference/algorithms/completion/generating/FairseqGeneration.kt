@@ -146,7 +146,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         prefixes!!.forEachIndexed { batch_id, (prefix, err_limit) ->
             val tokenIds = tokensIds[batch_id]
             val tokens = tokenIds.map { tokenizer.decode(it) }
-            val isEndOfWord = tokens.map { !it[0].isLetter() && PrefixMatcher.levenshtein(it, prefix) <= err_limit }.any()
+            val isEndOfWord = tokens.any { !it[0].isLetter() && PrefixMatcher.levenshtein(it, prefix) <= err_limit }
             endOfWords[batch_id] = isEndOfWord
         }
 

@@ -1,6 +1,8 @@
 package io.kinference.algorithms.completion.generating
 
 import java.lang.IllegalArgumentException
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.*
 
 fun IntRange.toLongArray(): LongArray {
@@ -58,7 +60,7 @@ fun logSoftmax(scores: Array<DoubleArray>): Array<DoubleArray> {
 
 fun topk1d(data: DoubleArray, size: Int): IntArray {
     val pairedData = Array(data.size) { Pair(data[it], it) }
-    pairedData.sortBy { -it.first }
+    Arrays.parallelSort(pairedData) { fst: Pair<Double, Int>, snd: Pair<Double, Int> -> -fst.first.compareTo(snd.first) }
     return IntArray(size) { pairedData[it].second }
 }
 
