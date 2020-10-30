@@ -464,6 +464,10 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         return MutablePrimitiveNDArray(PrimitiveTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
     }
 
+    override fun copyOfRange(start: Int, end: Int): PrimitiveArray {
+        return array.copyOfRange(start, end)
+    }
+
     // TODO check if step == 1 and use Arrays.copy
     override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
         array as LateInitPrimitiveArray
