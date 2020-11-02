@@ -5,8 +5,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
+import io.kinference.ndarray.tiled.LongTiledArray
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.IOInfo
 import io.kinference.operators.Operator

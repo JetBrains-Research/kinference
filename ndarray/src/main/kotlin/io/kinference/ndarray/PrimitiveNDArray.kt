@@ -3,343 +3,14 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.pointers.accept
+import io.kinference.ndarray.pointers.combine
+import io.kinference.ndarray.tiled.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.lang.IllegalStateException
 import kotlin.math.*
 
-@PrimitiveClass
-class PrimitiveTiledArray {
-    val size: Int
-    val blockSize: Int
-    val blocksNum: Int
-    val blocks: Array<PrimitiveArray>
-
-    companion object {
-        const val MIN_BLOCK_SIZE = 64
-        val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
-
-        operator fun invoke(strides: Strides): PrimitiveTiledArray {
-            return when {
-                strides.linearSize == 0 -> PrimitiveTiledArray(0, 0)
-                strides.shape.isEmpty() -> PrimitiveTiledArray(1, 1)
-                else -> {
-                    val rowSize = strides.shape.last()
-                    val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
-                        var num = rowSize / MIN_BLOCK_SIZE
-                        while (rowSize % num != 0) num--
-                        rowSize / num
-                    }
-
-                    PrimitiveTiledArray(strides.linearSize, blockSize)
-                }
-            }
-        }
-
-        operator fun invoke(array: PrimitiveArray, strides: Strides): PrimitiveTiledArray {
-            require(strides.linearSize == array.size)
-
-            val tiledArray = PrimitiveTiledArray(strides)
-
-            var startIndex = 0
-            var endIndex = tiledArray.blockSize
-            for (block in tiledArray.blocks) {
-                array.copyInto(block, 0, startIndex, endIndex)
-                startIndex = endIndex
-                endIndex += tiledArray.blockSize
-            }
-
-            return tiledArray
-        }
-
-        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
-            val tiledArray = PrimitiveTiledArray(strides)
-
-            var count = 0
-            for (block in tiledArray.blocks) {
-                for (idx in 0 until tiledArray.blockSize) {
-                    block[idx] = init(count++)
-                }
-            }
-
-            return tiledArray
-        }
-
-        operator fun invoke(shape: IntArray) = invoke(Strides(shape))
-
-        operator fun invoke(array: PrimitiveArray, shape: IntArray) = invoke(array, Strides(shape))
-
-        operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
-    }
-
-    data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
-    abstract class BaseIterator {
-        val array: PrimitiveTiledArray
-
-        protected var blockNum: Int
-        protected var indexInBlock: Int
-
-        protected var currentBlock: PrimitiveArray
-        protected var isInitialized: Boolean = false
-
-        constructor(array: PrimitiveTiledArray, startIndex: Int) {
-            require(startIndex >= 0 && startIndex < array.size) { "Start index of Iterator must be >= 0 and < array size" }
-            this.array = array
-            this.blockNum = startIndex / array.blockSize
-            this.indexInBlock = startIndex % array.blockSize
-            this.currentBlock = array.blocks[blockNum]
-        }
-
-        constructor(other: BaseIterator) {
-            this.array = other.array
-            this.blockNum = other.blockNum
-            this.indexInBlock = other.indexInBlock
-            this.currentBlock = other.currentBlock
-        }
-
-        var linearIndex: Int
-            get() = blockNum * array.blockSize + indexInBlock
-            set(value) {
-                require(value >= 0 && value < array.size) { "Linear index of Iterator must be >= 0 and < array size" }
-                this.isInitialized = false
-                this.blockNum = value / array.blockSize
-                this.indexInBlock = value % array.blockSize
-                this.currentBlock = array.blocks[blockNum]
-            }
-    }
-
-    class Iterator: BaseIterator {
-        constructor(array: PrimitiveTiledArray, startIndex: Int = 0): super(array, startIndex)
-        constructor(other: BaseIterator): super(other)
-
-        fun set(value: PrimitiveType) {
-            require(isInitialized) { "Iterator not initialized" }
-            currentBlock[indexInBlock] = value
-        }
-
-        fun get(): PrimitiveType {
-            require(isInitialized) { "Iterator not initialized" }
-            return currentBlock[indexInBlock]
-        }
-
-        fun block(): BlockWithOffset {
-            require(isInitialized) { "Iterator not initialized" }
-            return BlockWithOffset(currentBlock, indexInBlock)
-        }
-
-        fun next(): PrimitiveType {
-            when {
-                !isInitialized -> isInitialized = true
-                indexInBlock < array.blockSize - 1 -> indexInBlock++
-                blockNum < array.blocksNum - 1 -> {
-                    blockNum++
-                    indexInBlock = 0
-                    currentBlock = array.blocks[blockNum]
-                }
-                else -> throw IllegalStateException("No more elements in array")
-            }
-
-            return currentBlock[indexInBlock]
-        }
-
-        fun hasNext(): Boolean = blockNum < array.blocksNum - 1 || indexInBlock < array.blockSize - 1
-    }
-
-    class BlockIterator: BaseIterator {
-        constructor(array: PrimitiveTiledArray, startIndex: Int = 0): super(array, startIndex)
-        constructor(other: BaseIterator): super(other)
-
-        fun get(): BlockWithOffset {
-            require(isInitialized) { "Iterator not initialized" }
-            return BlockWithOffset(currentBlock, indexInBlock)
-        }
-
-        fun next(): BlockWithOffset {
-            when {
-                !isInitialized -> isInitialized = true
-                blockNum < array.blocksNum - 1 -> {
-                    blockNum++
-                    indexInBlock = 0
-                    currentBlock = array.blocks[blockNum]
-                }
-                else -> throw IllegalStateException("No more blocks in array")
-            }
-
-            return BlockWithOffset(currentBlock, indexInBlock)
-        }
-
-        fun hasNext(): Boolean = blockNum < array.blocksNum - 1
-
-        fun isCompatibleWith(other: BlockIterator, requestedSize: Int): Boolean {
-            return this.indexInBlock == other.indexInBlock &&
-                this.array.blockSize == other.array.blockSize &&
-                this.array.size - this.linearIndex >= requestedSize &&
-                other.array.size - other.linearIndex >= requestedSize
-        }
-
-        inline fun accept(other: BlockIterator, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
-            var end = count
-            if (this.isCompatibleWith(other, count)) {
-                while (end > 0) {
-                    val dst = this.next()
-                    val src = other.next()
-
-                    for (index in dst.offset until min(dst.block.size, dst.offset + end)) {
-                        dst.block[index] = action(dst.block[index], src.block[index])
-                    }
-
-                    end -= dst.block.size
-                }
-            } else {
-                logger.warn("BlockIterators not compatible: rollback to Iterator")
-                val dstIt = Iterator(this)
-                val srcIt = Iterator(other)
-                while (end > 0) {
-                    dstIt.set(action(dstIt.next(), srcIt.next()))
-                    end--
-                }
-            }
-        }
-
-        inline fun combine(other: BlockIterator, count: Int, action: (first: PrimitiveType, second: PrimitiveType) -> Unit) {
-            var end = count
-            if (this.isCompatibleWith(other, count)) {
-                while (end > 0) {
-                    val fst = this.next()
-                    val snd = other.next()
-
-                    for (index in fst.offset until min(fst.block.size, fst.offset + end)) {
-                        action(fst.block[index], snd.block[index])
-                    }
-
-                    end -= fst.block.size
-                }
-            } else {
-                logger.warn("BlockIterators not compatible: rollback to Iterator")
-                val fstIt = Iterator(this)
-                val sndIt = Iterator(other)
-                while (end > 0) {
-                    action(fstIt.next(), sndIt.next())
-                    end--
-                }
-            }
-        }
-    }
-
-    constructor(size: Int, blockSize: Int) {
-        if (blockSize != 0)
-            require(size % blockSize == 0) { "Size must divide blockSize" }
-
-        this.blocksNum = if (blockSize == 0) 0 else size / blockSize
-        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
-        this.blockSize = blockSize
-        this.size = size
-    }
-
-    constructor(blocks: Array<PrimitiveArray>) {
-        this.blocks = blocks
-        this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
-        this.blocksNum = blocks.size
-        this.size = this.blocksNum * this.blockSize
-    }
-
-    constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
-        var count = 0
-        for (block in blocks) {
-            for (idx in 0 until blockSize) {
-                block[idx] = init(count++)
-            }
-        }
-    }
-
-    fun iterator(startIndex: Int = 0) = Iterator(this, startIndex)
-    fun blockIterator(startIndex: Int = 0) = BlockIterator(this, startIndex)
-
-    fun toArray(): PrimitiveArray {
-        if (size == 0) {
-            return PrimitiveArray(0)
-        }
-
-        val array = PrimitiveArray(size)
-        var offset = 0
-
-        for (block in blocks) {
-            block.copyInto(array, offset)
-            offset += blockSize
-        }
-
-        return array
-    }
-
-    fun indexFor(i: Int): Pair<Int, Int> {
-        val blockIdx = i / blockSize
-        val blockOff = i % blockSize
-        return blockIdx to blockOff
-    }
-
-    operator fun get(i: Int): PrimitiveType {
-        val (blockIdx, blockOff) = indexFor(i)
-        return blocks[blockIdx][blockOff]
-    }
-
-    operator fun set(i: Int, value: PrimitiveType) {
-        val (blockIdx, blockOff) = indexFor(i)
-        blocks[blockIdx][blockOff] = value
-    }
-
-    fun copyOf(): PrimitiveTiledArray {
-        val copyArray = PrimitiveTiledArray(size, blockSize)
-
-        for (blockNum in 0 until blocksNum) {
-            val thisBlock = this.blocks[blockNum]
-            val destBlock = copyArray.blocks[blockNum]
-
-            thisBlock.copyInto(destBlock)
-        }
-
-        return copyArray
-    }
-
-    fun copyInto(dest: PrimitiveTiledArray, destOffset: Int = 0, srcStart: Int = 0, srcEnd: Int = size) {
-        if (srcStart == srcEnd)
-            return
-
-        val thisIter = BlockIterator(this, srcStart)
-        val destIter = BlockIterator(dest, destOffset)
-
-        destIter.accept(thisIter, srcEnd - srcStart) { dst, src -> src }
-    }
-
-    fun copyOfRange(fromIndex: Int, toIndex: Int): PrimitiveArray {
-        val array = PrimitiveArray(toIndex - fromIndex)
-        val thisIterator = Iterator(this, fromIndex)
-
-        for (i in array.indices) {
-            array[i] = thisIterator.next()
-        }
-
-        return array
-    }
-
-    fun fill(value: PrimitiveType, from: Int = 0, to: Int = size) {
-        if (from == to)
-            return
-
-        val blockIterator = BlockIterator(this, from)
-
-        var count = to - from
-
-        while (count > 0) {
-            val blockWithOffset = blockIterator.next()
-            blockWithOffset.block.fill(value, blockWithOffset.offset, min(blockSize, count))
-
-            count -= blockSize
-        }
-    }
-}
 
 @PrimitiveClass
 @ExperimentalUnsignedTypes
@@ -830,16 +501,16 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
             transposeB -> {
                 for (t in 0 until m) {
                     val aIdx = t * lda + aOffset
-                    val cIt = c.array.iterator(t * ldc + cOffset)
+                    val cPtr = c.array.pointer(t * ldc + cOffset)
                     for (j in 0 until n) {
                         val bIdx = j * ldb + bOffset
-                        val aIt = array.blockIterator(aIdx)
-                        val bIt = b.array.blockIterator(bIdx)
+                        val aPtr = array.pointer(aIdx)
+                        val bPtr = b.array.pointer(bIdx)
 
-                        cIt.next()
-                        aIt.combine(bIt, k) { elementInA, elementInB ->
-                            cIt.set((alphaPrimitive * elementInA * elementInB + cIt.get()).toPrimitive())
+                        aPtr.combine(bPtr, k) { elementInA, elementInB ->
+                            cPtr.set((alphaPrimitive * elementInA * elementInB + cPtr.get()).toPrimitive())
                         }
+                        cPtr.increment()
                     }
                 }
             }
@@ -847,15 +518,15 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                 for (t in 0 until m) {
                     val cIdx = t * ldc + cOffset
                     val aIdx = t * lda + aOffset
-                    val aIt = array.iterator(aIdx)
+                    val aPtr = array.pointer(aIdx)
                     for (i in 0 until k) {
-                        val temp = (alphaPrimitive * aIt.next()).toPrimitive()
+                        val temp = (alphaPrimitive * aPtr.getAndIncrement()).toPrimitive()
                         val bIdx = i * ldb + bOffset
 
-                        val bIt = b.array.blockIterator(bIdx)
-                        val cIt = c.array.blockIterator(cIdx)
+                        val bPtr = b.array.pointer(bIdx)
+                        val cPtr = c.array.pointer(cIdx)
 
-                        cIt.accept(bIt, n) { elementInC, elementInB ->
+                        cPtr.accept(bPtr, n) { elementInC, elementInB ->
                             (temp * elementInB + elementInC).toPrimitive()
                         }
                     }

@@ -6,6 +6,7 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.tiled.IntTiledArray
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.IOInfo
 import io.kinference.operators.Operator

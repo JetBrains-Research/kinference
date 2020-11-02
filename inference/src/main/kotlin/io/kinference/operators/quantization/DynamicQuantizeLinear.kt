@@ -6,7 +6,6 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.FloatNDArray
 import io.kinference.ndarray.MutableUByteNDArray
-import io.kinference.ndarray.UByteTiledArray
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.onnx.TensorProto

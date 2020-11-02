@@ -11,7 +11,7 @@ plugins {
     kotlin("jvm") version "1.3.72" apply true
     kotlin("kapt") version "1.3.72" apply false
 
-    id("io.kinference.primitives") version ("0.1.1") apply false
+    id("io.kinference.primitives") version ("0.1.2") apply false
 
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
     idea apply true
