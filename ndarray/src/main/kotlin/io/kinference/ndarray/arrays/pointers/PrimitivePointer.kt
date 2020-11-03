@@ -1,10 +1,10 @@
 @file:GenerateWithPrimitives
 @file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE", "DuplicatedCode")
 
-package io.kinference.ndarray.pointers
+package io.kinference.ndarray.arrays.pointers
 
 
-import io.kinference.ndarray.tiled.PrimitiveTiledArray
+import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveBinding
 import io.kinference.primitives.annotations.PrimitiveClass

@@ -1,14 +1,12 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.ndarray.extensions.squeeze
 import io.kinference.data.tensors.*
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.*
 
 @ExperimentalUnsignedTypes
 class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {

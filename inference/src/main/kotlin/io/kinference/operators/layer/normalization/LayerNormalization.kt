@@ -5,8 +5,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.DoubleNDArray
-import io.kinference.ndarray.FloatNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto

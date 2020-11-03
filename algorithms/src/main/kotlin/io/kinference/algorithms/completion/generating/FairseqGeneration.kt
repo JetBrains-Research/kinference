@@ -2,7 +2,9 @@ package io.kinference.algorithms.completion.generating
 
 import io.kinference.algorithms.completion.BPETokenizer
 import io.kinference.algorithms.completion.GenerationConfig
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArray
 import kotlin.math.ln
 import kotlin.math.min
 

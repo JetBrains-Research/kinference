@@ -1,18 +1,16 @@
 package io.kinference.data.tensors
 
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.NumberNDArray
+
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.toIntArray
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.ndarray.extensions.matmul
-import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.types.TensorInfo

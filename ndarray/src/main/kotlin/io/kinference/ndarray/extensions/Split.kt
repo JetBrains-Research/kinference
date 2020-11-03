@@ -1,7 +1,7 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.Strides
 import kotlin.math.ceil
 

@@ -1,5 +1,6 @@
-package io.kinference.ndarray
+package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import kotlin.math.min
 

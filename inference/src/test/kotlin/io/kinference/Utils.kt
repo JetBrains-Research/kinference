@@ -4,8 +4,10 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.BooleanNDArray
+import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
 import org.junit.jupiter.api.Assertions.assertArrayEquals

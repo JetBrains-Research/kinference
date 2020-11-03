@@ -1,6 +1,7 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
 import kotlin.collections.toIntArray
 import kotlin.ranges.reversed
 

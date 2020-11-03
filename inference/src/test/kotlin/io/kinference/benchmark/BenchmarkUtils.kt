@@ -6,10 +6,7 @@ import ai.onnxruntime.OrtSession
 import io.kinference.Utils
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
-import io.kinference.ndarray.DoubleNDArray
-import io.kinference.ndarray.FloatNDArray
-import io.kinference.ndarray.IntNDArray
-import io.kinference.ndarray.LongNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import java.io.File
 import java.nio.DoubleBuffer

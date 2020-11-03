@@ -1,10 +1,10 @@
 @file:GenerateWithPrimitives
 
-package io.kinference.ndarray.tiled
+package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.pointers.PrimitivePointer
-import io.kinference.ndarray.pointers.accept
+import io.kinference.ndarray.arrays.pointers.PrimitivePointer
+import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*

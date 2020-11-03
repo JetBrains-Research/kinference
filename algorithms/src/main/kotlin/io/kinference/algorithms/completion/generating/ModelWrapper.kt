@@ -4,7 +4,9 @@ import io.kinference.algorithms.completion.ModelConfig
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArray
 
 data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>)
 

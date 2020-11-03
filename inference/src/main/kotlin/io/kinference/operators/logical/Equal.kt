@@ -4,7 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.IOInfo

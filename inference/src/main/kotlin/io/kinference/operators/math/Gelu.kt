@@ -4,7 +4,9 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.MutableNumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt

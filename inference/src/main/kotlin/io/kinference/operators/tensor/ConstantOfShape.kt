@@ -3,7 +3,8 @@ package io.kinference.operators.tensor
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*

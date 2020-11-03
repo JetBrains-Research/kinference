@@ -1,10 +1,8 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
-import io.kinference.ndarray.arrays.BooleanNDArray
-import io.kinference.ndarray.arrays.LateInitBooleanArray
-import io.kinference.ndarray.arrays.MutableBooleanNDArray
-import io.kinference.ndarray.tiled.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 
 inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {

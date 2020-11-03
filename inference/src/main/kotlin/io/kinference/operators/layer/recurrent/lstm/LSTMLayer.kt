@@ -5,8 +5,7 @@ import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.ndarray.extensions.squeeze
 import io.kinference.data.tensors.*
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.activations.Activation
 
@@ -66,7 +65,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
     }
 
     private fun step(lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
-                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction) {
+                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction
+    ) {
         gatesData.cleanup()
         input.processGate(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
         input.processGate(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)

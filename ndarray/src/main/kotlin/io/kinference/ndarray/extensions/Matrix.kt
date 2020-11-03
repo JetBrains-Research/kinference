@@ -1,6 +1,10 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.MutableNumberNDArray
+import io.kinference.ndarray.arrays.NDArray
+import io.kinference.ndarray.arrays.NumberNDArray
 
 fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArray, b: NumberNDArray, beta: Double, c: MutableNDArray,
          aOffset: Int = 0, bOffset: Int = 0, cOffset: Int = 0, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray {
@@ -27,7 +31,8 @@ infix fun NumberNDArray.matmul(other: NumberNDArray): MutableNumberNDArray {
 }
 
 private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArray,
-                         dotFunc: NumberNDArray.(NumberNDArray, MutableNumberNDArray) -> MutableNumberNDArray): MutableNumberNDArray {
+                                 dotFunc: NumberNDArray.(NumberNDArray, MutableNumberNDArray) -> MutableNumberNDArray
+): MutableNumberNDArray {
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
     fun matmul(
         left: NDArray,

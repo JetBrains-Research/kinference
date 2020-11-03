@@ -1,11 +1,10 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import io.kinference.data.tensors.Tensor
-import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.splitParts
 import io.kinference.operators.layer.recurrent.RecurrentLayer

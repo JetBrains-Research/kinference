@@ -4,9 +4,10 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.matmul
-import io.kinference.ndarray.tiled.IntTiledArray
+import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.IOInfo
 import io.kinference.operators.Operator

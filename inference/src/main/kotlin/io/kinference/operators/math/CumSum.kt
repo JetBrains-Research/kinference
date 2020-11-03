@@ -4,7 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.*

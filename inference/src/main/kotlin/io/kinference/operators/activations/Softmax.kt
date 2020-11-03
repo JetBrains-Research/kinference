@@ -1,8 +1,8 @@
 package io.kinference.operators.activations
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.MutableNumberNDArray
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.MutableNumberNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
@@ -10,8 +10,7 @@ import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.ndarray.extensions.rows
 import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.AttributeInfo
 import io.kinference.operators.IOInfo

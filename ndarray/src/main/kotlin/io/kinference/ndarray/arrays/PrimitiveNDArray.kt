@@ -1,11 +1,13 @@
 @file:GenerateWithPrimitives
 
-package io.kinference.ndarray
+package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.pointers.accept
-import io.kinference.ndarray.pointers.combine
-import io.kinference.ndarray.tiled.*
+import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.arrays.pointers.combine
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*

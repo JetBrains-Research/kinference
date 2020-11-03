@@ -1,9 +1,10 @@
 package io.kinference.operators.activations
 
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.MutableNumberNDArray
 import io.kinference.operators.IOInfo
 import io.kinference.operators.OperatorInfo
 import io.kinference.operators.math.tanh

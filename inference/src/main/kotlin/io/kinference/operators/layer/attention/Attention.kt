@@ -1,15 +1,15 @@
 package io.kinference.operators.layer.attention
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.NumberNDArray
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.onnx.AttributeProto
@@ -50,7 +50,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         internal fun initQueryKeyValue(input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int,
-                                      hiddenSize: Int, numHeads: Int, outputScale: Double = 1.0): Array<MutableNDArray> {
+                                       hiddenSize: Int, numHeads: Int, outputScale: Double = 1.0): Array<MutableNDArray> {
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, seqLen, hiddenSize))) }
             val attentionHeadSize = hiddenSize / numHeads
 
@@ -141,8 +141,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         private fun normalizedScores(
-                unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: NDArray?, batchSize: Int,
-                seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArray?, present: MutableNDArray
+            unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: NDArray?, batchSize: Int,
+            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArray?, present: MutableNDArray
         ): NDArray {
             val allSeqLen = pastSeqLen + seqLen
             val pastBlockSize = pastSeqLen * headSize
@@ -170,8 +170,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         private fun attentionScore(
-                scores: NDArray, values: NDArray, batchSize: Int, seqLen: Int, pastSeqLen: Int,
-                numHeads: Int, hiddenSize: Int, past: NDArray?, present: MutableNDArray
+            scores: NDArray, values: NDArray, batchSize: Int, seqLen: Int, pastSeqLen: Int,
+            numHeads: Int, hiddenSize: Int, past: NDArray?, present: MutableNDArray
         ): Pair<NDArray, NDArray> {
             val allSeqLen = seqLen + pastSeqLen
 
@@ -207,8 +207,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         internal fun getScores(
-                unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: NDArray?,
-                past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
+            unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: NDArray?,
+            past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Pair<NDArray, NDArray> {
             var pastSeqLen = 0
             val headSize = hiddenSize / numHeads

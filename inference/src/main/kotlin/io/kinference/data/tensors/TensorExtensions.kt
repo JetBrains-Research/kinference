@@ -1,7 +1,7 @@
 package io.kinference.data.tensors
 
 import io.kinference.primitives.types.DataType
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.onnx.TensorProto

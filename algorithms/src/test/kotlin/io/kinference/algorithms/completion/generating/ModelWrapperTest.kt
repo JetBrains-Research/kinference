@@ -1,7 +1,10 @@
 package io.kinference.algorithms.completion.generating
 
 import io.kinference.algorithms.completion.model27
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
