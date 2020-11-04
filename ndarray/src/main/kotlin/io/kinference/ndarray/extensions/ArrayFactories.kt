@@ -5,14 +5,16 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 
-inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
+inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int = 1, noinline init: (Int) -> T): Any {
     return when (type) {
-        DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
-        DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
-        DataType.LONG -> LongTiledArray(shape) { init(it) as Long }
-        DataType.INT -> IntTiledArray(shape) { init(it) as Int }
-        DataType.SHORT -> ShortTiledArray(shape) { init(it) as Short }
+        DataType.DOUBLE -> DoubleTiledArray(shape, divider) { init(it) as Double }
+        DataType.FLOAT -> FloatTiledArray(shape, divider) { init(it) as Float }
+        DataType.LONG -> LongTiledArray(shape, divider) { init(it) as Long }
+        DataType.INT -> IntTiledArray(shape, divider) { init(it) as Int }
+        DataType.SHORT -> ShortTiledArray(shape, divider) { init(it) as Short }
         DataType.BOOLEAN -> BooleanArray(Strides(shape).linearSize) { init(it) as Boolean }
+        DataType.BYTE -> ByteTiledArray(shape, divider) { init(it) as Byte }
+        DataType.UBYTE -> UByteTiledArray(shape, divider) { init(it) as UByte }
         else -> Array(Strides(shape).linearSize, init)
     }
 }
@@ -26,6 +28,8 @@ fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableN
         DataType.INT -> MutableIntNDArray(value as IntTiledArray, strides)
         DataType.SHORT -> MutableShortNDArray(value as ShortTiledArray, strides)
         DataType.BOOLEAN -> MutableBooleanNDArray(value as BooleanArray, strides)
+        DataType.BYTE -> MutableByteNDArray(value as ByteTiledArray, strides)
+        DataType.UBYTE -> MutableUByteNDArray(value as UByteTiledArray, strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
@@ -45,6 +49,8 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
         DataType.INT -> IntNDArray(value as IntTiledArray, strides)
         DataType.SHORT -> ShortNDArray(value as ShortTiledArray, strides)
         DataType.BOOLEAN -> BooleanNDArray(value as BooleanArray, strides)
+        DataType.BYTE -> ByteNDArray(value as ByteTiledArray, strides)
+        DataType.UBYTE -> UByteNDArray(value as UByteTiledArray, strides)
         //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
@@ -115,6 +121,8 @@ fun createLateInitArray(type: DataType, size: Int): LateInitArray {
         DataType.INT -> LateInitIntArray(size)
         DataType.SHORT -> LateInitShortArray(size)
         DataType.BOOLEAN -> LateInitBooleanArray(size)
+        DataType.BYTE -> LateInitByteArray(size)
+        DataType.UBYTE -> LateInitUByteArray(size)
         else -> error("Unsupported data type $type")
     }
 }
@@ -129,6 +137,8 @@ fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides
         DataType.INT -> IntNDArray((array as LateInitIntArray).getArray(), strides)
         DataType.SHORT -> ShortNDArray((array as LateInitShortArray).getArray(), strides)
         DataType.BOOLEAN -> BooleanNDArray((array as LateInitBooleanArray).getArray(), strides)
+        DataType.BYTE -> ByteNDArray((array as LateInitByteArray).getArray(), strides)
+        DataType.UBYTE -> UByteNDArray((array as LateInitUByteArray).getArray(), strides)
         else -> error("")
     }
 }

@@ -36,8 +36,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
-            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
+            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false, divider = 3),
+            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false, divider = 3),
             IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
             IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
         )

@@ -26,8 +26,8 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, BYTES, "input", optional = false),
-            IOInfo(1, BYTES, "weight", optional = false),
-            IOInfo(2, FLOATS, "bias", optional = false),
+            IOInfo(1, BYTES, "weight", optional = false, divider = 3),
+            IOInfo(2, FLOATS, "bias", optional = false, divider = 3),
             IOInfo(3, FLOATS, "input_scale", optional = false),
             IOInfo(4, FLOATS, "weight_scale", optional = false),
             IOInfo(5, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),

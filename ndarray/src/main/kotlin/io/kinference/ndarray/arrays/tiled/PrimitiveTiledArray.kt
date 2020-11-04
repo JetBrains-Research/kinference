@@ -20,60 +20,53 @@ class PrimitiveTiledArray {
     val blocks: Array<PrimitiveArray>
 
     companion object {
-        const val MIN_BLOCK_SIZE = 64
+        const val MIN_BLOCK_SIZE = 512
         val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
 
-        operator fun invoke(strides: Strides): PrimitiveTiledArray {
+        private fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
             return when {
-                strides.linearSize == 0 -> PrimitiveTiledArray(0, 0)
-                strides.shape.isEmpty() -> PrimitiveTiledArray(1, 1)
+                strides.linearSize == 0 -> 0
+                strides.shape.isEmpty() -> 1
                 else -> {
                     val rowSize = strides.shape.last()
-                    val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
-                        var num = rowSize / MIN_BLOCK_SIZE
-                        while (rowSize % num != 0) num--
-                        rowSize / num
+
+                    require(rowSize % divider == 0)
+
+                    val dividedRowSize = rowSize / divider
+
+                    val blockSize = if (dividedRowSize < MIN_BLOCK_SIZE) dividedRowSize else {
+                        var num = dividedRowSize / MIN_BLOCK_SIZE
+                        while (dividedRowSize % num != 0) num--
+                        dividedRowSize / num
                     }
 
-                    PrimitiveTiledArray(strides.linearSize, blockSize)
+                    blockSize
                 }
             }
         }
 
-        operator fun invoke(array: PrimitiveArray, strides: Strides): PrimitiveTiledArray {
+        operator fun invoke(strides: Strides, divider: Int = 1): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides, divider)
+            return PrimitiveTiledArray(strides.linearSize, blockSize)
+        }
+
+        operator fun invoke(array: PrimitiveArray, strides: Strides, divider: Int = 1): PrimitiveTiledArray {
             require(strides.linearSize == array.size)
 
-            val tiledArray = PrimitiveTiledArray(strides)
-
-            var startIndex = 0
-            var endIndex = tiledArray.blockSize
-            for (block in tiledArray.blocks) {
-                array.copyInto(block, 0, startIndex, endIndex)
-                startIndex = endIndex
-                endIndex += tiledArray.blockSize
-            }
-
-            return tiledArray
+            val blockSize = blockSizeByStrides(strides, divider)
+            return PrimitiveTiledArray(array, blockSize)
         }
 
-        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
-            val tiledArray = PrimitiveTiledArray(strides)
-
-            var count = 0
-            for (block in tiledArray.blocks) {
-                for (idx in 0 until tiledArray.blockSize) {
-                    block[idx] = init(count++)
-                }
-            }
-
-            return tiledArray
+        operator fun invoke(strides: Strides, divider: Int = 1, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides, divider)
+            return PrimitiveTiledArray(strides.linearSize, blockSize, init)
         }
 
-        operator fun invoke(shape: IntArray) = invoke(Strides(shape))
+        operator fun invoke(shape: IntArray, divider: Int = 1) = invoke(Strides(shape), divider)
 
-        operator fun invoke(array: PrimitiveArray, shape: IntArray) = invoke(array, Strides(shape))
+        operator fun invoke(array: PrimitiveArray, shape: IntArray, divider: Int = 1) = invoke(array, Strides(shape), divider)
 
-        operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
+        operator fun invoke(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) = invoke(Strides(shape), divider, init)
     }
 
     constructor(size: Int, blockSize: Int) {
@@ -99,6 +92,17 @@ class PrimitiveTiledArray {
             for (idx in 0 until blockSize) {
                 block[idx] = init(count++)
             }
+        }
+    }
+
+    constructor(array: PrimitiveArray, blockSize: Int) : this(array.size, blockSize) {
+        var startIndex = 0
+        var endIndex = blockSize
+
+        for (block in blocks) {
+            array.copyInto(block, 0, startIndex, endIndex)
+            startIndex = endIndex
+            endIndex += blockSize
         }
     }
 

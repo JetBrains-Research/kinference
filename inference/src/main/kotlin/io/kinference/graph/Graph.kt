@@ -5,8 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.GraphProto
 import io.kinference.onnx.NodeProto
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorFactory
+import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -29,7 +28,8 @@ class Graph(proto: GraphProto) {
     val info = proto.value_info.map { ValueInfo.create(it) }
     private val valueOrderInfo = GraphValueOrderInfo()
 
-    val initializers = proto.initializer.map { Tensor.create(it) }
+    val initializers: List<Tensor>
+    private val initNames = proto.initializer.map { it.name }
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -101,10 +101,27 @@ class Graph(proto: GraphProto) {
         }
 
         require(operators.size == proto.node.size)
+
+        val operatorsInputs = HashMap<String, IOInfo>().apply {
+            for (operator in operators) {
+                for (input in operator.info.inputs) {
+                    if (input.index in operator.inputs.indices) {
+                        val name = operator.inputs[input.index]
+                        put(name, input)
+                    }
+                }
+            }
+        }
+
+        initializers = proto.initializer.map {
+            val divider = operatorsInputs[it.name]?.divider ?: 1
+
+            Tensor.create(it, divider)
+        }
     }
 
     private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
-        val (_, otherNames) = names.partition { name -> initializers.any { it.info.name == name } }
+        val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
         putOrder(otherNames, order)
     }
 

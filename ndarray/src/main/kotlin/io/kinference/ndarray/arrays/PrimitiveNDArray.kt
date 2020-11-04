@@ -112,7 +112,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
         scale as FloatNDArray
         val zeros = (zeroPoint as? PrimitiveNDArray)?.array
-        val output = MutableFloatNDArray(FloatTiledArray(this.strides), this.strides)
+        val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
 
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
