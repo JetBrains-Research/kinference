@@ -46,21 +46,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
         TODO("Not yet implemented")
     }
 
-    override fun get(index: Int): Boolean {
-        return array[index]
-    }
-
-    override fun get(indices: IntArray): Boolean {
-        return array[strides.offset(indices)]
-    }
-
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
-    }
-
-    override fun copyOfRange(start: Int, end: Int): Any {
-        return array.copyOfRange(start, end)
     }
 
     override fun allocateNDArray(strides: Strides): MutableNDArray {
@@ -132,10 +120,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
-    override fun set(index: Int, value: Any) {
-        array[index] = value as Boolean
-    }
-
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         TODO()
     }
@@ -164,7 +148,8 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
         array as BooleanNDArray
-        this.array.fill(array[index], from, to)
+        val (blockIndex, blockOffset) = array.array.indexFor(index)
+        this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
     }
 
     override fun reshape(strides: Strides): MutableNDArray {

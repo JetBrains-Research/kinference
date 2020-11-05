@@ -6,6 +6,7 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.extensions.matmul
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.onnx.TensorProto
@@ -33,14 +34,20 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun NumberNDArray.toIntNDArray() = when (this) {
-            is UByteNDArray -> {
-                IntNDArray(IntTiledArray(this.strides) { this[it].toInt() }, strides)
+        @ExperimentalUnsignedTypes
+        private fun NumberNDArray.toIntNDArray(): IntNDArray {
+            val result = IntNDArray(IntTiledArray(this.strides), strides)
+            when (this) {
+                is UByteNDArray -> {
+                    this.array.pointer().mapTo(result.array.pointer(), linearSize) { it.toInt() }
+                }
+                is ByteNDArray -> {
+                    this.array.pointer().mapTo(result.array.pointer(), linearSize) { it.toInt() }
+                }
+                else -> error("Unsupported data type: $type")
             }
-            is ByteNDArray -> {
-                IntNDArray(IntTiledArray(this.strides) { this[it].toInt() }, strides)
-            }
-            else -> error("Unsupported data type: $type")
+
+            return result
         }
     }
 

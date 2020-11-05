@@ -30,10 +30,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    override fun set(index: Int, value: Any) {
-        array[index] = value as PrimitiveType
-    }
-
     override fun copyIfNotMutable(): MutableNDArray {
         return MutablePrimitiveNDArray(array, strides)
     }
@@ -45,7 +41,8 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
         array as PrimitiveNDArray
-        this.array.fill(array[index], from, to)
+        val (blockIndex, blockOffset) = array.array.indexFor(index)
+        this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {

@@ -6,6 +6,10 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.acceptTriple
+import io.kinference.ndarray.arrays.pointers.forEach
+import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
+import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
@@ -74,22 +78,26 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
             DataType.FLOAT -> {
                 input as FloatNDArray; scale as FloatNDArray; bias as FloatNDArray
 
-                val outputArray = FloatArray(input.linearSize)
+                val outputArray = FloatTiledArray(input.strides)
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
                     var mean = 0.0f
                     var meanSquare = 0.0f
-                    for (h in 0 until normSize) {
-                        val temp = input[offset + h]
-                        mean += temp
-                        meanSquare += temp * temp
+                    input.array.pointer(offset).forEach(normSize) {
+                        mean += it
+                        meanSquare += it * it
                     }
 
                     mean = mean / normSize
                     meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon)
-                    for (h in 0 until normSize) {
-                        outputArray[offset + h] = (input[offset + h] - mean) / meanSquare * scale[h] + bias[h]
+
+                    val scalePointer = scale.array.pointer()
+                    val biasPointer = bias.array.pointer()
+                    val inputPointer = input.array.pointer(offset)
+
+                    outputArray.pointer(offset).acceptTriple(inputPointer, scalePointer, biasPointer, normSize) { _, inp, sc, b ->
+                        (inp - mean) / meanSquare * sc + b
                     }
                 }
                 listOf(
@@ -99,22 +107,26 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
             DataType.DOUBLE -> {
                 input as DoubleNDArray; scale as DoubleNDArray; bias as DoubleNDArray
 
-                val outputArray = DoubleArray(input.linearSize)
+                val outputArray = DoubleTiledArray(input.strides)
                 for (i in 0 until normCount) {
                     val offset = i * normSize
 
                     var mean = 0.0
                     var meanSquare = 0.0
-                    for (h in 0 until normSize) {
-                        val temp = input[offset + h]
-                        mean += temp
-                        meanSquare += temp * temp
+                    input.array.pointer(offset).forEach(normSize) {
+                        mean += it
+                        meanSquare += it * it
                     }
 
                     mean = mean / normSize
-                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon.toDouble())
-                    for (h in 0 until normSize) {
-                        outputArray[offset + h] = (input[offset + h] - mean) / meanSquare * scale[h] + bias[h]
+                    meanSquare = sqrt(meanSquare / normSize - mean * mean + epsilon)
+
+                    val scalePointer = scale.array.pointer()
+                    val biasPointer = bias.array.pointer()
+                    val inputPointer = input.array.pointer(offset)
+
+                    outputArray.pointer(offset).acceptTriple(inputPointer, scalePointer, biasPointer, normSize) { _, inp, sc, b ->
+                        (inp - mean) / meanSquare * sc + b
                     }
                 }
                 listOf(

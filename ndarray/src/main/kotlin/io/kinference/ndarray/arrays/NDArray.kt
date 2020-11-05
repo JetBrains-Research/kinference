@@ -20,9 +20,6 @@ interface NDArray {
     val rank: Int
         get() = shape.size
 
-    operator fun get(index: Int): Any
-    operator fun get(indices: IntArray): Any
-    fun copyOfRange(start: Int, end: Int): Any
     fun singleValue(): Any
 
     fun allocateNDArray(strides: Strides): MutableNDArray
@@ -42,8 +39,6 @@ interface NDArray {
 }
 
 interface MutableNDArray : NDArray {
-    operator fun set(index: Int, value: Any)
-
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))

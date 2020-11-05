@@ -4,9 +4,8 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.arrays.pointers.accept
-import io.kinference.ndarray.arrays.pointers.combine
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
@@ -47,8 +46,7 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
     final override var strides: Strides = strides
         protected set
 
-    override fun get(index: Int): PrimitiveType = array[index]
-    override fun get(indices: IntArray): PrimitiveType = array[strides.offset(indices)]
+
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
@@ -121,9 +119,16 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
                 val zero = zeros?.get(0)?.toFloat() ?: 0f
-                for (i in 0 until array.blocksNum) {
-                    val currentBlock = array.blocks[i]
-                    for (j in currentBlock.indices) output.array.blocks[i][j] = (currentBlock[j].toFloat() - zero) * scale[0]
+                val sc = scale.array.blocks[0][0]
+
+                if (type == DataType.BYTE) {
+                    output.array.pointer().accept(this.array.pointer() as BytePointer, output.linearSize) { _, src ->
+                        (src.toFloat() - zero) * sc
+                    }
+                } else {
+                    output.array.pointer().accept(this.array.pointer() as UBytePointer, output.linearSize) { _, src ->
+                        (src.toFloat() - zero) * sc
+                    }
                 }
             }
             canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
@@ -132,15 +137,29 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
                 val blockSize = computeBlockSize(fromDim = actualAxis + 1)
                 var outOffset = 0
                 repeat(blockCount) {
+                    val zeroPointer = zeros?.pointer()
+                    val scalePointer = scale.array.pointer()
                     for (i in 0 until shape[actualAxis]) {
-                        val zero = zeros?.get(i)?.toFloat() ?: 0f
-                        for (j in 0 until blockSize) output.array[j + outOffset] = (this.array[j + outOffset].toFloat() - zero) * scale[i]
+                        val zero = zeroPointer?.getAndIncrement()?.toFloat() ?: 0f
+                        val sc = scalePointer.getAndIncrement()
+
+                        if (type == DataType.BYTE) {
+                            output.array.pointer(outOffset).accept(this.array.pointer(outOffset) as BytePointer, blockSize) { _, src ->
+                                (src.toFloat() - zero) * sc
+                            }
+                        } else {
+                            output.array.pointer(outOffset).accept(this.array.pointer(outOffset) as UBytePointer, blockSize) { _, src ->
+                                (src.toFloat() - zero) * sc
+                            }
+                        }
+
                         outOffset += blockSize
                     }
                 }
             }
-            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
+            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis!!]} elements")
         }
+
         return output
     }
 
@@ -150,10 +169,6 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
         val dims = shape.copyOfRange(1, rank)
 
         return MutablePrimitiveNDArray(PrimitiveTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
-    }
-
-    override fun copyOfRange(start: Int, end: Int): PrimitiveArray {
-        return array.copyOfRange(start, end)
     }
 
     // TODO check if step == 1 and use Arrays.copy
