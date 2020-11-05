@@ -32,9 +32,10 @@ class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
     @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        @Suppress("UNCHECKED_CAST")
-        val shape = inputs[0]!!.data.let { IntArray(it.linearSize) { i -> (it[i] as Number).toInt() } }
-        val result = value.data.allocateNDArray(Strides(shape)).apply { fill(value.data[0]) }
+        val array = inputs[0]!!.data as LongNDArray
+        val pointer = array.array.pointer()
+        val shape =  IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }
+        val result = value.data.allocateNDArray(Strides(shape)).apply { fill(value.data.singleValue()) }
         return listOf(result.asTensor("output"))
     }
 }

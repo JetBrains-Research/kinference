@@ -2,6 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.slice
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
@@ -53,8 +54,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
         return array[strides.offset(indices)]
     }
 
-    override fun scalarValue(): Boolean {
-        return array[0]
+    override fun singleValue(): Boolean {
+        require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
+        return array.blocks[0][0]
     }
 
     override fun copyOfRange(start: Int, end: Int): Any {

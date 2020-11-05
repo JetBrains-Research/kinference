@@ -49,8 +49,8 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
 
     override fun get(index: Int): PrimitiveType = array[index]
     override fun get(indices: IntArray): PrimitiveType = array[strides.offset(indices)]
-    override fun scalarValue(): PrimitiveType {
-        require(isScalar()) { "NDArray is not scalar" }
+    override fun singleValue(): PrimitiveType {
+        require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
     }
 
