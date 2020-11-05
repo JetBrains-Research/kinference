@@ -59,7 +59,7 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         val outputScale = (inputs[3]!!.data as FloatNDArray).singleValue() * (inputs[4]!!.data as FloatNDArray).singleValue()
         val (queries, keys, values) = Attention.initQueryKeyValue(qInput, qWeight, bias, batchSize, seqLen, hiddenSize, numHeads, outputScale.toDouble())
 
-        val maskIndices = inputs.elementAtOrNull(5)?.data
+        val maskIndices = inputs.elementAtOrNull(5)?.data as IntNDArray?
         val past = inputs.elementAtOrNull(8)?.data
         val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())

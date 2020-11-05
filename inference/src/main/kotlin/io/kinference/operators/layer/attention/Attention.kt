@@ -10,6 +10,8 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.onnx.AttributeProto
@@ -79,7 +81,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
 
-        private fun NDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
+        private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
             val mask = allocateNDArray(DataType.FLOAT, Strides(maskDataShape)) as MutableFloatNDArray
@@ -88,25 +90,24 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 if (this != null) {
                     //raw attention (no padding). only raw attention mask is 2-dimensional
                     if (this.rank == 2) {
-                        val indicesOffset = i * fullSeqLen
-                        for (j in 0 until fullSeqLen) {
-                            mask[maskOffset * i + j] = if ((this[j + indicesOffset] as Number).toInt() > 0) 0f else -10000f
-                        }
+                        val maskPointer = mask.array.pointer(maskOffset * i)
+                        val maskIndicesPointer = this.array.pointer(i * fullSeqLen)
+
+                        maskPointer.accept(maskIndicesPointer, fullSeqLen) { _, src -> if (src > 0) 0f else -10000f }
                     } else {
                         //for left/right-side padding
-                        val endPos = this[i] as Int
-                        for (j in endPos until fullSeqLen) {
-                            mask[i * maskOffset + j] = -10000f
-                        }
+                        val maskIndicesPointer = this.array.pointer(i)
+                        val maskPointer = mask.array.pointer(maskOffset * i + maskIndicesPointer.get())
+                        maskPointer.map(fullSeqLen - maskIndicesPointer.get()) { -10000f }
 
                         if (this.rank == 1 && this.shape[0] == 2 * batchSize) {
-                            val startPos = min((this[i + batchSize] as Number).toInt(), fullSeqLen)
-                            for (j in 0 until startPos) {
-                                mask[maskOffset * i + j] = -10000f
-                            }
+                            maskIndicesPointer.linearIndex = i + batchSize
+                            maskPointer.linearIndex = maskOffset * i
+                            maskPointer.map(min(maskIndicesPointer.get(), fullSeqLen)) { -10000f }
                         }
                     }
                 }
+
                 //broadcast mask block
                 for (seqIdx in 1 until seqLen) {
                     val start = seqIdx * fullSeqLen + i * maskOffset
@@ -114,10 +115,12 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 }
 
                 if (unidir) {
-                    for (seqIdx in 0 until seqLen - 1)
-                        for (j in pastSeqLen + seqIdx + 1 until fullSeqLen) {
-                            mask[seqIdx * fullSeqLen + j + maskOffset * i] += -10000f
-                        }
+                    val maskPointer = mask.array.pointer()
+                    for (seqIdx in 0 until seqLen - 1) {
+                        val start = pastSeqLen + seqIdx + 1
+                        maskPointer.linearIndex = seqIdx * fullSeqLen + maskOffset * i + start
+                        maskPointer.map(fullSeqLen - start) { it - 10000f }
+                    }
                 }
             }
             return mask
@@ -141,7 +144,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         private fun normalizedScores(
-            unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: NDArray?, batchSize: Int,
+            unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: IntNDArray?, batchSize: Int,
             seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArray?, present: MutableNDArray
         ): NDArray {
             val allSeqLen = pastSeqLen + seqLen
@@ -207,7 +210,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         internal fun getScores(
-            unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: NDArray?,
+            unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: IntNDArray?,
             past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Pair<NDArray, NDArray> {
             var pastSeqLen = 0
@@ -232,7 +235,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         val input = inputs[0]!!.data
         val weights = inputs[1]!!.data
         val bias = inputs[2]!!.data
-        val maskIndices = inputs.elementAtOrNull(3)?.data
+        val maskIndices = inputs.elementAtOrNull(3)?.data as IntNDArray?
         val past = inputs.elementAtOrNull(4)?.data
 
         val (batchSize, seqLen, hiddenSize) = input.shape
