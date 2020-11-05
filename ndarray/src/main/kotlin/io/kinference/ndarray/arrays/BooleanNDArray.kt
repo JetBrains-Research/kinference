@@ -43,6 +43,10 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         return array[strides.offset(indices)]
     }
 
+    override fun scalarValue(): Boolean {
+        return array[0]
+    }
+
     override fun copyOfRange(start: Int, end: Int): Any {
         return array.copyOfRange(start, end)
     }
@@ -145,7 +149,7 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
     override fun fill(value: Any, from: Int, to: Int) {
         array.fill(value as Boolean)
     }
-    
+
     override fun reshape(strides: Strides): MutableNDArray {
         this.strides = strides
         return  this

@@ -49,6 +49,10 @@ open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = S
 
     override fun get(index: Int): PrimitiveType = array[index]
     override fun get(indices: IntArray): PrimitiveType = array[strides.offset(indices)]
+    override fun scalarValue(): PrimitiveType {
+        require(isScalar()) { "NDArray is not scalar" }
+        return array.blocks[0][0]
+    }
 
     override fun allocateNDArray(strides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
