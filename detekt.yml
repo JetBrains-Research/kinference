@@ -73,13 +73,13 @@ complexity:
     ignoredLabels: ""
   LargeClass:
     active: true
-    threshold: 600
+    threshold: 700
   LongMethod:
     active: true
-    threshold: 60
+    threshold: 80
   LongParameterList:
     active: true
-    threshold: 12
+    threshold: 16
     ignoreDefaultParameters: false
   MethodOverloading:
     active: false
@@ -87,7 +87,7 @@ complexity:
   NestedBlockDepth:
     active: true
     excludes: "**/*NDArray.kt"
-    threshold: 4
+    threshold: 5
   StringLiteralDuplication:
     active: false
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
@@ -97,12 +97,12 @@ complexity:
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt,**/*PrimitiveNDArray.kt, **/*NDArray.kt"
-    thresholdInFiles: 11
+    excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt,**/*PrimitiveNDArray.kt, **/*NDArray.kt, **/*Pointer.kt, **/*NDArrayExtensions.kt"
+    thresholdInFiles: 20
     thresholdInClasses: 20
-    thresholdInInterfaces: 11
-    thresholdInObjects: 11
-    thresholdInEnums: 11
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    thresholdInEnums: 20
     ignoreDeprecated: false
     ignorePrivate: false
     ignoreOverridden: false
