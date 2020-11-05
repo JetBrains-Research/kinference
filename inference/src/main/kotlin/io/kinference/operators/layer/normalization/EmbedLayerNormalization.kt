@@ -8,6 +8,7 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -45,72 +46,95 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
 
         private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        fun createMaskIndices(mask: NDArray?, batchSize: Int, seqLen: Int): NumberNDArray {
+        fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArray {
             val maskIndices = MutableIntNDArray(IntArray(batchSize), Strides(intArrayOf(batchSize)))
             if (mask == null) return maskIndices
 
+            val pointer = mask.array.pointer()
+            val maskIndicesPointer = maskIndices.array.pointer()
             for (i in 0 until batchSize) {
-                val offset = i * seqLen
                 var count = 0
-                for (j in offset until offset + seqLen) if ((mask[j] as Number).toInt() == 1) count += 1
-                maskIndices[i] = count
+                pointer.linearIndex = i * seqLen
+                pointer.forEach(seqLen) {
+                    if (it == 1) count += 1
+                }
+
+                maskIndicesPointer.set(count)
+                maskIndicesPointer.increment()
             }
+
             return maskIndices
         }
 
-        fun normalize(epsilon: Float, inputIds: NDArray, segmentIds: NDArray?, wordEmbed: NDArray, posEmbed: NDArray, segmentEmbed: NDArray?, gamma: NDArray, beta: NDArray): MutableFloatNDArray {
+        fun normalize(epsilon: Float, inputIds: IntNDArray, segmentIds: IntNDArray?,
+                      wordEmbed: FloatNDArray, posEmbed: FloatNDArray, segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray): MutableFloatNDArray {
             val (batchSize, seqLen) = inputIds.shape
             val (_, hiddenSize) = wordEmbed.shape
             val output = MutableFloatNDArray(FloatArray(batchSize * seqLen * hiddenSize), Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
 
-            val steps = seqLen * batchSize
-            repeat(steps) { i ->
-                val wordIdx = (inputIds[i] as Number).toInt()
-                val posIdx = i % seqLen
-                val segmentIdx = (segmentIds?.get(i) as? Number)?.toInt() ?: 0
+            val inputIdsPointer = inputIds.array.pointer()
+            val segmentIdsPointer = segmentIds?.array?.pointer()
+            for (batch in 0 until batchSize) {
+                for (posIdx in 0 until seqLen) {
+                    val wordIdx = inputIdsPointer.getAndIncrement()
+                    val segmentIdx = segmentIdsPointer?.getAndIncrement() ?: 0
 
-                val outputOffset = i * hiddenSize
-                val wordEmbedOffset = wordIdx * hiddenSize
-                val posEmbedOffset = posIdx * hiddenSize
-                val segmentEmbedOffset = segmentIdx * hiddenSize
+                    val wordEmbedOffset = wordIdx * hiddenSize
+                    val segmentEmbedOffset = segmentIdx * hiddenSize
+                    val outputOffset = (posIdx + batch * seqLen) * hiddenSize
+                    val posEmbedOffset = posIdx * hiddenSize
 
-                //only floats supported
-                wordEmbed as FloatNDArray; posEmbed as FloatNDArray
-                var acc = 0.0f
-                for (j in 0 until hiddenSize) {
-                    var tmp = wordEmbed[j + wordEmbedOffset] + posEmbed[j + posEmbedOffset];
-                    if (segmentEmbed != null)
-                        tmp += segmentEmbed[j + segmentEmbedOffset] as Float
-                    output[j + outputOffset] = tmp
-                    acc += tmp
-                }
-                val mean = acc / hiddenSize
-                acc = 0.0f
-                for (j in 0 until hiddenSize) {
-                    output[j + outputOffset] -= mean
-                    acc += output[j + outputOffset] * output[j + outputOffset]
-                }
+                    val wordEmbedPointer = wordEmbed.array.pointer(wordEmbedOffset)
+                    val segmentEmbedPointer = segmentEmbed?.array?.pointer(segmentEmbedOffset)
+                    val outputPointer = output.array.pointer(outputOffset)
+                    val posEmbedPointer = posEmbed.array.pointer(posEmbedOffset)
 
-                gamma as FloatNDArray; beta as FloatNDArray
-                val eps = sqrt(acc / hiddenSize + epsilon)
-                for (j in 0 until hiddenSize) {
-                    output[j + outputOffset] = output[j + outputOffset] / eps * gamma[j] + beta[j]
+                    if (segmentEmbedPointer == null) {
+                        outputPointer.acceptDouble(wordEmbedPointer, posEmbedPointer, hiddenSize) { _, fst, snd ->
+                            fst + snd
+                        }
+                    } else {
+                        outputPointer.acceptTriple(wordEmbedPointer, posEmbedPointer, segmentEmbedPointer, hiddenSize) { _, fst, snd, trd ->
+                            fst + snd + trd
+                        }
+                    }
+
+                    var acc = 0.0f
+                    outputPointer.linearIndex = outputOffset
+                    outputPointer.forEach(hiddenSize) { acc += it }
+
+                    val mean = acc / hiddenSize
+                    acc = 0.0f
+
+                    outputPointer.linearIndex = outputOffset
+                    outputPointer.map(hiddenSize) { it - mean }
+
+                    outputPointer.linearIndex = outputOffset
+                    outputPointer.forEach(hiddenSize) { acc += it * it }
+
+                    val eps = sqrt(acc / hiddenSize + epsilon)
+                    outputPointer.linearIndex = outputOffset
+                    val gammaPointer = gamma.array.pointer()
+                    val betaPointer = beta.array.pointer()
+
+                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b ->  out / eps * g + b }
                 }
             }
+
             return output
         }
     }
 
     @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val inputIds = inputs[0]!!.data
-        val segmentIds = inputs[1]?.data
-        val wordEmbed = inputs[2]!!.data
-        val posEmbed = inputs[3]!!.data
-        val segmentEmbed = inputs[4]?.data
-        val gamma = inputs[5]!!.data
-        val beta = inputs[6]!!.data
-        val mask = inputs.getOrNull(7)?.data
+        val inputIds = inputs[0]!!.data as IntNDArray
+        val segmentIds = inputs[1]?.data as IntNDArray?
+        val wordEmbed = inputs[2]!!.data as FloatNDArray
+        val posEmbed = inputs[3]!!.data as FloatNDArray
+        val segmentEmbed = inputs[4]?.data as FloatNDArray?
+        val gamma = inputs[5]!!.data as FloatNDArray
+        val beta = inputs[6]!!.data as FloatNDArray
+        val mask = inputs.getOrNull(7)?.data as IntNDArray?
 
         val normalized = normalize(epsilon, inputIds, segmentIds, wordEmbed, posEmbed, segmentEmbed, gamma, beta).asTensor("output")
         val maskIndices = createMaskIndices(mask, inputIds.shape[0], inputIds.shape[1]).asTensor("mask_index")
