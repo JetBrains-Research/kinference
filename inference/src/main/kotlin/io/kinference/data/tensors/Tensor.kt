@@ -27,13 +27,6 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
         return Tensor(data, TensorInfo(newName, info.type, TensorShape(data.shape)))
     }
 
-    @ExperimentalUnsignedTypes
-    fun mapElements(type: DataType = this.info.type, func: (Any) -> Any): Tensor {
-        val localType = type.resolveLocalDataType()
-        val buffer = createArray(localType, data.shape) { func(data[it]) }
-        return createNDArray(localType, buffer, data.shape).asTensor()
-    }
-
     operator fun plus(other: Tensor): Tensor {
         require(this.data is NumberNDArray && other.data is NumberNDArray)
         return (this.data + other.data).asTensor()

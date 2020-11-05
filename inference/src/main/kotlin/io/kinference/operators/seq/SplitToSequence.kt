@@ -38,6 +38,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
         val parts = inputs.elementAtOrNull(1)
 
