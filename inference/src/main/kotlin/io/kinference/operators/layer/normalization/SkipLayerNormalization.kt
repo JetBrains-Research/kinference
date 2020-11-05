@@ -7,6 +7,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -44,44 +45,54 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         @ExperimentalUnsignedTypes
-        private fun NDArray.normalize(skip: NDArray, gamma: NDArray, beta: NDArray, bias: NDArray?, epsilon: Float, dst: MutableNDArray) {
+        private fun FloatNDArray.normalize(skip: FloatNDArray, gamma: FloatNDArray, beta: FloatNDArray, bias: FloatNDArray?, epsilon: Float, dst: MutableFloatNDArray) {
             val (batchSize, seqLen, hiddenSize) = this.shape
             val steps = batchSize * seqLen
 
-            //only floats supported
-            this as FloatNDArray; skip as FloatNDArray; dst as MutableFloatNDArray
             for (i in 0 until steps) {
                 val offset = hiddenSize * i
+
+                val dstPointer = dst.array.pointer(offset)
+                val srcPointer = this.array.pointer(offset)
+                val skipPointer = skip.array.pointer(offset)
+                if (bias == null) {
+                    dstPointer.acceptDouble(srcPointer, skipPointer, hiddenSize) { _, src, sk -> src + sk }
+                } else {
+                    val biasPointer = bias.array.pointer()
+                    dstPointer.acceptTriple(srcPointer, skipPointer, biasPointer, hiddenSize) { _, src, sk, b -> src + sk + b }
+                }
 
                 var mean = 0.0f
                 var meanSquare = 0.0f
 
-                for (j in 0 until hiddenSize) {
-                    val value = this[j + offset] + skip[j + offset] + (bias?.get(j) as? Float ?: 0.0f)
-                    dst[j + offset] = value
-                    mean += value
-                    meanSquare += value * value
+                dstPointer.linearIndex = offset
+                dstPointer.forEach(hiddenSize) {
+                    mean += it
+                    meanSquare += it * it
                 }
 
                 mean /= hiddenSize
                 meanSquare = sqrt(meanSquare / hiddenSize - mean * mean + epsilon)
 
-                gamma as FloatNDArray; beta as FloatNDArray
-                for (j in 0 until hiddenSize) {
-                    dst[j + offset] = (dst[j + offset] - mean) / meanSquare * gamma[j] + beta[j]
+                dstPointer.linearIndex = offset
+                val gammaPointer = gamma.array.pointer()
+                val betaPointer = beta.array.pointer()
+                dstPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { d, g, b ->
+                    (d - mean) / meanSquare * g + b
                 }
             }
         }
     }
 
+    @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val input = inputs[0]!!.data
-        val output = input.allocateNDArray(input.strides)
+        val input = inputs[0]!!.data as FloatNDArray
+        val output = input.allocateNDArray(input.strides) as MutableFloatNDArray
         input.normalize(
-            skip = inputs[1]!!.data,
-            gamma = inputs[2]!!.data,
-            beta = inputs[3]!!.data,
-            bias = inputs.getOrNull(4)?.data,
+            skip = inputs[1]!!.data as FloatNDArray,
+            gamma = inputs[2]!!.data as FloatNDArray,
+            beta = inputs[3]!!.data as FloatNDArray,
+            bias = inputs.getOrNull(4)?.data as FloatNDArray?,
             epsilon = epsilon,
             dst = output
         )
