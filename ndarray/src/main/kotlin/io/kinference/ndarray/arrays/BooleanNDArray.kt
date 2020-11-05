@@ -162,6 +162,11 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array.fill(value as Boolean)
     }
 
+    override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
+        array as BooleanNDArray
+        this.array.fill(array[index], from, to)
+    }
+
     override fun reshape(strides: Strides): MutableNDArray {
         this.strides = strides
         return  this

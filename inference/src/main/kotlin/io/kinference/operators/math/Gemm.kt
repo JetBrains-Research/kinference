@@ -62,7 +62,7 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
                 val targetBlockSize = targetShape[1]
                 for (i in 0 until unsqueezedShape[0]) {
                     val dstOffsetBase = i * targetBlockSize
-                    dstArray.fill(array[i], dstOffsetBase, dstOffsetBase + targetBlockSize)
+                    dstArray.fillByArrayValue(array, i, dstOffsetBase, dstOffsetBase + targetBlockSize)
                 }
             } else {
                 dstArray.copyFrom(0, array)

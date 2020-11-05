@@ -48,6 +48,7 @@ interface MutableNDArray : NDArray {
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
+    fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
     fun reshape(strides: Strides): MutableNDArray
     fun reshape(shape: IntArray): MutableNDArray = reshape(Strides(shape))

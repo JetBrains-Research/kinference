@@ -6,6 +6,8 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.acceptRecursive
+import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operators.IOInfo
 import io.kinference.operators.Operator
 import io.kinference.operators.OperatorInfo
@@ -36,10 +38,11 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             DataType.FLOAT -> {
                 val biasData = bias?.data as? FloatNDArray
                 val result = input.data.toMutable() as MutableFloatNDArray
-                if (bias?.data == null) {
-                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i])
+                val pointer = result.array.pointer()
+                if (biasData == null) {
+                    pointer.map(result.linearSize) { fgelu(it) }
                 } else {
-                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i] + biasData!![i % biasData.linearSize])
+                    pointer.acceptRecursive(biasData.array.pointer(), result.linearSize) { dst, src -> fgelu(dst + src) }
                 }
                 result
             }
@@ -47,10 +50,11 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             DataType.DOUBLE -> {
                 val biasData = bias?.data as? DoubleNDArray
                 val result = input.data.toMutable() as MutableDoubleNDArray
-                if (bias?.data == null) {
-                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i])
+                val pointer = result.array.pointer()
+                if (biasData == null) {
+                    pointer.map(result.linearSize) { fgelu(it) }
                 } else {
-                    for (i in 0 until result.linearSize) result[i] = fgelu(result[i] + biasData!![i % biasData.linearSize])
+                    pointer.acceptRecursive(biasData.array.pointer(), result.linearSize) { dst, src -> fgelu(dst + src) }
                 }
                 result
             }

@@ -43,6 +43,11 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         array.fill(value, from, to)
     }
 
+    override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
+        array as PrimitiveNDArray
+        this.array.fill(array[index], from, to)
+    }
+
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
         function as PrimitiveMap
 

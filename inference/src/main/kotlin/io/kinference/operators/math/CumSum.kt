@@ -36,7 +36,7 @@ class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
-        val axis = (inputs[1]!!.data[0] as Number).toInt()
+        val axis = (inputs[1]!!.data.singleValue() as Number).toInt()
         return listOf(input.cumulativeSum(axis, exclusive, reverse).asTensor("y"))
     }
 }

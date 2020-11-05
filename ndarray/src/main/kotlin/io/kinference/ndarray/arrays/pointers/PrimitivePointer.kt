@@ -220,6 +220,33 @@ inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, a
     }
 }
 
+inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
+    var end = count
+    val buf = src.linearIndex
+    if (this.isCompatibleWith(src)) {
+        while (end > 0) {
+            if (!src.isValid()) src.linearIndex = buf
+
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (srcBlock, _) = src.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(dstBlock[index], srcBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            if (!src.isValid()) src.linearIndex = buf
+
+            this.set(action(this.get(), src.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
 inline fun PrimitivePointer.acceptDouble(first: PrimitivePointer, second: PrimitivePointer, count: Int, action: (dst: PrimitiveType, fst: PrimitiveType, snd: PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
     require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
