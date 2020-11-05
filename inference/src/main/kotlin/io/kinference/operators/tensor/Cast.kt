@@ -2,13 +2,19 @@ package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.mapTo
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.AttributeInfo
 import io.kinference.operators.IOInfo
 import io.kinference.operators.Operator
 import io.kinference.operators.OperatorInfo
+import io.kinference.primitives.types.DataType
+import java.lang.IllegalStateException
 
 class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -26,31 +32,667 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    private fun cast(value: Any, from: TensorProto.DataType, to: TensorProto.DataType): Any {
-        val base: Number = when (from) {
-            TensorProto.DataType.BOOL -> if (value as Boolean) 1 else 0
-            TensorProto.DataType.INT64, TensorProto.DataType.INT32, TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE -> value as Number
-            else -> error("Unsupported operation")
-        }
+    private val toType: Int by attribute("to") { it: Number -> it.toInt() }
 
-        @Suppress("IMPLICIT_CAST_TO_ANY") val casted = when (to) {
-            TensorProto.DataType.DOUBLE -> base.toDouble()
-            TensorProto.DataType.FLOAT -> base.toFloat()
-            TensorProto.DataType.INT64 -> base.toLong()
-            TensorProto.DataType.INT32 -> base.toInt()
-            TensorProto.DataType.BOOL -> base != 0
-            else -> error("Unsupported operation")
+    @ExperimentalUnsignedTypes
+    private fun castByte(array: ByteNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> array
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toByte() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
         }
-
-        return casted
     }
 
-    private val toType: Int by attribute("to") { it: Number -> it.toInt() }
+    @ExperimentalUnsignedTypes
+    private fun castShort(array: ShortNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> array
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toShort() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castInt(array: IntNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> array
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != 0 }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castLong(array: LongNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> array
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != 0L }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castUByte(array: UByteNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> array
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toUByte() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castUShort(array: UShortNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> array
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toUShort() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castUInt(array: UIntNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toUInt() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> array
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castULong(array: ULongNDArray, to: TensorProto.DataType): NDArray {
+        return  when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != (0).toULong() }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> array
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castFloat(array: FloatNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> array
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong().toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong().toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != 0f }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toDouble() }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castDouble(array: DoubleNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong().toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong().toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt() }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toLong() }
+                output
+            }
+            TensorProto.DataType.BOOL -> {
+                val output = BooleanNDArray(BooleanTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it != 0.0 }
+                output
+            }
+            TensorProto.DataType.DOUBLE -> array
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun castBoolean(array: BooleanNDArray, to: TensorProto.DataType): NDArray {
+        return when (to) {
+            TensorProto.DataType.FLOAT -> {
+                val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) 1f else 0f }
+                output
+            }
+            TensorProto.DataType.UINT8 -> {
+                val output = UByteNDArray(UByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toUByte() else (0).toUByte() }
+                output
+            }
+            TensorProto.DataType.INT8 -> {
+                val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toByte() else (0).toByte() }
+                output
+            }
+            TensorProto.DataType.UINT16 -> {
+                val output = UShortNDArray(UShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toUShort() else (0).toUShort() }
+                output
+            }
+            TensorProto.DataType.INT16 -> {
+                val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toShort() else (0).toShort() }
+                output
+            }
+            TensorProto.DataType.INT32 -> {
+                val output = IntNDArray(IntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) 1 else 0 }
+                output
+            }
+            TensorProto.DataType.INT64 -> {
+                val output = LongNDArray(LongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) 1L else 0L }
+                output
+            }
+            TensorProto.DataType.BOOL -> array
+            TensorProto.DataType.DOUBLE -> {
+                val output = DoubleNDArray(DoubleTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) 1.0 else 0.0 }
+                output
+            }
+            TensorProto.DataType.UINT32 -> {
+                val output = UIntNDArray(UIntTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toUInt() else (0).toUInt() }
+                output
+            }
+            TensorProto.DataType.UINT64 -> {
+                val output = ULongNDArray(ULongTiledArray(array.shape), array.strides)
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { if (it) (1).toULong() else (0).toULong() }
+                output
+            }
+            else -> throw IllegalStateException("Unsupported type")
+        }
+    }
+
 
     @ExperimentalUnsignedTypes
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!
-        return listOf(tensor.mapElements(to) { cast(it, tensor.info.type, to) })
+
+        val casted: NDArray = when (tensor.data.type) {
+            DataType.BYTE -> castByte(tensor.data as ByteNDArray, to)
+            DataType.SHORT -> castShort(tensor.data as ShortNDArray, to)
+            DataType.INT -> castInt(tensor.data as IntNDArray, to)
+            DataType.LONG -> castLong(tensor.data as LongNDArray, to)
+            DataType.UBYTE -> castUByte(tensor.data as UByteNDArray, to)
+            DataType.USHORT -> castUShort(tensor.data as UShortNDArray, to)
+            DataType.UINT -> castUInt(tensor.data as UIntNDArray, to)
+            DataType.ULONG -> castULong(tensor.data as ULongNDArray, to)
+            DataType.FLOAT -> castFloat(tensor.data as FloatNDArray, to)
+            DataType.DOUBLE -> castDouble(tensor.data as DoubleNDArray, to)
+            DataType.BOOLEAN -> castBoolean(tensor.data as BooleanNDArray, to)
+            else -> throw IllegalStateException("Unsupported type")
+        }
+
+        return listOf(casted.asTensor("output"))
     }
 }

@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.slice
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
@@ -25,11 +26,20 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.empty()) : NDArray {
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strides.empty()) : NDArray {
+    constructor(array: BooleanArray, strides: Strides = Strides.empty()) : this(BooleanTiledArray(array, strides), strides)
+
     override val type: DataType = DataType.BOOLEAN
 
     final override var strides: Strides = strides
         protected set
+
+    protected val blocksInRow: Int
+        get() = when {
+            strides.linearSize == 0 -> 0
+            strides.shape.isEmpty() -> 1
+            else -> strides.shape.last() / array.blockSize
+        }
 
     override fun view(vararg axes: Int): NDArray {
         TODO("Not yet implemented")
@@ -52,7 +62,7 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
     }
 
     override fun allocateNDArray(strides: Strides): MutableNDArray {
-        return MutableBooleanNDArray(BooleanArray(strides.linearSize), strides)
+        return MutableBooleanNDArray(BooleanTiledArray(strides), strides)
     }
 
     override fun reshapeView(newShape: IntArray): NDArray {
@@ -89,7 +99,7 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
 
-        return MutableBooleanNDArray(array.copyOfRange(start, start + rowLength), Strides(dims))
+        return MutableBooleanNDArray(BooleanTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
     }
 
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray {
@@ -104,7 +114,7 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
 
         slice(newArray, 0, 0, shape, starts, ends, steps)
 
-        return MutableBooleanNDArray(newArray.getArray(), newStrides)
+        return MutableBooleanNDArray(BooleanTiledArray(newArray.getArray(), newStrides), newStrides)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -119,7 +129,7 @@ open class BooleanNDArray(val array: BooleanArray, strides: Strides = Strides.em
     }
 }
 
-class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
+class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
     override fun set(index: Int, value: Any) {
         array[index] = value as Boolean
     }
@@ -155,7 +165,8 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
         return  this
     }
 
-    private fun transposeRec(prevArray: BooleanArray, newArray: BooleanArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
+    // TODO separate from PrimitiveArray (maybe LateInitArray will help)
+    private fun transposeRec(prevArray: BooleanTiledArray, newArray: BooleanTiledArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
         if (index != newStrides.shape.lastIndex) {
             val temp = prevStrides.strides[permutation[index]]
             val temp2 = newStrides.strides[index]
@@ -167,8 +178,34 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
             if (temp == 1) {
                 prevArray.copyInto(newArray, newOffset, prevOffset, prevOffset + newStrides.shape[index])
             } else {
+                var (newArrayBlock, newArrayOffset) = newArray.indexFor(newOffset)
+                var (prevArrayBlock, prevArrayOffset) = prevArray.indexFor(prevOffset)
+
+                val (deltaBlock, deltaOffset) = prevArray.indexFor(temp)
+
+                var tempNewBlock = newArray.blocks[newArrayBlock]
+                var tempPrevBlock = prevArray.blocks[prevArrayBlock]
+
                 for (i in 0 until newStrides.shape[index]) {
-                    newArray[newOffset + i] = prevArray[prevOffset + i * temp]
+                    tempNewBlock[newArrayOffset++] = tempPrevBlock[prevArrayOffset]
+
+                    prevArrayBlock += deltaBlock
+                    prevArrayOffset += deltaOffset
+
+                    if (prevArrayOffset >= prevArray.blockSize) {
+                        prevArrayBlock += prevArrayOffset / prevArray.blockSize
+                        prevArrayOffset %= prevArray.blockSize
+                    }
+
+                    if (prevArrayBlock < prevArray.blocksNum)
+                        tempPrevBlock = prevArray.blocks[prevArrayBlock]
+
+                    if (newArrayOffset >= newArray.blockSize) {
+                        newArrayOffset = 0
+
+                        if (++newArrayBlock < newArray.blocksNum)
+                            tempNewBlock = newArray.blocks[newArrayBlock]
+                    }
                 }
             }
         }
@@ -176,8 +213,14 @@ class MutableBooleanNDArray(array: BooleanArray, strides: Strides = Strides.empt
 
     override fun transpose(permutations: IntArray): MutableNDArray {
         val newStrides = strides.transpose(permutations)
-        transposeRec(array.copyOf(), array, strides, newStrides, 0, 0, 0, permutations)
-        return this.reshape(newStrides)
+        val newArray = BooleanTiledArray(newStrides)
+        array.copyInto(newArray)
+
+        transposeRec(array, newArray, strides, newStrides, 0, 0, 0, permutations)
+
+        this.strides = newStrides
+        this.array = newArray
+        return this
     }
 
     override fun transpose2D(): MutableNDArray {

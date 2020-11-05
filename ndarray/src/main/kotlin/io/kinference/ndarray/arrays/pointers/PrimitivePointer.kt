@@ -104,9 +104,17 @@ inline fun PrimitivePointer.isCompatibleWith(other: @Type1 PrimitivePointer): Bo
     return this.indexInBlock == other.indexInBlock && this.array.blockSize == other.array.blockSize
 }
 
+inline fun PrimitivePointer.isCompatibleWith(other: BooleanPointer): Boolean {
+    return this.indexInBlock == other.indexInBlock && this.array.blockSize == other.array.blockSize
+}
+
 @PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
     DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
 inline fun PrimitivePointer.isCompatibleBySize(other: @Type1 PrimitivePointer, requestedSize: Int): Boolean {
+    return this.array.size - this.linearIndex >= requestedSize && other.array.size - other.linearIndex >= requestedSize
+}
+
+inline fun PrimitivePointer.isCompatibleBySize(other: BooleanPointer, requestedSize: Int): Boolean {
     return this.array.size - this.linearIndex >= requestedSize && other.array.size - other.linearIndex >= requestedSize
 }
 
@@ -139,6 +147,30 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
 @PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
     DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
 inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
+    require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(container)) {
+        while (end > 0) {
+            val (srcBlock, offset) = this.getAndIncrementBlock()
+            val (dstBlock, _) = container.getAndIncrementBlock()
+
+            for (index in offset until min(srcBlock.size, offset + end)) {
+                dstBlock[index] = action(srcBlock[index])
+            }
+
+            end -= srcBlock.size
+        }
+    } else {
+        while (end > 0) {
+            container.set(action(this.getAndIncrement()))
+            container.increment()
+            end--
+        }
+    }
+}
+
+inline fun PrimitivePointer.mapTo(container: BooleanPointer, count: Int, action: (value: PrimitiveType) -> Boolean) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count

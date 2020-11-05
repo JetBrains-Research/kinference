@@ -53,7 +53,7 @@ object Utils {
             }
 
             DataType.BOOL -> {
-                ((expected.data as BooleanNDArray).array).forEachIndexed { index, value ->
+                ((expected.data as BooleanNDArray).array.toArray()).forEachIndexed { index, value ->
                     assertEquals(value, actual.data[index] as Boolean, "Tensor ${expected.info.name} does not match")
                 }
             }
