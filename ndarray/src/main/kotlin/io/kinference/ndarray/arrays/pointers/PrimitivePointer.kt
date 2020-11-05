@@ -123,6 +123,19 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
     }
 }
 
+inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -> Unit) {
+    var end = count
+    while (end > 0) {
+        val (block, offset) = this.getAndIncrementBlock()
+
+        for (index in offset until min(block.size, offset + end)) {
+            action(block[index])
+        }
+
+        end -= block.size
+    }
+}
+
 @PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
     DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
 inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
