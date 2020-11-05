@@ -744,6 +744,266 @@ inline fun BooleanPointer.acceptDouble(first: BooleanPointer, second: BooleanPoi
     }
 }
 
+inline fun BooleanPointer.acceptDouble(first: BytePointer, second: BytePointer, count: Int, action: (fst: Byte, snd: Byte) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: ShortPointer, second: ShortPointer, count: Int, action: (fst: Short, snd: Short) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: IntPointer, second: IntPointer, count: Int, action: (fst: Int, snd: Int) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: LongPointer, second: LongPointer, count: Int, action: (fst: Long, snd: Long) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: UBytePointer, second: UBytePointer, count: Int, action: (fst: UByte, snd: UByte) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: UShortPointer, second: UShortPointer, count: Int, action: (fst: UShort, snd: UShort) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: UIntPointer, second: UIntPointer, count: Int, action: (fst: UInt, snd: UInt) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: ULongPointer, second: ULongPointer, count: Int, action: (fst: ULong, snd: ULong) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: FloatPointer, second: FloatPointer, count: Int, action: (fst: Float, snd: Float) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
+inline fun BooleanPointer.acceptDouble(first: DoublePointer, second: DoublePointer, count: Int, action: (fst: Double, snd: Double) -> Boolean) {
+    require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
+    require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
+        while (end > 0) {
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (fstBlock, _) = first.getAndIncrementBlock()
+            val (sndBlock, _) = second.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            this.set(action(first.getAndIncrement(), second.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
 inline fun BooleanPointer.acceptTriple(first: BooleanPointer, second: BooleanPointer, third: BooleanPointer, count: Int,
                                     action: (dst: Boolean, fst: Boolean, snd: Boolean, trd: Boolean) -> Boolean) {
     require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
