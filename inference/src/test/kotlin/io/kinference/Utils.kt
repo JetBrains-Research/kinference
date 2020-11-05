@@ -29,38 +29,39 @@ object Utils {
         @Suppress("UNCHECKED_CAST")
         when (expected.info.type) {
             DataType.FLOAT -> {
-                ((expected.data as FloatNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as Float, delta.toFloat(), "Tensor ${expected.info.name} does not match")
-                }
+                val expectedArray = (expected.data as FloatNDArray).array.toArray()
+                val actualArray = (actual.data as FloatNDArray).array.toArray()
+                assertArrayEquals(expectedArray, actualArray, delta.toFloat(), "Tensor ${expected.info.name} does not match")
             }
 
             DataType.DOUBLE -> {
-                ((expected.data as DoubleNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as Double, delta, "Tensor ${expected.info.name} does not match")
-                }
+                val expectedArray = (expected.data as DoubleNDArray).array.toArray()
+                val actualArray = (actual.data as DoubleNDArray).array.toArray()
+                assertArrayEquals(expectedArray, actualArray, delta, "Tensor ${expected.info.name} does not match")
             }
 
             DataType.INT64 -> {
-                ((expected.data as LongNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as Long, "Tensor ${expected.info.name} does not match")
-                }
+                val expectedArray = (expected.data as LongNDArray).array.toArray()
+                val actualArray = (actual.data as LongNDArray).array.toArray()
+                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
 
             DataType.INT32 -> {
-                ((expected.data as IntNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as Int, "Tensor ${expected.info.name} does not match")
-                }
+                val expectedArray = (expected.data as IntNDArray).array.toArray()
+                val actualArray = (actual.data as IntNDArray).array.toArray()
+                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
 
             DataType.BOOL -> {
-                ((expected.data as BooleanNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as Boolean, "Tensor ${expected.info.name} does not match")
-                }
+                val expectedArray = (expected.data as BooleanNDArray).array.toArray()
+                val actualArray = (actual.data as BooleanNDArray).array.toArray()
+                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
 
             DataType.UINT8 -> {
+                val actualArray = (actual.data as UByteNDArray).array.toArray()
                 ((expected.data as UByteNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actual.data[index] as UByte, "Tensort ${expected.info.name} does not match")
+                    assertEquals(value, actualArray[index], "Tensor ${expected.info.name} does not match")
                 }
             }
 
