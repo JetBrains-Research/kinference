@@ -147,8 +147,12 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     return newOffset to newShape
 }
 
+@ExperimentalUnsignedTypes
 fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
-    val newShape = IntArray(tensorShape.linearSize) { i -> (tensorShape[i] as Number).toInt() }
+    require(tensorShape is LongNDArray) { "Tensor shape must have Long type" }
+
+    val pointer = tensorShape.array.pointer()
+    val newShape = IntArray(tensorShape.linearSize) { pointer.getAndIncrement().toInt() }
     require(newShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
 
     for ((i, axisShape) in newShape.withIndex()) {
