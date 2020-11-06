@@ -11,7 +11,7 @@ class GPTTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        Utils.tensorTestRunner(getTargetPath("test_dummy_input"), 0.5)
+        Utils.tensorTestRunner(getTargetPath("test_dummy_input"), 1.07)
     }
 
     @Test
