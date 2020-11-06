@@ -60,7 +60,7 @@ class PrimitivePointer {
                 indexInBlock = 0
                 currentBlock = array.blocks[blockNum]
             }
-            else -> indexInBlock++
+            else -> indexInBlock = array.blockSize
         }
     }
 
