@@ -4,8 +4,6 @@ import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import kotlin.math.min
 
-
-interface LateInitArray
 interface PrimitiveToPrimitiveFunction
 
 interface NDArray {
@@ -29,8 +27,6 @@ interface NDArray {
     fun toMutable(newStrides: Strides = strides): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
-
-    fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int)
 
     fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray
 

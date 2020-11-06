@@ -3,7 +3,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
-import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.arrays.tiled.*
@@ -172,15 +171,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         return MutablePrimitiveNDArray(PrimitiveTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
     }
 
-    // TODO check if step == 1 and use Arrays.copy
-    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
-        array as LateInitPrimitiveArray
-
-        for (index in range) {
-            array.putNext(this.array[additionalOffset + index])
-        }
-    }
-
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray {
         val newShape = IntArray(shape.size) {
             val length = abs(ends[it] - starts[it])
@@ -189,11 +179,42 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         }
 
         val newStrides = Strides(newShape)
-        val newArray = LateInitPrimitiveArray(newStrides.linearSize)
+        val newArray = PrimitiveTiledArray(newStrides)
 
-        slice(newArray, 0, 0, shape, starts, ends, steps)
+        if (newArray.size > 0) {
+            slice(newArray.pointer(), this.array.pointer(), 0, 0, shape, starts, ends, steps)
+        }
 
-        return MutablePrimitiveNDArray(PrimitiveTiledArray(newArray.getArray(), newStrides), newStrides)
+        return MutablePrimitiveNDArray(newArray, newStrides)
+    }
+
+    private fun slice(dst: PrimitivePointer, src: PrimitivePointer, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
+        val start = starts[axis]
+        val end = ends[axis]
+        val step = steps[axis]
+
+        val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
+
+        if (axis == shape.size - 1) {
+            for (index in range) {
+                src.linearIndex = offset + index
+                dst.set(src.get())
+                dst.increment()
+
+                /*
+                        for (index in range) {
+            array.putNext(this.array[additionalOffset + index])
+        }
+                 */
+            }
+        } else {
+            var dim = 1
+            for (ind in (axis + 1) until shape.size) dim *= shape[ind]
+
+            for (index in range) {
+                slice(dst, src, offset + index * dim, axis + 1, shape, starts, ends, steps)
+            }
+        }
     }
 
     override fun min(): PrimitiveType {
@@ -579,22 +600,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         result = 31 * result + strides.hashCode()
         result = 31 * result + type.hashCode()
         return result
-    }
-}
-
-@PrimitiveClass
-class LateInitPrimitiveArray(size: Int) : LateInitArray {
-    private val array = PrimitiveArray(size)
-    private var index = 0
-
-    fun putNext(value: PrimitiveType) {
-        array[index] = value
-        index++
-    }
-
-    fun getArray(): PrimitiveArray {
-        require(index == array.size) { "LateInitArray not initialized yet" }
-        return array
     }
 }
 

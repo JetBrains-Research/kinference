@@ -1,27 +1,11 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.pointers.BooleanPointer
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.isScalar
-import io.kinference.ndarray.extensions.slice
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
-
-class LateInitBooleanArray(size: Int) : LateInitArray {
-    private val array = BooleanArray(size)
-    private var index = 0
-
-    fun putNext(value: Boolean) {
-        array[index] = value
-        index++
-    }
-
-    fun getArray(): BooleanArray {
-        require(index == array.size) { "LateInitArray not initialized yet" }
-        return array
-    }
-}
-
 
 interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
@@ -67,13 +51,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int) {
-        array as LateInitBooleanArray
-        for (index in range) {
-            array.putNext(this.array[additionalOffset + index])
-        }
-    }
-
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         function as BooleanMap
         val destination = allocateNDArray(strides) as MutableBooleanNDArray
@@ -100,11 +77,36 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
         }
 
         val newStrides = Strides(newShape)
-        val newArray = LateInitBooleanArray(newStrides.linearSize)
+        val newArray = BooleanTiledArray(newStrides)
 
-        slice(newArray, 0, 0, shape, starts, ends, steps)
+        if (newArray.size > 0) {
+            slice(newArray.pointer(), this.array.pointer(), 0, 0, shape, starts, ends, steps)
+        }
 
-        return MutableBooleanNDArray(BooleanTiledArray(newArray.getArray(), newStrides), newStrides)
+        return MutableBooleanNDArray(newArray, newStrides)
+    }
+
+    private fun slice(dst: BooleanPointer, src: BooleanPointer, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
+        val start = starts[axis]
+        val end = ends[axis]
+        val step = steps[axis]
+
+        val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
+
+        if (axis == shape.size - 1) {
+            for (index in range) {
+                src.linearIndex = offset + index
+                dst.set(src.get())
+                dst.increment()
+            }
+        } else {
+            var dim = 1
+            for (ind in (axis + 1) until shape.size) dim *= shape[ind]
+
+            for (index in range) {
+                slice(dst, src, offset + index * dim, axis + 1, shape, starts, ends, steps)
+            }
+        }
     }
 
     override fun equals(other: Any?): Boolean {

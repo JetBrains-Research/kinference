@@ -107,42 +107,6 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
 @ExperimentalUnsignedTypes
 fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
 
-@ExperimentalUnsignedTypes
-fun createLateInitArray(type: DataType, strides: Strides): LateInitArray {
-    return createLateInitArray(type, strides.linearSize)
-}
-
-@ExperimentalUnsignedTypes
-fun createLateInitArray(type: DataType, size: Int): LateInitArray {
-    return when (type) {
-        DataType.DOUBLE -> LateInitDoubleArray(size)
-        DataType.FLOAT -> LateInitFloatArray(size)
-        DataType.LONG -> LateInitLongArray(size)
-        DataType.INT -> LateInitIntArray(size)
-        DataType.SHORT -> LateInitShortArray(size)
-        DataType.BOOLEAN -> LateInitBooleanArray(size)
-        DataType.BYTE -> LateInitByteArray(size)
-        DataType.UBYTE -> LateInitUByteArray(size)
-        else -> error("Unsupported data type $type")
-    }
-}
-
-@ExperimentalUnsignedTypes
-// TODO move into LateInitArray
-fun createNDArrayFromLateInitArray(type: DataType, array: LateInitArray, strides: Strides): NDArray {
-    return when (type) {
-        DataType.DOUBLE -> DoubleNDArray((array as LateInitDoubleArray).getArray(), strides)
-        DataType.FLOAT -> FloatNDArray((array as LateInitFloatArray).getArray(), strides)
-        DataType.LONG -> LongNDArray((array as LateInitLongArray).getArray(), strides)
-        DataType.INT -> IntNDArray((array as LateInitIntArray).getArray(), strides)
-        DataType.SHORT -> ShortNDArray((array as LateInitShortArray).getArray(), strides)
-        DataType.BOOLEAN -> BooleanNDArray((array as LateInitBooleanArray).getArray(), strides)
-        DataType.BYTE -> ByteNDArray((array as LateInitByteArray).getArray(), strides)
-        DataType.UBYTE -> UByteNDArray((array as LateInitUByteArray).getArray(), strides)
-        else -> error("")
-    }
-}
-
 val SUPPORTED_TYPES = setOf(DataType.DOUBLE, DataType.FLOAT, DataType.LONG, DataType.INT, DataType.SHORT)
 fun inferType(type1: DataType, type2: DataType): DataType {
     return when {

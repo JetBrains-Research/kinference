@@ -121,25 +121,6 @@ fun NDArray.as2DList(): List<NDArray> {
     }
 }
 
-fun NDArray.slice(dest: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
-    val start = starts[axis]
-    val end = ends[axis]
-    val step = steps[axis]
-
-    val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
-
-    if (axis == shape.size - 1) {
-        appendToLateInitArray(dest, range, offset)
-    } else {
-        var dim = 1
-        for (ind in (axis + 1) until shape.size) dim *= shape[ind]
-
-        for (index in range) {
-            slice(dest, offset + index * dim, axis + 1, shape, starts, ends, steps)
-        }
-    }
-}
-
 fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     val newOffset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
     val newShape = strides.shape.copyOfRange(axes.size, strides.shape.size)
