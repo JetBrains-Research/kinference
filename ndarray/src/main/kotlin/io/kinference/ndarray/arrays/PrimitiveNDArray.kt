@@ -12,12 +12,13 @@ import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
 import kotlin.math.*
 
-
 @PrimitiveClass
 @ExperimentalUnsignedTypes
-//TODO: var at array to val
-open class PrimitiveNDArray(var array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : NumberNDArray {
+open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : NumberNDArray {
     constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
+
+    var array: PrimitiveTiledArray = array
+        protected set
 
     protected val blocksInRow: Int
         get() = when {
