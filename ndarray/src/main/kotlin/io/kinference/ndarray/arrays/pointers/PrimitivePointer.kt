@@ -14,8 +14,6 @@ import kotlin.math.min
 
 @PrimitiveClass
 class PrimitivePointer {
-    data class BlockWithOffset(val block: PrimitiveArray, val offset: Int)
-
     val array: PrimitiveTiledArray
 
     var blockNum: Int
@@ -84,17 +82,6 @@ class PrimitivePointer {
         return value
     }
 
-    inline fun incrementAndGetBlock(): BlockWithOffset {
-        blockIncrement()
-        return BlockWithOffset(currentBlock, indexInBlock)
-    }
-
-    inline fun getAndIncrementBlock(): BlockWithOffset {
-        val value = BlockWithOffset(currentBlock, indexInBlock)
-        blockIncrement()
-        return value
-    }
-
     fun isValid(): Boolean = indexInBlock < array.blockSize
 }
 
@@ -121,7 +108,9 @@ inline fun PrimitivePointer.isCompatibleBySize(other: BooleanPointer, requestedS
 inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> PrimitiveType) {
     var end = count
     while (end > 0) {
-        val (block, offset) = this.getAndIncrementBlock()
+        val block = this.currentBlock
+        val offset = this.indexInBlock
+        this.blockIncrement()
 
         for (index in offset until min(block.size, offset + end)) {
             block[index] = action(block[index])
@@ -134,7 +123,9 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
 inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -> Unit) {
     var end = count
     while (end > 0) {
-        val (block, offset) = this.getAndIncrementBlock()
+        val block = this.currentBlock
+        val offset = this.indexInBlock
+        this.blockIncrement()
 
         for (index in offset until min(block.size, offset + end)) {
             action(block[index])
@@ -146,14 +137,18 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
 
 @PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
     DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
+fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count
     if (this.isCompatibleWith(container)) {
         while (end > 0) {
-            val (srcBlock, offset) = this.getAndIncrementBlock()
-            val (dstBlock, _) = container.getAndIncrementBlock()
+            val srcBlock = this.currentBlock
+            val offset = this.indexInBlock
+            this.blockIncrement()
+
+            val dstBlock = container.currentBlock
+            container.blockIncrement()
 
             for (index in offset until min(srcBlock.size, offset + end)) {
                 dstBlock[index] = action(srcBlock[index])
@@ -170,14 +165,18 @@ inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int
     }
 }
 
-inline fun PrimitivePointer.mapTo(container: BooleanPointer, count: Int, action: (value: PrimitiveType) -> Boolean) {
+fun PrimitivePointer.mapTo(container: BooleanPointer, count: Int, action: (value: PrimitiveType) -> Boolean) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count
     if (this.isCompatibleWith(container)) {
         while (end > 0) {
-            val (srcBlock, offset) = this.getAndIncrementBlock()
-            val (dstBlock, _) = container.getAndIncrementBlock()
+            val srcBlock = this.currentBlock
+            val offset = this.indexInBlock
+            this.blockIncrement()
+
+            val dstBlock = container.currentBlock
+            container.blockIncrement()
 
             for (index in offset until min(srcBlock.size, offset + end)) {
                 dstBlock[index] = action(srcBlock[index])
@@ -202,8 +201,12 @@ inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, a
     var end = count
     if (this.isCompatibleWith(other)) {
         while (end > 0) {
-            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
-            val (srcBlock, _) = other.getAndIncrementBlock()
+            val dstBlock = this.currentBlock
+            val dstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val srcBlock = other.currentBlock
+            other.blockIncrement()
 
             for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
@@ -231,9 +234,15 @@ inline fun PrimitivePointer.acceptWithRecursive(src: @Type1 PrimitivePointer, re
         while (end > 0) {
             if (!rec.isValid()) rec.linearIndex = buf
 
-            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
-            val (srcBlock, _) = src.getAndIncrementBlock()
-            val (recBlock, _) = rec.getAndIncrementBlock()
+            val dstBlock = this.currentBlock
+            val dstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val srcBlock = src.currentBlock
+            src.blockIncrement()
+
+            val recBlock = rec.currentBlock
+            rec.blockIncrement()
 
             for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
                 dstBlock[index] = action(dstBlock[index], srcBlock[index], recBlock[index])
@@ -259,8 +268,12 @@ inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, a
         while (end > 0) {
             if (!src.isValid()) src.linearIndex = buf
 
-            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
-            val (srcBlock, _) = src.getAndIncrementBlock()
+            val dstBlock = this.currentBlock
+            val dstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val srcBlock = src.currentBlock
+            src.blockIncrement()
 
             for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
@@ -286,9 +299,15 @@ inline fun PrimitivePointer.acceptDouble(first: PrimitivePointer, second: Primit
     var end = count
     if (this.isCompatibleWith(first) && this.isCompatibleWith(second)) {
         while (end > 0) {
-            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
-            val (fstBlock, _) = first.getAndIncrementBlock()
-            val (sndBlock, _) = second.getAndIncrementBlock()
+            val dstBlock = this.currentBlock
+            val dstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val fstBlock = first.currentBlock
+            first.blockIncrement()
+
+            val sndBlock = second.currentBlock
+            second.blockIncrement()
 
             for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index])
@@ -314,10 +333,18 @@ inline fun PrimitivePointer.acceptTriple(first: PrimitivePointer, second: Primit
     var end = count
     if (this.isCompatibleWith(first) && this.isCompatibleWith(second) && this.isCompatibleWith(third)) {
         while (end > 0) {
-            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
-            val (fstBlock, _) = first.getAndIncrementBlock()
-            val (sndBlock, _) = second.getAndIncrementBlock()
-            val (trdBlock, _) = third.getAndIncrementBlock()
+            val dstBlock = this.currentBlock
+            val dstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val fstBlock = first.currentBlock
+            first.blockIncrement()
+
+            val sndBlock = second.currentBlock
+            second.blockIncrement()
+
+            val trdBlock = third.currentBlock
+            third.blockIncrement()
 
             for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index], trdBlock[index])
@@ -342,8 +369,12 @@ inline fun PrimitivePointer.combine(other: @Type1 PrimitivePointer, count: Int, 
     var end = count
     if (this.isCompatibleWith(other)) {
         while (end > 0) {
-            val (fstBlock, fstOffset) = this.getAndIncrementBlock()
-            val (sndBlock, _) = other.getAndIncrementBlock()
+            val fstBlock = this.currentBlock
+            val fstOffset = this.indexInBlock
+            this.blockIncrement()
+
+            val sndBlock = other.currentBlock
+            other.blockIncrement()
 
             for (index in fstOffset until min(fstBlock.size, fstOffset + end)) {
                 action(fstBlock[index], sndBlock[index])

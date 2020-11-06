@@ -97,10 +97,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         return if (zeroPoint.linearSize == 1) {
             val zero = zeroPoint.array.blocks[0][0].toInt()
             val arr = IntTiledArray(this.strides)
-            for (i in 0 until array.blocksNum) {
-                val currentBlock = array.blocks[i]
-                for (j in currentBlock.indices) arr.blocks[i][j] = currentBlock[j].toInt() - zero
-            }
+            arr.pointer().accept(array.pointer(), arr.size) { _, src -> src.toInt() - zero }
             IntNDArray(arr, strides)
         } else {
             val arr = IntTiledArray(strides)

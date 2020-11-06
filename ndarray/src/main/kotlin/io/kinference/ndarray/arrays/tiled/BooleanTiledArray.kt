@@ -177,7 +177,10 @@ class BooleanTiledArray {
         var count = to - from
 
         while (count > 0) {
-            val (block, offset) = pointer.getAndIncrementBlock()
+            val block = pointer.currentBlock
+            val offset = pointer.indexInBlock
+            pointer.blockIncrement()
+
             block.fill(value, offset, min(blockSize, count))
 
             count -= blockSize

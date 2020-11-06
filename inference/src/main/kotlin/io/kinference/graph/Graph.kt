@@ -12,6 +12,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 //TODO: support general graphs
 //TODO: check i/o tensor shapes explicitly
@@ -158,7 +160,15 @@ class Graph(proto: GraphProto) {
             context.putValue(input.info.name, input)
         }
 
+        //println("\nExec model:")
         for ((i, operator) in operators.withIndex()) {
+//            lateinit var outputs: List<ONNXData?>
+//            val time = measureNanoTime {
+//                outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
+//            }
+//
+//            println("${operator.info.name} - ${time / 1000000f} ms")
+
             val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
 
             context.cleanupUntilOrder(i)

@@ -3,8 +3,7 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.pointers.PrimitivePointer
-import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
@@ -190,7 +189,10 @@ class PrimitiveTiledArray {
         var count = to - from
 
         while (count > 0) {
-            val (block, offset) = pointer.getAndIncrementBlock()
+            val block = pointer.currentBlock
+            val offset = pointer.indexInBlock
+            pointer.blockIncrement()
+
             block.fill(value, offset, min(blockSize, count))
 
             count -= blockSize
