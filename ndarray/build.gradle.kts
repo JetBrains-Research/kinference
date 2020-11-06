@@ -1,5 +1,6 @@
 import io.kinference.primitives.primitives
 import io.kinference.gradle.generatedDir
+import tanvd.kosogor.proxy.publishJar
 
 group = rootProject.group
 version = rootProject.version
@@ -18,3 +19,5 @@ dependencies {
     api("org.slf4j","slf4j-api","1.7.30")
     api("ch.qos.logback","logback-classic","1.2.3")
 }
+
+publishJar {}
