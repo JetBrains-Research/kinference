@@ -6,9 +6,20 @@ val bpeTokenizer = TokenizerConfig(
     1024
 )
 
+val bpeTokenizer_v5 = TokenizerConfig(
+    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/training/models/gpt2_vs20k_d256_l4_h8_cl50_owta_ep_1_tmux_iter_22/vocab.json",
+    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/training/models/gpt2_vs20k_d256_l4_h8_cl50_owta_ep_1_tmux_iter_22/merges.txt",
+    50
+)
+
 val model27 = ModelConfig(
     "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/opt/onnxrt/onnx_models/distilgpt2_l3_h12_d256_int8.onnx",
     4, 256, 3, 50257
+)
+
+val model_v5 = ModelConfig(
+    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/opt/onnxrt/onnx_models/gpt2_vs20k_d256_l4_h8_cl50_iter_22_int8.onnx",
+    8, 256, 4, 20000
 )
 
 val defaultGenerationConfig = GenerationConfig(
@@ -21,3 +32,5 @@ val defaultGenerationConfig = GenerationConfig(
 val filterConfig = FilterConfig(2, -100.0, 0.0)
 
 val config = Config(10, bpeTokenizer, model27, defaultGenerationConfig, filterConfig)
+
+val config_v5 = Config(10, bpeTokenizer_v5, model_v5, defaultGenerationConfig, filterConfig)
