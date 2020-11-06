@@ -9,7 +9,7 @@ class MainCompletion {
     @Test
     @Tag("heavy")
     fun test() {
-        val config = config
+        val config = config_v5
 
         val completionsCollector = FairseqCompletionsCollector(config)
         val rankingModel = FirstProbRankingModel()
@@ -18,11 +18,11 @@ class MainCompletion {
 
         val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel, postFilterModel)
 
-//            interaction(completionModel)
-            speedTest(completionModel, 30, 20)
+//            interaction(completionModel, config)
+            speedTest(completionModel, config, 30, 20)
         }
 
-    private fun interaction(completionModel: CompletionModel) {
+    private fun interaction(completionModel: CompletionModel, config: Config) {
         println("Write something")
         var input = "hello wo"
         while (true) {
@@ -39,7 +39,7 @@ class MainCompletion {
         }
     }
 
-    private fun speedTest(completionModel: CompletionModel, len: Int = 1, itersNum: Int = 100) {
+    private fun speedTest(completionModel: CompletionModel, config: Config, len: Int = 1, itersNum: Int = 100) {
 //            1 - 0.97258
         println("Warm up")
         val input = (0 until len).map { "hello " }.joinToString { "" } + "wo"
