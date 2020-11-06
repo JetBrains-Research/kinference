@@ -15,7 +15,7 @@ object ModelTestUtils {
             inputTensors
         }.first()
 
-        val count = 1000
+        val count = 10
         val times = LongArray(count)
         for (i in (0 until count)) {
             val startTime = System.currentTimeMillis()

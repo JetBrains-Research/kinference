@@ -137,7 +137,7 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
 
 @PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
     DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
+inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count
