@@ -1,4 +1,5 @@
 @file:GenerateWithPrimitives
+@file:Suppress("DuplicatedCode", "unused")
 
 package io.kinference.ndarray.arrays
 
@@ -102,15 +103,13 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
             }
             IntNDArray(arr, strides)
         } else {
-            val blocks = zeroPoint.linearSize
-            val blockSize = this.linearSize / blocks
-            val arr = IntArray(this.linearSize) { i ->
-                this.array[i].toInt() - zeroPoint.array[i % blockSize].toInt()
-            }
-            IntNDArray(IntTiledArray(arr, strides), strides)
+            val arr = IntTiledArray(strides)
+            arr.pointer().acceptWithRecursive(this.array.pointer(), zeroPoint.array.pointer(), arr.size) { _, src, zero -> src.toInt() - zero.toInt() }
+            IntNDArray(arr, strides)
         }
     }
 
+    @Suppress("CAST_NEVER_SUCCEEDS")
     override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
         scale as FloatNDArray
         val zeros = (zeroPoint as? PrimitiveNDArray)?.array
@@ -118,7 +117,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
 
         when {
             canDequantizePerTensor(zeroPoint, scale) -> {
-                val zero = zeros?.get(0)?.toFloat() ?: 0f
+                val zero = if (zeros == null) 0f else zeros.blocks[0][0].toFloat()
                 val sc = scale.array.blocks[0][0]
 
                 if (type == DataType.BYTE) {
@@ -157,7 +156,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
                     }
                 }
             }
-            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis!!]} elements")
+            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
         }
 
         return output
@@ -168,7 +167,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         val start = row * rowLength
         val dims = shape.copyOfRange(1, rank)
 
-        return MutablePrimitiveNDArray(PrimitiveTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
+        val result = PrimitiveTiledArray(Strides(dims))
+        result.pointer().accept(array.pointer(start), result.size) { _, src -> src }
+
+        return MutablePrimitiveNDArray(result, Strides(dims))
     }
 
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray {
@@ -269,6 +271,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
                     output.copyFrom(dstOff - blockSize + 1, this, dstOff - blockSize + 1, dstOff + 1)
             }
 
+            // TODO rewrite using pointers
             if (!reverse) {
                 for (i in 1 until numBlocks) {
                     for (j in 0 until blockSize) {
@@ -468,7 +471,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         require(shape[1] == other.shape[0])
 
         val n = this.shape[0]
-        val m = other.shape[1]
         val t = this.shape[1]
 
         val resortedLeft = resortBlocks(this.array.blocks, this.shape[0], this.blocksInRow)
@@ -505,38 +507,41 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
     override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
         val betaPrimitive = beta.toPrimitive()
+        val alphaPrimitive = alpha.toPrimitive()
+        val aPointer = array.pointer()
+        val bPointer = b.array.pointer()
+        val cPointer = c.array.pointer()
 
         if (beta != 1.0) {
             for (i in 0 until m) {
-                val cIdx = i * ldc + cOffset
-                for (j in 0 until n) {
-                    c.array[cIdx + j] = (betaPrimitive * c.array[cIdx + j]).toPrimitive()
-                }
+                cPointer.linearIndex = i * ldc + cOffset
+                cPointer.map(n) { (betaPrimitive * it).toPrimitive() }
             }
         }
 
-        val alphaPrimitive = alpha.toPrimitive()
         when {
             transposeA && transposeB -> {
+                // TODO rewrite using block operations
                 for (t in 0 until m) {
                     for (j in 0 until n) {
-                        val cIdx = t * ldc + j + cOffset
+                        cPointer.linearIndex = t * ldc + j + cOffset
                         for (i in 0 until k) {
-                            val aIdx = i * lda + t + aOffset
-                            val bIdx = j * ldb + i + bOffset
-                            c.array[cIdx] = (alphaPrimitive * array[aIdx] * b.array[bIdx] + c.array[cIdx]).toPrimitive()
+                            aPointer.linearIndex = i * lda + t + aOffset
+                            bPointer.linearIndex = j * ldb + i + bOffset
+                            cPointer.set((alphaPrimitive * aPointer.get() * bPointer.get() + cPointer.get()).toPrimitive())
                         }
                     }
                 }
             }
             transposeA -> {
+                // TODO rewrite using block operations
                 for (t in 0 until m) {
                     for (j in 0 until n) {
-                        val cIdx = t * ldc + j + cOffset
+                        cPointer.linearIndex = t * ldc + j + cOffset
                         for (i in 0 until k) {
-                            val aIdx = i * lda + t + aOffset
-                            val bIdx = i * ldb + j + bOffset
-                            c.array[cIdx] = (alphaPrimitive * array[aIdx] * b.array[bIdx] + c.array[cIdx]).toPrimitive()
+                            aPointer.linearIndex = i * lda + t + aOffset
+                            bPointer.linearIndex = i * ldb + j + bOffset
+                            cPointer.set((alphaPrimitive * aPointer.get() * bPointer.get() + cPointer.get()).toPrimitive())
                         }
                     }
                 }
@@ -544,32 +549,30 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
             transposeB -> {
                 for (t in 0 until m) {
                     val aIdx = t * lda + aOffset
-                    val cPtr = c.array.pointer(t * ldc + cOffset)
+                    cPointer.linearIndex = t * ldc + cOffset
                     for (j in 0 until n) {
-                        val bIdx = j * ldb + bOffset
-                        val aPtr = array.pointer(aIdx)
-                        val bPtr = b.array.pointer(bIdx)
+                        aPointer.linearIndex = aIdx
+                        bPointer.linearIndex = j * ldb + bOffset
 
-                        aPtr.combine(bPtr, k) { elementInA, elementInB ->
-                            cPtr.set((alphaPrimitive * elementInA * elementInB + cPtr.get()).toPrimitive())
+                        aPointer.combine(bPointer, k) { elementInA, elementInB ->
+                            cPointer.set((alphaPrimitive * elementInA * elementInB + cPointer.get()).toPrimitive())
                         }
-                        cPtr.increment()
+
+                        cPointer.increment()
                     }
                 }
             }
             else -> {
                 for (t in 0 until m) {
                     val cIdx = t * ldc + cOffset
-                    val aIdx = t * lda + aOffset
-                    val aPtr = array.pointer(aIdx)
+                    aPointer.linearIndex = t * lda + aOffset
                     for (i in 0 until k) {
-                        val temp = (alphaPrimitive * aPtr.getAndIncrement()).toPrimitive()
-                        val bIdx = i * ldb + bOffset
+                        val temp = (alphaPrimitive * aPointer.getAndIncrement()).toPrimitive()
 
-                        val bPtr = b.array.pointer(bIdx)
-                        val cPtr = c.array.pointer(cIdx)
+                        bPointer.linearIndex = i * ldb + bOffset
+                        cPointer.linearIndex = cIdx
 
-                        cPtr.accept(bPtr, n) { elementInC, elementInB ->
+                        cPointer.accept(bPointer, n) { elementInC, elementInB ->
                             (temp * elementInB + elementInC).toPrimitive()
                         }
                     }

@@ -220,6 +220,38 @@ inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, a
     }
 }
 
+@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
+    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
+inline fun PrimitivePointer.acceptWithRecursive(src: @Type1 PrimitivePointer, rec: @Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @Type1 PrimitiveType, rec: @Type1 PrimitiveType) -> PrimitiveType) {
+    require(this.isCompatibleBySize(src, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    val buf = rec.linearIndex
+    if (this.isCompatibleWith(src) && this.isCompatibleWith(rec)) {
+        while (end > 0) {
+            if (!rec.isValid()) rec.linearIndex = buf
+
+            val (dstBlock, dstOffset) = this.getAndIncrementBlock()
+            val (srcBlock, _) = src.getAndIncrementBlock()
+            val (recBlock, _) = rec.getAndIncrementBlock()
+
+            for (index in dstOffset until min(dstBlock.size, dstOffset + end)) {
+                dstBlock[index] = action(dstBlock[index], srcBlock[index], recBlock[index])
+            }
+
+            end -= dstBlock.size
+        }
+    } else {
+        while (end > 0) {
+            if (!rec.isValid()) rec.linearIndex = buf
+
+            this.set(action(this.get(), src.getAndIncrement(), rec.getAndIncrement()))
+            this.increment()
+            end--
+        }
+    }
+}
+
 inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
     var end = count
     val buf = src.linearIndex

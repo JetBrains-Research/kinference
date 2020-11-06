@@ -4,6 +4,7 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
+import java.lang.IllegalStateException
 
 inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int = 1, noinline init: (Int) -> T): Any {
     return when (type) {
@@ -12,7 +13,7 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int
         DataType.LONG -> LongTiledArray(shape, divider) { init(it) as Long }
         DataType.INT -> IntTiledArray(shape, divider) { init(it) as Int }
         DataType.SHORT -> ShortTiledArray(shape, divider) { init(it) as Short }
-        DataType.BOOLEAN -> BooleanArray(Strides(shape).linearSize) { init(it) as Boolean }
+        DataType.BOOLEAN -> BooleanTiledArray(shape, divider) { init(it) as Boolean }
         DataType.BYTE -> ByteTiledArray(shape, divider) { init(it) as Byte }
         DataType.UBYTE -> UByteTiledArray(shape, divider) { init(it) as UByte }
         else -> Array(Strides(shape).linearSize, init)
