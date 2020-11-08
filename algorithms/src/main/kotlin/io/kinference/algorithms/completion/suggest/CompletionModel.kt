@@ -3,8 +3,8 @@ package io.kinference.algorithms.completion.suggest
 import io.kinference.algorithms.completion.Config
 import io.kinference.algorithms.completion.GenerationConfig
 import io.kinference.algorithms.completion.generating.GenerationInfo
-import kotlin.math.min
 import kotlin.math.max
+import kotlin.math.min
 
 data class CompletionInfo(val text: String, val info: GenerationInfo)
 

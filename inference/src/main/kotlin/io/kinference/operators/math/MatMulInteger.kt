@@ -5,14 +5,11 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.arrays.pointers.mapTo
-import io.kinference.ndarray.extensions.matmul
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
+import io.kinference.ndarray.extensions.matmul
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 
 class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -34,7 +31,7 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
-        @ExperimentalUnsignedTypes
+
         private fun NumberNDArray.toIntNDArray(): IntNDArray {
             val result = IntNDArray(IntTiledArray(this.strides), strides)
             when (this) {

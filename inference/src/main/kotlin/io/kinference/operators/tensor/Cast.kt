@@ -9,12 +9,8 @@ import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
-import java.lang.IllegalStateException
 
 class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -34,7 +30,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }
 
-    @ExperimentalUnsignedTypes
+
     private fun castByte(array: ByteNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -92,7 +88,6 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
     private fun castShort(array: ShortNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -150,7 +145,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castInt(array: IntNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -208,7 +203,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castLong(array: LongNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -266,7 +261,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castUByte(array: UByteNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -324,7 +319,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castUShort(array: UShortNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -382,7 +377,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castUInt(array: UIntNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -440,7 +435,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castULong(array: ULongNDArray, to: TensorProto.DataType): NDArray {
         return  when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -498,7 +493,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castFloat(array: FloatNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> array
@@ -556,7 +551,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castDouble(array: DoubleNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -614,7 +609,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun castBoolean(array: BooleanNDArray, to: TensorProto.DataType): NDArray {
         return when (to) {
             TensorProto.DataType.FLOAT -> {
@@ -673,7 +668,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
     }
 
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!

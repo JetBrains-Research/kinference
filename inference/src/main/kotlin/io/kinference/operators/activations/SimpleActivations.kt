@@ -1,13 +1,11 @@
 package io.kinference.operators.activations
 
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.MutableNumberNDArray
 import io.kinference.operators.IOInfo
 import io.kinference.operators.OperatorInfo
 import io.kinference.operators.math.tanh
+import io.kinference.primitives.types.DataType
 import kotlin.math.exp
 import kotlin.math.max
 
@@ -24,7 +22,7 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     override fun activate(input: NDArray): NDArray = input
 }
 
-@ExperimentalUnsignedTypes
+
 class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -50,7 +48,7 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     }
 }
 
-@ExperimentalUnsignedTypes
+
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -76,7 +74,7 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
     }
 }
 
-@ExperimentalUnsignedTypes
+
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -102,7 +100,6 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     }
 }
 
-@ExperimentalUnsignedTypes
 class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

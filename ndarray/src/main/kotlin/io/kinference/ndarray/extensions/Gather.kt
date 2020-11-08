@@ -4,13 +4,11 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.primitives.types.DataType
-import java.lang.IllegalStateException
 
 fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
-@ExperimentalUnsignedTypes
 fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
     val newShape = IntArray(shape.size + indices.rank - 1)
     shape.copyInto(newShape, 0, 0, axis)
@@ -20,7 +18,6 @@ fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: Dat
     return allocateNDArray(type, newStrides)
 }
 
-@ExperimentalUnsignedTypes
 fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
     val actualAxis = this.indexAxis(axis)
     val dst = createGatherDstArray(actualAxis, indices, shape, type)

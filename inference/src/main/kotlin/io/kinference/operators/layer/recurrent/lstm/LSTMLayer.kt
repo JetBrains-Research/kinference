@@ -1,15 +1,13 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.splitWithAxis
-import io.kinference.ndarray.extensions.squeeze
 import io.kinference.data.tensors.*
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.activations.Activation
 
-@ExperimentalUnsignedTypes
+
 open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
 
     private var lstmData: LSTMData? = null

@@ -1,5 +1,5 @@
-import io.kinference.primitives.primitives
 import io.kinference.gradle.generatedDir
+import io.kinference.primitives.primitives
 import tanvd.kosogor.proxy.publishJar
 
 group = rootProject.group

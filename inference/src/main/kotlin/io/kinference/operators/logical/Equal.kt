@@ -8,11 +8,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptDouble
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
-import java.lang.IllegalStateException
 
 class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -29,7 +26,7 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val INFO = OperatorInfo("Equal", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
-        @ExperimentalUnsignedTypes
+
         infix fun NDArray.equal(other: NDArray): NDArray {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
                 require(first.type == second.type) { "Arrays must have same types" }
@@ -98,7 +95,7 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val result = inputs[0]!!.data equal inputs[1]!!.data
         return listOf(result.asTensor("output"))

@@ -1,4 +1,6 @@
-import io.kinference.gradle.*
+import io.kinference.gradle.generatedDir
+import io.kinference.gradle.useBenchmarkTests
+import io.kinference.gradle.useHeavyTests
 import tanvd.kosogor.proxy.publishJar
 
 group = rootProject.group

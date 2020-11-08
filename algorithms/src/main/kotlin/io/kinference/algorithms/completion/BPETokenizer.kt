@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.IOException
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class BPETokenizer(vocabPath: String, mergesPath: String) {
     private data class MergeCandidate(val word1: String, val word2: String) {

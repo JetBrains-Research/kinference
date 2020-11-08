@@ -5,12 +5,9 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.MutableNumberNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
-import java.lang.IllegalStateException
 import kotlin.math.sqrt
 
 class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
@@ -30,7 +27,7 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
 
         private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
-        @ExperimentalUnsignedTypes
+
         fun gelu(array: MutableNumberNDArray): NumberNDArray {
             when (array.type) {
                 DataType.FLOAT -> {
@@ -53,7 +50,7 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         return listOf(gelu(input.toMutable()).asTensor("Y"))

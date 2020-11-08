@@ -1,8 +1,8 @@
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.BooleanPointer
-import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs

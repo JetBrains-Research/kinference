@@ -1,6 +1,5 @@
 package io.kinference.operators.math
 
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
@@ -8,9 +7,8 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptRecursive
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
+import io.kinference.primitives.types.DataType
 
 class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
     Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -29,7 +27,7 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)

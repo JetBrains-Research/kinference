@@ -1,14 +1,10 @@
 package io.kinference.operators.layer.attention
 
-import io.kinference.ndarray.arrays.MutableNDArray
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.Strides
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
@@ -16,15 +12,12 @@ import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 import io.kinference.operators.activations.Softmax
+import io.kinference.primitives.types.DataType
 import kotlin.math.min
 import kotlin.math.sqrt
 
-@ExperimentalUnsignedTypes
 class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
 

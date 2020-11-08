@@ -1,8 +1,5 @@
 package io.kinference.operators.activations
 
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.arrays.PrimitiveToPrimitiveFunction
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
@@ -10,6 +7,7 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.operators.Operator
 import io.kinference.operators.OperatorInfo
+import io.kinference.primitives.types.DataType
 
 abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
@@ -21,7 +19,7 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
         return listOf(activate(inputs.first()!!))
     }
 
-    @ExperimentalUnsignedTypes
+
     companion object {
         // TODO: Add activations with alpha and beta
         fun createFloat(name: String): FloatMap = when (name) {

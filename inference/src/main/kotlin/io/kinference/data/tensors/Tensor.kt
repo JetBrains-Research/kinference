@@ -1,17 +1,13 @@
 package io.kinference.data.tensors
 
 
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.toIntArray
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.ndarray.arrays.BooleanNDArray
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.extensions.createArray
-import io.kinference.ndarray.extensions.createNDArray
-import io.kinference.ndarray.extensions.createScalarNDArray
-import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.types.TensorInfo
@@ -50,7 +46,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
     companion object {
         //TODO: complex, uint32/64 tensors
         @Suppress("UNCHECKED_CAST")
-        @ExperimentalUnsignedTypes
+
         fun create(proto: TensorProto, divider: Int = 1): Tensor {
             if (proto.dims.isNullOrEmpty()) return parseScalar(proto)
 
@@ -123,7 +119,6 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             }
         }
 
-        @ExperimentalUnsignedTypes
         operator fun invoke(dims: List<Long>, value: List<*>, type: DataType, name: String?, divider: Int = 1): Tensor {
             val shape = dims.toIntArray()
 
@@ -132,7 +127,7 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
         }
 
 
-        @ExperimentalUnsignedTypes
+
         operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = "", divider: Int = 1): Tensor {
             val name = name ?: ""
             if (dims.isEmpty()) return createScalarNDArray(type.resolveLocalDataType(), value).asTensor(name)
@@ -150,14 +145,13 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             }
         }
 
-        @ExperimentalUnsignedTypes
         operator fun invoke(value: List<Any>, type: DataType): Tensor {
             val dims = intArrayOf(value.size)
             val data = createArray(type.resolveLocalDataType(), dims) { i -> value[i] }
             return Tensor(data, type, dims)
         }
 
-        @ExperimentalUnsignedTypes
+
         private fun parseScalar(proto: TensorProto): Tensor {
             val type = DataType.fromValue(proto.data_type ?: 0)
             val array = when (type) {

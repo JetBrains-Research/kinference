@@ -1,18 +1,13 @@
 package io.kinference.benchmark
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
+import ai.onnxruntime.*
 import io.kinference.Utils
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import java.io.File
-import java.nio.DoubleBuffer
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
-import java.nio.LongBuffer
+import java.nio.*
 
 object BenchmarkUtils {
     private val ortOptions

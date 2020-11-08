@@ -1,10 +1,10 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
-import java.lang.IllegalStateException
+
 
 inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int = 1, noinline init: (Int) -> T): Any {
     return when (type) {
@@ -20,7 +20,6 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int
     }
 }
 
-@ExperimentalUnsignedTypes
 fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableNDArray {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleTiledArray, strides)
@@ -36,12 +35,10 @@ fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableN
     }
 }
 
-@ExperimentalUnsignedTypes
 fun createMutableNDArray(type: DataType, value: Any, shape: IntArray): MutableNDArray {
     return createMutableNDArray(type, value, Strides(shape))
 }
 
-@ExperimentalUnsignedTypes
 fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(value as DoubleTiledArray, strides)
@@ -57,7 +54,7 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
     }
 }
 
-@ExperimentalUnsignedTypes
+
 fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArray {
     return createNDArray(type, value, Strides(shape))
 }
@@ -74,7 +71,7 @@ fun createZerosArray(type: DataType, size: Int): Any {
     }
 }
 
-@ExperimentalUnsignedTypes
+
 fun createScalarNDArray(type: DataType, value: Any): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(DoubleTiledArray(1, 1) { value as Double })
@@ -90,7 +87,6 @@ fun createScalarNDArray(type: DataType, value: Any): NDArray {
     }
 }
 
-@ExperimentalUnsignedTypes
 fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(DoubleTiledArray(strides), strides)
@@ -105,7 +101,6 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
     }
 }
 
-@ExperimentalUnsignedTypes
 fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
 
 val SUPPORTED_TYPES = setOf(DataType.DOUBLE, DataType.FLOAT, DataType.LONG, DataType.INT, DataType.SHORT)

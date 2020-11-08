@@ -3,10 +3,12 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.arrays.pointers.PrimitivePointer
+import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
-import io.kinference.primitives.types.*
+import io.kinference.primitives.types.PrimitiveArray
+import io.kinference.primitives.types.PrimitiveType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.math.min

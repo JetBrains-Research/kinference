@@ -4,7 +4,6 @@ package io.kinference.ndarray.arrays.pointers
 
 
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import kotlin.math.min
 
 class BooleanPointer {

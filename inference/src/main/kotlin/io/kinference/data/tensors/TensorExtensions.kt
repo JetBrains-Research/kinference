@@ -1,13 +1,12 @@
 package io.kinference.data.tensors
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.primitives.types.DataType
 import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.onnx.TensorProto
+import io.kinference.primitives.types.DataType
 import io.kinference.types.TensorInfo
 import io.kinference.types.TensorShape
-import java.lang.IllegalStateException
 
 fun TensorProto.DataType.resolveLocalDataType(): DataType {
     return when(this) {
@@ -73,7 +72,7 @@ fun Tensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = tru
     return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
 
-@ExperimentalUnsignedTypes
+
 fun Tensor.splitWithAxis(splitTensor: Tensor, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
     val splitArray = when (splitTensor.data.type) {
         DataType.INT -> {

@@ -5,10 +5,7 @@ package io.kinference.ndarray.arrays.pointers
 
 
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.primitives.annotations.GenerateWithPrimitives
-import io.kinference.primitives.annotations.PrimitiveBinding
-import io.kinference.primitives.annotations.PrimitiveClass
-import io.kinference.primitives.annotations.Type1
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.math.min
 

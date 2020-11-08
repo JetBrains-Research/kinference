@@ -1,12 +1,11 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.ndarray.arrays.MutableNDArray
-import io.kinference.ndarray.arrays.NDArray
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
@@ -44,7 +43,7 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
 
         private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        @ExperimentalUnsignedTypes
+
         private fun FloatNDArray.normalize(skip: FloatNDArray, gamma: FloatNDArray, beta: FloatNDArray, bias: FloatNDArray?, epsilon: Float, dst: MutableFloatNDArray) {
             val (batchSize, seqLen, hiddenSize) = this.shape
             val steps = batchSize * seqLen
@@ -84,7 +83,7 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val output = input.allocateNDArray(input.strides) as MutableFloatNDArray

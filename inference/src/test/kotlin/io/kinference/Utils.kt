@@ -4,7 +4,6 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
 import kotlin.math.pow
 
-@ExperimentalUnsignedTypes
 object Utils {
     private val delta = (10.0).pow(-3)
 

@@ -1,8 +1,8 @@
 package io.kinference.ndarray.extensions
 
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.MutableNDArray
 import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.Strides
 import kotlin.math.ceil
 
 fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {

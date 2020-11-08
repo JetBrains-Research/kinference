@@ -4,11 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
-import io.kinference.ndarray.arrays.MutableNDArray
-import io.kinference.ndarray.arrays.MutableNumberNDArray
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto

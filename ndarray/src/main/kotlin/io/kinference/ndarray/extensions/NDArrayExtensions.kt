@@ -128,7 +128,7 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     return newOffset to newShape
 }
 
-@ExperimentalUnsignedTypes
+
 fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
     require(tensorShape is LongNDArray) { "Tensor shape must have Long type" }
 

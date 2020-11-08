@@ -3,15 +3,10 @@ package io.kinference.operators.seq
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.data.seq.TensorSeq
-import io.kinference.data.tensors.Tensor
-import io.kinference.data.tensors.concatenate
-import io.kinference.data.tensors.stack
+import io.kinference.data.tensors.*
 import io.kinference.graph.Context
 import io.kinference.onnx.AttributeProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TensorSeq, Tensor>(INFO, attributes, inputs, outputs) {

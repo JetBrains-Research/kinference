@@ -24,7 +24,7 @@ class BiasGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val bias = inputs[1]!!.data as NumberNDArray

@@ -1,11 +1,11 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.DoubleNDArray
+import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
@@ -13,10 +13,8 @@ import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
+import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
 
 class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -51,7 +49,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
         private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data
         val scale = inputs[1]!!.data

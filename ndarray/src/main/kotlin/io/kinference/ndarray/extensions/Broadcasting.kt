@@ -1,8 +1,8 @@
 package io.kinference.ndarray.extensions
 
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.MutableNDArray
 import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 

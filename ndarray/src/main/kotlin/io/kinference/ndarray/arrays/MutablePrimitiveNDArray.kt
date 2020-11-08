@@ -11,7 +11,7 @@ import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
 
 @PrimitiveClass
-@ExperimentalUnsignedTypes
+
 open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
     constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
 

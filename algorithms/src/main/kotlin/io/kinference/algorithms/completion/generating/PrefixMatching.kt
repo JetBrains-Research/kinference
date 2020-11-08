@@ -1,11 +1,8 @@
 package io.kinference.algorithms.completion.generating
 
 import io.kinference.algorithms.completion.BPETokenizer
-import kotlin.math.min
 import kotlin.math.max
-import kotlin.collections.ArrayList
-
-import kotlin.collections.HashMap
+import kotlin.math.min
 
 abstract class PrefixMatcher {
     fun prefixTokens(prefix: String): IntArray {

@@ -6,7 +6,6 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.NDArray
 
 data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>)
 
@@ -39,7 +38,6 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
     private val vocabSize = config.vocabSize
 //    distilgpt2_l3_h12_d256_int8
 
-    @ExperimentalUnsignedTypes
     override fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq {
         val batchSize = inputIds.size
         if (batchSize == 0) {
@@ -62,7 +60,6 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
         return process(input, batchSize, seqLen)
     }
 
-    @ExperimentalUnsignedTypes
     override fun getLogProbs(inputIds: Array<IntArray>, past: List<NDArray>): ModelOutputSeq {
         val batchSize = inputIds.size
         if (batchSize == 0) {

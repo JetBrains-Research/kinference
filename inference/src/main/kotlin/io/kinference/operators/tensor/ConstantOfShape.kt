@@ -1,10 +1,12 @@
 package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
-import io.kinference.data.tensors.*
+import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -30,7 +32,7 @@ class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
     private val value: Tensor by attribute()
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()

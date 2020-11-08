@@ -5,15 +5,15 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
 import kotlin.math.*
 
 @PrimitiveClass
-@ExperimentalUnsignedTypes
+
 open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : NumberNDArray {
     constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
 

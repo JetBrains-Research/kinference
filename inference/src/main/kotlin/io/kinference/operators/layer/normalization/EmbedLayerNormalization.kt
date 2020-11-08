@@ -6,15 +6,12 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import kotlin.math.sqrt
 
-@ExperimentalUnsignedTypes
 class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 
@@ -125,7 +122,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs[1]?.data as IntNDArray?
