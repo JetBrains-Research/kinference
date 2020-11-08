@@ -5,8 +5,7 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.*
 import com.amazonaws.util.Md5Utils
-import java.io.File
-import java.security.MessageDigest
+import java.io.*
 
 
 object S3Client {
@@ -74,6 +73,15 @@ object S3Client {
         client.putObject(bucket, key, content.inputStream(), ObjectMetadata().also {
             it.contentLength = content.size.toLong()
         })
+    }
+
+    private fun InputStream.transferTo(output: OutputStream) {
+        val buffer = ByteArray(1024)
+        var len: Int = read(buffer)
+        while (len != -1) {
+            output.write(buffer, 0, len)
+            len = read(buffer)
+        }
     }
 
     private fun File.md5(): String {
