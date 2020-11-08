@@ -7,8 +7,7 @@ import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
-import io.kinference.primitives.types.PrimitiveArray
-import io.kinference.primitives.types.PrimitiveType
+import io.kinference.primitives.types.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.math.min
