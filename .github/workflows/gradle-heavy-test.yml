@@ -20,4 +20,4 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: ./gradlew testHeavy --console=plain
+        run: ./gradlew :inference:testHeavy --console=plain
