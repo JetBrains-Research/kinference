@@ -43,7 +43,7 @@ publishJar {
 dependencies {
     api(project(":ndarray"))
 
-    implementation("org.slf4j", "slf4j-api", "1.7.30")
+    api("ch.qos.logback", "logback-classic", "1.2.3")
 
     api("com.squareup.wire", "wire-runtime", "3.2.2")
 
@@ -53,4 +53,6 @@ dependencies {
 
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation("com.microsoft.onnxruntime", "onnxruntime", "1.4.0")
+
+    testImplementation("com.amazonaws", "aws-java-sdk-s3", "1.11.896")
 }

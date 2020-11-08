@@ -1,6 +1,6 @@
 package io.kinference.operators.logical
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class NotTest {
@@ -8,16 +8,16 @@ class NotTest {
 
     @Test
     fun `test not for 2d tensor`() {
-        Utils.tensorTestRunner(getTargetPath("test_not_2d"))
+        TestRunner.runFromResources(getTargetPath("test_not_2d"))
     }
 
     @Test
     fun `test not for 3d tensor`() {
-        Utils.tensorTestRunner(getTargetPath("test_not_3d"))
+        TestRunner.runFromResources(getTargetPath("test_not_3d"))
     }
 
     @Test
     fun `test not for 4d tensor`() {
-        Utils.tensorTestRunner(getTargetPath("test_not_4d"))
+        TestRunner.runFromResources(getTargetPath("test_not_4d"))
     }
 }

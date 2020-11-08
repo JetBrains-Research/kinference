@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class ReluTest {
@@ -8,6 +8,6 @@ class ReluTest {
 
     @Test
     fun `test relu`() {
-        Utils.tensorTestRunner(getTargetPath("test_relu"))
+        TestRunner.runFromResources(getTargetPath("test_relu"))
     }
 }

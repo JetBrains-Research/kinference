@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class GeluTest {
@@ -8,6 +8,6 @@ class GeluTest {
 
     @Test
     fun `test GELU`() {
-        Utils.tensorTestRunner(getTargetPath("test_gelu"))
+        TestRunner.runFromResources(getTargetPath("test_gelu"))
     }
 }

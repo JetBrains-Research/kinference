@@ -4,3 +4,4 @@ build
 .gradle
 *.iml
 **/kotlin-gen
+credentials.conf

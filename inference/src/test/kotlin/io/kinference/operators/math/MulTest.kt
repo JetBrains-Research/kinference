@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class MulTest {
@@ -8,16 +8,16 @@ class MulTest {
 
     @Test
     fun `test mul`() {
-        Utils.tensorTestRunner(getTargetPath("test_mul"))
+        TestRunner.runFromResources(getTargetPath("test_mul"))
     }
 
     @Test
     fun `test mul with broadcast`() {
-        Utils.tensorTestRunner(getTargetPath("test_mul_bcast"))
+        TestRunner.runFromResources(getTargetPath("test_mul_bcast"))
     }
 
     @Test
     fun `test mul defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_mul_example"))
+        TestRunner.runFromResources(getTargetPath("test_mul_example"))
     }
 }

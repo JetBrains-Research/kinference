@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class SigmoidTest {
@@ -8,11 +8,11 @@ class SigmoidTest {
 
     @Test
     fun `test sigmoid example`() {
-        Utils.tensorTestRunner(getTargetPath("test_sigmoid_example"))
+        TestRunner.runFromResources(getTargetPath("test_sigmoid_example"))
     }
 
     @Test
     fun `test sigmoid`() {
-        Utils.tensorTestRunner(getTargetPath("test_sigmoid"))
+        TestRunner.runFromResources(getTargetPath("test_sigmoid"))
     }
 }

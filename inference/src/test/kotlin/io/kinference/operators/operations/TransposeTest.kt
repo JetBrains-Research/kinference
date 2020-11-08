@@ -1,6 +1,6 @@
 package io.kinference.operators.operations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class TransposeTest {
@@ -8,36 +8,36 @@ class TransposeTest {
 
     @Test
     fun `test transpose all permutations 0`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_0"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_0"))
     }
 
     @Test
     fun `test transpose all permutations 1`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_1"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_1"))
     }
 
     @Test
     fun `test transpose all permutations 2`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_2"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_2"))
     }
 
     @Test
     fun `test transpose all permutations 3`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_3"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_3"))
     }
 
     @Test
     fun `test transpose all permutations 4`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_4"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_4"))
     }
 
     @Test
     fun `test transpose all permutations 5`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_all_permutations_5"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_all_permutations_5"))
     }
 
     @Test
     fun `test transpose default`() {
-        Utils.tensorTestRunner(getTargetPath("test_transpose_default"))
+        TestRunner.runFromResources(getTargetPath("test_transpose_default"))
     }
 }

@@ -1,6 +1,6 @@
 package io.kinference.operators.flow
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class LoopTest {
@@ -8,6 +8,6 @@ class LoopTest {
 
     @Test
     fun `test loop`() {
-        Utils.tensorTestRunner(getTargetPath("test_loop"))
+        TestRunner.runFromResources(getTargetPath("test_loop"))
     }
 }

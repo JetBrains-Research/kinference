@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class SkipLayerNormalizationTest {
@@ -8,11 +8,11 @@ class SkipLayerNormalizationTest {
 
     @Test
     fun `test skip layer normalization defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_skip_layer_normalization"))
+        TestRunner.runFromResources(getTargetPath("test_skip_layer_normalization"))
     }
 
     @Test
     fun `test skip layer normalization with bias`() {
-        Utils.tensorTestRunner(getTargetPath("test_skip_layer_normalization_bias"))
+        TestRunner.runFromResources(getTargetPath("test_skip_layer_normalization_bias"))
     }
 }

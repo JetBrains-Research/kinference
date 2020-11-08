@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class FastGeluTest {
@@ -8,11 +8,11 @@ class FastGeluTest {
 
     @Test
     fun `test fast GELU with bias`() {
-        Utils.tensorTestRunner(getTargetPath("test_fastgelu_with_bias"))
+        TestRunner.runFromResources(getTargetPath("test_fastgelu_with_bias"))
     }
 
     @Test
     fun `test fast GELU without bias`() {
-        Utils.tensorTestRunner(getTargetPath("test_fastgelu_without_bias"))
+        TestRunner.runFromResources(getTargetPath("test_fastgelu_without_bias"))
     }
 }

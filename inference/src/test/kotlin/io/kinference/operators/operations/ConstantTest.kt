@@ -1,6 +1,6 @@
 package io.kinference.operators.operations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class ConstantTest {
@@ -8,11 +8,11 @@ class ConstantTest {
 
     @Test
     fun `test constant`() {
-        Utils.tensorTestRunner(getTargetPath("test_constant"))
+        TestRunner.runFromResources(getTargetPath("test_constant"))
     }
 
     @Test
     fun `test scalar constant`() {
-        Utils.tensorTestRunner(getTargetPath("test_scalar_constant"))
+        TestRunner.runFromResources(getTargetPath("test_scalar_constant"))
     }
 }

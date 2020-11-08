@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class LayerNormalizationTest {
@@ -8,11 +8,11 @@ class LayerNormalizationTest {
 
     @Test
     fun `test layer normalization defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_layer_normalization_0"))
+        TestRunner.runFromResources(getTargetPath("test_layer_normalization_0"))
     }
 
     @Test
     fun `test with negative axis`() {
-        Utils.tensorTestRunner(getTargetPath("test_negate_axis"))
+        TestRunner.runFromResources(getTargetPath("test_negate_axis"))
     }
 }

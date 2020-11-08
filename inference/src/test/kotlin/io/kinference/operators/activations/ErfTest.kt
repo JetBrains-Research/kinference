@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class ErfTest {
@@ -8,6 +8,6 @@ class ErfTest {
 
     @Test
     fun `test erf`() {
-        Utils.tensorTestRunner(getTargetPath("test_erf"))
+        TestRunner.runFromResources(getTargetPath("test_erf"))
     }
 }

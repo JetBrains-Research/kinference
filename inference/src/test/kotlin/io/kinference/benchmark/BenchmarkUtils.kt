@@ -1,11 +1,11 @@
 package io.kinference.benchmark
 
 import ai.onnxruntime.*
-import io.kinference.Utils
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.DataLoader
 import java.io.File
 import java.nio.*
 
@@ -36,7 +36,7 @@ object BenchmarkUtils {
 
         val modelBytes = File("$testDir/model.onnx").readBytes()
         val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
-        val inputs = inputFiles.map { Utils.getTensor(it.readBytes()) }
+        val inputs = inputFiles.map { DataLoader.getTensor(it.readBytes()) }
 
         return modelBytes to inputs
     }
