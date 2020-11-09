@@ -2,7 +2,6 @@ package io.kinference.runners
 
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
-import io.kinference.onnx.TypeProto
 import io.kinference.utils.DataLoader
 import io.kinference.utils.S3Client
 import java.io.File
@@ -14,7 +13,7 @@ object PerformanceRunner {
 
     private fun runPerformanceFromS3(testPath: String, prefix: String, count: Int = 10): List<PerformanceResults> {
         val toFolder = File(testData, testPath)
-        val files = S3Client.copyObjects(prefix, toFolder)
+        S3Client.copyObjects(prefix, toFolder)
         return runPerformanceFromFolder(toFolder, count)
     }
 
