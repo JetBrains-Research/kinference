@@ -1,9 +1,9 @@
 package io.kinference.runners
 
 import io.kinference.data.tensors.Tensor
+import io.kinference.loaders.S3Client
 import io.kinference.model.Model
 import io.kinference.utils.DataLoader
-import io.kinference.utils.S3Client
 import java.io.File
 
 object PerformanceRunner {
@@ -57,7 +57,7 @@ object PerformanceRunner {
     }
 
     private fun output(results: List<PerformanceResults>) {
-        for (result in results) {
+        for (result in results.sortedBy { it.name }) {
             println("Test ${result.name}: avg ${result.avg}, min ${result.min}, max ${result.max}")
         }
     }

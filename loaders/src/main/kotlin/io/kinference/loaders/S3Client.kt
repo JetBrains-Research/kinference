@@ -1,4 +1,4 @@
-package io.kinference.utils
+package io.kinference.loaders
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -46,7 +46,7 @@ object S3Client {
 
         if (toDownload.isEmpty()) return
 
-        println("Downloading missing files from s3://${bucket}/$prefix")
+        println("Downloading missing files from s3://$bucket/$prefix")
         for (obj in toDownload) {
             val toKey = obj.key.drop(prefix.length)
             val toFile = File(toFolder, toKey)

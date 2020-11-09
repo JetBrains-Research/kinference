@@ -1,4 +1,4 @@
-package io.kinference.utils
+package io.kinference.loaders
 
 import java.io.File
 
