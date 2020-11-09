@@ -19,8 +19,8 @@ import java.nio.ByteOrder
 //TODO: support segments
 //TODO: support external and raw data
 class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
-    override fun rename(newName: String): ONNXData {
-        return Tensor(data, TensorInfo(newName, info.type, TensorShape(data.shape)))
+    override fun rename(name: String): ONNXData {
+        return Tensor(data, TensorInfo(name, info.type, TensorShape(data.shape)))
     }
 
     operator fun plus(other: Tensor): Tensor {

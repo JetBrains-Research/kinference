@@ -4,7 +4,6 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.*
-import com.amazonaws.util.Md5Utils
 import java.io.*
 
 
@@ -18,7 +17,7 @@ object S3Client {
             .build()
     }
 
-    fun getObjects(prefix: String): List<S3ObjectSummary> {
+    private fun getObjects(prefix: String): List<S3ObjectSummary> {
         val objects = ArrayList<S3ObjectSummary>()
         var isFirst = true
         var objectListing = client.listObjects(bucket)
@@ -58,21 +57,11 @@ object S3Client {
             toFile.parentFile.mkdirs()
 
             toFile.outputStream().use { output ->
-                getObject(obj.key).objectContent.use { input -> input.transferTo(output) }
+                client.getObject(bucket, obj.key).objectContent.use { input -> input.transferTo(output) }
             }
         }
 
         println("Finished files downloading")
-    }
-
-    fun getObject(key: String): S3Object {
-        return client.getObject(bucket, key)
-    }
-
-    fun putObject(key: String, content: ByteArray) {
-        client.putObject(bucket, key, content.inputStream(), ObjectMetadata().also {
-            it.contentLength = content.size.toLong()
-        })
     }
 
     private fun InputStream.transferTo(output: OutputStream) {
@@ -82,10 +71,6 @@ object S3Client {
             output.write(buffer, 0, len)
             len = read(buffer)
         }
-    }
-
-    private fun File.md5(): String {
-        return Md5Utils.computeMD5Hash(this).joinToString(separator = "") { "%02x".format(it) }
     }
 }
 

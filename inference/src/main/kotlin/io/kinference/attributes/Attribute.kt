@@ -29,5 +29,3 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
         }
     }
 }
-
-fun Collection<Attribute<*>>.names() = this.map { it.name }

@@ -167,7 +167,7 @@ class Graph(proto: GraphProto) {
             outputs.zip(operator.outputs) { output, variable ->
                 if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                 if (variable.isNotEmpty()) {
-                    context.putValue(variable, output!!.rename(newName = variable))
+                    context.putValue(variable, output!!.rename(name = variable))
                 }
             }
         }
