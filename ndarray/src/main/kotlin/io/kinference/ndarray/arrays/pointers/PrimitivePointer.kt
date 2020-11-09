@@ -113,7 +113,7 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
             block[index] = action(block[index])
         }
 
-        end -= block.size
+        end -= block.size - offset
     }
 }
 
@@ -128,7 +128,7 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
             action(block[index])
         }
 
-        end -= block.size
+        end -= block.size - offset
     }
 }
 
@@ -151,7 +151,7 @@ inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -179,7 +179,7 @@ fun PrimitivePointer.mapTo(container: BooleanPointer, count: Int, action: (value
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -209,7 +209,7 @@ inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, a
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -245,7 +245,7 @@ inline fun PrimitivePointer.acceptWithRecursive(src: @Type1 PrimitivePointer, re
                 dstBlock[index] = action(dstBlock[index], srcBlock[index], recBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -276,7 +276,7 @@ inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, a
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -310,7 +310,7 @@ inline fun PrimitivePointer.acceptDouble(first: PrimitivePointer, second: Primit
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -347,7 +347,7 @@ inline fun PrimitivePointer.acceptTriple(first: PrimitivePointer, second: Primit
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index], trdBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -377,7 +377,7 @@ inline fun PrimitivePointer.combine(other: @Type1 PrimitivePointer, count: Int, 
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {

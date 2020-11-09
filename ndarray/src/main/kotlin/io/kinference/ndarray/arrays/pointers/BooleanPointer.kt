@@ -183,7 +183,7 @@ fun BooleanPointer.map(count: Int, action: (value: Boolean) -> Boolean) {
             block[index] = action(block[index])
         }
 
-        end -= block.size
+        end -= block.size - offset
     }
 }
 
@@ -198,7 +198,7 @@ fun BooleanPointer.forEach(count: Int, action: (value: Boolean) -> Unit) {
             action(block[index])
         }
 
-        end -= block.size
+        end -= block.size - offset
     }
 }
 
@@ -220,7 +220,7 @@ fun BooleanPointer.mapTo(container: BytePointer, count: Int, action: (value: Boo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -248,7 +248,7 @@ fun BooleanPointer.mapTo(container: ShortPointer, count: Int, action: (value: Bo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -276,7 +276,7 @@ fun BooleanPointer.mapTo(container: IntPointer, count: Int, action: (value: Bool
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -304,7 +304,7 @@ fun BooleanPointer.mapTo(container: LongPointer, count: Int, action: (value: Boo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -332,7 +332,7 @@ fun BooleanPointer.mapTo(container: UBytePointer, count: Int, action: (value: Bo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -360,7 +360,7 @@ fun BooleanPointer.mapTo(container: UShortPointer, count: Int, action: (value: B
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -388,7 +388,7 @@ fun BooleanPointer.mapTo(container: UIntPointer, count: Int, action: (value: Boo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -416,7 +416,7 @@ fun BooleanPointer.mapTo(container: ULongPointer, count: Int, action: (value: Bo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -444,7 +444,7 @@ fun BooleanPointer.mapTo(container: FloatPointer, count: Int, action: (value: Bo
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -472,7 +472,7 @@ fun BooleanPointer.mapTo(container: DoublePointer, count: Int, action: (value: B
                 dstBlock[index] = action(srcBlock[index])
             }
 
-            end -= srcBlock.size
+            end -= srcBlock.size - offset
         }
     } else {
         while (end > 0) {
@@ -502,7 +502,7 @@ fun BooleanPointer.accept(other: BytePointer, count: Int, action: (dst: Boolean,
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -530,7 +530,7 @@ fun BooleanPointer.accept(other: ShortPointer, count: Int, action: (dst: Boolean
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -558,7 +558,7 @@ fun BooleanPointer.accept(other: IntPointer, count: Int, action: (dst: Boolean, 
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -586,7 +586,7 @@ fun BooleanPointer.accept(other: LongPointer, count: Int, action: (dst: Boolean,
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -614,7 +614,7 @@ fun BooleanPointer.accept(other: UBytePointer, count: Int, action: (dst: Boolean
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -642,7 +642,7 @@ fun BooleanPointer.accept(other: UShortPointer, count: Int, action: (dst: Boolea
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -670,7 +670,7 @@ fun BooleanPointer.accept(other: UIntPointer, count: Int, action: (dst: Boolean,
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -698,7 +698,7 @@ fun BooleanPointer.accept(other: ULongPointer, count: Int, action: (dst: Boolean
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -726,7 +726,7 @@ fun BooleanPointer.accept(other: FloatPointer, count: Int, action: (dst: Boolean
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -754,7 +754,7 @@ fun BooleanPointer.accept(other: DoublePointer, count: Int, action: (dst: Boolea
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -782,7 +782,7 @@ fun BooleanPointer.accept(other: BooleanPointer, count: Int, action: (dst: Boole
                 dstBlock[index] = action(dstBlock[index], srcBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -815,7 +815,7 @@ fun BooleanPointer.acceptDouble(first: BooleanPointer, second: BooleanPointer, c
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -847,7 +847,7 @@ fun BooleanPointer.acceptDouble(first: BytePointer, second: BytePointer, count: 
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -879,7 +879,7 @@ fun BooleanPointer.acceptDouble(first: ShortPointer, second: ShortPointer, count
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -911,7 +911,7 @@ fun BooleanPointer.acceptDouble(first: IntPointer, second: IntPointer, count: In
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -943,7 +943,7 @@ fun BooleanPointer.acceptDouble(first: LongPointer, second: LongPointer, count: 
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -975,7 +975,7 @@ fun BooleanPointer.acceptDouble(first: UBytePointer, second: UBytePointer, count
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1007,7 +1007,7 @@ fun BooleanPointer.acceptDouble(first: UShortPointer, second: UShortPointer, cou
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1039,7 +1039,7 @@ fun BooleanPointer.acceptDouble(first: UIntPointer, second: UIntPointer, count: 
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1071,7 +1071,7 @@ fun BooleanPointer.acceptDouble(first: ULongPointer, second: ULongPointer, count
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1103,7 +1103,7 @@ fun BooleanPointer.acceptDouble(first: FloatPointer, second: FloatPointer, count
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1135,7 +1135,7 @@ fun BooleanPointer.acceptDouble(first: DoublePointer, second: DoublePointer, cou
                 dstBlock[index] = action(fstBlock[index], sndBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1172,7 +1172,7 @@ fun BooleanPointer.acceptTriple(first: BooleanPointer, second: BooleanPointer, t
                 dstBlock[index] = action(dstBlock[index], fstBlock[index], sndBlock[index], trdBlock[index])
             }
 
-            end -= dstBlock.size
+            end -= dstBlock.size - dstOffset
         }
     } else {
         while (end > 0) {
@@ -1201,7 +1201,7 @@ fun BooleanPointer.combine(other: BytePointer, count: Int, action: (fst: Boolean
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1228,7 +1228,7 @@ fun BooleanPointer.combine(other: ShortPointer, count: Int, action: (fst: Boolea
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1255,7 +1255,7 @@ fun BooleanPointer.combine(other: IntPointer, count: Int, action: (fst: Boolean,
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1282,7 +1282,7 @@ fun BooleanPointer.combine(other: LongPointer, count: Int, action: (fst: Boolean
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1309,7 +1309,7 @@ fun BooleanPointer.combine(other: UBytePointer, count: Int, action: (fst: Boolea
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1336,7 +1336,7 @@ fun BooleanPointer.combine(other: UShortPointer, count: Int, action: (fst: Boole
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1363,7 +1363,7 @@ fun BooleanPointer.combine(other: UIntPointer, count: Int, action: (fst: Boolean
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1390,7 +1390,7 @@ fun BooleanPointer.combine(other: ULongPointer, count: Int, action: (fst: Boolea
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1417,7 +1417,7 @@ fun BooleanPointer.combine(other: FloatPointer, count: Int, action: (fst: Boolea
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {
@@ -1444,7 +1444,7 @@ fun BooleanPointer.combine(other: DoublePointer, count: Int, action: (fst: Boole
                 action(fstBlock[index], sndBlock[index])
             }
 
-            end -= fstBlock.size
+            end -= fstBlock.size - fstOffset
         }
     } else {
         while (end > 0) {

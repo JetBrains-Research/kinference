@@ -9,7 +9,7 @@ class GPTRTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        TestRunner.runFromS3("/gpt/r/standard/v1/", "tests/gpt2/r-completion/standard/v1", 0.2)
+        TestRunner.runFromS3("/gpt/r/standard/v1/", "tests/gpt2/r-completion/standard/v1")
     }
 
     @Test
@@ -22,7 +22,7 @@ class GPTRTest {
     @Test
     @Tag("heavy")
     fun `test GPT quantized model`() {
-        TestRunner.runFromS3("/gpt/r/quantized/v1/", "tests/gpt2/r-completion/quantized/v1", 0.2)
+        TestRunner.runFromS3("/gpt/r/quantized/v1/", "tests/gpt2/r-completion/quantized/v1", 1.9)
     }
     @Test
     @Tag("heavy")
