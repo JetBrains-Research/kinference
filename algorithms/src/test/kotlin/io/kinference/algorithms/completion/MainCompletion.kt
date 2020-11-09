@@ -9,6 +9,13 @@ class MainCompletion {
     @Test
     @Tag("heavy")
     fun test() {
+        val modelName = "/gpt/grazie/distilled/quantized/v5/"
+        S3ModelLoader.loadConfigs(modelName, "tests/gpt2/grazie/distilled/quantized/v5")
+        val tokenizerConfig = S3ModelLoader.getTokenizerConfig(modelName)
+        val modelConfig = S3ModelLoader.getModelConfig(modelName)
+
+//        val config = Config(10, tokenizerConfig, modelConfig, defaultGenerationConfig, filterConfig)
+
         val config = config_v5
 
         val completionsCollector = FairseqCompletionsCollector(config)
