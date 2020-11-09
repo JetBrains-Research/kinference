@@ -10,7 +10,7 @@ class SearchTest {
     @Test
     @Tag("heavy")
     fun testStep() {
-        val search = BeamSearch(intArrayOf(0), vocabSize=5, searchSize=5, lenNormBase=5.0, lenNormPow=0.7)
+        val search = BeamSearch(intArrayOf(0), vocabSize = 5, searchSize = 5, lenNormBase = 5.0, lenNormPow = 0.7)
 
         val context = IntArray(0)
         val stepLogProbs = arrayOf(doubleArrayOf(0.13, 0.4, 0.17, 0.1, 0.2))

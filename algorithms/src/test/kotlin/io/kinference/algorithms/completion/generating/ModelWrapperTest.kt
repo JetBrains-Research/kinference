@@ -1,6 +1,6 @@
 package io.kinference.algorithms.completion.generating
 
-import io.kinference.algorithms.completion.model27
+import io.kinference.algorithms.completion.CompletionModels
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class ModelWrapperTest {
     companion object {
-        val config = model27
+        val config = CompletionModels.v4.model
     }
 
     @Test

@@ -5,16 +5,34 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.kinference.loaders.S3Client
 import java.io.File
 
-object S3ModelLoader {
+object CompletionModels {
     private val testData = File("../build/test-data")
-    private val loadedModels = HashMap<String, File>()
 
-    fun loadConfigs(name: String, prefix: String) : Pair<TokenizerConfig, ModelConfig> {
+    private const val myV4Name = "/gpt/grazie/distilled/quantized/v4/"
+    private const val myV5Name = "/gpt/grazie/distilled/quantized/v5/"
+
+    data class CompletionConfig(val tokenizer: TokenizerConfig, val model: ModelConfig)
+
+    val v4: CompletionConfig by lazy { loadConfigs(myV4Name, "tests/${myV4Name}") }
+    val v5: CompletionConfig by lazy { loadConfigs(myV5Name, "tests/${myV5Name}") }
+
+
+    object Config {
+        val generation = GenerationConfig(
+            1, 3, 5, 1,
+            1.0, 1.0,
+            5.0, 0.7,
+            0, 0.0001
+        )
+
+        val filter = FilterConfig(2, -100.0, 0.0)
+    }
+
+    private fun loadConfigs(name: String, prefix: String): CompletionConfig {
         val toFolder = File(testData, name)
         S3Client.copyObjects(prefix, toFolder)
-        loadedModels[name] = toFolder
 
-        return  getTokenizerConfig(toFolder) to getModelConfig(toFolder)
+        return CompletionConfig(getTokenizerConfig(toFolder), getModelConfig(toFolder))
     }
 
     private fun getConfig(toFolder: File): Map<String, Int> {

@@ -1,19 +1,19 @@
-package io.kinference.algorithms.completion
+package io.kinference.algorithms.completion.model
 
+import io.kinference.algorithms.completion.CompletionModels
+import io.kinference.algorithms.completion.Config
 import io.kinference.algorithms.completion.suggest.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.lang.System.currentTimeMillis
 
-class MainCompletion {
-    private val model = "/gpt/grazie/distilled/quantized/v5/"
-
+class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun test() {
-        val (tokenizerConfig, modelConfig) = S3ModelLoader.loadConfigs(model, "tests/gpt2/grazie/distilled/quantized/v5")
+        val (tokenizerConfig, modelConfig) = CompletionModels.v5
 
-        val config = Config(10, tokenizerConfig, modelConfig, defaultGenerationConfig, filterConfig)
+        val config = Config(10, tokenizerConfig, modelConfig, CompletionModels.Config.generation, CompletionModels.Config.filter)
 
         val completionsCollector = FairseqCompletionsCollector(config)
         val rankingModel = FirstProbRankingModel()
