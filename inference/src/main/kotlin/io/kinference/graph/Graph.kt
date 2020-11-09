@@ -24,6 +24,7 @@ class Graph(proto: GraphProto) {
 
     val initializers: List<Tensor>
     private val initNames = proto.initializer.map { it.name }
+    private val dividerByName: Map<String, Int>
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -96,19 +97,33 @@ class Graph(proto: GraphProto) {
 
         require(operators.size == proto.node.size)
 
-        val operatorsInputs = HashMap<String, IOInfo>().apply {
+        dividerByName = HashMap<String, Int>().apply {
             for (operator in operators) {
-                for (input in operator.info.inputs) {
-                    if (input.index in operator.inputs.indices) {
-                        val name = operator.inputs[input.index]
-                        put(name, input)
+                //TODO: Make normal divider init
+                if (operator.info.name == "Attention" || operator.info.name == "QAttention") {
+                    val numHeads = (operator.attributes["num_heads"]!!.value as Long).toInt()
+                    for (input in operator.info.inputs) {
+                        if (input.index in operator.inputs.indices) {
+                            val name = operator.inputs[input.index]
+                            if (input.name == "weight" || input.name == "bias")
+                                put(name, input.divider * numHeads)
+                            else
+                                put(name, input.divider)
+                        }
+                    }
+                } else {
+                    for (input in operator.info.inputs) {
+                        if (input.index in operator.inputs.indices) {
+                            val name = operator.inputs[input.index]
+                            put(name, input.divider)
+                        }
                     }
                 }
             }
         }
 
         initializers = proto.initializer.map {
-            val divider = operatorsInputs[it.name]?.divider ?: 1
+            val divider = dividerByName[it.name] ?: 1
 
             Tensor.create(it, divider)
         }
@@ -125,6 +140,12 @@ class Graph(proto: GraphProto) {
     fun prepareInput(name: String, value: List<Any>): Tensor {
         val type = inputs.find { it.name == name }?.type!!
         return Tensor(value, type)
+    }
+
+    fun prepareInput(proto: TensorProto): Tensor {
+        val divider = dividerByName[proto.name] ?: 1
+
+        return Tensor.create(proto, divider)
     }
 
     fun prepareInput(value: List<Any>): Tensor {

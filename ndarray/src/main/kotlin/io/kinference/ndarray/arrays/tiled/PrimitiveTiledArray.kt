@@ -20,7 +20,7 @@ class PrimitiveTiledArray {
     val blocks: Array<PrimitiveArray>
 
     companion object {
-        const val MIN_BLOCK_SIZE = 64
+        const val MIN_BLOCK_SIZE = 512
         val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
 
         private fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {

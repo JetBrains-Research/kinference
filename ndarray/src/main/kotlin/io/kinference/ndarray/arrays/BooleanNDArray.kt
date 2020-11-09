@@ -109,6 +109,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
         }
     }
 
+    override fun splitHorizontalByBlocks(parts: Int): Array<NDArray> {
+        TODO("Not yet implemented")
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false

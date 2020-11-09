@@ -50,13 +50,17 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         val input = inputs[0]!!.data as NumberNDArray
         val weights = inputs[1]!!.data as NumberNDArray
 
-        val qInput = input.dequantize(inputs.getOrNull(6)?.data, DEFAULT_SCALE)
-        val qWeight = weights.dequantize(inputs.getOrNull(7)?.data, DEFAULT_SCALE)
+        val inputScale = inputs[3]!!.data
+        val weightsScale = inputs[4]!!.data
+
+        val qInput = input.dequantize(inputs.getOrNull(6)?.data, inputScale)
+        val qWeight = weights.dequantize(inputs.getOrNull(7)?.data, weightsScale)
 
         val (batchSize, seqLen, hiddenSize) = input.shape
         val bias = inputs[2]!!.data
-        val outputScale = (inputs[3]!!.data as FloatNDArray).singleValue() * (inputs[4]!!.data as FloatNDArray).singleValue()
-        val (queries, keys, values) = Attention.initQueryKeyValue(qInput, qWeight, bias, batchSize, seqLen, hiddenSize, numHeads, outputScale.toDouble())
+
+
+        val (queries, keys, values) = Attention.initQueryKeyValue(qInput, qWeight, bias, batchSize, seqLen, hiddenSize, numHeads)
 
         val maskIndices = inputs.elementAtOrNull(5)?.data as IntNDArray?
         val past = inputs.elementAtOrNull(8)?.data

@@ -28,11 +28,20 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         }
 
     override fun view(vararg axes: Int): PrimitiveNDArray {
+        for ((i, axis) in axes.withIndex()) {
+            require(shape[i] > axis)
+        }
+
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
-        val offsetBlocks = offset / array.blockSize
 
         val newShape = shape.copyOfRange(axes.size, shape.size)
         val newStrides = Strides(newShape)
+
+        if (array.blockSize == 0)
+            return PrimitiveNDArray(array, newStrides)
+
+
+        val offsetBlocks = offset / array.blockSize
 
         val countBlocks = newStrides.linearSize / array.blockSize
 
@@ -578,6 +587,32 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         }
 
         return c
+    }
+
+    override fun splitHorizontalByBlocks(parts: Int): Array<NDArray> {
+        require(rank <= 2) { "" }
+        require(blocksInRow % parts == 0) { "" }
+
+        val blocksInRow = this.blocksInRow
+        val partBlocksInRow = blocksInRow / parts
+        val blocksInPart = if (rank == 1) partBlocksInRow else partBlocksInRow * shape[0]
+
+
+        val partShape = shape.copyOf()
+        partShape[partShape.lastIndex] /= parts
+        val partStrides = Strides(partShape)
+
+        return Array(parts) { part ->
+            val partOffset = partBlocksInRow * part
+            val partBlocks = Array(blocksInPart) { block ->
+                val rowNum = block / partBlocksInRow
+                val colNum = block % partBlocksInRow
+
+                array.blocks[rowNum * blocksInRow + partOffset + colNum]
+            }
+
+            PrimitiveNDArray(PrimitiveTiledArray(partBlocks), partStrides)
+        }
     }
 
     override fun copyIfNotMutable(): MutableNDArray {

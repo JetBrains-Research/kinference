@@ -257,7 +257,45 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
     }
 
+    private fun transposeRecBlocks(
+        prevBlocks: Array<PrimitiveArray>, newBlocks: Array<PrimitiveArray>,
+        prevStrides: Strides, newStrides: Strides,
+        prevOffsetBlocks: Int, newOffsetBlocks: Int,
+        index: Int, permutations: IntArray
+    ) {
+        if (index != newStrides.shape.lastIndex) {
+            val additionalPrevOffsetBlocks = prevStrides.strides[permutations[index]] / array.blockSize
+            val additionNewOffsetBlocks = newStrides.strides[index] / array.blockSize
+
+            for (i in 0 until newStrides.shape[index]) {
+                transposeRecBlocks(
+                    prevBlocks, newBlocks, prevStrides, newStrides,
+                    prevOffsetBlocks + additionalPrevOffsetBlocks * i, newOffsetBlocks + additionNewOffsetBlocks * i,
+                    index + 1, permutations
+                )
+            }
+        } else {
+            for (i in 0 until blocksInRow) {
+                newBlocks[newOffsetBlocks + i] = prevBlocks[prevOffsetBlocks + i]
+            }
+        }
+    }
+
+    private fun transposeByBlocks(permutations: IntArray): MutableNumberNDArray {
+        val newStrides = strides.transpose(permutations)
+        val newBlocks = array.blocks.copyOf()
+
+        transposeRecBlocks(array.blocks, newBlocks, strides, newStrides, 0, 0, 0, permutations)
+
+        this.strides = newStrides
+        this.array = PrimitiveTiledArray(newBlocks)
+        return this
+    }
+
     override fun transpose(permutations: IntArray): MutableNumberNDArray {
+        if (permutations.lastIndex == permutations.last())
+            return transposeByBlocks(permutations)
+
         val newStrides = strides.transpose(permutations)
         val newArray = PrimitiveTiledArray(newStrides)
         array.copyInto(newArray)

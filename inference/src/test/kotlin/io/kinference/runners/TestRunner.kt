@@ -4,6 +4,7 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.loaders.S3Client
 import io.kinference.model.Model
+import io.kinference.onnx.TensorProto
 import io.kinference.utils.Assertions
 import io.kinference.utils.DataLoader
 import java.io.File
@@ -34,7 +35,7 @@ object TestRunner {
             val inputFiles = File("$path/$it").walk().filter { file -> "input" in file.name }
             val outputFiles = File("$path/$it").walk().filter { file -> "output" in file.name }
 
-            val inputTensors = inputFiles.map { DataLoader.getTensor(it) }.toList()
+            val inputTensors = inputFiles.map { model.graph.prepareInput(TensorProto.ADAPTER.decode(it.readBytes())) }.toList()
             val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(it) }.toList()
             val actualOutputTensors = model.predict(inputTensors)
             TensorTestData(expectedOutputTensors, actualOutputTensors)
