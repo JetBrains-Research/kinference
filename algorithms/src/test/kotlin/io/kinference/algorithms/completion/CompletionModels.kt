@@ -8,13 +8,13 @@ import java.io.File
 object CompletionModels {
     private val testData = File("../build/test-data")
 
-    private const val myV4Name = "/gpt/grazie/distilled/quantized/v4/"
-    private const val myV5Name = "/gpt/grazie/distilled/quantized/v5/"
+    private const val myV4Name = "/gpt2/grazie/distilled/quantized/v4/"
+    private const val myV5Name = "/gpt2/grazie/distilled/quantized/v5/"
 
     data class CompletionConfig(val tokenizer: TokenizerConfig, val model: ModelConfig)
 
-    val v4: CompletionConfig by lazy { loadConfigs(myV4Name, "tests/${myV4Name}") }
-    val v5: CompletionConfig by lazy { loadConfigs(myV5Name, "tests/${myV5Name}") }
+    val v4: CompletionConfig by lazy { loadConfigs(myV4Name, "tests${myV4Name}") }
+    val v5: CompletionConfig by lazy { loadConfigs(myV5Name, "tests${myV5Name}") }
 
 
     object Config {
