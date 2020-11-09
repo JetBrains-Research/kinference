@@ -7,8 +7,8 @@ val bpeTokenizer = TokenizerConfig(
 )
 
 val bpeTokenizer_v5 = TokenizerConfig(
-    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/training/models/gpt2_vs20k_d256_l4_h8_cl50_owta_ep_1_tmux_iter_22/vocab.json",
-    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/training/models/gpt2_vs20k_d256_l4_h8_cl50_owta_ep_1_tmux_iter_22/merges.txt",
+    "../build/test-data/gpt/grazie/distilled/quantized/v5/vocab.json",
+    "../build/test-data/gpt/grazie/distilled/quantized/v5/merges.txt",
     50
 )
 
@@ -18,7 +18,7 @@ val model27 = ModelConfig(
 )
 
 val model_v5 = ModelConfig(
-    "/Users/aleksandr.khvorov/jb/grazie/grazie-datasets/src/completion/big/opt/onnxrt/onnx_models/gpt2_vs20k_d256_l4_h8_cl50_iter_22_int8.onnx",
+    "../build/test-data/gpt/grazie/distilled/quantized/v5/model.onnx",
     8, 256, 4, 20000
 )
 

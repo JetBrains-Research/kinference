@@ -6,17 +6,14 @@ import org.junit.jupiter.api.Test
 import java.lang.System.currentTimeMillis
 
 class MainCompletion {
+    private val model = "/gpt/grazie/distilled/quantized/v5/"
+
     @Test
     @Tag("heavy")
     fun test() {
-        val modelName = "/gpt/grazie/distilled/quantized/v5/"
-        S3ModelLoader.loadConfigs(modelName, "tests/gpt2/grazie/distilled/quantized/v5")
-        val tokenizerConfig = S3ModelLoader.getTokenizerConfig(modelName)
-        val modelConfig = S3ModelLoader.getModelConfig(modelName)
+        val (tokenizerConfig, modelConfig) = S3ModelLoader.loadConfigs(model, "tests/gpt2/grazie/distilled/quantized/v5")
 
-//        val config = Config(10, tokenizerConfig, modelConfig, defaultGenerationConfig, filterConfig)
-
-        val config = config_v5
+        val config = Config(10, tokenizerConfig, modelConfig, defaultGenerationConfig, filterConfig)
 
         val completionsCollector = FairseqCompletionsCollector(config)
         val rankingModel = FirstProbRankingModel()
@@ -25,9 +22,9 @@ class MainCompletion {
 
         val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel, postFilterModel)
 
-//            interaction(completionModel, config)
-            speedTest(completionModel, config, 30, 20)
-        }
+//        interaction(completionModel, config)
+        speedTest(completionModel, config, 30, 20)
+    }
 
     private fun interaction(completionModel: CompletionModel, config: Config) {
         println("Write something")

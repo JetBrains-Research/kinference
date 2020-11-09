@@ -2,30 +2,31 @@ package io.kinference.algorithms.completion
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.kinference.loaders.S3Client
 import java.io.File
 
 object S3ModelLoader {
-    private val testData = File("build/test-data")
+    private val testData = File("../build/test-data")
     private val loadedModels = HashMap<String, File>()
 
-    fun loadConfigs(testPath: String, prefix: String) {
-        val toFolder = File(testData, testPath)
-//        S3Client.copyObjects(prefix, toFolder)
-        loadedModels[testPath] = toFolder
+    fun loadConfigs(name: String, prefix: String) : Pair<TokenizerConfig, ModelConfig> {
+        val toFolder = File(testData, name)
+        S3Client.copyObjects(prefix, toFolder)
+        loadedModels[name] = toFolder
+
+        return  getTokenizerConfig(toFolder) to getModelConfig(toFolder)
     }
 
-    private fun getConfig(name: String): Map<String, Int> {
-        val toFolder = loadedModels[name]
+    private fun getConfig(toFolder: File): Map<String, Int> {
         val configPath = File(toFolder, "config.json").absolutePath
         val mapType = object : TypeReference<HashMap<String, Int>>() {}
         return ObjectMapper().readValue(File(configPath), mapType)
     }
 
-    fun getTokenizerConfig(name: String): TokenizerConfig {
-        val toFolder = loadedModels[name]
-        val configJson = getConfig(name)
+    private fun getTokenizerConfig(toFolder: File): TokenizerConfig {
+        val configJson = getConfig(toFolder)
 
-        val vocabPath = File(toFolder, "vocab.onnx").absolutePath
+        val vocabPath = File(toFolder, "vocab.json").absolutePath
         val mergesPath = File(toFolder, "merges.txt").absolutePath
 
         val maxSeqLen = configJson.getOrDefault("n_ctx", 30)
@@ -33,9 +34,8 @@ object S3ModelLoader {
         return TokenizerConfig(vocabPath, mergesPath, maxSeqLen)
     }
 
-    fun getModelConfig(name: String): ModelConfig {
-        val toFolder = loadedModels[name]
-        val configJson = getConfig(name)
+    private fun getModelConfig(toFolder: File): ModelConfig {
+        val configJson = getConfig(toFolder)
 
         val modelPath = File(toFolder, "model.onnx").absolutePath
 

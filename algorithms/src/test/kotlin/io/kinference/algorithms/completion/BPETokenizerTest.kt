@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 class BPETokenizerTest {
-    companion object {
-        private val tokenizerConfig = bpeTokenizer
-    }
+    private val model = "/gpt/grazie/distilled/quantized/v5/"
 
     @Test
     @Tag("heavy")
     fun testEncodeSmallExample() {
+        val (tokenizerConfig, _) = S3ModelLoader.loadConfigs(model, "tests/gpt2/grazie/distilled/quantized/v5")
+
         val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
         val text = "1. Modeling Vocabulary for Big Code Machine Learning (https://arxiv.org/pdf/1904.01873.pdf)"
         val targetCodes = intArrayOf(

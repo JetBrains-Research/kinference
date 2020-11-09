@@ -10,7 +10,7 @@ import java.io.File
 import kotlin.math.pow
 
 object TestRunner {
-    private val testData = File("build/test-data")
+    private val testData = File("../build/test-data")
 
     private val delta = (10.0).pow(-3)
 
@@ -18,7 +18,7 @@ object TestRunner {
 
     private fun runTestsFromS3(testPath: String, prefix: String): List<TensorTestData> {
         val toFolder = File(testData, testPath)
-        val files = S3Client.copyObjects(prefix, toFolder)
+        S3Client.copyObjects(prefix, toFolder)
         return runTestsFromFolder(toFolder)
     }
 
