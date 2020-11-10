@@ -1,8 +1,7 @@
 package io.kinference.benchmark
 
 import io.kinference.ndarray.Strides
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.runner.Runner
@@ -344,6 +343,7 @@ fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: I
     }
 }
 
+@Disabled
 class BenchmarkTest {
     @Test
     @Tag("heavy")
