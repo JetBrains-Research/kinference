@@ -9,7 +9,7 @@ class GPTRTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        TestRunner.runFromS3("/gpt2/r/standard/v1/", "tests/gpt2/r-completion/standard/v1", 0.2)
+        TestRunner.runFromS3("/gpt2/r/standard/v1/", "tests/gpt2/r-completion/standard/v1")
     }
 
     @Test

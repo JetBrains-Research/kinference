@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.GenerateWithPrimitives
 import io.kinference.primitives.annotations.PrimitiveClass
 import io.kinference.primitives.types.*
+import kotlinx.coroutines.*
 import kotlin.math.*
 
 @PrimitiveClass
@@ -483,24 +484,77 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         val resortedRight = resortBlocks(other.array.blocks, other.shape[0], other.blocksInRow)
         val resortedDest = resortBlocks(destination.array.blocks, destination.shape[0], destination.blocksInRow)
 
+        val lBlockSize = this.array.blockSize
         val rdBlockSize = destination.array.blockSize
-        for (rdCol in 0 until other.blocksInRow) {
-            val rightIdx = rdCol * t
-            val destIdx = rdCol * n
 
-            for (i in 0 until n) {
-                val destBlock = resortedDest[destIdx + i]
+        val lBlockInRow = this.blocksInRow
+        val rBlockInRow = other.blocksInRow
 
-                for (lCol in 0 until this.blocksInRow) {
-                    val leftBlock = resortedLeft[i + lCol * n]
-                    val rightIdxOffset = rightIdx + this.array.blockSize * lCol
+        runBlocking(if (rBlockInRow > 1) Dispatchers.Default else Dispatchers.Unconfined) {
+            for (rdCol in 0 until rBlockInRow) {
+                val rightIdx = rdCol * t
+                val destIdx = rdCol * n
 
-                    for (k in 0 until this.array.blockSize) {
-                        val temp = leftBlock[k]
-                        val rightBlock = resortedRight[rightIdxOffset + k]
+                launch {
+                    for (i in 0 until n) {
+                        val destBlock = resortedDest[destIdx + i]
+                        for (lCol in 0 until lBlockInRow) {
+                            val leftBlock = resortedLeft[i + lCol * n]
+                            val rightIdxOffset = rightIdx + lBlockSize * lCol
 
-                        for (j in 0 until rdBlockSize) {
-                            destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
+                            for (k in 0 until lBlockSize) {
+                                val temp = leftBlock[k]
+                                val rightBlock = resortedRight[rightIdxOffset + k]
+
+                                for (j in 0 until rdBlockSize) {
+                                    destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return destination
+    }
+
+    override fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+        other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
+
+        @Suppress("NAME_SHADOWING") val alpha = alpha.toPrimitive()
+        val dColsNum = destination.shape[0]
+
+        val dBlocksInRow = destination.blocksInRow
+        val lrBlocksInRow = this.blocksInRow
+
+        val dBlockSize = destination.array.blockSize
+        val lrBlockSize = array.blockSize
+
+        val dBlocks = destination.array.blocks
+        val lBlocks = this.array.blocks
+        val rBlocks = other.array.blocks
+
+        runBlocking(if (dColsNum > 1) Dispatchers.Default else Dispatchers.Unconfined) {
+            for (dCol in 0 until dColsNum) {
+                var bCol = 0
+                val dBlockOffset = dCol * dBlocksInRow
+                val lBlockOffset = dCol * lrBlocksInRow
+
+                launch {
+                    for (dBlockInRow in 0 until dBlocksInRow) {
+                        val dBlock = dBlocks[dBlockOffset + dBlockInRow]
+
+                        for (dIdx in 0 until dBlockSize) {
+                            val rBlockOffset = bCol++ * lrBlocksInRow
+                            for (lrBlockInRow in 0 until lrBlocksInRow) {
+                                val lBlock = lBlocks[lBlockOffset + lrBlockInRow]
+                                val rBlock = rBlocks[rBlockOffset + lrBlockInRow]
+
+                                for (lrIdx in 0 until lrBlockSize) {
+                                    dBlock[dIdx] = (dBlock[dIdx] + alpha * lBlock[lrIdx] * rBlock[lrIdx]).toPrimitive()
+                                }
+                            }
                         }
                     }
                 }

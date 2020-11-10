@@ -47,6 +47,8 @@ dependencies {
 
     api("com.squareup.wire", "wire-runtime", "3.2.2")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+
     testImplementation("org.openjdk.jmh", "jmh-core", "1.25.1")
     testImplementation("org.openjdk.jmh", "jmh-generator-annprocess", "1.25.1")
     kaptTest("org.openjdk.jmh", "jmh-generator-annprocess", "1.25.1")

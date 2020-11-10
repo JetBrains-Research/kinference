@@ -19,6 +19,8 @@ dependencies {
     api("org.slf4j", "slf4j-api", "1.7.30")
 
     api("io.kinference.primitives", "primitives-annotations", "0.1.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
 }
 
 publishJar {}

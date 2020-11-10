@@ -14,6 +14,7 @@ import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.operators.activations.Softmax
 import io.kinference.primitives.types.DataType
+import kotlinx.coroutines.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -159,19 +160,24 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
             val alpha = 1.0 / sqrt(headSize.toDouble())
 
-            for (batchNum in 0 until batchSize) {
-                for (numHead in 0 until numHeads) {
-                    val queryMatrix = queries.view(batchNum, numHead)
-                    val keyMatrix = keys.view(batchNum, numHead)
-                    val pastMatrix = past?.view(0, batchNum, numHead)
-                    val presentMatrix = present.viewMutable(0, batchNum, numHead)
-                    val scoresMatrix = scores.viewMutable(batchNum, numHead)
-                    val maskVector = maskData?.view(batchNum)
+            runBlocking(Dispatchers.Default) {
+                for (batchNum in 0 until batchSize) {
+                    for (numHead in 0 until numHeads) {
+                        launch {
+                            val queryMatrix = queries.view(batchNum, numHead)
+                            val keyMatrix = keys.view(batchNum, numHead)
+                            val pastMatrix = past?.view(0, batchNum, numHead)
+                            val presentMatrix = present.viewMutable(0, batchNum, numHead)
+                            val scoresMatrix = scores.viewMutable(batchNum, numHead)
+                            val maskVector = maskData?.view(batchNum)
 
-                    concatStateChunk(pastMatrix, keyMatrix, presentMatrix)
-                    gemm(seqLen, allSeqLen, headSize, alpha, queryMatrix as NumberNDArray, presentMatrix as NumberNDArray, 1.0, scoresMatrix, transposeB = true)
-                    if (maskVector != null)
-                        (scoresMatrix as MutableNumberNDArray).plusAssign(maskVector)
+                            concatStateChunk(pastMatrix, keyMatrix, presentMatrix)
+                            (queryMatrix as NumberNDArray).dotTransposedWithAlpha(alpha, presentMatrix as NumberNDArray, scoresMatrix as MutableNumberNDArray)
+//                    gemm(seqLen, allSeqLen, headSize, alpha, queryMatrix as NumberNDArray, presentMatrix as NumberNDArray, 1.0, scoresMatrix, transposeB = true)
+                            if (maskVector != null)
+                                (scoresMatrix as MutableNumberNDArray).plusAssign(maskVector)
+                        }
+                    }
                 }
             }
 
@@ -187,17 +193,21 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
             val output = allocateNDArray(scores.type, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize)))
 
-            for (batchNum in 0 until batchSize) {
-                for (numHead in 0 until numHeads) {
-                    val tempScores = scores.view(batchNum, numHead)
-                    val tempOutput = output.viewMutable(batchNum, numHead)
+            runBlocking(Dispatchers.Default) {
+                for (batchNum in 0 until batchSize) {
+                    for (numHead in 0 until numHeads) {
+                        launch {
+                            val tempScores = scores.view(batchNum, numHead)
+                            val tempOutput = output.viewMutable(batchNum, numHead)
 
-                    val tempValues = values.view(batchNum, numHead)
-                    val tempPast = past?.view(1, batchNum, numHead)
-                    val tempPresent = present.viewMutable(1, batchNum, numHead)
+                            val tempValues = values.view(batchNum, numHead)
+                            val tempPast = past?.view(1, batchNum, numHead)
+                            val tempPresent = present.viewMutable(1, batchNum, numHead)
 
-                    concatStateChunk(tempPast, tempValues, tempPresent)
-                    (tempScores as NumberNDArray).dot(tempPresent as NumberNDArray, tempOutput as MutableNumberNDArray)
+                            concatStateChunk(tempPast, tempValues, tempPresent)
+                            (tempScores as NumberNDArray).dot(tempPresent as NumberNDArray, tempOutput as MutableNumberNDArray)
+                        }
+                    }
                 }
             }
 
