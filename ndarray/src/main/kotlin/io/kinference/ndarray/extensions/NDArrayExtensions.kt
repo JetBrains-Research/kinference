@@ -26,6 +26,9 @@ fun NDArray.indexAxis(axis: Int): Int {
 val NDArray.rows: Array<MutableNDArray>
     get() = Array(shape[0]) { i -> row(i) }
 
+val NumberNDArray.rows: Array<MutableNumberNDArray>
+    get() = Array(shape[0]) { i -> row(i) }
+
 fun MutableNDArray.squeeze(vararg axes: Int): MutableNDArray {
     val actualAxes = if (axes.isNotEmpty()) {
         axes.map { indexAxis(it) }

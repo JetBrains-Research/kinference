@@ -55,20 +55,24 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize))) }
 
-            for (qkvIdx in 0 until 3) {
-                val output = qkv[qkvIdx]
-                val weights = qkvWeights[qkvIdx]
-                val bias = qkvBias[qkvIdx]
+            runBlocking(Dispatchers.Default) {
+                for (qkvIdx in 0 until 3) {
+                    launch {
+                        val output = qkv[qkvIdx]
+                        val weights = qkvWeights[qkvIdx]
+                        val bias = qkvBias[qkvIdx]
 
-                for (batchNum in 0 until batchSize) {
-                    val inputMatrix = input.view(batchNum)
-                    for (numHead in 0 until numHeads) {
-                        val outputMatrix = output.viewMutable(batchNum, numHead)
-                        val weightsMatrix = weights[numHead]
-                        val biasMatrix = bias[numHead]
+                        for (batchNum in 0 until batchSize) {
+                            val inputMatrix = input.view(batchNum)
+                            for (numHead in 0 until numHeads) {
+                                val outputMatrix = output.viewMutable(batchNum, numHead)
+                                val weightsMatrix = weights[numHead]
+                                val biasMatrix = bias[numHead]
 
-                        (inputMatrix as NumberNDArray).dot(weightsMatrix as NumberNDArray, outputMatrix as MutableNumberNDArray)
-                        outputMatrix.plusAssign(biasMatrix)
+                                (inputMatrix as NumberNDArray).dot(weightsMatrix as NumberNDArray, outputMatrix as MutableNumberNDArray)
+                                outputMatrix.plusAssign(biasMatrix)
+                            }
+                        }
                     }
                 }
             }

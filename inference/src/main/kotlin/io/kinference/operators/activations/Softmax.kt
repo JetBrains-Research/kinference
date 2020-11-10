@@ -7,7 +7,9 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import kotlinx.coroutines.*
 import kotlin.math.exp
+import kotlin.math.min
 
 //only for float and double types
 class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
@@ -37,7 +39,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             else -> error("Unsupported data type")
         }
 
-        private fun expMatrixRows(input: NDArray, axis: Int): Array<MutableNumberNDArray> {
+        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -45,24 +47,34 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val rows = resolveDims(shape.sliceArray(rowIdx))
             val columns = resolveDims(shape.sliceArray(columnIdx))
 
-            val matrixRows = input.reshapeView(intArrayOf(rows, columns)).rows
-            return Array(matrixRows.size) { i ->
-                (matrixRows[i] as MutableNumberNDArray).apply {
-                    val max = createScalarNDArray(input.type, this.max())
-                    minusAssign(max)
-                    mapMutable(exp(type))
+            val matrixRows = (input.reshapeView(intArrayOf(rows, columns)) as NumberNDArray).rows
+
+            fun MutableNumberNDArray.softmax() {
+                minusAssign(createScalarNDArray(input.type, max()))
+                mapMutable(exp(type))
+                divAssign(createScalarNDArray(input.type, sum()))
+            }
+
+            if (matrixRows.size > 128) {
+                runBlocking(Dispatchers.Default) {
+                    for (i in matrixRows.indices step 32) {
+                        val end = min(i + 32, matrixRows.size)
+                        launch {
+                            for (row in i until end) {
+                                matrixRows[row].softmax()
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (i in matrixRows.indices) {
+                    matrixRows[i].softmax()
                 }
             }
-        }
-
-        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
-            val matrixRows = expMatrixRows(input, axis)
 
             val step = matrixRows[0].linearSize
             val array = allocateNDArray(input.type, strides)
             repeat(matrixRows.size) { i ->
-                val sum = matrixRows[i].sum()
-                matrixRows[i].divAssign(createScalarNDArray(input.type, sum))
                 array.copyFrom(i * step, matrixRows[i])
             }
             return array
