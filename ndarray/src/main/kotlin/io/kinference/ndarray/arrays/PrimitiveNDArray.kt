@@ -490,12 +490,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         val lBlockInRow = this.blocksInRow
         val rBlockInRow = other.blocksInRow
 
-        runBlocking(if (rBlockInRow > 1) Dispatchers.Default else Dispatchers.Unconfined) {
+        fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
             for (rdCol in 0 until rBlockInRow) {
                 val rightIdx = rdCol * t
                 val destIdx = rdCol * n
 
-                launch {
+                body {
                     for (i in 0 until n) {
                         val destBlock = resortedDest[destIdx + i]
                         for (lCol in 0 until lBlockInRow) {
@@ -514,6 +514,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
                     }
                 }
             }
+        }
+
+        if (rBlockInRow > 1) {
+            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+        } else {
+            wrapper()
         }
 
         return destination
@@ -535,13 +541,13 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         val lBlocks = this.array.blocks
         val rBlocks = other.array.blocks
 
-        runBlocking(if (dColsNum > 1) Dispatchers.Default else Dispatchers.Unconfined) {
+        fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
             for (dCol in 0 until dColsNum) {
                 var bCol = 0
                 val dBlockOffset = dCol * dBlocksInRow
                 val lBlockOffset = dCol * lrBlocksInRow
 
-                launch {
+                body {
                     for (dBlockInRow in 0 until dBlocksInRow) {
                         val dBlock = dBlocks[dBlockOffset + dBlockInRow]
 
@@ -559,6 +565,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
                     }
                 }
             }
+        }
+
+        if (destination.blocksInRow > 1) {
+            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+        } else {
+            wrapper()
         }
 
         return destination
