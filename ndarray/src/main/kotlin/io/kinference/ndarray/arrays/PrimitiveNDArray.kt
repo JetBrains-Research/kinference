@@ -543,16 +543,16 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
 
         fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
             for (dRow in 0 until dRowsNum) {
-                var bCol = 0
+                var rRow = 0
                 val dBlockOffset = dRow * dBlocksInRow
                 val lBlockOffset = dRow * lrBlocksInRow
 
                 for (dBlockInRow in 0 until dBlocksInRow) {
                     val dBlock = dBlocks[dBlockOffset + dBlockInRow]
-
+                    val rRowOffset = rRow
                     body {
+                        var rBlockOffset = rRowOffset * lrBlocksInRow
                         for (dIdx in 0 until dBlockSize) {
-                            val rBlockOffset = bCol++ * lrBlocksInRow
                             for (lrBlockInRow in 0 until lrBlocksInRow) {
                                 val lBlock = lBlocks[lBlockOffset + lrBlockInRow]
                                 val rBlock = rBlocks[rBlockOffset + lrBlockInRow]
@@ -561,8 +561,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
                                     dBlock[dIdx] = (dBlock[dIdx] + alpha * lBlock[lrIdx] * rBlock[lrIdx]).toPrimitive()
                                 }
                             }
+                            rBlockOffset += lrBlocksInRow
                         }
                     }
+
+                    rRow += dBlockSize
                 }
             }
         }
