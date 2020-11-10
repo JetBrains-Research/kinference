@@ -1,8 +1,7 @@
 package io.kinference.benchmark
 
 import io.kinference.ndarray.Strides
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.runner.Runner
@@ -151,6 +150,55 @@ open class DotBenchmarkComposite {
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Measurement(iterations = 100)
+open class DotBenchmarkCopy {
+    @Param("4096", "1024", "128", "16")
+    var n = 0
+
+    @Param("4096", "1024", "128", "16")
+    var m = 0
+
+    @Param("4096", "1024", "128", "16")
+    var t = 0
+
+    lateinit var left: FloatArray
+    lateinit var right: FloatArray
+    lateinit var dest: FloatArray
+
+    var leftSize = 0
+    var rightSize = 0
+    var destSize = 0
+
+    @Setup(Level.Iteration)
+    fun setup() {
+        leftSize = n * t
+        rightSize = t * m
+        destSize = n * m
+
+        left = FloatArray(leftSize) { Random.nextFloat() }
+        right = FloatArray(rightSize) { Random.nextFloat() }
+        dest = FloatArray(destSize)
+    }
+
+    @TearDown(Level.Iteration)
+    fun teardown() {
+        for (i in 0 until destSize) {
+            dest[i] = 0f
+        }
+    }
+
+    @Benchmark
+    fun baselineCopy(blackhole: Blackhole) {
+        dotBaselineCopy(left, right, dest, m, n, t)
+        blackhole.consume(dest)
+    }
+}
+
+@State(Scope.Benchmark)
+@Fork(value = 1, warmups = 0)
+@Warmup(iterations = 3)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Measurement(iterations = 100)
 open class DotBenchmarkTiled {
     @Param("4096", "1024", "128", "16")
     var n = 0
@@ -202,6 +250,73 @@ fun dotBaseline(left: FloatArray, right: FloatArray, dest: FloatArray, m: Int, n
     }
 }
 
+const val min_block_size = 1024
+
+fun dotBaselineCopy(left: FloatArray, right: FloatArray, dest: FloatArray, m: Int, n: Int, t: Int) {
+    val leftBlockSize = if (t < min_block_size) t else {
+        var num = t / min_block_size
+        while (t % num != 0) num--
+        t / num
+    }
+
+    val rdBlockSize = if (m < min_block_size) m else {
+        var num = m / min_block_size
+        while (m % num != 0) num--
+        m / num
+    }
+
+    val leftBlock = FloatArray(leftBlockSize)
+    val rightBlock = FloatArray(rdBlockSize)
+    val destBlock = FloatArray(rdBlockSize)
+
+    val rdBlocs = m / rdBlockSize
+    val lBlocks = t / leftBlockSize
+
+    for (rdCol in 0 until rdBlocs) {
+        val rdTemp = rdCol * rdBlockSize
+        val rdTempEnd = (rdCol + 1) * rdBlockSize
+
+        for (i in 0 until n) {
+            val destIdx = i * m
+            val leftIdx = i * t
+
+            var kTemp = 0
+            dest.copyInto(destBlock, 0, destIdx + rdTemp, destIdx + rdTempEnd)
+            for (lCol in 0 until lBlocks) {
+                val leftTemp = lCol * leftBlockSize
+                val startTemp = leftIdx + leftTemp
+                val endTemp = leftIdx + leftTemp + leftBlockSize
+                left.copyInto(leftBlock, 0, startTemp, endTemp)
+                for (k in 0 until leftBlockSize) {
+                    val rightIdx = kTemp * m
+                    val temp = leftBlock[k]
+
+                    right.copyInto(rightBlock, 0, rightIdx + rdTemp, rightIdx + rdTempEnd)
+
+                    for (j in 0 until rdBlockSize) {
+                        destBlock[j] += temp * rightBlock[j]
+                    }
+
+                    kTemp++
+                }
+            }
+
+            /*for (k in 0 until t) {
+                val temp = left[leftIdx + k]
+                val rightIdx = k * m
+
+                right.copyInto(rightBlock, 0, rightIdx + rdTemp, rightIdx + rdTempEnd)
+
+                for (j in 0 until min_block_size) {
+                    destBlock[j] += temp * rightBlock[j]
+                }
+            }*/
+
+            destBlock.copyInto(dest, i * m + rdCol * min_block_size)
+        }
+    }
+}
+
 fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: Int, t: Int) {
     val rdBlockSize = dest.blockSize
     for (rdCol in 0 until right.blocksInRow) {
@@ -228,6 +343,7 @@ fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: I
     }
 }
 
+@Disabled
 class BenchmarkTest {
     @Test
     @Tag("heavy")
@@ -253,6 +369,29 @@ class BenchmarkTest {
 
         val tiledResult = destTiled.toArray()
         assert(dest.contentEquals(tiledResult))
+    }
+
+    @Test
+    @Tag("heavy")
+    fun `test copy dot`() {
+        val r1 = Random(100)
+
+        val n = 1024
+        val m = 1024
+        val t = 1024
+
+        val left = FloatArray(n * t) { r1.nextFloat() }
+        val right = FloatArray(t * m) { r1.nextFloat() }
+        val dest = FloatArray(n * m)
+
+        val leftCopy = left.copyOf()
+        val rightCopy = right.copyOf()
+        val destCopy = dest.copyOf()
+
+        dotBaseline(left, right, dest, m, n, t)
+        dotBaselineCopy(leftCopy, rightCopy, destCopy, m, n, t)
+
+        assert(dest.contentEquals(destCopy))
     }
 
     @Test

@@ -1,15 +1,14 @@
 package io.kinference.operators.tensor
 
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
+import io.kinference.primitives.types.DataType
 
 class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -23,11 +22,13 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         private val INFO = OperatorInfo("Shape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val tensor = inputs.first()!!
         val shape = tensor.data.shape
-        val data = LongArray(shape.size) { shape[it].toLong() }
-        return listOf(createNDArray(DataType.LONG, data, intArrayOf(data.size)).asTensor("shape"))
+
+        val outputTensorShape = intArrayOf(shape.size)
+        val data = LongTiledArray(outputTensorShape) { shape[it].toLong() }
+        return listOf(createNDArray(DataType.LONG, data, outputTensorShape).asTensor("shape"))
     }
 }

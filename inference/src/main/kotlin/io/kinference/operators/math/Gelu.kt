@@ -4,7 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
@@ -26,22 +27,30 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
 
         private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
+
         fun gelu(array: MutableNumberNDArray): NumberNDArray {
             when (array.type) {
                 DataType.FLOAT -> {
                     array as MutableFloatNDArray
-                    for (i in 0 until array.linearSize) array[i] = 0.5f * array[i] * (1.0f + array.erfFor(array[i] / SQRT2.toFloat()))
+                    val pointer = array.array.pointer()
+                    pointer.map(array.linearSize) {
+                        0.5f * it * (1.0f + array.erfFor(it / SQRT2.toFloat()))
+                    }
                 }
                 DataType.DOUBLE -> {
                     array as MutableDoubleNDArray
-                    for (i in 0 until array.linearSize) array[i] = 0.5 * array[i] * (1.0 + array.erfFor(array[i] / SQRT2))
+                    val pointer = array.array.pointer()
+                    pointer.map(array.linearSize) {
+                        0.5 * it * (1.0 + array.erfFor(it / SQRT2))
+                    }
                 }
+                else -> throw IllegalStateException("Unsupported type")
             }
             return array
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         return listOf(gelu(input.toMutable()).asTensor("Y"))

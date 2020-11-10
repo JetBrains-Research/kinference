@@ -1,7 +1,6 @@
 package io.kinference.algorithms.completion.generating
 
-import io.kinference.algorithms.completion.BPETokenizer
-import io.kinference.algorithms.completion.bpeTokenizer
+import io.kinference.algorithms.completion.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -9,7 +8,9 @@ import org.junit.jupiter.api.Test
 @Tag("heavy")
 class PrefixMatchingTest {
     companion object {
-        private val tokenizerConfig = bpeTokenizer
+        val tokenizerConfig: TokenizerConfig by lazy {
+            CompletionModels.v4.tokenizer
+        }
     }
 
     @Test
@@ -53,7 +54,7 @@ class PrefixMatchingTest {
         }
     }
 
-//    TODO: make working. For this, fix tokenizer byte symbols
+    //    TODO: make working. For this, fix tokenizer byte symbols
 //    @Test
     fun testFuzzyMatching() {
         val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)

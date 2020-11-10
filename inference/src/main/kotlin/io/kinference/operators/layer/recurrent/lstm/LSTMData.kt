@@ -1,18 +1,11 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.MutableNumberNDArray
-import io.kinference.ndarray.NDArray
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.splitWithAxis
-import io.kinference.ndarray.extensions.squeeze
-import io.kinference.ndarray.extensions.wrapOneDim
-import io.kinference.primitives.types.DataType
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.primitives.types.DataType
 
-@ExperimentalUnsignedTypes
+
 class LSTMData(val type: DataType,
                val weights: GatesData,
                val recurrentWeights: GatesData,
@@ -30,7 +23,7 @@ class LSTMData(val type: DataType,
     fun updatePeepholes(peepholes: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
 }
 
-@ExperimentalUnsignedTypes
+
 data class GatesData(val input: MutableNDArray,
                      val output: MutableNDArray,
                      val forget: MutableNDArray,
@@ -87,7 +80,7 @@ data class GatesData(val input: MutableNDArray,
     }
 }
 
-@ExperimentalUnsignedTypes
+
 data class State(var output: MutableNDArray, val cellState: MutableNDArray, var isOutputZero: Boolean, var isCellStateZero: Boolean) {
     companion object {
         fun allocateState(batchSize: Int, hiddenSize: Int, type: DataType): Array<State> {
@@ -105,14 +98,14 @@ data class State(var output: MutableNDArray, val cellState: MutableNDArray, var 
 
             if (initialOutput != null) {
                 for (i in allocatedStates.indices) {
-                    allocatedStates[i].output.placeAllFrom(0, initialOutput[i])
+                    allocatedStates[i].output.copyFrom(0, initialOutput[i])
                     allocatedStates[i].isOutputZero = false
                 }
             }
 
             if (initialCellState != null) {
                 for (i in allocatedStates.indices) {
-                    allocatedStates[i].cellState.placeAllFrom(0, initialCellState[i])
+                    allocatedStates[i].cellState.copyFrom(0, initialCellState[i])
                     allocatedStates[i].isCellStateZero = false
                 }
             }

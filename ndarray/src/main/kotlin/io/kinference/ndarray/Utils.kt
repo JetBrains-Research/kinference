@@ -20,7 +20,7 @@ fun Collection<Number>.toIntArray(): IntArray {
 fun IntProgression.toIntArray(): IntArray {
     val array = IntArray(this.count())
     for ((i, element) in this.withIndex()) {
-        array[i] = element.toInt()
+        array[i] = element
     }
     return array
 }

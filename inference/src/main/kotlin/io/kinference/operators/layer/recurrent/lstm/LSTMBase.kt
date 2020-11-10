@@ -1,14 +1,12 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.Strides
-import io.kinference.primitives.types.DataType
 import io.kinference.data.tensors.Tensor
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.splitParts
 import io.kinference.operators.layer.recurrent.RecurrentLayer
+import io.kinference.primitives.types.DataType
 
 abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: String) : RecurrentLayer(hiddenSize, activations, direction) {
     protected var weights: NDArray? = null
@@ -24,7 +22,7 @@ abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: S
 
     abstract fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor>
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(inputList: List<Tensor?>): List<Tensor?> {
         require(inputList.toMutableList().also { if (4 in it.indices) it.removeAt(4) }.all { it?.data?.type == inputList[0]!!.data.type })
 
@@ -56,11 +54,13 @@ abstract class LSTMBase(hiddenSize: Int, activations: List<String>, direction: S
     private fun parseInput(input: Tensor): List<MutableNDArray> =
         input.data.splitParts(input.data.shape[0] * input.data.shape[1], Strides(intArrayOf(1, input.data.shape[2])))
 
+
     private fun parseSequenceLength(input: Tensor?): IntArray {
         return if (input?.data == null) {
             IntArray(batchSize!!) { seqLength!! }
         } else {
-            IntArray(input.data.linearSize) { i -> (input.data[i] as Number).toInt() }
+            val pointer = (input.data as IntNDArray).array.pointer()
+            IntArray(input.data.linearSize) { pointer.getAndIncrement() }
         }
 
     }

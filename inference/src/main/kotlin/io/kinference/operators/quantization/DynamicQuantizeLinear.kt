@@ -4,19 +4,14 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.FloatNDArray
-import io.kinference.ndarray.MutableUByteNDArray
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.MutableUByteNDArray
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.round
+import kotlin.math.*
 
 class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -41,10 +36,10 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
         else -> x
     }
 
-    @ExperimentalUnsignedTypes
+
     private fun Float.toUByte() = this.toUInt().toUByte()
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs.first()!!.data as FloatNDArray
 
@@ -58,6 +53,7 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
         val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
 
         val output = allocateNDArray(DataType.UBYTE, input.strides) as MutableUByteNDArray
+
         for (i in 0 until input.linearSize) {
             output.array[i] = clip((round(input.array[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
         }

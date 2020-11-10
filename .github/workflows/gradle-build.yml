@@ -17,4 +17,4 @@ jobs:
           settings-path: ${{ github.workspace }}
 
       - name: Build with Gradle
-        run: ./gradlew build --console=plain
+        run: ./gradlew build -x test --console=plain

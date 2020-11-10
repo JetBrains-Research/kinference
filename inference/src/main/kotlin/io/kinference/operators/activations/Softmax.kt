@@ -1,25 +1,15 @@
 package io.kinference.operators.activations
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.MutableNumberNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.createScalarNDArray
-import io.kinference.ndarray.extensions.indexAxis
-import io.kinference.ndarray.extensions.rows
-import io.kinference.primitives.types.DataType
 import io.kinference.attributes.Attribute
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.AttributeProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
+import io.kinference.primitives.types.DataType
 import kotlin.math.exp
 
 //only for float and double types
-@ExperimentalUnsignedTypes
 class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -73,7 +63,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             repeat(matrixRows.size) { i ->
                 val sum = matrixRows[i].sum()
                 matrixRows[i].divAssign(createScalarNDArray(input.type, sum))
-                array.placeAllFrom(i * step, matrixRows[i])
+                array.copyFrom(i * step, matrixRows[i])
             }
             return array
         }

@@ -1,15 +1,19 @@
-package io.kinference.algorithms.completion
+package io.kinference.algorithms.completion.model
 
+import io.kinference.algorithms.completion.CompletionModels
+import io.kinference.algorithms.completion.Config
 import io.kinference.algorithms.completion.suggest.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.lang.System.currentTimeMillis
 
-class MainCompletion {
+class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun test() {
-        val config = config_v5
+        val (tokenizerConfig, modelConfig) = CompletionModels.v5
+
+        val config = Config(10, tokenizerConfig, modelConfig, CompletionModels.Config.generation, CompletionModels.Config.filter)
 
         val completionsCollector = FairseqCompletionsCollector(config)
         val rankingModel = FirstProbRankingModel()
@@ -18,9 +22,9 @@ class MainCompletion {
 
         val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel, postFilterModel)
 
-//            interaction(completionModel, config)
-            speedTest(completionModel, config, 30, 20)
-        }
+//        interaction(completionModel, config)
+        speedTest(completionModel, config, 30, 20)
+    }
 
     private fun interaction(completionModel: CompletionModel, config: Config) {
         println("Write something")

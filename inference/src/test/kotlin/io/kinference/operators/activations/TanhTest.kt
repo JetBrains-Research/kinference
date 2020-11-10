@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class TanhTest {
@@ -8,16 +8,16 @@ class TanhTest {
 
     @Test
     fun `test tanh example`() {
-        Utils.tensorTestRunner(getTargetPath("test_tanh_example"))
+        TestRunner.runFromResources(getTargetPath("test_tanh_example"))
     }
 
     @Test
     fun `test tanh`() {
-        Utils.tensorTestRunner(getTargetPath("test_tanh"))
+        TestRunner.runFromResources(getTargetPath("test_tanh"))
     }
 
     @Test
     fun `test tanh scalar`() {
-        Utils.tensorTestRunner(getTargetPath("test_tanh_scalar"))
+        TestRunner.runFromResources(getTargetPath("test_tanh_scalar"))
     }
 }

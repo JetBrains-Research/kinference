@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class IdentityTest {
@@ -8,6 +8,6 @@ class IdentityTest {
 
     @Test
     fun `test identity`() {
-        Utils.tensorTestRunner(getTargetPath("test_identity"))
+        TestRunner.runFromResources(getTargetPath("test_identity"))
     }
 }

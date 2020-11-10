@@ -10,7 +10,6 @@ import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 
-@ExperimentalUnsignedTypes
 class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -55,12 +54,12 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             buffer.add(output as Tensor)
         }
 
-        return (outputs[0] as Tensor).data[0] as Boolean
+        return (outputs[0] as Tensor).data.singleValue() as Boolean
     }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val maxTripCount = inputs[0]?.data?.get(0) as Long?
-        val keepgoing = inputs[1]?.data?.get(0) as Boolean?
+        val maxTripCount = inputs[0]?.data?.singleValue() as Long?
+        val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
 
         require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 

@@ -4,11 +4,12 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.ndarray.arrays.IntNDArray
+import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
+import io.kinference.primitives.types.DataType
 
 class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -31,45 +32,90 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         private val INFO = OperatorInfo("Slice", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val data = inputs[0]!!
         val shape = data.data.shape
 
         val incompleteAxes = inputs.getOrNull(3)?.let {
-            IntArray(it.data.linearSize) { index ->
-                val axis = (it.data[index] as Number).toInt()
-                if (axis < 0) shape.size + axis else axis
+            if (it.data.type == DataType.LONG) {
+                val pointer = (it.data as LongNDArray).array.pointer()
+                IntArray(it.data.linearSize) {
+                    val axis = pointer.getAndIncrement().toInt()
+                    if (axis < 0) shape.size + axis else axis
+                }
+            } else {
+                val pointer = (it.data as IntNDArray).array.pointer()
+                IntArray(it.data.linearSize) {
+                    val axis = pointer.getAndIncrement()
+                    if (axis < 0) shape.size + axis else axis
+                }
             }
+
         } ?: shape.indices.toIntArray()
 
         val incompleteSteps = inputs.getOrNull(4)?.let {
             require(it.data.linearSize == incompleteAxes.size) { "Input 'steps' must be same size as 'axes'" }
-            IntArray(incompleteAxes.size) { index ->
-                val step = (it.data[index] as Number).toInt()
-                require(step != 0) { "Input 'steps' must not contains zeros " }
-                step
+            if (it.data.type == DataType.LONG) {
+                val pointer = (it.data as LongNDArray).array.pointer()
+                IntArray(incompleteAxes.size) {
+                    val step = pointer.getAndIncrement().toInt()
+                    require(step != 0) { "Input 'steps' must not contains zeros " }
+                    step
+                }
+            } else {
+                val pointer = (it.data as IntNDArray).array.pointer()
+                IntArray(incompleteAxes.size) {
+                    val step = pointer.getAndIncrement()
+                    require(step != 0) { "Input 'steps' must not contains zeros " }
+                    step
+                }
             }
         } ?: IntArray(shape.size) { 1 }
 
         val incompleteStarts = inputs[1]!!.data.let {
             require(it.linearSize == incompleteAxes.size) { "Input 'starts' must be same size as 'axes'" }
-            IntArray(incompleteAxes.size) { index ->
-                var start = (it[index] as Number).toLong()
-                val dim = shape[incompleteAxes[index]].toLong()
-                start = if (start < 0) dim + start else start
-                start = if (start >= dim) (if (incompleteSteps[index] > 0) dim else dim - 1) else start
-                if (start < 0) 0 else start.toInt()
+            if (it.type == DataType.LONG) {
+                val pointer = (it as LongNDArray).array.pointer()
+                IntArray(incompleteAxes.size) { index ->
+                    var start = pointer.getAndIncrement()
+                    val dim = shape[incompleteAxes[index]].toLong()
+                    start = if (start < 0) dim + start else start
+                    start = if (start >= dim) (if (incompleteSteps[index] > 0) dim else dim - 1) else start
+                    if (start < 0) 0 else start.toInt()
+                }
+            } else {
+                val pointer = (it as IntNDArray).array.pointer()
+                IntArray(incompleteAxes.size) { index ->
+                    var start = pointer.getAndIncrement().toLong()
+                    val dim = shape[incompleteAxes[index]].toLong()
+                    start = if (start < 0) dim + start else start
+                    start = if (start >= dim) (if (incompleteSteps[index] > 0) dim else dim - 1) else start
+                    if (start < 0) 0 else start.toInt()
+                }
             }
         }
 
         val incompleteEnds = inputs[2]!!.data.let {
             require(it.linearSize == incompleteAxes.size) { "Input 'ends' must be same size as 'axes'" }
-            IntArray(incompleteAxes.size) { index ->
-                var end = (it[index] as Number).toLong()
-                val dim = shape[incompleteAxes[index]].toLong()
-                end = if (end < 0) dim + end else end
-                end = if (end > dim) dim else end
-                if (end < 0) (if (incompleteSteps[index] > 0) 0 else -1) else end.toInt()
+            if (it.type == DataType.LONG) {
+                val pointer = (it as LongNDArray).array.pointer()
+                IntArray(incompleteAxes.size) { index ->
+                    var end = pointer.getAndIncrement()
+                    val dim = shape[incompleteAxes[index]].toLong()
+                    end = if (end < 0) dim + end else end
+                    end = if (end > dim) dim else end
+                    if (end < 0) (if (incompleteSteps[index] > 0) 0 else -1) else end.toInt()
+                }
+            } else {
+                val pointer = (it as IntNDArray).array.pointer()
+                IntArray(incompleteAxes.size) { index ->
+                    var end = pointer.getAndIncrement().toLong()
+                    val dim = shape[incompleteAxes[index]].toLong()
+                    end = if (end < 0) dim + end else end
+                    end = if (end > dim) dim else end
+                    if (end < 0) (if (incompleteSteps[index] > 0) 0 else -1) else end.toInt()
+                }
             }
         }
 

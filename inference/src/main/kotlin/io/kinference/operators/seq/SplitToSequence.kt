@@ -8,10 +8,7 @@ import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 import io.kinference.types.SequenceInfo
 
 class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
@@ -37,6 +34,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
+
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
         val parts = inputs.elementAtOrNull(1)

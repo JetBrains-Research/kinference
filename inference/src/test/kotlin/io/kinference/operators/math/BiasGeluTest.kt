@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class BiasGeluTest {
@@ -8,16 +8,16 @@ class BiasGeluTest {
 
     @Test
     fun `test bias GELU with 1d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_1d_bias_gelu"))
+        TestRunner.runFromResources(getTargetPath("test_1d_bias_gelu"))
     }
 
     @Test
     fun `test bias GELU with 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_2d_bias_gelu"))
+        TestRunner.runFromResources(getTargetPath("test_2d_bias_gelu"))
     }
 
     @Test
     fun `test bias GELU with 3d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_3d_bias_gelu"))
+        TestRunner.runFromResources(getTargetPath("test_3d_bias_gelu"))
     }
 }

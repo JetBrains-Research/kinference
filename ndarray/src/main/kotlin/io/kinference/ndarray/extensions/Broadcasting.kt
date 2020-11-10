@@ -1,6 +1,8 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 
@@ -15,6 +17,13 @@ fun broadcastShape(firstShape: IntArray, secondShape: IntArray): IntArray {
 
         max(firstDim, second)
     }.reversedArray()
+}
+
+fun tempShape(left: IntArray, right: IntArray): IntArray {
+    var i = left.lastIndex
+    while (i >= 0 && left[i] == right[i])
+        i--
+    return left.copyOfRange(i + 1, left.size)
 }
 
 // TODO remove to different module
@@ -35,10 +44,15 @@ fun NDArray.applyWithBroadcast(other: NDArray, destination: MutableNDArray, orde
     val leftShape = if (ordered) shape else unsqueezeFirst(shape, newShape.size)
     val rightShape = unsqueezeFirst(other.shape, newShape.size)
 
-    val left = this.reshapeView(leftShape)
-    val right = other.reshapeView(rightShape)
+    val leftReshaped = this.reshapeView(leftShape)
+    val rightReshaped = other.reshapeView(rightShape)
 
-    broadcast(left, right, destination, op)
+    broadcast(
+        leftReshaped,
+        rightReshaped,
+        destination,
+        op
+    )
     return destination
 }
 
@@ -48,7 +62,21 @@ fun NDArray.applyWithBroadcast(other: NDArray, destType: DataType = this.type, o
     return applyWithBroadcast(other, destination, ordered, op)
 }
 
-fun broadcast(left: NDArray, right: NDArray, destination: MutableNDArray, op: (NDArray, NDArray, MutableNDArray) -> Unit) {
+fun IntArray.contentEquals(other: IntArray, offset: Int): Boolean {
+    for (i in offset until size) {
+        if (this[i] != other[i])
+            return false
+    }
+
+    return true
+}
+
+fun broadcast(
+    left: NDArray,
+    right: NDArray,
+    destination: MutableNDArray,
+    op: (NDArray, NDArray, MutableNDArray) -> Unit
+) {
     if (left.shape.contentEquals(right.shape)) {
         op(left, right, destination)
     } else {
@@ -56,23 +84,33 @@ fun broadcast(left: NDArray, right: NDArray, destination: MutableNDArray, op: (N
     }
 }
 
-fun innerBroadcast(left: NDArray, right: NDArray, destination: MutableNDArray, recurrentBack: (NDArray, NDArray, MutableNDArray) -> Unit) {
+fun innerBroadcast(
+    left: NDArray,
+    right: NDArray,
+    destination: MutableNDArray,
+    recurrentBack: (NDArray, NDArray, MutableNDArray) -> Unit
+) {
     if (left.shape[0] != right.shape[0]) {
         val arrayWithOne = if (left.shape[0] == 1) left else right
         val arrayWithoutOne = if (left.shape[0] != 1) left else right
 
-        val squeezedWithOne = arrayWithOne.view(0)
+        val viewedArrayWithOne = arrayWithOne.view(0)
 
         for (i in 0 until arrayWithoutOne.shape[0]) {
             val movedWithoutOne = arrayWithoutOne.view(i)
-            val movedOutput = destination.viewMutable(i)
-            if (arrayWithOne == left) recurrentBack(squeezedWithOne, movedWithoutOne, movedOutput) else recurrentBack(movedWithoutOne, squeezedWithOne, movedOutput)
+            val movedDestination = destination.viewMutable(i)
+
+            if (arrayWithOne === left)
+                recurrentBack(viewedArrayWithOne, movedWithoutOne, movedDestination)
+            else
+                recurrentBack(movedWithoutOne, viewedArrayWithOne, movedDestination)
         }
     } else {
         for (i in 0 until left.shape[0]) {
             val movedLeft = left.view(i)
             val movedRight = right.view(i)
             val movedDestination = destination.viewMutable(i)
+
             recurrentBack(movedLeft, movedRight, movedDestination)
         }
     }

@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class MatMulTest {
@@ -8,16 +8,16 @@ class MatMulTest {
 
     @Test
     fun `test matmul 2D`() {
-        Utils.tensorTestRunner(getTargetPath("test_matmul_2d"))
+        TestRunner.runFromResources(getTargetPath("test_matmul_2d"))
     }
 
     @Test
     fun `test matmul 3D`() {
-        Utils.tensorTestRunner(getTargetPath("test_matmul_3d"))
+        TestRunner.runFromResources(getTargetPath("test_matmul_3d"))
     }
 
     @Test
     fun `test matmul 4D`() {
-        Utils.tensorTestRunner(getTargetPath("test_matmul_4d"))
+        TestRunner.runFromResources(getTargetPath("test_matmul_4d"))
     }
 }

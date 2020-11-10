@@ -1,21 +1,13 @@
 package io.kinference.benchmark
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
-import io.kinference.Utils
+import ai.onnxruntime.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
-import io.kinference.ndarray.DoubleNDArray
-import io.kinference.ndarray.FloatNDArray
-import io.kinference.ndarray.IntNDArray
-import io.kinference.ndarray.LongNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.DataLoader
 import java.io.File
-import java.nio.DoubleBuffer
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
-import java.nio.LongBuffer
+import java.nio.*
 
 object BenchmarkUtils {
     private val ortOptions
@@ -28,10 +20,10 @@ object BenchmarkUtils {
         }
 
     fun Tensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
-        DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array), data.shape.toLongArray())
-        DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array), data.shape.toLongArray())
-        DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array), data.shape.toLongArray())
-        DataType.LONG -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array), data.shape.toLongArray())
+        DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array.toArray()), data.shape.toLongArray())
+        DataType.LONG -> OnnxTensor.createTensor(env, LongBuffer.wrap((data as LongNDArray).array.toArray()), data.shape.toLongArray())
         else -> throw UnsupportedOperationException()
     }
 
@@ -44,7 +36,7 @@ object BenchmarkUtils {
 
         val modelBytes = File("$testDir/model.onnx").readBytes()
         val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
-        val inputs = inputFiles.map { Utils.getTensor(it.readBytes()) }
+        val inputs = inputFiles.map { DataLoader.getTensor(it.readBytes()) }
 
         return modelBytes to inputs
     }

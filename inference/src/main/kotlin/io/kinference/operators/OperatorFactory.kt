@@ -7,9 +7,7 @@ import io.kinference.operators.activations.*
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
-import io.kinference.operators.layer.normalization.EmbedLayerNormalization
-import io.kinference.operators.layer.normalization.LayerNormalization
-import io.kinference.operators.layer.normalization.SkipLayerNormalization
+import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.Equal
 import io.kinference.operators.logical.Not
@@ -20,7 +18,6 @@ import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
 
-@ExperimentalUnsignedTypes
 object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
     fun create(name: String?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {

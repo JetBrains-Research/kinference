@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class LSTMLayerTest {
@@ -8,21 +8,21 @@ class LSTMLayerTest {
 
     @Test
     fun `test LSTM defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_lstm_defaults"))
+        TestRunner.runFromResources(getTargetPath("test_lstm_defaults"))
     }
 
     @Test
     fun `test LSTM with initial bias`() {
-        Utils.tensorTestRunner(getTargetPath("test_lstm_with_initial_bias"))
+        TestRunner.runFromResources(getTargetPath("test_lstm_with_initial_bias"))
     }
 
     @Test
     fun `test BiLSTM defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_bilstm_defaults"))
+        TestRunner.runFromResources(getTargetPath("test_bilstm_defaults"))
     }
 
     @Test
     fun `test BiLSTM with bias`() {
-        Utils.tensorTestRunner(getTargetPath("test_bilstm_with_bias"))
+        TestRunner.runFromResources(getTargetPath("test_bilstm_with_bias"))
     }
 }

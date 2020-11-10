@@ -1,6 +1,7 @@
 package io.kinference.algorithms.completion.generating
 
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.NDArray
+import io.kinference.ndarray.toIntArray
 import java.lang.Math.floorDiv
 import java.lang.Math.floorMod
 import kotlin.math.*

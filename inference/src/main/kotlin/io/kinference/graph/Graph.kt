@@ -2,22 +2,15 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.GraphProto
-import io.kinference.onnx.NodeProto
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorFactory
+import io.kinference.onnx.*
+import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import org.slf4j.LoggerFactory
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 //TODO: support general graphs
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
-@ExperimentalUnsignedTypes
 class Graph(proto: GraphProto) {
     companion object {
         private val logger = LoggerFactory.getLogger(Graph::class.java)
@@ -29,7 +22,9 @@ class Graph(proto: GraphProto) {
     val info = proto.value_info.map { ValueInfo.create(it) }
     private val valueOrderInfo = GraphValueOrderInfo()
 
-    val initializers = proto.initializer.map { Tensor.create(it) }
+    val initializers: List<Tensor>
+    private val initNames = proto.initializer.map { it.name }
+    private val dividerByName: Map<String, Int>
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -101,10 +96,41 @@ class Graph(proto: GraphProto) {
         }
 
         require(operators.size == proto.node.size)
+
+        dividerByName = HashMap<String, Int>().apply {
+            for (operator in operators) {
+                //TODO: Make normal divider init
+                if (operator.info.name == "Attention" || operator.info.name == "QAttention") {
+                    val numHeads = (operator.attributes["num_heads"]!!.value as Long).toInt()
+                    for (input in operator.info.inputs) {
+                        if (input.index in operator.inputs.indices) {
+                            val name = operator.inputs[input.index]
+                            if (input.name == "weight" || input.name == "bias")
+                                put(name, input.divider * numHeads)
+                            else
+                                put(name, input.divider)
+                        }
+                    }
+                } else {
+                    for (input in operator.info.inputs) {
+                        if (input.index in operator.inputs.indices) {
+                            val name = operator.inputs[input.index]
+                            put(name, input.divider)
+                        }
+                    }
+                }
+            }
+        }
+
+        initializers = proto.initializer.map {
+            val divider = dividerByName[it.name] ?: 1
+
+            Tensor.create(it, divider)
+        }
     }
 
     private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
-        val (_, otherNames) = names.partition { name -> initializers.any { it.info.name == name } }
+        val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
         putOrder(otherNames, order)
     }
 
@@ -114,6 +140,12 @@ class Graph(proto: GraphProto) {
     fun prepareInput(name: String, value: List<Any>): Tensor {
         val type = inputs.find { it.name == name }?.type!!
         return Tensor(value, type)
+    }
+
+    fun prepareInput(proto: TensorProto): Tensor {
+        val divider = dividerByName[proto.name] ?: 1
+
+        return Tensor.create(proto, divider)
     }
 
     fun prepareInput(value: List<Any>): Tensor {
@@ -141,14 +173,22 @@ class Graph(proto: GraphProto) {
             context.putValue(input.info.name, input)
         }
 
+        //println("\nExec model:")
         for ((i, operator) in operators.withIndex()) {
+//            lateinit var outputs: List<ONNXData?>
+//            val time = measureNanoTime {
+//                outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
+//            }
+//
+//            println("${operator.info.name} - ${time / 1000000f} ms")
+
             val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
 
             context.cleanupUntilOrder(i)
             outputs.zip(operator.outputs) { output, variable ->
                 if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                 if (variable.isNotEmpty()) {
-                    context.putValue(variable, output!!.rename(newName = variable))
+                    context.putValue(variable, output!!.rename(name = variable))
                 }
             }
         }

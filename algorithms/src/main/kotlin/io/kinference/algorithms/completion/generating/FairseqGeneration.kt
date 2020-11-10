@@ -2,7 +2,9 @@ package io.kinference.algorithms.completion.generating
 
 import io.kinference.algorithms.completion.BPETokenizer
 import io.kinference.algorithms.completion.GenerationConfig
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.MutableFloatNDArray
+import io.kinference.ndarray.arrays.NDArray
 import kotlin.math.ln
 import kotlin.math.min
 
@@ -87,7 +89,6 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         return initLogProbs(context)
     }
 
-    @ExperimentalUnsignedTypes
     private fun sortState(sortMask: IntArray) {
         // mems = [mem[:, sort_mask].contiguous() for mem in mems]
         mems = mems!!.map { mem ->
@@ -101,7 +102,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
                 val rowStart = i * rowLen
                 for (j in sortMask.indices) {
                     val totalRowOffset = rowStart + localRowLen * sortMask[j]
-                    array.placeFrom(off, mem, totalRowOffset, totalRowOffset + localRowLen)
+                    array.copyFrom(off, mem, totalRowOffset, totalRowOffset + localRowLen)
                     off += localRowLen
                 }
             }

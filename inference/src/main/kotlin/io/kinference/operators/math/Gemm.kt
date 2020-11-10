@@ -4,7 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
@@ -58,13 +59,13 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
                 val targetBlockSize = targetShape[1]
                 for (i in 0 until unsqueezedShape[0]) {
                     val dstOffsetBase = i * targetBlockSize
-                    dstArray.fill(array[i], dstOffsetBase, dstOffsetBase + targetBlockSize)
+                    dstArray.fillByArrayValue(array, i, dstOffsetBase, dstOffsetBase + targetBlockSize)
                 }
             } else {
-                dstArray.placeAllFrom(0, array)
+                dstArray.copyFrom(0, array)
             }
 
-            for (i in 1 until targetShape[0]) dstArray.placeFrom(i * targetShape[1], dstArray, 0, targetShape[1])
+            for (i in 1 until targetShape[0]) dstArray.copyFrom(i * targetShape[1], dstArray, 0, targetShape[1])
             return dstArray
         }
     }

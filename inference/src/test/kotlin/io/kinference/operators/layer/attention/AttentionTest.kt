@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.attention
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class AttentionTest {
@@ -8,6 +8,6 @@ class AttentionTest {
 
     @Test
     fun `test unidirectional multi-head masked attention`() {
-        Utils.tensorTestRunner(getTargetPath("test_unidirectional_masked_multi_head"))
+        TestRunner.runFromResources(getTargetPath("test_unidirectional_masked_multi_head"))
     }
 }

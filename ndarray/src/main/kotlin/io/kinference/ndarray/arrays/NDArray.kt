@@ -1,15 +1,14 @@
-package io.kinference.ndarray
+package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
+import kotlin.math.min
 
-
-interface LateInitArray
 interface PrimitiveToPrimitiveFunction
 
 interface NDArray {
     val type: DataType
 
-    val offset: Int
     val strides: Strides
 
     val linearSize: Int
@@ -19,36 +18,30 @@ interface NDArray {
     val rank: Int
         get() = shape.size
 
-    operator fun get(index: Int): Any
-    operator fun get(indices: IntArray): Any
-    fun copyOfRange(start: Int, end: Int): Any
+    fun singleValue(): Any
 
     fun allocateNDArray(strides: Strides): MutableNDArray
 
     fun view(vararg axes: Int): NDArray
     fun reshapeView(newShape: IntArray): NDArray
-    fun toMutable(newStrides: Strides = strides, additionalOffset: Int = 0): MutableNDArray
+    fun toMutable(newStrides: Strides = strides): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
-
-    fun appendToLateInitArray(array: LateInitArray, range: IntProgression, additionalOffset: Int)
 
     fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
+
+    fun splitHorizontalByBlocks(parts: Int): Array<NDArray>
 }
 
 interface MutableNDArray : NDArray {
-    operator fun set(index: Int, value: Any)
-
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
-    fun viewMutable(vararg axes: Int): MutableNDArray
-
-    fun placeFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int)
-    fun placeAllFrom(offset: Int, other: NDArray)
+    fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
+    fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
     fun reshape(strides: Strides): MutableNDArray
     fun reshape(shape: IntArray): MutableNDArray = reshape(Strides(shape))
@@ -56,6 +49,8 @@ interface MutableNDArray : NDArray {
     fun transpose2D(): MutableNDArray
 
     fun clean()
+
+    fun viewMutable(vararg axes: Int): MutableNDArray
 }
 
 interface NumberNDArray : NDArray {
@@ -63,8 +58,7 @@ interface NumberNDArray : NDArray {
 
     fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int? = null): NDArray
 
-    override fun view(vararg axes: Int): NumberNDArray
-    override fun toMutable(newStrides: Strides, additionalOffset: Int): MutableNumberNDArray
+    override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
@@ -98,8 +92,6 @@ interface NumberNDArray : NDArray {
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
-    override fun viewMutable(vararg axes: Int): MutableNumberNDArray
-
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
     override fun reshape(strides: Strides): MutableNumberNDArray

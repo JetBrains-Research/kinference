@@ -6,8 +6,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.types.SequenceInfo
 
 class TensorSeq(val data: List<Tensor>, info: SequenceInfo) : ONNXData(ONNXDataType.ONNX_SEQUENCE, info) {
-    override fun rename(newName: String): ONNXData = TensorSeq(data, SequenceInfo(newName, info.type))
+    override fun rename(name: String): ONNXData = TensorSeq(data, SequenceInfo(name, info.type))
 
-    val length: Int
-        get() = data.size
+    val length: Int = data.size
 }

@@ -5,10 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 
 class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     // TODO: Support activation alpha and beta
@@ -16,7 +13,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
     private val direction: String by attribute()
     private val hiddenSize: Long by attribute("hidden_size")
 
-    @ExperimentalUnsignedTypes
+
     private val layer = when (direction) {
         "forward", "reverse" -> LSTMLayer(hiddenSize.toInt(), activations, direction)
         "bidirectional" -> BiLSTMLayer(hiddenSize.toInt(), activations, direction)
@@ -62,7 +59,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         return layer.apply(inputs)
     }

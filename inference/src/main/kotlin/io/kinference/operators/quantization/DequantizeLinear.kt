@@ -4,7 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -39,7 +39,7 @@ class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<Str
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    @ExperimentalUnsignedTypes
+
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val scale = inputs[1]!!.data

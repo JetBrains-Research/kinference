@@ -1,18 +1,18 @@
-package io.kinference.algorithms.completion
+package io.kinference.algorithms.completion.bpe
 
+import io.kinference.algorithms.completion.BPETokenizer
+import io.kinference.algorithms.completion.CompletionModels
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 class BPETokenizerTest {
-    companion object {
-        private val tokenizerConfig = bpeTokenizer
-    }
-
     @Test
     @Tag("heavy")
     fun testEncodeSmallExample() {
+        val (tokenizerConfig, _) = CompletionModels.v4
+
         val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
         val text = "1. Modeling Vocabulary for Big Code Machine Learning (https://arxiv.org/pdf/1904.01873.pdf)"
         val targetCodes = intArrayOf(

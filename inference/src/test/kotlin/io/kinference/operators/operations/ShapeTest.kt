@@ -1,6 +1,6 @@
 package io.kinference.operators.operations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class ShapeTest {
@@ -8,11 +8,11 @@ class ShapeTest {
 
     @Test
     fun `test shape`() {
-        Utils.tensorTestRunner(getTargetPath("test_shape"))
+        TestRunner.runFromResources(getTargetPath("test_shape"))
     }
 
     @Test
     fun `test shape example`() {
-        Utils.tensorTestRunner(getTargetPath("test_shape_example"))
+        TestRunner.runFromResources(getTargetPath("test_shape_example"))
     }
 }

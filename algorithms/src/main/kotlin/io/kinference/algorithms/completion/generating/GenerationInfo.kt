@@ -1,7 +1,7 @@
 package io.kinference.algorithms.completion.generating
 
-import kotlin.math.min
 import kotlin.math.max
+import kotlin.math.min
 
 class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
     var probs: DoubleArray

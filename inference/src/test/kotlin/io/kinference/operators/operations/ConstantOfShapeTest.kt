@@ -1,6 +1,6 @@
 package io.kinference.operators.operations
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class ConstantOfShapeTest {
@@ -8,16 +8,16 @@ class ConstantOfShapeTest {
 
     @Test
     fun `test ones`() {
-        Utils.tensorTestRunner(getTargetPath("test_constantofshape_float_ones"))
+        TestRunner.runFromResources(getTargetPath("test_constantofshape_float_ones"))
     }
 
     @Test
     fun `test zero shape`() {
-        Utils.tensorTestRunner(getTargetPath("test_constantofshape_int_shape_zero"))
+        TestRunner.runFromResources(getTargetPath("test_constantofshape_int_shape_zero"))
     }
 
     @Test
     fun `test zeros`() {
-        Utils.tensorTestRunner(getTargetPath("test_constantofshape_int_zeros"))
+        TestRunner.runFromResources(getTargetPath("test_constantofshape_int_zeros"))
     }
 }

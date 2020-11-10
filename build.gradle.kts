@@ -6,15 +6,15 @@ group = "io.kinference"
 version = "0.1.0"
 
 plugins {
-    id("tanvd.kosogor") version "1.0.9" apply true
+    id("tanvd.kosogor") version "1.0.10" apply true
+    idea apply true
 
     kotlin("jvm") version "1.3.72" apply true
     kotlin("kapt") version "1.3.72" apply false
 
-    id("io.kinference.primitives") version ("0.1.1") apply false
+    id("io.kinference.primitives") version ("0.1.2") apply false
 
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
-    idea apply true
 }
 
 allprojects {
@@ -26,10 +26,12 @@ allprojects {
 
 subprojects {
     apply {
-        plugin("kotlin")
-        plugin("idea")
-        plugin("io.kinference.primitives")
         plugin("tanvd.kosogor")
+        plugin("idea")
+
+        plugin("kotlin")
+
+        plugin("io.kinference.primitives")
         plugin("io.gitlab.arturbosch.detekt")
     }
 
@@ -38,6 +40,7 @@ subprojects {
             jvmTarget = "1.8"
             languageVersion = "1.3"
             apiVersion = "1.3"
+            freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes")
         }
     }
 

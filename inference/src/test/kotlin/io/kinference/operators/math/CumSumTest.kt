@@ -1,6 +1,6 @@
 package io.kinference.operators.math
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class CumSumTest {
@@ -8,61 +8,61 @@ class CumSumTest {
 
     @Test
     fun `test cumulative sum for 1d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_1d"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_1d"))
     }
 
     @Test
     fun `test exclusive cumulative sum for 1d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_1d_exclusive"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_1d_exclusive"))
     }
 
     @Test
     fun `test reverse exclusive cumulative sum for 1d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_1d_reverse_exclusive"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_1d_reverse_exclusive"))
     }
 
     @Test
     fun `test cumulative sum along axis=0 for 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_0"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_2d_axis_0"))
     }
 
     @Test
     fun `test cumulative sum along axis=1 for 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_1"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_2d_axis_1"))
     }
 
     @Test
     fun `test cumulative sum along negative axis for 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_negative_axis"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_2d_negative_axis"))
     }
 
     @Test
     fun `test reverse exclusive cumulative sum along axis=1 for 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_1_reverse_exclusive"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_2d_axis_1_reverse_exclusive"))
     }
 
     @Test
     fun `test reverse cumulative sum along axis=0 for 2d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_2d_axis_0_reverse"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_2d_axis_0_reverse"))
     }
 
     @Test
     fun `test reverse cumulative sum along axis=1 for 3d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_3d_axis_1_reverse"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_3d_axis_1_reverse"))
     }
 
     @Test
     fun `test reverse exclusive cumulative sum along negative axis for 3d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_3d_negative_axis_reverse_exclusive"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_3d_negative_axis_reverse_exclusive"))
     }
 
     @Test
     fun `test cumulative sum along axis=2 for 4d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_4d_axis_2"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_4d_axis_2"))
     }
 
     @Test
     fun `test exclusive cumulative sum along axis=0 for 4d data`() {
-        Utils.tensorTestRunner(getTargetPath("test_cumsum_4d_axis_0_exclusive"))
+        TestRunner.runFromResources(getTargetPath("test_cumsum_4d_axis_0_exclusive"))
     }
 }

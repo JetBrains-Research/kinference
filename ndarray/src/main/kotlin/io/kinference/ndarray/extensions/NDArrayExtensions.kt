@@ -1,6 +1,7 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
 import kotlin.collections.toIntArray
 import kotlin.ranges.reversed
 
@@ -86,8 +87,8 @@ fun NDArray.concatenate(other: NDArray, axis: Int = 0): MutableNDArray {
     }
 
     return allocateNDArray(Strides(newShape)).apply {
-        placeAllFrom(0, this@concatenate)
-        placeAllFrom(this@concatenate.linearSize, other)
+        copyFrom(0, this@concatenate)
+        copyFrom(this@concatenate.linearSize, other)
     }
 }
 
@@ -115,26 +116,7 @@ fun NDArray.as2DList(): List<NDArray> {
     return List(strides.linearSize / matrixSize) { index ->
         allocateNDArray(matrixStrides).apply {
             val start = matrixSize * index
-            placeFrom(0, this@as2DList, start, start + matrixSize)
-        }
-    }
-}
-
-fun NDArray.slice(dest: LateInitArray, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
-    val start = starts[axis]
-    val end = ends[axis]
-    val step = steps[axis]
-
-    val range = if (step > 0) (start until end step step) else (start downTo end + 1 step -step)
-
-    if (axis == shape.size - 1) {
-        appendToLateInitArray(dest, range, offset)
-    } else {
-        var dim = 1
-        for (ind in (axis + 1) until shape.size) dim *= shape[ind]
-
-        for (index in range) {
-            slice(dest, offset + index * dim, axis + 1, shape, starts, ends, steps)
+            copyFrom(0, this@as2DList, start, start + matrixSize)
         }
     }
 }
@@ -146,8 +128,12 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     return newOffset to newShape
 }
 
+
 fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
-    val newShape = IntArray(tensorShape.linearSize) { i -> (tensorShape[i] as Number).toInt() }
+    require(tensorShape is LongNDArray) { "Tensor shape must have Long type" }
+
+    val pointer = tensorShape.array.pointer()
+    val newShape = IntArray(tensorShape.linearSize) { pointer.getAndIncrement().toInt() }
     require(newShape.count { it == -1 } <= 1) { "At most one dimension of the new shape can be -1" }
 
     for ((i, axisShape) in newShape.withIndex()) {

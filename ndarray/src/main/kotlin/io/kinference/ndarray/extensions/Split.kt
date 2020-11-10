@@ -1,9 +1,8 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import kotlin.math.ceil
 
 fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {
@@ -56,13 +55,13 @@ fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: 
     val dst = this.allocateNDArray(splitStrides)
     val len = beforeAxisDims * fragmentSize
     if (fromAxisDims == fragmentSize) {
-        dst.placeFrom(0, this, 0, len)
+        dst.copyFrom(0, this, 0, len)
         return dst
     }
 
     repeat(beforeAxisDims) {
         val start = offset + fromAxisDims * it
-        dst.placeFrom(it * fragmentSize, this, start, start + fragmentSize)
+        dst.copyFrom(it * fragmentSize, this, start, start + fragmentSize)
     }
     return dst
 }
@@ -75,7 +74,7 @@ fun NDArray.splitParts(parts: Int, strides: Strides): List<MutableNDArray> {
     val partSize = strides.linearSize
     return List(parts) {
         val newArray = allocateNDArray(strides)
-        newArray.placeFrom(0, this, offset, offset + partSize)
+        newArray.copyFrom(0, this, offset, offset + partSize)
         offset += partSize
         newArray
     }

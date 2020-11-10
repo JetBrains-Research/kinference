@@ -2,15 +2,12 @@ package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
-import io.kinference.graph.Context
 import io.kinference.data.tensors.asTensor
+import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.squeeze
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.AttributeProto
-import io.kinference.operators.AttributeInfo
-import io.kinference.operators.IOInfo
-import io.kinference.operators.Operator
-import io.kinference.operators.OperatorInfo
+import io.kinference.operators.*
 
 class Squeeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {

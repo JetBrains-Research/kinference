@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.Utils
+import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.Test
 
 class EmbedLayerNormalizationTest {
@@ -8,16 +8,16 @@ class EmbedLayerNormalizationTest {
 
     @Test
     fun `test embedding layer normalization defaults`() {
-        Utils.tensorTestRunner(getTargetPath("test_all_inputs"))
+        TestRunner.runFromResources(getTargetPath("test_all_inputs"))
     }
 
     @Test
     fun `test unmasked embedding layer normalization`() {
-        Utils.tensorTestRunner(getTargetPath("test_no_mask"))
+        TestRunner.runFromResources(getTargetPath("test_no_mask"))
     }
 
     @Test
     fun `test embedding layer normalization with epsilon`() {
-        Utils.tensorTestRunner(getTargetPath("test_all_inputs_with_epsilon"))
+        TestRunner.runFromResources(getTargetPath("test_all_inputs_with_epsilon"))
     }
 }

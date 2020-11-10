@@ -2,7 +2,7 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 
-class Context(val base: Context? = null) {
+class Context(private val base: Context? = null) {
     private val values = HashMap<String, ONNXData>()
     private val shapes = HashMap<String, Int>()
 

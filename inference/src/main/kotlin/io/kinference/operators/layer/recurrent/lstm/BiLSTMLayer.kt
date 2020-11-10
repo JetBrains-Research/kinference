@@ -1,16 +1,12 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.MutableNDArray
-import io.kinference.ndarray.NDArray
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.splitWithAxis
-import io.kinference.ndarray.extensions.squeeze
 import io.kinference.data.tensors.*
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.MutableNDArray
+import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.*
 
-@ExperimentalUnsignedTypes
+
 class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
     init {
         require(direction == "bidirectional")
@@ -35,8 +31,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
         newShape[0] = 2
         val newStrides = Strides(newShape)
         val newArray = allocateNDArray(type!!, newStrides)
-        newArray.placeAllFrom(0, forward.data)
-        newArray.placeAllFrom(forward.data.linearSize, reverse.data)
+        newArray.copyFrom(0, forward.data)
+        newArray.copyFrom(forward.data.linearSize, reverse.data)
         return newArray
     }
 

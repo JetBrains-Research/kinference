@@ -1,16 +1,13 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.*
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.splitWithAxis
-import io.kinference.ndarray.extensions.squeeze
 import io.kinference.data.tensors.*
-import io.kinference.ndarray.*
+import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.activations.Activation
 
-@ExperimentalUnsignedTypes
+
 open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
 
     private var lstmData: LSTMData? = null
@@ -66,7 +63,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
     }
 
     private fun step(lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
-                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction) {
+                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction
+    ) {
         gatesData.cleanup()
         input.processGate(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
         input.processGate(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)
@@ -80,7 +78,7 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
         lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
 
-        output.placeAllFrom(outputOffset, lastState.output)
+        output.copyFrom(outputOffset, lastState.output)
 
         lastState.isOutputZero = false
         lastState.isCellStateZero = false
@@ -132,8 +130,8 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
 
         for (i in this.indices) {
             val offset = i * hiddenSize
-            outputArray.placeAllFrom(offset, this[i].output)
-            cellStateArray.placeAllFrom(offset, this[i].cellState)
+            outputArray.copyFrom(offset, this[i].output)
+            cellStateArray.copyFrom(offset, this[i].cellState)
         }
 
         return State(outputArray, cellStateArray, false, false)

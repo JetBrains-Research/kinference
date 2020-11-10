@@ -1,10 +1,10 @@
 package io.kinference.data.tensors
 
-import io.kinference.primitives.types.DataType
-import io.kinference.ndarray.NDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.onnx.TensorProto
+import io.kinference.primitives.types.DataType
 import io.kinference.types.TensorInfo
 import io.kinference.types.TensorShape
 
@@ -72,7 +72,21 @@ fun Tensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = tru
     return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
 
+
 fun Tensor.splitWithAxis(splitTensor: Tensor, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {
-    val splitArray = IntArray(splitTensor.data.linearSize) { i -> (splitTensor.data[i] as Number).toInt() }
+    val splitArray = when (splitTensor.data.type) {
+        DataType.INT -> {
+            val array = splitTensor.data as IntNDArray
+            val pointer = array.array.pointer()
+            IntArray(splitTensor.data.linearSize) { pointer.getAndIncrement() }
+        }
+        DataType.LONG -> {
+            val array = splitTensor.data as LongNDArray
+            val pointer = array.array.pointer()
+            IntArray(splitTensor.data.linearSize) { pointer.getAndIncrement().toInt() }
+        }
+        else -> throw IllegalStateException("Split tensor must have Int or Long type")
+    }
+
     return this.data.splitWithAxis(splitArray, axis, keepDims).map { it.asTensor() }
 }
