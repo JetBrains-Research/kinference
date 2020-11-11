@@ -1,6 +1,6 @@
 name: Gradle Build
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -18,3 +18,11 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build -x test --console=plain
+
+      - name: Upload Build Results
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-report
+          path: |
+            build/**/*
