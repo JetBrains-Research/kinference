@@ -12,8 +12,8 @@ import io.kinference.primitives.types.*
 
 @PrimitiveClass
 
-open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
-    constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
+open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
+    constructor(array: PrimitiveArray, strides: Strides = Strides.empty) : this(PrimitiveTiledArray(array, strides), strides)
 
     override fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }

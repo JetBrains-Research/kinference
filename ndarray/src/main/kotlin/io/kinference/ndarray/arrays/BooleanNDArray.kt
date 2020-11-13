@@ -11,8 +11,8 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strides.empty()) : NDArray {
-    constructor(array: BooleanArray, strides: Strides = Strides.empty()) : this(BooleanTiledArray(array, strides), strides)
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strides.empty) : NDArray {
+    constructor(array: BooleanArray, strides: Strides = Strides.empty) : this(BooleanTiledArray(array, strides), strides)
 
     override val type: DataType = DataType.BOOLEAN
 
@@ -125,7 +125,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
     }
 }
 
-class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.empty()): BooleanNDArray(array, strides), MutableNDArray {
+class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.empty): BooleanNDArray(array, strides), MutableNDArray {
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         TODO()
     }

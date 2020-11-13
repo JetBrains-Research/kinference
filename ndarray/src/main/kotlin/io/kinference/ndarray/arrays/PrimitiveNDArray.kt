@@ -15,8 +15,8 @@ import kotlin.math.*
 
 @PrimitiveClass
 
-open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty()) : NumberNDArray {
-    constructor(array: PrimitiveArray, strides: Strides = Strides.empty()) : this(PrimitiveTiledArray(array, strides), strides)
+open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty) : NumberNDArray {
+    constructor(array: PrimitiveArray, strides: Strides = Strides.empty) : this(PrimitiveTiledArray(array, strides), strides)
 
     var array: PrimitiveTiledArray = array
         protected set
