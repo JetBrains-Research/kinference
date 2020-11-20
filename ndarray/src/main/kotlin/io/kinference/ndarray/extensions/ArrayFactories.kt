@@ -5,7 +5,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 
-
 inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int = 1, noinline init: (Int) -> T): Any {
     return when (type) {
         DataType.DOUBLE -> DoubleTiledArray(shape, divider) { init(it) as Double }
@@ -16,7 +15,7 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int
         DataType.BOOLEAN -> BooleanTiledArray(shape, divider) { init(it) as Boolean }
         DataType.BYTE -> ByteTiledArray(shape, divider) { init(it) as Byte }
         DataType.UBYTE -> UByteTiledArray(shape, divider) { init(it) as UByte }
-        else -> Array(Strides(shape).linearSize, init)
+        else -> error("Unsupported data type: $type")
     }
 }
 
@@ -30,7 +29,6 @@ fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableN
         DataType.BOOLEAN -> MutableBooleanNDArray(value as BooleanTiledArray, strides)
         DataType.BYTE -> MutableByteNDArray(value as ByteTiledArray, strides)
         DataType.UBYTE -> MutableUByteNDArray(value as UByteTiledArray, strides)
-        //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
 }
@@ -74,15 +72,14 @@ fun createZerosArray(type: DataType, size: Int): Any {
 
 fun createScalarNDArray(type: DataType, value: Any): NDArray {
     return when (type) {
-        DataType.DOUBLE -> DoubleNDArray(DoubleTiledArray(1, 1) { value as Double })
-        DataType.FLOAT -> FloatNDArray(FloatTiledArray(1, 1) { value as Float })
-        DataType.LONG -> LongNDArray(LongTiledArray(1, 1) { value as Long })
-        DataType.INT -> IntNDArray(IntTiledArray(1, 1) { value as Int })
-        DataType.SHORT -> ShortNDArray(ShortTiledArray(1, 1) { value as Short })
-        DataType.BOOLEAN -> BooleanNDArray(BooleanTiledArray(1, 1) { value as Boolean })
-        DataType.BYTE -> ByteNDArray(ByteTiledArray(1, 1) { value as Byte })
-        DataType.UBYTE -> UByteNDArray(UByteTiledArray(1, 1) { value as UByte })
-        //else -> Array(size, init)
+        DataType.DOUBLE -> DoubleNDArray.scalar(value as Double)
+        DataType.FLOAT -> FloatNDArray.scalar(value as Float)
+        DataType.LONG -> LongNDArray.scalar(value as Long )
+        DataType.INT -> IntNDArray.scalar(value as Int)
+        DataType.SHORT -> ShortNDArray.scalar(value as Short)
+        DataType.BOOLEAN -> BooleanNDArray.scalar(value as Boolean)
+        DataType.BYTE -> ByteNDArray.scalar(value as Byte)
+        DataType.UBYTE -> UByteNDArray.scalar(value as UByte)
         else -> error("Unsupported data type $type")
     }
 }

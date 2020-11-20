@@ -44,7 +44,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
         private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArray {
-            val maskIndices = MutableIntNDArray(IntArray(batchSize), Strides(intArrayOf(batchSize)))
+            val maskIndices = MutableIntNDArray(shape = intArrayOf(batchSize))
             if (mask == null) return maskIndices
 
             val pointer = mask.array.pointer()
@@ -67,7 +67,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
                       wordEmbed: FloatNDArray, posEmbed: FloatNDArray, segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray): MutableFloatNDArray {
             val (batchSize, seqLen) = inputIds.shape
             val (_, hiddenSize) = wordEmbed.shape
-            val output = MutableFloatNDArray(FloatArray(batchSize * seqLen * hiddenSize), Strides(intArrayOf(batchSize, seqLen, hiddenSize)))
+            val output = MutableFloatNDArray(shape = intArrayOf(batchSize, seqLen, hiddenSize))
 
             val inputIdsPointer = inputIds.array.pointer()
             val segmentIdsPointer = segmentIds?.array?.pointer()

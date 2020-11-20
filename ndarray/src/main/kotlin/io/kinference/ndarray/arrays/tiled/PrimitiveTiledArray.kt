@@ -50,21 +50,12 @@ class PrimitiveTiledArray {
             return PrimitiveTiledArray(strides.linearSize, blockSize)
         }
 
-        operator fun invoke(array: PrimitiveArray, strides: Strides, divider: Int = 1): PrimitiveTiledArray {
-            require(strides.linearSize == array.size)
-
-            val blockSize = blockSizeByStrides(strides, divider)
-            return PrimitiveTiledArray(array, blockSize)
-        }
-
         operator fun invoke(strides: Strides, divider: Int = 1, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides, divider)
             return PrimitiveTiledArray(strides.linearSize, blockSize, init)
         }
 
         operator fun invoke(shape: IntArray, divider: Int = 1) = invoke(Strides(shape), divider)
-
-        operator fun invoke(array: PrimitiveArray, shape: IntArray, divider: Int = 1) = invoke(array, Strides(shape), divider)
 
         operator fun invoke(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) = invoke(Strides(shape), divider, init)
     }
@@ -92,17 +83,6 @@ class PrimitiveTiledArray {
             for (idx in 0 until blockSize) {
                 block[idx] = init(count++)
             }
-        }
-    }
-
-    constructor(array: PrimitiveArray, blockSize: Int) : this(array.size, blockSize) {
-        var startIndex = 0
-        var endIndex = blockSize
-
-        for (block in blocks) {
-            array.copyInto(block, 0, startIndex, endIndex)
-            startIndex = endIndex
-            endIndex += blockSize
         }
     }
 

@@ -50,6 +50,6 @@ class Strides(val shape: IntArray) {
     override fun hashCode() = shape.contentHashCode()
 
     companion object {
-        val empty = Strides(IntArray(0))
+        val EMPTY = Strides(IntArray(0))
     }
 }

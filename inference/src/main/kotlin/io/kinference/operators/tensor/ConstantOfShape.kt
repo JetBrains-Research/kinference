@@ -18,7 +18,7 @@ class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
-        private val DEFAULT_TENSOR = Tensor(FloatNDArray(floatArrayOf(0.0f)), TensorInfo("value", TensorProto.DataType.FLOAT, TensorShape(IntArray(0))))
+        private val DEFAULT_TENSOR = FloatNDArray.scalar(0f).asTensor("value")
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), default = DEFAULT_TENSOR, required = false)
         )

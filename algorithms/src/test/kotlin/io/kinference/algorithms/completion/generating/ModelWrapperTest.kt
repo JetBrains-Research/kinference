@@ -82,7 +82,8 @@ class ModelWrapperTest {
                     values.add((row.row(sortMask[j]) as FloatNDArray).array.toArray())
                 }
             }
-            MutableFloatNDArray(values.reduce(FloatArray::plus), Strides(intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4])))
+            val array = values.reduce(FloatArray::plus)
+            MutableFloatNDArray(shape = intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4])) { array[it] }
         }
     }
 }

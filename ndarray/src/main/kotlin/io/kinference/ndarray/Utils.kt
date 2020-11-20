@@ -17,6 +17,14 @@ fun Collection<Number>.toIntArray(): IntArray {
     return array
 }
 
+fun Collection<Number>.toFloatArray(): FloatArray {
+    val array = FloatArray(this.size)
+    for ((i, element) in this.withIndex()) {
+        array[i] = element.toFloat()
+    }
+    return array
+}
+
 fun IntProgression.toIntArray(): IntArray {
     val array = IntArray(this.count())
     for ((i, element) in this.withIndex()) {

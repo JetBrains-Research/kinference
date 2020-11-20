@@ -47,13 +47,14 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
         val seqLen = inputIds[0].size
         val input = ArrayList<Tensor>()
         val longIds = inputIds.toLongArray()
-        input.add(LongNDArray(longIds, Strides(intArrayOf(batchSize, seqLen))).asTensor("input_ids"))
-        input.add(FloatNDArray(FloatArray(batchSize * seqLen) { 1f }, Strides(intArrayOf(batchSize, seqLen))).asTensor("attention_mask"))
-        input.add(LongNDArray(longIds.indices.toLongArray(), Strides(intArrayOf(batchSize, seqLen))).asTensor("position_ids"))
+        val indices = longIds.indices.toLongArray()
+        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { longIds[it] }.asTensor("input_ids"))
+        input.add(FloatNDArray(shape = intArrayOf(batchSize, seqLen)) { 1f }.asTensor("attention_mask"))
+        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { indices[it] }.asTensor("position_ids"))
 
         val shape = intArrayOf(2, batchSize, numAttentionHeads, 0, hiddenSize / numAttentionHeads)
         for (i in 0 until numLayer) {
-            val emptyPast = FloatNDArray(FloatArray(0), Strides(shape))
+            val emptyPast = FloatNDArray(shape)
             input.add(emptyPast.asTensor("past_$i"))
         }
 
@@ -70,13 +71,14 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
         val pastLength = past[0].shape[3]
 
         val input = ArrayList<Tensor>()
-        input.add(LongNDArray(inputIds.toLongArray(), Strides(intArrayOf(batchSize, seqLen))).asTensor("input_ids"))
-        input.add(FloatNDArray(FloatArray(batchSize * (pastLength + seqLen)) { 1f }, Strides(intArrayOf(batchSize, pastLength + seqLen))).asTensor("attention_mask"))
+        val longIds = inputIds.toLongArray()
+        input.add(LongNDArray(intArrayOf(batchSize, seqLen)) { longIds[it] }.asTensor("input_ids"))
+        input.add(FloatNDArray(shape = intArrayOf(batchSize, pastLength + seqLen)) { 1f }.asTensor("attention_mask"))
         val positions = LongArray(inputIds.size * seqLen).apply {
             for (i in 0 until seqLen) this[i] = (pastLength + i).toLong()
             for (i in 1 until inputIds.size) this.copyInto(this, i * seqLen, 0, seqLen)
         }
-        input.add(LongNDArray(positions, Strides(intArrayOf(batchSize, seqLen))).asTensor("position_ids"))
+        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { positions[it] }.asTensor("position_ids"))
 
         past.forEachIndexed { i, state -> input.add(state.asTensor("past_$i")) }
         // (2, 1, 4, 4, 64)

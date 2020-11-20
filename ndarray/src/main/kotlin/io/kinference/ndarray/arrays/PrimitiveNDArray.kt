@@ -14,9 +14,12 @@ import kotlinx.coroutines.*
 import kotlin.math.*
 
 @PrimitiveClass
+open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArray {
+    constructor(shape: IntArray, divider: Int = 1) : this(PrimitiveTiledArray(shape, divider), Strides(shape))
+    constructor(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, divider, init), Strides(shape))
 
-open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.empty) : NumberNDArray {
-    constructor(array: PrimitiveArray, strides: Strides = Strides.empty) : this(PrimitiveTiledArray(array, strides), strides)
+    constructor(strides: Strides, divider: Int = 1) : this(PrimitiveTiledArray(strides, divider), strides)
+    constructor(strides: Strides, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, divider, init), strides)
 
     var array: PrimitiveTiledArray = array
         protected set
@@ -704,6 +707,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strid
         result = 31 * result + strides.hashCode()
         result = 31 * result + type.hashCode()
         return result
+    }
+
+    companion object {
+        fun scalar(value: PrimitiveType): PrimitiveNDArray {
+            return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
     }
 }
 

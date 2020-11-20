@@ -44,21 +44,12 @@ class BooleanTiledArray {
             return BooleanTiledArray(strides.linearSize, blockSize)
         }
 
-        operator fun invoke(array: BooleanArray, strides: Strides, divider: Int = 1): BooleanTiledArray {
-            require(strides.linearSize == array.size)
-
-            val blockSize = blockSizeByStrides(strides, divider)
-            return BooleanTiledArray(array, blockSize)
-        }
-
         operator fun invoke(strides: Strides, divider: Int = 1, init: (Int) -> Boolean): BooleanTiledArray {
             val blockSize = blockSizeByStrides(strides, divider)
             return BooleanTiledArray(strides.linearSize, blockSize, init)
         }
 
         operator fun invoke(shape: IntArray, divider: Int = 1) = invoke(Strides(shape), divider)
-
-        operator fun invoke(array: BooleanArray, shape: IntArray, divider: Int = 1) = invoke(array, Strides(shape), divider)
 
         operator fun invoke(shape: IntArray, divider: Int = 1, init: (Int) -> Boolean) = invoke(Strides(shape), divider, init)
     }

@@ -11,8 +11,12 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strides.empty) : NDArray {
-    constructor(array: BooleanArray, strides: Strides = Strides.empty) : this(BooleanTiledArray(array, strides), strides)
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArray {
+    constructor(shape: IntArray, divider: Int = 1) : this(BooleanTiledArray(shape), Strides(shape))
+    constructor(shape: IntArray, divider: Int = 1, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, divider, init), Strides(shape))
+
+    constructor(strides: Strides, divider: Int = 1) : this(BooleanTiledArray(strides, divider), strides)
+    constructor(strides: Strides, divider: Int = 1, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, divider, init), strides)
 
     override val type: DataType = DataType.BOOLEAN
 
@@ -123,9 +127,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides = Strid
 
         return true
     }
+
+    companion object {
+        fun scalar(value: Boolean): BooleanNDArray {
+            return BooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
+    }
 }
 
-class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.empty): BooleanNDArray(array, strides), MutableNDArray {
+class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         TODO()
     }
@@ -233,5 +243,11 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         return mapMutable(object : BooleanMap {
             override fun apply(value: Boolean): Boolean = value.not()
         })
+    }
+
+    companion object {
+        fun scalar(value: Boolean): MutableBooleanNDArray {
+            return MutableBooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
     }
 }

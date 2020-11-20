@@ -94,7 +94,7 @@ class FairseqGeneration(val model: ModelWrapper, private val tokenizer: BPEToken
         mems = mems!!.map { mem ->
             val shape = mem.shape
             val outputStrides  = Strides(intArrayOf(shape[0], sortMask.size, shape[2], shape[3], shape[4]))
-            val array = MutableFloatNDArray(FloatArray(outputStrides.linearSize), outputStrides)
+            val array = MutableFloatNDArray(outputStrides)
             val rowLen = mem.linearSize / shape[0]
             val localRowLen = rowLen / shape[1]
             var off = 0
