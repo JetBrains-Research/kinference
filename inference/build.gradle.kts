@@ -34,12 +34,6 @@ tasks.test {
 useHeavyTests()
 useBenchmarkTests()
 
-publishJar {
-    publication {
-        artifactId = "kotlin-inference"
-    }
-}
-
 dependencies {
     api(project(":ndarray"))
 
