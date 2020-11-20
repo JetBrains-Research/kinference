@@ -6,6 +6,8 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.LongPointer
+import io.kinference.ndarray.arrays.tiled.LongTiledArray
 
 data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>)
 
@@ -46,11 +48,10 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
 
         val seqLen = inputIds[0].size
         val input = ArrayList<Tensor>()
-        val longIds = inputIds.toLongArray()
-        val indices = longIds.indices.toLongArray()
+        val longIds = LongTiledArray(Array(inputIds.size) { inputIds.toLongArray() })
         input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { longIds[it] }.asTensor("input_ids"))
         input.add(FloatNDArray(shape = intArrayOf(batchSize, seqLen)) { 1f }.asTensor("attention_mask"))
-        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { indices[it] }.asTensor("position_ids"))
+        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { it.toLong() }.asTensor("position_ids"))
 
         val shape = intArrayOf(2, batchSize, numAttentionHeads, 0, hiddenSize / numAttentionHeads)
         for (i in 0 until numLayer) {
@@ -71,14 +72,10 @@ class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
         val pastLength = past[0].shape[3]
 
         val input = ArrayList<Tensor>()
-        val longIds = inputIds.toLongArray()
-        input.add(LongNDArray(intArrayOf(batchSize, seqLen)) { longIds[it] }.asTensor("input_ids"))
+        val longIds = LongTiledArray(Array(inputIds.size) { inputIds[it].toLongArray() })
+        input.add(LongNDArray(longIds, Strides(intArrayOf(batchSize, seqLen))).asTensor("input_ids"))
         input.add(FloatNDArray(shape = intArrayOf(batchSize, pastLength + seqLen)) { 1f }.asTensor("attention_mask"))
-        val positions = LongArray(inputIds.size * seqLen).apply {
-            for (i in 0 until seqLen) this[i] = (pastLength + i).toLong()
-            for (i in 1 until inputIds.size) this.copyInto(this, i * seqLen, 0, seqLen)
-        }
-        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { positions[it] }.asTensor("position_ids"))
+        input.add(LongNDArray(shape = intArrayOf(batchSize, seqLen)) { (pastLength + it % seqLen).toLong() }.asTensor("position_ids"))
 
         past.forEachIndexed { i, state -> input.add(state.asTensor("past_$i")) }
         // (2, 1, 4, 4, 64)

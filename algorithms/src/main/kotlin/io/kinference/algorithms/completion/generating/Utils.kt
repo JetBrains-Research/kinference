@@ -9,6 +9,10 @@ fun IntRange.toLongArray(): LongArray {
     return arr
 }
 
+fun IntArray.toLongArray(): LongArray {
+    return LongArray(size) { this[it].toLong() }
+}
+
 fun Array<IntArray>.toLongArray(): LongArray {
     val arr = LongArray(this.sumBy { it.size })
     var off = 0
