@@ -58,3 +58,18 @@ dependencies {
 
     testImplementation(project(":loaders"))
 }
+
+
+publishJar {
+    bintray {
+        username = "tanvd"
+        repository = "io.kinference"
+        info {
+            description = "KInference inference module"
+            vcsUrl = "https://github.com/JetBrains-Research/kinference"
+            githubRepo = "https://github.com/JetBrains-Research/kinference"
+            labels.addAll(listOf("kotlin", "inference", "ml"))
+        }
+    }
+}
+

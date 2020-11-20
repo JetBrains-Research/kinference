@@ -23,4 +23,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
 }
 
-publishJar {}
+
+publishJar {
+    bintray {
+        username = "tanvd"
+        repository = "io.kinference"
+        info {
+            description = "KInference NDArray module"
+            vcsUrl = "https://github.com/JetBrains-Research/kinference"
+            githubRepo = "https://github.com/JetBrains-Research/kinference"
+            labels.addAll(listOf("kotlin", "inference", "ml", "array"))
+        }
+    }
+}

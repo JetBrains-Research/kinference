@@ -1,4 +1,5 @@
 import io.kinference.gradle.useHeavyTests
+import tanvd.kosogor.proxy.publishJar
 
 group = rootProject.group
 version = rootProject.version
@@ -12,4 +13,17 @@ dependencies {
 
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation(project(":loaders"))
+}
+
+publishJar {
+    bintray {
+        username = "tanvd"
+        repository = "io.kinference"
+        info {
+            description = "KInference algorithms module"
+            vcsUrl = "https://github.com/JetBrains-Research/kinference"
+            githubRepo = "https://github.com/JetBrains-Research/kinference"
+            labels.addAll(listOf("kotlin", "inference", "ml"))
+        }
+    }
 }
