@@ -3,9 +3,7 @@ package io.kinference.data.tensors
 
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
@@ -17,7 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 //TODO: support segments
-//TODO: support external and raw data
+//TODO: support external data
 class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
     override fun rename(name: String): ONNXData {
         return Tensor(data, TensorInfo(name, info.type, TensorShape(data.shape)))
@@ -69,7 +67,6 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
                 val rawData = proto.raw_data ?: ByteString.EMPTY
 
                 val buffer = ByteBuffer.wrap(rawData.toByteArray()).order(ByteOrder.LITTLE_ENDIAN)
-                val sizeInBytes = rawData.size
 
                 when (type) {
                     DataType.DOUBLE -> {
@@ -113,14 +110,18 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             }
         }
 
-        operator fun invoke(dims: List<Long>, value: List<Any?>, type: DataType, name: String?, divider: Int = 1): Tensor {
+        internal operator fun invoke(dims: List<Long>, value: List<Any?>, type: DataType, name: String?, divider: Int = 1): Tensor {
             val shape = dims.toIntArray()
 
-            val data = createArray(type.resolveLocalDataType(), shape, divider) { i -> value[i]!! }
-            return Tensor(data, type, shape, name)
+            return if (dims.isEmpty()) {
+                createScalarNDArray(type.resolveLocalDataType(), value[0]!!)
+            } else {
+                val data = createArray(type.resolveLocalDataType(), shape, divider) { i -> value[i]!! }
+                createNDArray(type.resolveLocalDataType(), data, shape)
+            }.asTensor(name)
         }
 
-        operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = "", divider: Int = 1): Tensor {
+        internal operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = "", divider: Int = 1): Tensor {
             val name = name ?: ""
             if (dims.isEmpty()) return createScalarNDArray(type.resolveLocalDataType(), value).asTensor(name)
 
@@ -138,10 +139,9 @@ class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_T
             }
         }
 
-        operator fun invoke(value: List<Any>, type: DataType): Tensor {
+        internal operator fun invoke(value: List<Any>, type: DataType): Tensor {
             val dims = intArrayOf(value.size)
-            val data = createArray(type.resolveLocalDataType(), dims) { i -> value[i] }
-            return Tensor(data, type, dims)
+            return Tensor(value, type, dims)
         }
 
         private fun parseScalar(proto: TensorProto): Tensor {
