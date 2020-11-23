@@ -41,9 +41,9 @@ class BPETokenizer(loader: ModelLoader) {
     }
 
     private fun internalTokenize(word: String): List<String> {
-        if (word.length == 1) {
-            return listOf(word)
-        }
+        if (word.isEmpty()) return emptyList()
+        if (word.length == 1) return listOf(word)
+
         var pieces = MutableList(word.length) { "" + word[it] }
 
         while (pieces.size > 1) {

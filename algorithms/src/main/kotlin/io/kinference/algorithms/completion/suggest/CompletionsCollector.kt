@@ -33,6 +33,7 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
 
             // TODO: convert to one function?
             val trimmedCompletion = completion.trimEnding().trimAfterSentenceEnd()
+            if (trimmedCompletion.text.isEmpty() || trimmedCompletion.text.length == 1 && !completion.text[0].isLetterOrDigit()) continue
 
             val words = trimmedCompletion.text.trim().split(' ')
             val targetLen = words.size
