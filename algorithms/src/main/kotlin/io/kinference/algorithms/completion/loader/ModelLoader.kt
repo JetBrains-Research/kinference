@@ -7,6 +7,10 @@ import java.io.File
 
 sealed class ModelLoader {
     companion object {
+        fun deserializeConfig(text: String): Map<String, Int> {
+            return JSON.parse(MapSerializer(String.serializer(), Int.serializer()), text)
+        }
+
         fun deserializeVocabulary(text: String): Map<String, Int> {
             return JSON.parse(MapSerializer(String.serializer(), Int.serializer()), text)
         }
@@ -19,13 +23,15 @@ sealed class ModelLoader {
     abstract fun getModel(): ByteArray
     abstract fun getMerges(): List<Pair<String, String>>
     abstract fun getVocabulary(): Map<String, Int>
+    abstract fun getConfig(): Map<String, Int>
 
-    class FileModelLoader(model: File, vocabulary: File, merges: File) :
-        CustomModelLoader({ model.readBytes() }, { vocabulary.readText() }, { merges.readText() })
+    class FileModelLoader(model: File, vocabulary: File, merges: File, config: File) :
+        CustomModelLoader({ model.readBytes() }, { vocabulary.readText() }, { merges.readText() }, { config.readText() })
 
-    open class CustomModelLoader(val model: () -> ByteArray, val vocabulary: () -> String, val merges: () -> String) : ModelLoader() {
+    open class CustomModelLoader(val model: () -> ByteArray, val vocabulary: () -> String, val merges: () -> String, val config: () -> String) : ModelLoader() {
         override fun getModel(): ByteArray = model()
         override fun getVocabulary() = deserializeVocabulary(vocabulary())
         override fun getMerges() = deserializeMerges(merges())
+        override fun getConfig() = deserializeConfig(config())
     }
 }

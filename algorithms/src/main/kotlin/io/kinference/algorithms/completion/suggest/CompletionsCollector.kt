@@ -2,7 +2,7 @@ package io.kinference.algorithms.completion.suggest
 
 import io.kinference.algorithms.completion.config.Config
 import io.kinference.algorithms.completion.config.GenerationConfig
-import io.kinference.algorithms.completion.generation.*
+import io.kinference.algorithms.completion.generation.FairSeqGeneration
 import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
 import io.kinference.algorithms.completion.generation.search.Search
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer

@@ -78,10 +78,10 @@ class BeamSearch(
 
     override fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>> {
         val ans = ArrayList<HypothesisInfo>()
-        val score = getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
+        getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
         for (i in hypotheses.indices) {
             if (mask[i]) {
-                ans.add(HypothesisInfo(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i], score[i])))
+                ans.add(HypothesisInfo(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i])))
             }
         }
 
@@ -89,9 +89,9 @@ class BeamSearch(
     }
 
     override fun currentHypotheses(): List<List<HypothesisInfo>> {
-        val score = getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
+        getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
         val ans = List(hypotheses.size) {
-            HypothesisInfo(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it], score[it]))
+            HypothesisInfo(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it]))
         }
 
         return listOf(ans)

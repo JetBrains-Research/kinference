@@ -2,9 +2,8 @@ package io.kinference.algorithms.completion.model
 
 import io.kinference.algorithms.completion.CompletionModels
 import io.kinference.algorithms.completion.config.Config
-import io.kinference.algorithms.completion.config.FilterConfig
-import io.kinference.algorithms.completion.config.GenerationConfig
-import io.kinference.algorithms.completion.suggest.*
+import io.kinference.algorithms.completion.suggest.CompletionModel
+import io.kinference.algorithms.completion.suggest.FairseqCompletionsCollector
 import io.kinference.algorithms.completion.suggest.filtering.FilterModel
 import io.kinference.algorithms.completion.suggest.filtering.ProbFilterModel
 import io.kinference.algorithms.completion.suggest.ranking.FirstProbRankingModel
@@ -16,11 +15,7 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun test() {
-        val (tokenizerConfig, modelConfig, loader) = CompletionModels.v5
-
-        val config = Config(loader, 10, tokenizerConfig, modelConfig, GenerationConfig.default, FilterConfig.default)
-
-        val completionsCollector = FairseqCompletionsCollector(config)
+        val completionsCollector = FairseqCompletionsCollector(CompletionModels.v5)
         val rankingModel = FirstProbRankingModel()
         val filterModel = ProbFilterModel()
         val postFilterModel: FilterModel? = null
@@ -28,7 +23,7 @@ class FullModelPassTest {
         val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel, postFilterModel)
 
 //        interaction(completionModel, config)
-        speedTest(completionModel, config, 30, 20)
+        speedTest(completionModel, CompletionModels.v5, 30, 20)
     }
 
     private fun interaction(completionModel: CompletionModel, config: Config) {

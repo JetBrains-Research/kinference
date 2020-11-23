@@ -15,8 +15,6 @@ dependencies {
     implementation("info.debatty", "java-string-similarity", "1.2.1")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-runtime", "0.20.0")
 
-    implementation("com.fasterxml.jackson.core", "jackson-databind", "2.11.3")
-
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation(project(":loaders"))
 }

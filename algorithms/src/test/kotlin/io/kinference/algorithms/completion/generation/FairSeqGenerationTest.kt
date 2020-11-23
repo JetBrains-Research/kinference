@@ -1,9 +1,9 @@
 package io.kinference.algorithms.completion.generation
 
-import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import io.kinference.algorithms.completion.CompletionModels
 import io.kinference.algorithms.completion.config.GenerationConfig
 import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
+import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag

@@ -3,13 +3,9 @@ package io.kinference.algorithms.completion.generation
 import kotlin.math.max
 import kotlin.math.min
 
-class GenerationInfo(initProbs: List<Double> = ArrayList(), var score: Double = -1000.0, var wordLen: Int = 0) {
-    var probs: DoubleArray
+class GenerationInfo(initProbs: List<Double> = ArrayList(), var wordLen: Int = 0) {
+    var probs: DoubleArray = initProbs.toDoubleArray()
         private set
-
-    init {
-        probs = initProbs.toDoubleArray()
-    }
 
     fun add(prob: Double) {
         val newProbs = DoubleArray(probs.size + 1)

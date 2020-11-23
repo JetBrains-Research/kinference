@@ -1,7 +1,7 @@
 package io.kinference.algorithms.completion.bpe
 
-import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import io.kinference.algorithms.completion.CompletionModels
+import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Tag

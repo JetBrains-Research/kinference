@@ -1,7 +1,6 @@
 package io.kinference.algorithms.completion.generation
 
-import io.kinference.algorithms.completion.*
-import io.kinference.algorithms.completion.config.TokenizerConfig
+import io.kinference.algorithms.completion.CompletionModels
 import io.kinference.algorithms.completion.generation.matcher.FuzzyPrefixMatcher
 import io.kinference.algorithms.completion.generation.matcher.PrefixMatcher
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer

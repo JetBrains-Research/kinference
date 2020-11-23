@@ -6,7 +6,7 @@ class GenerationInfoTest {
     @Test
     fun testEmpty() {
         val gi = GenerationInfo()
-        assert(gi.probs.size == 0)
+        assert(gi.probs.isEmpty())
     }
 
     @Test

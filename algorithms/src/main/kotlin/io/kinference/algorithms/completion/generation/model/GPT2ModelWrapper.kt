@@ -1,8 +1,8 @@
 package io.kinference.algorithms.completion.generation.model
 
 import io.kinference.algorithms.completion.config.ModelConfig
-import io.kinference.algorithms.completion.loader.ModelLoader
 import io.kinference.algorithms.completion.generation.toLongArray
+import io.kinference.algorithms.completion.loader.ModelLoader
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
