@@ -26,6 +26,20 @@ class FullModelPassTest {
         speedTest(completionModel, CompletionModels.v5, 30, 20)
     }
 
+
+    @Test
+    @Tag("heavy")
+    fun `test bpe problem`() {
+        val completionsCollector = FairseqCompletionsCollector(CompletionModels.v5)
+        val rankingModel = FirstProbRankingModel()
+        val filterModel = ProbFilterModel()
+        val postFilterModel: FilterModel? = null
+
+        val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel, postFilterModel)
+
+        completionModel.complete("Hello my dear friends", "", CompletionModels.v5)
+    }
+
     private fun interaction(completionModel: CompletionModel, config: Config) {
         println("Write something")
         var input = "hello wo"
