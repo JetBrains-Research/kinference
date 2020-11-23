@@ -1,8 +1,7 @@
-package io.kinference.algorithms.completion.suggest
+package io.kinference.algorithms.completion.suggest.ranking
 
-interface RankingModel {
-    fun rank(context: String, prefix: String, completions: List<CompletionInfo>): List<CompletionInfo>
-}
+import io.kinference.algorithms.completion.suggest.CompletionInfo
+import io.kinference.algorithms.completion.suggest.feature.Features
 
 class FirstProbRankingModel : RankingModel {
     override fun rank(context: String, prefix: String, completions: List<CompletionInfo>): List<CompletionInfo> {
@@ -18,5 +17,4 @@ class FirstProbRankingModel : RankingModel {
         private const val COMPARATOR_BASE = 100
         private const val COMPARATOR_SQUARE = COMPARATOR_BASE * COMPARATOR_BASE
     }
-
 }

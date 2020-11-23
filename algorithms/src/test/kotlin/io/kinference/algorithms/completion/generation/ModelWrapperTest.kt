@@ -1,7 +1,7 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation
 
 import io.kinference.algorithms.completion.CompletionModels
-import io.kinference.ndarray.Strides
+import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
 import io.kinference.ndarray.arrays.*
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
@@ -9,13 +9,14 @@ import org.junit.jupiter.api.Test
 
 class ModelWrapperTest {
     companion object {
+        val loader = CompletionModels.v4.loader
         val config = CompletionModels.v4.model
     }
 
     @Test
     @Tag("heavy")
     fun testInit() {
-        val model = GPT2ModelWrapper(config)
+        val model = GPT2ModelWrapper(loader, config)
         val result1 = model.initLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
         val targetProb1 = -23.7406
         assertTrue(kotlin.math.abs(result1.logProbs[0][result1.logProbs[0].size - 1][234] - targetProb1) < 0.1)
@@ -24,7 +25,7 @@ class ModelWrapperTest {
     @Test
     @Tag("heavy")
     fun testInitLast() {
-        val model = GPT2ModelWrapper(config)
+        val model = GPT2ModelWrapper(loader, config)
         val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
         val targetProb1 = -23.7406
         assertTrue(kotlin.math.abs(result1.logProbs[0][234] - targetProb1) < 0.1)
@@ -33,7 +34,7 @@ class ModelWrapperTest {
     @Test
     @Tag("heavy")
     fun testGetLogsOne() {
-        val model = GPT2ModelWrapper(config)
+        val model = GPT2ModelWrapper(loader, config)
         val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
         val result2 = model.getLogProbs(arrayOf(intArrayOf(578)), result1.pastStates)
@@ -44,7 +45,7 @@ class ModelWrapperTest {
     @Test
     @Tag("heavy")
     fun testGetLogsFew() {
-        val model = GPT2ModelWrapper(config)
+        val model = GPT2ModelWrapper(loader, config)
         val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
         val doublePast = reorderPastStates(result1.pastStates, listOf(0, 0))
@@ -59,7 +60,7 @@ class ModelWrapperTest {
     @Test
     @Tag("heavy")
     fun testGetLastLogsFew() {
-        val model = GPT2ModelWrapper(config)
+        val model = GPT2ModelWrapper(loader, config)
         val result1 = model.initLastLogProbs(arrayOf(intArrayOf(1, 2, 3, 452)))
 
         val doublePast = reorderPastStates(result1.pastStates, listOf(0, 0))

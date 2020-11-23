@@ -3,7 +3,7 @@ import io.kinference.gradle.kotlin
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "io.kinference"
-version = "0.1.0"
+version = "0.1.1"
 
 plugins {
     id("tanvd.kosogor") version "1.0.10" apply true
@@ -29,6 +29,7 @@ subprojects {
         plugin("tanvd.kosogor")
         plugin("idea")
 
+        plugin("kotlin")
         plugin("kotlin")
 
         plugin("io.kinference.primitives")

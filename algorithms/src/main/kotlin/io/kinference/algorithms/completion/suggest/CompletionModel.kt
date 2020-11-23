@@ -1,8 +1,10 @@
 package io.kinference.algorithms.completion.suggest
 
-import io.kinference.algorithms.completion.Config
-import io.kinference.algorithms.completion.GenerationConfig
-import io.kinference.algorithms.completion.generating.GenerationInfo
+import io.kinference.algorithms.completion.config.Config
+import io.kinference.algorithms.completion.config.GenerationConfig
+import io.kinference.algorithms.completion.generation.GenerationInfo
+import io.kinference.algorithms.completion.suggest.filtering.FilterModel
+import io.kinference.algorithms.completion.suggest.ranking.RankingModel
 import kotlin.math.max
 import kotlin.math.min
 

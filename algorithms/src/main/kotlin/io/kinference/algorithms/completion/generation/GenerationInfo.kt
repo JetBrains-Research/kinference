@@ -1,4 +1,4 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation
 
 import kotlin.math.max
 import kotlin.math.min

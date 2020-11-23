@@ -1,44 +1,21 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation.model
 
-import io.kinference.algorithms.completion.ModelConfig
+import io.kinference.algorithms.completion.config.ModelConfig
+import io.kinference.algorithms.completion.loader.ModelLoader
+import io.kinference.algorithms.completion.generation.toLongArray
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.LongPointer
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
 
-data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>)
-
-data class ModelOutputSeq(val logProbs: List<Array<DoubleArray>> = emptyList(), val pastStates: List<NDArray> = emptyList()) {
-    fun lastLogProbs(): ModelOutput {
-        val lastProbs: Array<DoubleArray> = Array(logProbs.size) { logProbs[it].last() }
-        return ModelOutput(lastProbs, pastStates)
-    }
-}
-
-interface ModelWrapper {
-    fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq
-
-    fun initLastLogProbs(inputIds: Array<IntArray>): ModelOutput {
-        return initLogProbs(inputIds).lastLogProbs()
-    }
-
-    fun getLogProbs(inputIds: Array<IntArray>, past: List<NDArray>): ModelOutputSeq
-
-    fun getLastLogProbs(inputIds: IntArray, past: List<NDArray>): ModelOutput {
-        return getLogProbs(Array(inputIds.size) { intArrayOf(inputIds[it]) }, past).lastLogProbs()
-    }
-}
-
-class GPT2ModelWrapper(config: ModelConfig) : ModelWrapper {
-    val model = Model.load(config.modelPath)
+class GPT2ModelWrapper(loader: ModelLoader, config: ModelConfig) : ModelWrapper {
+    private val model = Model.load(loader.getModel())
     private val numAttentionHeads = config.numAttentionHeads
     private val hiddenSize = config.hiddenSize
     private val numLayer = config.numLayer
     private val vocabSize = config.vocabSize
-//    distilgpt2_l3_h12_d256_int8
 
     override fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq {
         val batchSize = inputIds.size

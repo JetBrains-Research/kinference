@@ -1,13 +1,7 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation
 
 import java.util.*
 import kotlin.math.*
-
-fun IntRange.toLongArray(): LongArray {
-    val arr = LongArray(last - first + 1)
-    this.forEachIndexed { i, item -> arr[i] = item.toLong() }
-    return arr
-}
 
 fun IntArray.toLongArray(): LongArray {
     return LongArray(size) { this[it].toLong() }
@@ -60,6 +54,7 @@ fun logSoftmax(scores: Array<DoubleArray>): Array<DoubleArray> {
     return expScores
 }
 
+//TODO definitely there should be a better algorithm
 fun topk1d(data: DoubleArray, size: Int): IntArray {
     val pairedData = Array(data.size) { Pair(data[it], it) }
     Arrays.parallelSort(pairedData) { fst: Pair<Double, Int>, snd: Pair<Double, Int> -> -fst.first.compareTo(snd.first) }

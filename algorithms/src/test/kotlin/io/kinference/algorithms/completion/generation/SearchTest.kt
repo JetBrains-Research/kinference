@@ -1,5 +1,6 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation
 
+import io.kinference.algorithms.completion.generation.search.BeamSearch
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag

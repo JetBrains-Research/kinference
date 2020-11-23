@@ -1,18 +1,16 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation
 
 import io.kinference.algorithms.completion.*
+import io.kinference.algorithms.completion.config.TokenizerConfig
+import io.kinference.algorithms.completion.generation.matcher.FuzzyPrefixMatcher
+import io.kinference.algorithms.completion.generation.matcher.PrefixMatcher
+import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 @Tag("heavy")
 class PrefixMatchingTest {
-    companion object {
-        val tokenizerConfig: TokenizerConfig by lazy {
-            CompletionModels.v4.tokenizer
-        }
-    }
-
     @Test
     fun testHammingDistance() {
         assert(PrefixMatcher.errorsCount("hello", "hello") == 0)
@@ -31,7 +29,7 @@ class PrefixMatchingTest {
 
     @Test
     fun testStrictMatching() {
-        val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
+        val tokenizer = BPETokenizer(CompletionModels.v4.loader)
         val matcher = FuzzyPrefixMatcher(tokenizer)
 
         val prefixes = listOf("sou", "sour", "sor", "he", "", "helloworld")
@@ -57,7 +55,7 @@ class PrefixMatchingTest {
     //    TODO: make working. For this, fix tokenizer byte symbols
 //    @Test
     fun testFuzzyMatching() {
-        val tokenizer = BPETokenizer(tokenizerConfig.vocabPath, tokenizerConfig.mergesPath)
+        val tokenizer = BPETokenizer(CompletionModels.v4.loader)
         val matcher = FuzzyPrefixMatcher(tokenizer)
 
         val prefixes = listOf("sor", "sorc", "helo")

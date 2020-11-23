@@ -1,7 +1,11 @@
 package io.kinference.algorithms.completion.suggest
 
-import io.kinference.algorithms.completion.*
-import io.kinference.algorithms.completion.generating.*
+import io.kinference.algorithms.completion.config.Config
+import io.kinference.algorithms.completion.config.GenerationConfig
+import io.kinference.algorithms.completion.generation.*
+import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
+import io.kinference.algorithms.completion.generation.search.Search
+import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 
 interface CompletionsCollector {
     fun collect(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
@@ -11,8 +15,8 @@ interface CompletionsCollector {
 
 abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
     private val maxTokenizerLen = config.tokenizer.maxSeqLen - 4
-    protected val languageModel = GPT2ModelWrapper(config.model)
-    protected val tokenizer = BPETokenizer(config.tokenizer.vocabPath, config.tokenizer.mergesPath)
+    protected val languageModel = GPT2ModelWrapper(config.loader, config.model)
+    protected val tokenizer = BPETokenizer(config.loader)
 
     abstract fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
 
@@ -95,7 +99,7 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
 
 class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(config) {
 
-    private val beamSearch = FairseqGeneration(languageModel, tokenizer)
+    private val beamSearch = FairSeqGeneration(languageModel, tokenizer)
 
     override fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
         val result = ArrayList<CompletionInfo>()
@@ -110,7 +114,7 @@ class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(con
         return result
     }
 
-    private fun decodeSequences(sequences: List<List<HypothesisInfo>>): List<List<CompletionInfo>> {
+    private fun decodeSequences(sequences: List<List<Search.HypothesisInfo>>): List<List<CompletionInfo>> {
         val result: MutableList<List<CompletionInfo>> = ArrayList()
         for (group in sequences) {
             val decodedStrings = group.map { tokenizer.decode(it.hypothesis) }

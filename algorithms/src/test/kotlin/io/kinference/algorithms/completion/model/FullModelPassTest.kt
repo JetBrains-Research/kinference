@@ -1,8 +1,13 @@
 package io.kinference.algorithms.completion.model
 
 import io.kinference.algorithms.completion.CompletionModels
-import io.kinference.algorithms.completion.Config
+import io.kinference.algorithms.completion.config.Config
+import io.kinference.algorithms.completion.config.FilterConfig
+import io.kinference.algorithms.completion.config.GenerationConfig
 import io.kinference.algorithms.completion.suggest.*
+import io.kinference.algorithms.completion.suggest.filtering.FilterModel
+import io.kinference.algorithms.completion.suggest.filtering.ProbFilterModel
+import io.kinference.algorithms.completion.suggest.ranking.FirstProbRankingModel
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.lang.System.currentTimeMillis
@@ -11,9 +16,9 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun test() {
-        val (tokenizerConfig, modelConfig) = CompletionModels.v5
+        val (tokenizerConfig, modelConfig, loader) = CompletionModels.v5
 
-        val config = Config(10, tokenizerConfig, modelConfig, CompletionModels.Config.generation, CompletionModels.Config.filter)
+        val config = Config(loader, 10, tokenizerConfig, modelConfig, GenerationConfig.default, FilterConfig.default)
 
         val completionsCollector = FairseqCompletionsCollector(config)
         val rankingModel = FirstProbRankingModel()

@@ -1,50 +1,18 @@
-package io.kinference.algorithms.completion.generating
+package io.kinference.algorithms.completion.generation.search
 
-import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.toIntArray
+import io.kinference.algorithms.completion.generation.*
 import java.lang.Math.floorDiv
 import java.lang.Math.floorMod
 import kotlin.math.*
 
-data class HypothesisInfo(val hypothesis: IntArray, val info: GenerationInfo)
-
-abstract class Search(val eosIds: IntArray, val vocabSize: Int, val searchSize: Int,
-                      val lenNormBase: Double = 0.0, val lenNormPow: Double = 0.0, val repetitionPenalty: Double = 1.0) {
-
-    /**
-     * Current batch size
-     */
-    abstract val batchSize: Int
-
-    abstract fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): IntArray
-
-    protected fun stepCheck(logProbs: NDArray) {
-        assert(logProbs.shape.contentEquals(intArrayOf(batchSize, vocabSize))
-        ) { "log_probs must have shape (${batchSize}, $vocabSize), but ${logProbs.shape} was given" }
-
-        assert(eosIds.all { it < vocabSize }
-        ) { "EOS ids must be less than vocab_size, but EOS ids: $eosIds and vocab_size: $vocabSize" }
-    }
-
-    /**
-     * List of list of tuples of current hypotheses and theirs scores
-     */
-    abstract fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>>
-
-    /**
-     * List of list of tuples of current hypotheses and theirs scores
-     */
-    abstract fun currentHypotheses(): List<List<HypothesisInfo>>
-
-    /**
-     * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
-     */
-    abstract fun lastPredictions(): IntArray
-}
-
-class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
-                 lenNormBase: Double = 0.0, lenNormPow: Double = 0.0, repetitionPenalty: Double = 1.0) :
-    Search(eosIds, vocabSize, searchSize, lenNormBase, lenNormPow, repetitionPenalty) {
+class BeamSearch(
+    eosIds: IntArray,
+    vocabSize: Int,
+    searchSize: Int,
+    lenNormBase: Double = 0.0,
+    lenNormPow: Double = 0.0,
+    repetitionPenalty: Double = 1.0
+) : Search(eosIds, vocabSize, searchSize, lenNormBase, lenNormPow, repetitionPenalty) {
 
     private var length = 1.0
     override val batchSize: Int
@@ -130,7 +98,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
     }
 
     override fun lastPredictions(): IntArray {
-        assert(hypotheses.isNotEmpty() && hypotheses[0].size > 0) {"Can't get last predictions if no steps have been performed"}
+        assert(hypotheses.isNotEmpty() && hypotheses[0].size > 0) { "Can't get last predictions if no steps have been performed" }
         return IntArray(hypotheses.size) { hypotheses[it].last() }
     }
 
@@ -154,7 +122,7 @@ class BeamSearch(eosIds: IntArray, vocabSize: Int, searchSize: Int,
         val notTerminatedInds = (terminated.indices).filter { !terminated[it] }.toIntArray()
         applySliceToState(notTerminatedInds)
         sortState()
-}
+    }
 
     private fun sortState(sortMask: IntArray? = null) {
         if (sortMask == null) {

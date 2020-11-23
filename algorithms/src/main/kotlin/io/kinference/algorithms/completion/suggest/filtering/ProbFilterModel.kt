@@ -1,11 +1,9 @@
-package io.kinference.algorithms.completion.suggest
+package io.kinference.algorithms.completion.suggest.filtering
 
-import io.kinference.algorithms.completion.FilterConfig
+import io.kinference.algorithms.completion.config.FilterConfig
+import io.kinference.algorithms.completion.suggest.CompletionInfo
+import io.kinference.algorithms.completion.suggest.feature.Features
 import kotlin.math.pow
-
-interface FilterModel {
-    fun filter(context: String, prefix: String, completions: List<CompletionInfo>, config: FilterConfig): List<CompletionInfo>
-}
 
 class ProbFilterModel : FilterModel {
     override fun filter(context: String, prefix: String, completions: List<CompletionInfo>, config: FilterConfig): List<CompletionInfo> {
