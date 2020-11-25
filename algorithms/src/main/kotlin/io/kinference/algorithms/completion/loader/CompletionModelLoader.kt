@@ -1,5 +1,7 @@
 package io.kinference.algorithms.completion.loader
 
+import io.kinference.algorithms.completion.loader.CompletionModelLoader.FromFile
+import io.kinference.algorithms.completion.loader.CompletionModelLoader.FromGetter
 import io.kinference.algorithms.completion.utils.JSON
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer

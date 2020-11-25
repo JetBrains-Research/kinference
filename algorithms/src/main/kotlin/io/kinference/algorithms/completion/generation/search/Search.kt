@@ -1,7 +1,6 @@
 package io.kinference.algorithms.completion.generation.search
 
 import io.kinference.algorithms.completion.generation.GenerationInfo
-import io.kinference.ndarray.arrays.NDArray
 
 
 internal abstract class Search(
@@ -39,16 +38,6 @@ internal abstract class Search(
     abstract val batchSize: Int
 
     abstract fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): IntArray
-
-    protected fun stepCheck(logProbs: NDArray) {
-        assert(logProbs.shape.contentEquals(intArrayOf(batchSize, vocabSize))) {
-            "log_probs must have shape (${batchSize}, $vocabSize), but ${logProbs.shape} was given"
-        }
-
-        assert(eosIds.all { it < vocabSize }) {
-            "EOS ids must be less than vocab_size, but EOS ids: $eosIds and vocab_size: $vocabSize"
-        }
-    }
 
     /**
      * List of list of tuples of current hypotheses and theirs scores

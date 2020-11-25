@@ -1,10 +1,7 @@
 package io.kinference.algorithms.completion.model
 
-import io.kinference.algorithms.completion.CompletionModels
-import io.kinference.algorithms.completion.CompletionConfig
-import io.kinference.algorithms.completion.CompletionModel
+import io.kinference.algorithms.completion.*
 import io.kinference.algorithms.completion.suggest.collector.FairSeqCompletionsGenerator
-import io.kinference.algorithms.completion.suggest.filtering.FilterModel
 import io.kinference.algorithms.completion.suggest.filtering.ProbFilterModel
 import io.kinference.algorithms.completion.suggest.ranking.ProbRankingModel
 import org.junit.jupiter.api.Tag

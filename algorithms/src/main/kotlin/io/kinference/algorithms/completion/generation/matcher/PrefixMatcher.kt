@@ -3,14 +3,6 @@ package io.kinference.algorithms.completion.generation.matcher
 import info.debatty.java.stringsimilarity.Levenshtein
 
 internal abstract class PrefixMatcher {
-    fun prefixTokens(prefix: String): IntArray {
-        return prefixTokensByErr(prefix, errLimit = 0)[1]
-    }
-
-    fun notPrefixTokens(prefix: String): IntArray {
-        return prefixTokensByErr(prefix, errLimit = 0)[0]
-    }
-
     abstract fun prefixTokensByErr(prefix: String, errLimit: Int = 0): Array<IntArray>
 
     companion object {
