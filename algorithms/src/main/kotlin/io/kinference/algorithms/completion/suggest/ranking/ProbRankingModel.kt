@@ -9,16 +9,10 @@ import io.kinference.algorithms.completion.suggest.feature.Features
  */
 class ProbRankingModel : RankingModel {
     override fun rank(context: String, prefix: String, completions: List<CompletionModel.CompletionResult>): List<CompletionModel.CompletionResult> {
-        return completions.sortedBy { completion ->
-            val firstProb = Features.prob(completion.info)
-            val meanProb = Features.meanProb(completion.info)
-            val prefixMatchedCount = Features.prefixMatchedCount(prefix, completion.text)
-            firstProb * COMPARATOR_SQUARE + meanProb * COMPARATOR_BASE + prefixMatchedCount
-        }
-    }
+        val ranked = completions.map { completion ->
+            completion to Features.stepProfit(completion.info)
+        }.toMap()
 
-    companion object {
-        private const val COMPARATOR_BASE = 100
-        private const val COMPARATOR_SQUARE = COMPARATOR_BASE * COMPARATOR_BASE
+        return ranked.entries.sortedByDescending { it.value }.map { it.key }
     }
 }
