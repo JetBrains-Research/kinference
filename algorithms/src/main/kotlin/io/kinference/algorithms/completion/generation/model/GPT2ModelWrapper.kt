@@ -1,6 +1,6 @@
 package io.kinference.algorithms.completion.generation.model
 
-import io.kinference.algorithms.completion.config.ModelConfig
+import io.kinference.algorithms.completion.CompletionConfig
 import io.kinference.algorithms.completion.generation.toLongArray
 import io.kinference.algorithms.completion.loader.ModelLoader
 import io.kinference.data.tensors.Tensor
@@ -10,7 +10,7 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
 
-class GPT2ModelWrapper(loader: ModelLoader, config: ModelConfig) : ModelWrapper {
+class GPT2ModelWrapper(loader: ModelLoader, config: CompletionConfig.Model) : ModelWrapper {
     private val model = Model.load(loader.getModel())
     private val numAttentionHeads = config.numAttentionHeads
     private val hiddenSize = config.hiddenSize

@@ -1,10 +1,10 @@
 package io.kinference.algorithms.completion.suggest.ranking
 
-import io.kinference.algorithms.completion.suggest.CompletionInfo
+import io.kinference.algorithms.completion.CompletionModel
 import io.kinference.algorithms.completion.suggest.feature.Features
 
 class FirstProbRankingModel : RankingModel {
-    override fun rank(context: String, prefix: String, completions: List<CompletionInfo>): List<CompletionInfo> {
+    override fun rank(context: String, prefix: String, completions: List<CompletionModel.CompletionResult>): List<CompletionModel.CompletionResult> {
         return completions.sortedBy { completion ->
             val firstProb = Features.prob(completion.info)
             val meanProb = Features.meanProb(completion.info)

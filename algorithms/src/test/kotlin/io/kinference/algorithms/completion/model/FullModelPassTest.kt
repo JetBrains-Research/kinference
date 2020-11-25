@@ -1,8 +1,8 @@
 package io.kinference.algorithms.completion.model
 
 import io.kinference.algorithms.completion.CompletionModels
-import io.kinference.algorithms.completion.config.Config
-import io.kinference.algorithms.completion.suggest.CompletionModel
+import io.kinference.algorithms.completion.CompletionConfig
+import io.kinference.algorithms.completion.CompletionModel
 import io.kinference.algorithms.completion.suggest.FairseqCompletionsCollector
 import io.kinference.algorithms.completion.suggest.filtering.FilterModel
 import io.kinference.algorithms.completion.suggest.filtering.ProbFilterModel
@@ -40,7 +40,7 @@ class FullModelPassTest {
         completionModel.complete("Hello my dear friends", "", CompletionModels.v5)
     }
 
-    private fun interaction(completionModel: CompletionModel, config: Config) {
+    private fun interaction(completionModel: CompletionModel, config: CompletionConfig) {
         println("Write something")
         var input = "hello wo"
         while (true) {
@@ -57,7 +57,7 @@ class FullModelPassTest {
         }
     }
 
-    private fun speedTest(completionModel: CompletionModel, config: Config, len: Int = 1, itersNum: Int = 100) {
+    private fun speedTest(completionModel: CompletionModel, config: CompletionConfig, len: Int = 1, itersNum: Int = 100) {
 //            1 - 0.97258
         println("Warm up")
         val input = (0 until len).map { "hello " }.joinToString { "" } + "wo"

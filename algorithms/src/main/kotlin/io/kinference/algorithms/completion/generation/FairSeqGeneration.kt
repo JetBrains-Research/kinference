@@ -1,6 +1,6 @@
 package io.kinference.algorithms.completion.generation
 
-import io.kinference.algorithms.completion.config.GenerationConfig
+import io.kinference.algorithms.completion.CompletionConfig
 import io.kinference.algorithms.completion.generation.matcher.FuzzyPrefixMatcher
 import io.kinference.algorithms.completion.generation.matcher.PrefixMatcher
 import io.kinference.algorithms.completion.generation.model.ModelWrapper
@@ -28,7 +28,7 @@ class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: 
 
     private var logSpellProb = ln(0.0001)
 
-    private fun getSearch(config: GenerationConfig): Search {
+    private fun getSearch(config: CompletionConfig.Generation): Search {
         require(config.numGroups == 1) { "num groups > 1 is not supported" }
 
         return BeamSearch(
@@ -68,7 +68,7 @@ class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: 
         return modifyScore(logSoftmax(logProbs.logProbs))
     }
 
-    private fun initState(context: IntArray, prefix: String, config: GenerationConfig): Array<DoubleArray> {
+    private fun initState(context: IntArray, prefix: String, config: CompletionConfig.Generation): Array<DoubleArray> {
         logSpellProb = ln(config.spellProb)
         prefixes = listOf(PrefixInfo(prefix, config.prefixErrLimit))
         return initLogProbs(context)
@@ -125,7 +125,7 @@ class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: 
         prefixes = null
     }
 
-    fun generate(context: IntArray, prefix: String, config: GenerationConfig): List<List<List<Search.HypothesisInfo>>> {
+    fun generate(context: IntArray, prefix: String, config: CompletionConfig.Generation): List<List<List<Search.HypothesisInfo>>> {
         val search = getSearch(config)
 
         val oneLogProbs = initState(context, prefix, config)

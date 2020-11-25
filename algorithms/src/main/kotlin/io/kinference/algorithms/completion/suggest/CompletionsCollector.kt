@@ -1,33 +1,31 @@
 package io.kinference.algorithms.completion.suggest
 
-import io.kinference.algorithms.completion.config.Config
-import io.kinference.algorithms.completion.config.GenerationConfig
+import io.kinference.algorithms.completion.CompletionConfig
+import io.kinference.algorithms.completion.CompletionModel
 import io.kinference.algorithms.completion.generation.FairSeqGeneration
 import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
 import io.kinference.algorithms.completion.generation.search.Search
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 
 interface CompletionsCollector {
-    fun collect(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
-
-//    fun prediction_info(context: String, predictions: List<String>): List<GenerationInfo>
+    fun collect(context: String, prefix: String, config: CompletionConfig.Generation): List<CompletionModel.CompletionResult>
 }
 
-abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
+abstract class BaseCompletionsCollector(config: CompletionConfig) : CompletionsCollector {
     private val maxTokenizerLen = config.tokenizer.maxSeqLen - 4
     protected val languageModel = GPT2ModelWrapper(config.loader, config.model)
     protected val tokenizer = BPETokenizer(config.loader)
 
-    abstract fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo>
+    abstract fun generate(context: String, prefix: String, config: CompletionConfig.Generation): List<CompletionModel.CompletionResult>
 
-    override fun collect(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
+    override fun collect(context: String, prefix: String, config: CompletionConfig.Generation): List<CompletionModel.CompletionResult> {
         if (context.trim().isEmpty()) {
             return emptyList()
         }
 
         val seenCompletions = HashSet<String>()
         val completions = generate(context, prefix, config)
-        val result = ArrayList<CompletionInfo>()
+        val result = ArrayList<CompletionModel.CompletionResult>()
 
         for (completion in completions) {
 
@@ -58,7 +56,7 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
         return inputIds
     }
 
-    private fun CompletionInfo.trimEnding(): CompletionInfo {
+    private fun CompletionModel.CompletionResult.trimEnding(): CompletionModel.CompletionResult {
         if (this.text.isEmpty() || this.text[text.lastIndex].isLetterOrDigit()) {
             return this
         }
@@ -73,10 +71,10 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
             trimmedCompletion = trimmedCompletion.substring(0, trimmedCompletion.length - i)
             this.info.trim(codedTrimmed.size)
         }
-        return CompletionInfo(trimmedCompletion, this.info)
+        return CompletionModel.CompletionResult(trimmedCompletion, this.info)
     }
 
-    private fun CompletionInfo.trimAfterSentenceEnd(): CompletionInfo {
+    private fun CompletionModel.CompletionResult.trimAfterSentenceEnd(): CompletionModel.CompletionResult {
         if (this.text.isEmpty()) {
             return this
         }
@@ -94,16 +92,16 @@ abstract class BaseCompletionsCollector(config: Config) : CompletionsCollector {
             }
         }
 
-        return CompletionInfo(trimmedCompletion, this.info)
+        return CompletionModel.CompletionResult(trimmedCompletion, this.info)
     }
 }
 
-class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(config) {
+class FairseqCompletionsCollector(config: CompletionConfig) : BaseCompletionsCollector(config) {
 
     private val beamSearch = FairSeqGeneration(languageModel, tokenizer)
 
-    override fun generate(context: String, prefix: String, config: GenerationConfig): List<CompletionInfo> {
-        val result = ArrayList<CompletionInfo>()
+    override fun generate(context: String, prefix: String, config: CompletionConfig.Generation): List<CompletionModel.CompletionResult> {
+        val result = ArrayList<CompletionModel.CompletionResult>()
         val inputIds = makeInputIds(context, config.maxLen)
 
         val completionsByLen = beamSearch.generate(inputIds, prefix, config)
@@ -115,11 +113,11 @@ class FairseqCompletionsCollector(config: Config) : BaseCompletionsCollector(con
         return result
     }
 
-    private fun decodeSequences(sequences: List<List<Search.HypothesisInfo>>): List<List<CompletionInfo>> {
-        val result: MutableList<List<CompletionInfo>> = ArrayList()
+    private fun decodeSequences(sequences: List<List<Search.HypothesisInfo>>): List<List<CompletionModel.CompletionResult>> {
+        val result: MutableList<List<CompletionModel.CompletionResult>> = ArrayList()
         for (group in sequences) {
             val decodedStrings = group.map { tokenizer.decode(it.hypothesis) }
-            result.add(group.mapIndexed { i, (_, info) -> CompletionInfo(decodedStrings[i], info) })
+            result.add(group.mapIndexed { i, (_, info) -> CompletionModel.CompletionResult(decodedStrings[i], info) })
         }
         return result
     }

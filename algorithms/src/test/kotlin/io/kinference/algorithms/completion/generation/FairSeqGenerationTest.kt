@@ -1,7 +1,7 @@
 package io.kinference.algorithms.completion.generation
 
+import io.kinference.algorithms.completion.CompletionConfig
 import io.kinference.algorithms.completion.CompletionModels
-import io.kinference.algorithms.completion.config.GenerationConfig
 import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,7 +20,7 @@ class FairSeqGenerationTest {
         val text = "hello"
         val prefix = " wo"
         val contextIds = tokenizer.encode(text)
-        val result = generator.generate(contextIds, prefix, GenerationConfig.default)
+        val result = generator.generate(contextIds, prefix, CompletionConfig.Generation.default)
         val variants = result.map { it[0].map { h -> tokenizer.decode(h.hypothesis) } }
 
         assertEquals(variants[0].toSet(), setOf(" would", " work", " world", " working", " won"))
