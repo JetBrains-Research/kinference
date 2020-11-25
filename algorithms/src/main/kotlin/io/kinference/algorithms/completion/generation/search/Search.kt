@@ -4,7 +4,7 @@ import io.kinference.algorithms.completion.generation.GenerationInfo
 import io.kinference.ndarray.arrays.NDArray
 
 
-abstract class Search(
+internal abstract class Search(
     val eosIds: IntArray,
     val vocabSize: Int,
     val searchSize: Int,

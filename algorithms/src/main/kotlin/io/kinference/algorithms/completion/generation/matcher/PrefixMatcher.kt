@@ -2,7 +2,7 @@ package io.kinference.algorithms.completion.generation.matcher
 
 import info.debatty.java.stringsimilarity.Levenshtein
 
-abstract class PrefixMatcher {
+internal abstract class PrefixMatcher {
     fun prefixTokens(prefix: String): IntArray {
         return prefixTokensByErr(prefix, errLimit = 0)[1]
     }

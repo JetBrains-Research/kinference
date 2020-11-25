@@ -3,7 +3,11 @@ package io.kinference.algorithms.completion.suggest.ranking
 import io.kinference.algorithms.completion.CompletionModel
 import io.kinference.algorithms.completion.suggest.feature.Features
 
-class FirstProbRankingModel : RankingModel {
+/**
+ * Naive version of [RankingModel] that performs reordering based on probability of completion
+ * and match rank between it and prefix
+ */
+class ProbRankingModel : RankingModel {
     override fun rank(context: String, prefix: String, completions: List<CompletionModel.CompletionResult>): List<CompletionModel.CompletionResult> {
         return completions.sortedBy { completion ->
             val firstProb = Features.prob(completion.info)

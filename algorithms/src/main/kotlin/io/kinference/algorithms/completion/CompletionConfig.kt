@@ -1,24 +1,53 @@
 package io.kinference.algorithms.completion
 
-import io.kinference.algorithms.completion.loader.ModelLoader
+import io.kinference.algorithms.completion.loader.CompletionModelLoader
 import java.io.File
 import java.io.InputStream
 
 
+/**
+ * Configuration of a completion model
+ *
+ * @param loader is a loader with which model can be loaded
+ * @param numSuggestions is a total number of suggestions model should generate
+ * @param tokenizer is a configuration of tokenizer for this model, should be
+ * taken from `config.json` distributed with model
+ * @param model is a configuration of GPT-like model, it is also should be taken
+ * from `config.json` and is distributed with model
+ * @param generation is a configuration of generation process
+ * @param filter is a configuration of filters used during pre-filtering of completions
+ */
 data class CompletionConfig(
-    val loader: ModelLoader,
+    val loader: CompletionModelLoader,
     val numSuggestions: Int,
     val tokenizer: Tokenizer,
     val model: Model,
     val generation: Generation,
     val filter: Filter
 ) {
+    /**
+     * Tokenizer configuration that is used in completion model
+     */
     data class Tokenizer(val maxSeqLen: Int)
 
+    /**
+     * GPT-like model configuration that is used in completion model
+     */
     class Model(val numAttentionHeads: Int, val hiddenSize: Int, val numLayer: Int, val vocabSize: Int)
 
+    /**
+     * Configuration of pre-filtering used in completion model
+     *
+     * @param minSymbolLen is a minimum number of symbols that would be in completions, if
+     * `completion.text.length < minSymbolLen` completion would be filtered out
+     * @param minAvgLogProb is a minimum average log probability, if completion has it
+     * smaller -- it would be filtered out
+     * @param minProb is a minimum probability of completion, if completion has
+     * it smaller -- it would be filtered out
+     */
     data class Filter(val minSymbolLen: Int, val minAvgLogProb: Double, val minProb: Double) {
         companion object {
+            /** Default filtering setup that can be used for common scenarios */
             val default = Filter(
                 minSymbolLen = 2,
                 minAvgLogProb = -100.0,
@@ -27,6 +56,12 @@ data class CompletionConfig(
         }
     }
 
+    /**
+     * Configuration of generation that is used in completion model
+     *
+     * @param minLen is a minimum length in words expected from completion model
+     * @param maxLen is a maximum length in words expected from completion model
+     */
     data class Generation(
         val minLen: Int,
         val maxLen: Int,
@@ -41,6 +76,7 @@ data class CompletionConfig(
     ) {
 
         companion object {
+            /** Default generation setup that can be used for common scenarios */
             val default = Generation(
                 minLen = 1,
                 maxLen = 3,
@@ -58,8 +94,15 @@ data class CompletionConfig(
 
 
     companion object {
+        /** Load completion model from specific folder and configure it to have at max [total] suggestions */
         fun fromFolder(total: Int, folder: File) = fromGetter(total) { File(folder, it).inputStream() }
 
+        /**
+         * Load completion model with [getter] and configure it to have at max [total] suggestions
+         *
+         * Note, that to [getter] would be passed the names of model artifacts, e.g. `model.onnx` or `config.json`
+         */
+        @Suppress("MemberVisibilityCanBePrivate")
         fun fromGetter(total: Int, getter: (String) -> InputStream): CompletionConfig {
             val loader = getModelLoader(getter)
 
@@ -75,7 +118,7 @@ data class CompletionConfig(
             return Tokenizer(maxSeqLen)
         }
 
-        private fun getModelLoader(getter: (String) -> InputStream): ModelLoader = ModelLoader.CustomModelLoader(
+        private fun getModelLoader(getter: (String) -> InputStream): CompletionModelLoader = CompletionModelLoader.FromGetter(
             { getter("model.onnx").use { it.readBytes() } },
             { getter("vocab.json").use { it.reader().readText() } },
             { getter("merges.txt").use { it.reader().readText() } },

@@ -5,7 +5,7 @@ import java.lang.Math.floorDiv
 import java.lang.Math.floorMod
 import kotlin.math.*
 
-class BeamSearch(
+internal class BeamSearch(
     eosIds: IntArray,
     vocabSize: Int,
     searchSize: Int,

@@ -1,10 +1,15 @@
 package io.kinference.algorithms.completion.tokenizer
 
-import io.kinference.algorithms.completion.loader.ModelLoader
+import com.github.benmanes.caffeine.cache.Cache
+import io.kinference.algorithms.completion.loader.CompletionModelLoader
+import io.kinference.algorithms.completion.utils.Caching
 
-class BPETokenizer(loader: ModelLoader) {
+internal class BPETokenizer(loader: CompletionModelLoader) {
+    private val encodeCache: Cache<String, IntArray> = Caching.default()
+    private val decodeCache: Cache<IntArray, String> = Caching.default()
+
     private data class MergeCandidate(val word1: String, val word2: String) {
-        fun merged(): String = word1 + word2
+        val merged: String = word1 + word2
     }
 
     private data class MergeCandidateInfo(val vocabIndex: Int?, val position: Int, val mergePair: MergeCandidate)
@@ -66,7 +71,7 @@ class BPETokenizer(loader: ModelLoader) {
 
             var i = 0
             val newPieces: MutableList<String> = ArrayList()
-            val strBigram = bigram.merged()
+            val strBigram = bigram.merged
             for (j in positions) {
                 if (j < i) continue
 
@@ -86,18 +91,17 @@ class BPETokenizer(loader: ModelLoader) {
         return pieces
     }
 
-    fun tokenize(s: String): List<String> {
-        val tokens = internalTokenize(preprocess(s))
-        return tokens.map { postprocess(it) }
-    }
-
     fun encode(s: String): IntArray {
-        val tokens = internalTokenize(preprocess(s))
-        return IntArray(tokens.size) { vocab.getOrDefault(tokens[it], 0) }
+        return encodeCache.get(s) {
+            val tokens = internalTokenize(preprocess(s))
+            IntArray(tokens.size) { vocab.getOrDefault(tokens[it], 0) }
+        }!!
     }
 
     fun decode(ids: IntArray): String {
-        return postprocess(ids.joinToString("") { reversedVocab.getOrDefault(it, "") })
+        return decodeCache.get(ids) {
+            postprocess(ids.joinToString("") { reversedVocab.getOrDefault(it, "") })
+        }!!
     }
 
     fun decode(id: Int): String {

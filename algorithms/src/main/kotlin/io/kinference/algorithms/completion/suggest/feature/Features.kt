@@ -3,7 +3,7 @@ package io.kinference.algorithms.completion.suggest.feature
 import io.kinference.algorithms.completion.generation.GenerationInfo
 
 
-object Features {
+internal object Features {
     fun prob(generationInfo: GenerationInfo): Double {
         return generationInfo.probs.reduce(Double::times)
     }

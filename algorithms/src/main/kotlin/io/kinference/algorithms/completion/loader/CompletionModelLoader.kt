@@ -5,7 +5,14 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import java.io.File
 
-sealed class ModelLoader {
+/**
+ * Interface defining loader of completion model.
+ *
+ * Completion model requires model in ONNX format and its configuration, as well as vocabulary and BPE merges files for tokenizer.
+ *
+ * User can load it from custom location via [FromGetter] or from local files via [FromFile]
+ */
+sealed class CompletionModelLoader {
     companion object {
         fun deserializeConfig(text: String): Map<String, Int> {
             return JSON.parse(MapSerializer(String.serializer(), Int.serializer()), text)
@@ -25,10 +32,13 @@ sealed class ModelLoader {
     abstract fun getVocabulary(): Map<String, Int>
     abstract fun getConfig(): Map<String, Int>
 
-    class FileModelLoader(model: File, vocabulary: File, merges: File, config: File) :
-        CustomModelLoader({ model.readBytes() }, { vocabulary.readText() }, { merges.readText() }, { config.readText() })
+    /** Load Completion model from local files */
+    class FromFile(model: File, vocabulary: File, merges: File, config: File) :
+        FromGetter({ model.readBytes() }, { vocabulary.readText() }, { merges.readText() }, { config.readText() })
 
-    open class CustomModelLoader(val model: () -> ByteArray, val vocabulary: () -> String, val merges: () -> String, val config: () -> String) : ModelLoader() {
+    /** Load Completion via custom access methods */
+    open class FromGetter(val model: () -> ByteArray, val vocabulary: () -> String, val merges: () -> String, val config: () -> String) :
+        CompletionModelLoader() {
         override fun getModel(): ByteArray = model()
         override fun getVocabulary() = deserializeVocabulary(vocabulary())
         override fun getMerges() = deserializeMerges(merges())

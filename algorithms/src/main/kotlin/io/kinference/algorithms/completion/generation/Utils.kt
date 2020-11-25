@@ -3,11 +3,11 @@ package io.kinference.algorithms.completion.generation
 import java.util.*
 import kotlin.math.*
 
-fun IntArray.toLongArray(): LongArray {
+internal fun IntArray.toLongArray(): LongArray {
     return LongArray(size) { this[it].toLong() }
 }
 
-fun Array<IntArray>.toLongArray(): LongArray {
+internal fun Array<IntArray>.toLongArray(): LongArray {
     val arr = LongArray(this.sumBy { it.size })
     var off = 0
     for (block in this) {
@@ -16,7 +16,7 @@ fun Array<IntArray>.toLongArray(): LongArray {
     return arr
 }
 
-fun IntArray.sliceArray(indices: IntArray): IntArray {
+internal fun IntArray.sliceArray(indices: IntArray): IntArray {
     val result = IntArray(indices.size)
     var targetIndex = 0
     for (sourceIndex in indices) {
@@ -25,7 +25,7 @@ fun IntArray.sliceArray(indices: IntArray): IntArray {
     return result
 }
 
-fun DoubleArray.sliceArray(indices: IntArray): DoubleArray {
+internal fun DoubleArray.sliceArray(indices: IntArray): DoubleArray {
     val result = DoubleArray(indices.size)
     var targetIndex = 0
     for (sourceIndex in indices) {
@@ -34,7 +34,7 @@ fun DoubleArray.sliceArray(indices: IntArray): DoubleArray {
     return result
 }
 
-fun <T> List<T>.slice(indices: IntArray): List<T> {
+internal fun <T> List<T>.slice(indices: IntArray): List<T> {
     val result = ArrayList<T>(indices.size)
     for ((targetIndex, sourceIndex) in indices.withIndex()) {
         result.add(targetIndex, this[sourceIndex])
@@ -42,7 +42,7 @@ fun <T> List<T>.slice(indices: IntArray): List<T> {
     return result
 }
 
-fun logSoftmax(scores: Array<DoubleArray>): Array<DoubleArray> {
+internal fun logSoftmax(scores: Array<DoubleArray>): Array<DoubleArray> {
     val expScores = Array(scores.size) {
         val curScores = scores[it]
         DoubleArray(curScores.size) { i -> exp(curScores[i]) }
@@ -55,13 +55,13 @@ fun logSoftmax(scores: Array<DoubleArray>): Array<DoubleArray> {
 }
 
 //TODO definitely there should be a better algorithm
-fun topk1d(data: DoubleArray, size: Int): IntArray {
+internal fun topk1d(data: DoubleArray, size: Int): IntArray {
     val pairedData = Array(data.size) { Pair(data[it], it) }
     Arrays.parallelSort(pairedData) { fst: Pair<Double, Int>, snd: Pair<Double, Int> -> -fst.first.compareTo(snd.first) }
     return IntArray(size) { pairedData[it].second }
 }
 
-fun topk2d(data: Array<DoubleArray>, size: Int, dim: Int = 0): Array<IntArray> {
+internal fun topk2d(data: Array<DoubleArray>, size: Int, dim: Int = 0): Array<IntArray> {
     if (data.isEmpty()) {
         return emptyArray()
     }

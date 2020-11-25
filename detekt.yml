@@ -42,11 +42,12 @@ comments:
     active: false
     endOfSentenceFormat: ([.?!][ \t\n\r\f<])|([.?!:]$)
   UndocumentedPublicClass:
-    active: false
+    active: true
     searchInNestedClass: true
     searchInInnerClass: true
     searchInInnerObject: true
     searchInInnerInterface: true
+    includes: [ '**/algorithms/src/**' ]
   UndocumentedPublicFunction:
     active: false
   UndocumentedPublicProperty:

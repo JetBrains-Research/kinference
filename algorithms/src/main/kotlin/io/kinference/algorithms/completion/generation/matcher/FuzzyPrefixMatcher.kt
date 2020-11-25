@@ -1,19 +1,15 @@
 package io.kinference.algorithms.completion.generation.matcher
 
 import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
-import java.util.concurrent.TimeUnit
+import io.kinference.algorithms.completion.utils.Caching
 import kotlin.math.max
 import kotlin.math.min
 
-class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
+internal class FuzzyPrefixMatcher(val tokenizer: BPETokenizer) : PrefixMatcher() {
     private data class Request(val prefix: String, val errLimit: Int)
 
-    private val cache: Cache<Request, Array<IntArray>> = Caffeine.newBuilder()
-        .maximumSize(100)
-        .expireAfterAccess(5, TimeUnit.MINUTES)
-        .build<Request, Array<IntArray>>()
+    private val cache: Cache<Request, Array<IntArray>> = Caching.default()
 
     private val tokens: List<String>
     private val origIndices: IntArray

@@ -3,7 +3,7 @@ package io.kinference.algorithms.completion.generation.model
 import io.kinference.ndarray.arrays.NDArray
 
 
-interface ModelWrapper {
+internal interface ModelWrapper {
     fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq
 
     fun initLastLogProbs(inputIds: Array<IntArray>): ModelOutput {

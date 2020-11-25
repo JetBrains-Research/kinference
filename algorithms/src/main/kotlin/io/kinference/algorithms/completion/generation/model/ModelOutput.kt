@@ -2,7 +2,7 @@ package io.kinference.algorithms.completion.generation.model
 
 import io.kinference.ndarray.arrays.NDArray
 
-data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>) {
+internal data class ModelOutput(val logProbs: Array<DoubleArray>, val pastStates: List<NDArray>) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

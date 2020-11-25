@@ -12,7 +12,7 @@ import io.kinference.ndarray.arrays.NDArray
 import kotlin.math.ln
 import kotlin.math.min
 
-class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: BPETokenizer) {
+internal class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: BPETokenizer) {
     data class PrefixInfo(val text: String, val errLimit: Int)
 
     private val prefixMatcher = FuzzyPrefixMatcher(tokenizer)
