@@ -3,6 +3,7 @@ package io.kinference.algorithms.completion.suggest.feature
 import io.kinference.algorithms.completion.generation.GenerationInfo
 
 
+@Suppress("unused")
 internal object Features {
     /** Probability of the whole completion */
     fun prob(generationInfo: GenerationInfo): Double {
