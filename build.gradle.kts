@@ -34,7 +34,7 @@ subprojects {
             jvmTarget = "11"
             languageVersion = "1.4"
             apiVersion = "1.4"
-            freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xopt-in=kotlin.ExperimentalUnsignedTypes")
         }
     }
 
