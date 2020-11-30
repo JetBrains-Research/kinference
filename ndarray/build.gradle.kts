@@ -14,7 +14,7 @@ dependencies {
 
     api("io.kinference.primitives", "primitives-annotations", "0.1.5")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
 }
 
 
