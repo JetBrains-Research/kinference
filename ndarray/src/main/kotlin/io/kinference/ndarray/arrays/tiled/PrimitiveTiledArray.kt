@@ -140,13 +140,13 @@ class PrimitiveTiledArray {
         val thisPtr = PrimitivePointer(this, srcStart)
         val destPtr = PrimitivePointer(dest, destOffset)
 
-        destPtr.accept(thisPtr, srcEnd - srcStart) { dst, src -> src }
+        destPtr.accept(thisPtr, srcEnd - srcStart) { dst: PrimitiveType, src: PrimitiveType -> src }
     }
 
     fun plus(other: PrimitiveTiledArray): PrimitiveTiledArray {
         val thisPtr = PrimitivePointer(this)
         val destPtr = PrimitivePointer(other)
-        thisPtr.accept(destPtr, this.size) { src, dst -> (src + dst).toPrimitive() }
+        thisPtr.accept(destPtr, this.size) { src: PrimitiveType, dst: PrimitiveType -> (src + dst).toPrimitive() }
         return this
     }
 

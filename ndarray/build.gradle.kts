@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.4" apply true
+    id("io.kinference.primitives") version "0.1.5" apply true
 }
 
 dependencies {
@@ -12,7 +12,7 @@ dependencies {
 
     api("org.slf4j", "slf4j-api", "1.7.30")
 
-    api("io.kinference.primitives", "primitives-annotations", "0.1.4")
+    api("io.kinference.primitives", "primitives-annotations", "0.1.5")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
 }
