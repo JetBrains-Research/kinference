@@ -3,16 +3,15 @@ package io.kinference.algorithms.completion.utils
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 
 internal object JSON {
-    val json = Json(JsonConfiguration.Stable)
+    val json = Json.Default
 
     inline fun <reified T : Any> string(serializer: SerializationStrategy<T>, value: T): String {
-        return json.stringify(serializer, value)
+        return json.encodeToString(serializer, value)
     }
 
     inline fun <reified T> parse(serializer: DeserializationStrategy<T>, value: String): T {
-        return json.parse(serializer, value)
+        return json.decodeFromString(serializer, value)
     }
 }

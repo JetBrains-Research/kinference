@@ -8,5 +8,5 @@ plugins {
 
 dependencies {
     implementation(gradleApi())
-    implementation(kotlin("gradle-plugin-api"))
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.4.20")
 }

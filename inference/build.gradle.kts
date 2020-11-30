@@ -1,4 +1,3 @@
-import io.kinference.gradle.generatedDir
 import io.kinference.gradle.useBenchmarkTests
 import io.kinference.gradle.useHeavyTests
 import tanvd.kosogor.proxy.publishJar
@@ -15,7 +14,7 @@ wire {
     protoPath("src/main/proto")
 
     kotlin {
-        out = generatedDir
+        out = "src/main/kotlin-gen"
     }
 }
 

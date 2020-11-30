@@ -5,7 +5,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    kotlin("plugin.serialization") version "1.3.72" apply true
+    kotlin("plugin.serialization") version "1.4.20" apply true
 }
 
 dependencies {
@@ -13,7 +13,7 @@ dependencies {
 
     implementation("com.github.ben-manes.caffeine", "caffeine", "2.8.5")
     implementation("info.debatty", "java-string-similarity", "1.2.1")
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-runtime", "0.20.0")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.0.1")
 
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation(project(":loaders"))
