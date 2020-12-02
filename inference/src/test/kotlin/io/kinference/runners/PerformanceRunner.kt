@@ -48,11 +48,11 @@ object PerformanceRunner {
         return results
     }
 
-    fun runFromS3(testPath: String, prefix: String, count: Int = 10) {
+    fun runFromS3(testPath: String, prefix: String, count: Int = 20) {
         output(runPerformanceFromS3(testPath, prefix, count))
     }
 
-    fun runFromResources(testPath: String, count: Int = 10) {
+    fun runFromResources(testPath: String, count: Int = 20) {
         output(runPerformanceFromResources(testPath, count))
     }
 
