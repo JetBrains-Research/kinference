@@ -23,5 +23,6 @@ jobs:
         with:
           name: test-report
           path: |
-            build/**/test-results/**/*
+            build/**/test-results/**/* |
+            build/**/reports/**/*
 
