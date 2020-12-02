@@ -7,7 +7,7 @@ import io.kinference.utils.DataLoader
 import java.io.File
 
 object PerformanceRunner {
-    private val testData = File("build/test-data")
+    private val testData = File("../build/test-data")
 
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
