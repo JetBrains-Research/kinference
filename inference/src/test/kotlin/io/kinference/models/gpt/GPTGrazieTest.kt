@@ -9,12 +9,12 @@ class GPTGrazieTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        TestRunner.runFromS3("/gpt2/grazie/distilled/quantized/v5/", "tests/gpt2/grazie/distilled/quantized/v5", 1.07)
+        TestRunner.runFromS3("/gpt2/grazie/distilled/quantized/v6/", "tests/gpt2/grazie/distilled/quantized/v6", 5.00)
     }
 
     @Test
     @Tag("heavy")
     fun `test GPT performance`() {
-        PerformanceRunner.runFromS3("/gpt2/grazie/distilled/quantized/v5/", "tests/gpt2/grazie/distilled/quantized/v5")
+        PerformanceRunner.runFromS3("/gpt2/grazie/distilled/quantized/v6/", "tests/gpt2/grazie/distilled/quantized/v6")
     }
 }
