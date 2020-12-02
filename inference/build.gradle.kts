@@ -30,6 +30,17 @@ tasks.test {
     }
 }
 
+
+sourceSets {
+    main {
+        allJava.srcDir(file("src/main/kotlin-gen"))
+    }
+}
+
+idea {
+    module.generatedSourceDirs.plusAssign(files("src/main/kotlin-gen"))
+}
+
 useHeavyTests()
 useBenchmarkTests()
 

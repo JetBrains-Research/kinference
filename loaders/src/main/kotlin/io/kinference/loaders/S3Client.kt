@@ -63,14 +63,5 @@ object S3Client {
 
         println("Finished files downloading")
     }
-
-    private fun InputStream.transferTo(output: OutputStream) {
-        val buffer = ByteArray(1024)
-        var len: Int = read(buffer)
-        while (len != -1) {
-            output.write(buffer, 0, len)
-            len = read(buffer)
-        }
-    }
 }
 
