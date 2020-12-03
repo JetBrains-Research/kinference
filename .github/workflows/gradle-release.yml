@@ -16,7 +16,7 @@ jobs:
       - name: Release with Gradle
         env:
           bintray_key: ${{ secrets.BINTRAY_KEY }}
-        run: ./gradlew bintrayUpload --console=plain
+        run: ./gradlew --no-daemon bintrayUpload --console=plain
       - name: Upload Build Results
         uses: actions/upload-artifact@v2
         if: ${{ always() }}

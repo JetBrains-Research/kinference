@@ -16,7 +16,7 @@ fun Project.useHeavyTests() {
             excludeTags("benchmark")
         }
 
-        maxHeapSize = "1024m"
+        maxHeapSize = "2G"
 
         testLogging {
             events("passed", "skipped", "failed")

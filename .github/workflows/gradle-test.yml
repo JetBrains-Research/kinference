@@ -20,7 +20,7 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: ./gradlew test --console=plain
+        run: ./gradlew --no-daemon test --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2
