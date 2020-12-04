@@ -125,14 +125,14 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
         prefixes = null
     }
 
-    fun generate(context: IntArray, prefix: String, config: CompletionConfig.Generation): List<List<List<Search.HypothesisInfo>>> {
+    fun generate(context: IntArray, prefix: String, config: CompletionConfig.Generation): List<List<List<GenerationInfo>>> {
         val search = getSearch(config)
 
         val oneLogProbs = initState(context, prefix, config)
         var logProbs = Array(search.batchSize) { oneLogProbs[0] }
         sortState(IntArray(search.batchSize))
 
-        val result = ArrayList<List<List<Search.HypothesisInfo>>>()
+        val result = ArrayList<List<List<GenerationInfo>>>()
         for (i in 0 until config.maxLen) {
             val selectedInds = search.step(logProbs, context)
             sortState(selectedInds)

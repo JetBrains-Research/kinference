@@ -12,25 +12,25 @@ internal abstract class Search(
     val repetitionPenalty: Double = 1.0
 ) {
 
-    data class HypothesisInfo(val hypothesis: IntArray, val info: GenerationInfo) {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as HypothesisInfo
-
-            if (!hypothesis.contentEquals(other.hypothesis)) return false
-            if (info != other.info) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = hypothesis.contentHashCode()
-            result = 31 * result + info.hashCode()
-            return result
-        }
-    }
+//    data class HypothesisInfo(val hypothesis: IntArray, val info: GenerationInfo) {
+//        override fun equals(other: Any?): Boolean {
+//            if (this === other) return true
+//            if (javaClass != other?.javaClass) return false
+//
+//            other as HypothesisInfo
+//
+//            if (!hypothesis.contentEquals(other.hypothesis)) return false
+//            if (info != other.info) return false
+//
+//            return true
+//        }
+//
+//        override fun hashCode(): Int {
+//            var result = hypothesis.contentHashCode()
+//            result = 31 * result + info.hashCode()
+//            return result
+//        }
+//    }
 
     /**
      * Current batch size
@@ -42,12 +42,7 @@ internal abstract class Search(
     /**
      * List of list of tuples of current hypotheses and theirs scores
      */
-    abstract fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>>
-
-    /**
-     * List of list of tuples of current hypotheses and theirs scores
-     */
-    abstract fun currentHypotheses(): List<List<HypothesisInfo>>
+    abstract fun currentHypotheses(): List<List<GenerationInfo>>
 
     /**
      * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
