@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import io.kinference.algorithms.completion.loader.CompletionModelLoader
 import io.kinference.algorithms.completion.utils.Caching
 
-internal class BPETokenizer(loader: CompletionModelLoader) {
+class BPETokenizer(loader: CompletionModelLoader) {
     private val encodeCache: Cache<String, IntArray> = Caching.default()
     private val decodeCache: Cache<IntArray, String> = Caching.default()
 
