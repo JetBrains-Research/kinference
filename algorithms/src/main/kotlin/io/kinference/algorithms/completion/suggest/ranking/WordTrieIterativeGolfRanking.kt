@@ -131,9 +131,9 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
 }
 
 
-class WordTrieIterativeGolfRanking(internal val tokenizer: BPETokenizer,
+internal class WordTrieIterativeGolfRanking(internal val tokenizer: BPETokenizer,
                                    private val numSeqs: Int,
-                                   private val minFirstScore: Float) : RankingModel {
+                                   private val minFirstScore: Double) : RankingModel {
 //    private fun createScore(): GolfTrie {
 //        return GolfTrie(tokenizer)
 //    }

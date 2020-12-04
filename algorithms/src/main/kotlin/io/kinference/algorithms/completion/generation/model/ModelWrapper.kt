@@ -4,6 +4,8 @@ import io.kinference.ndarray.arrays.NDArray
 
 
 internal interface ModelWrapper {
+    val maxSeqLen: Int
+
     fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq
 
     fun initLastLogProbs(inputIds: Array<IntArray>): ModelOutput {

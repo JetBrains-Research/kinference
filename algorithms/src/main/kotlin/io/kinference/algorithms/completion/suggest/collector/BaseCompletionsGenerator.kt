@@ -2,17 +2,16 @@ package io.kinference.algorithms.completion.suggest.collector
 
 import io.kinference.algorithms.completion.CompletionConfig
 import io.kinference.algorithms.completion.CompletionModel
-import io.kinference.algorithms.completion.generation.model.GPT2ModelWrapper
+import io.kinference.algorithms.completion.generation.model.ModelWrapper
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 
 /**
  * Base class for all completions generators that trims and cleans up completions
  * got from beam-search or other implementation before passing it to the client.
  */
-abstract class BaseCompletionsGenerator(config: CompletionConfig) : CompletionsGenerator {
-    private val maxTokenizerLen = config.tokenizer.maxSeqLen - 4
-    internal val model = GPT2ModelWrapper(config.loader, config.model)
-    internal val tokenizer = BPETokenizer(config.loader)
+internal abstract class BaseCompletionsGenerator(internal val model: ModelWrapper,
+                                                 internal val tokenizer: BPETokenizer) : CompletionsGenerator {
+    private val maxTokenizerLen = model.maxSeqLen - 4
 
     protected abstract fun generateWithSearch(context: String, prefix: String, config: CompletionConfig.Generation): List<CompletionModel.CompletionResult>
 
