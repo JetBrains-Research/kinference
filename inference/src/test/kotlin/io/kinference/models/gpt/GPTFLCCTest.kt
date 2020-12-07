@@ -5,17 +5,15 @@ import io.kinference.runners.TestRunner
 import org.junit.jupiter.api.*
 
 class GPTFLCCTest {
-    @Disabled
     @Test
     @Tag("heavy")
     fun `test gpt py model`() {
-        TestRunner.runFromS3("/gpt2/flcc-py-completion/quantized/v1/", "tests/gpt2/flcc-py-completion/quantized/v1", delta = 0.7)
+        TestRunner.runFromS3("/gpt2/flcc-py-completion/quantized/v2/", "tests/gpt2/flcc-py-completion/quantized/v2", delta = 2.0)
     }
 
-    @Disabled
     @Test
     @Tag("heavy")
     fun `test gpt py performance`() {
-        PerformanceRunner.runFromS3("/gpt2/flcc-py-completion/quantized/v1/", "tests/gpt2/flcc-py-completion/quantized/v1")
+        PerformanceRunner.runFromS3("/gpt2/flcc-py-completion/quantized/v2/", "tests/gpt2/flcc-py-completion/quantized/v2", count = 50)
     }
 }
