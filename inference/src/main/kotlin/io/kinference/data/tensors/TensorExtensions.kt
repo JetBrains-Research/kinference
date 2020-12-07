@@ -21,7 +21,6 @@ fun TensorProto.DataType.resolveLocalDataType(): DataType {
         TensorProto.DataType.UINT64 -> DataType.ULONG
         TensorProto.DataType.UINT16 -> DataType.USHORT
         TensorProto.DataType.UINT8 -> DataType.UBYTE
-        TensorProto.DataType.UNDEFINED -> DataType.UNKNOWN
         else -> error("Cannot resolve data type")
     }
 }
@@ -39,7 +38,6 @@ fun DataType.resolveProtoDataType(): TensorProto.DataType {
         DataType.ULONG -> TensorProto.DataType.UINT64
         DataType.USHORT -> TensorProto.DataType.UINT16
         DataType.UBYTE -> TensorProto.DataType.UINT8
-        DataType.UNKNOWN -> TensorProto.DataType.UNDEFINED
         else -> error("Cannot resolve data type")
     }
 }

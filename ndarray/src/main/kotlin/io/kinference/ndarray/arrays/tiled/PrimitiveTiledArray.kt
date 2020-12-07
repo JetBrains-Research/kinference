@@ -1,18 +1,18 @@
-@file:GenerateWithPrimitives
+@file:GeneratePrimitives(DataType.ALL)
+@file:Suppress("DuplicatedCode")
 
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
-import io.kinference.primitives.annotations.GenerateWithPrimitives
-import io.kinference.primitives.annotations.PrimitiveClass
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.math.min
 
-@PrimitiveClass
+@GenerateNameFromPrimitives
 class PrimitiveTiledArray {
     val size: Int
     val blockSize: Int
@@ -140,9 +140,10 @@ class PrimitiveTiledArray {
         val thisPtr = PrimitivePointer(this, srcStart)
         val destPtr = PrimitivePointer(dest, destOffset)
 
-        destPtr.accept(thisPtr, srcEnd - srcStart) { dst: PrimitiveType, src: PrimitiveType -> src }
+        destPtr.accept(thisPtr, srcEnd - srcStart) { _: PrimitiveType, src: PrimitiveType -> src }
     }
 
+    @FilterPrimitives(exclude = [DataType.BOOLEAN])
     fun plus(other: PrimitiveTiledArray): PrimitiveTiledArray {
         val thisPtr = PrimitivePointer(this)
         val destPtr = PrimitivePointer(other)

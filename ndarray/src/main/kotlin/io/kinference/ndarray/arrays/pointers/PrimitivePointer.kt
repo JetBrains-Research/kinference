@@ -1,15 +1,14 @@
-@file:GenerateWithPrimitives
-@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE", "DuplicatedCode")
+@file:GeneratePrimitives(DataType.ALL)
+@file:Suppress("DuplicatedCode")
 
 package io.kinference.ndarray.arrays.pointers
-
 
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.math.min
 
-@PrimitiveClass
+@GenerateNameFromPrimitives
 class PrimitivePointer {
     val array: PrimitiveTiledArray
 
@@ -26,6 +25,7 @@ class PrimitivePointer {
         this.currentBlock = array.blocks[blockNum]
     }
 
+    @Suppress("unused")
     constructor(other: PrimitivePointer) {
         this.array = other.array
         this.blockNum = other.blockNum
@@ -42,15 +42,15 @@ class PrimitivePointer {
             this.currentBlock = array.blocks[blockNum]
         }
 
-    inline fun set(value: PrimitiveType) {
+    fun set(value: PrimitiveType) {
         currentBlock[indexInBlock] = value
     }
 
-    inline fun get(): PrimitiveType {
+    fun get(): PrimitiveType {
         return currentBlock[indexInBlock]
     }
 
-    inline fun blockIncrement() {
+    fun blockIncrement() {
         when {
             blockNum < array.blocksNum - 1 -> {
                 blockNum++
@@ -61,19 +61,19 @@ class PrimitivePointer {
         }
     }
 
-    inline fun increment() {
+    fun increment() {
         when {
             indexInBlock < array.blockSize - 1 -> indexInBlock++
             else -> blockIncrement()
         }
     }
 
-    inline fun incrementAndGet(): PrimitiveType {
+    fun incrementAndGet(): PrimitiveType {
         increment()
         return currentBlock[indexInBlock]
     }
 
-    inline fun getAndIncrement(): PrimitiveType {
+    fun getAndIncrement(): PrimitiveType {
         val value = currentBlock[indexInBlock]
         increment()
         return value
@@ -82,23 +82,13 @@ class PrimitivePointer {
     fun isValid(): Boolean = indexInBlock < array.blockSize
 }
 
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.isCompatibleWith(other: @Type1 PrimitivePointer): Boolean {
+@BindPrimitives(type1 = [DataType.ALL])
+fun PrimitivePointer.isCompatibleWith(other: @BindPrimitives.Type1 PrimitivePointer): Boolean {
     return this.indexInBlock == other.indexInBlock && this.array.blockSize == other.array.blockSize
 }
 
-inline fun PrimitivePointer.isCompatibleWith(other: BooleanPointer): Boolean {
-    return this.indexInBlock == other.indexInBlock && this.array.blockSize == other.array.blockSize
-}
-
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.isCompatibleBySize(other: @Type1 PrimitivePointer, requestedSize: Int): Boolean {
-    return this.array.size - this.linearIndex >= requestedSize && other.array.size - other.linearIndex >= requestedSize
-}
-
-inline fun PrimitivePointer.isCompatibleBySize(other: BooleanPointer, requestedSize: Int): Boolean {
+@BindPrimitives(type1 = [DataType.ALL])
+fun PrimitivePointer.isCompatibleBySize(other: @BindPrimitives.Type1 PrimitivePointer, requestedSize: Int): Boolean {
     return this.array.size - this.linearIndex >= requestedSize && other.array.size - other.linearIndex >= requestedSize
 }
 
@@ -132,9 +122,8 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
     }
 }
 
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @Type1 PrimitiveType) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.mapTo(container: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @BindPrimitives.Type1 PrimitiveType) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -162,37 +151,8 @@ inline fun PrimitivePointer.mapTo(container: @Type1 PrimitivePointer, count: Int
     }
 }
 
-fun PrimitivePointer.mapTo(container: BooleanPointer, count: Int, action: (value: PrimitiveType) -> Boolean) {
-    require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
-
-    var end = count
-    if (this.isCompatibleWith(container)) {
-        while (end > 0) {
-            val srcBlock = this.currentBlock
-            val offset = this.indexInBlock
-            this.blockIncrement()
-
-            val dstBlock = container.currentBlock
-            container.blockIncrement()
-
-            for (index in offset until min(srcBlock.size, offset + end)) {
-                dstBlock[index] = action(srcBlock[index])
-            }
-
-            end -= srcBlock.size - offset
-        }
-    } else {
-        while (end > 0) {
-            container.set(action(this.getAndIncrement()))
-            container.increment()
-            end--
-        }
-    }
-}
-
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @Type1 PrimitiveType) -> PrimitiveType) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.accept(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -220,9 +180,9 @@ inline fun PrimitivePointer.accept(other: @Type1 PrimitivePointer, count: Int, a
     }
 }
 
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.acceptWithRecursive(src: @Type1 PrimitivePointer, rec: @Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @Type1 PrimitiveType, rec: @Type1 PrimitiveType) -> PrimitiveType) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.acceptWithRecursive(src: @BindPrimitives.Type1 PrimitivePointer, rec: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+                                                action: (dst: PrimitiveType, src: @BindPrimitives.Type1 PrimitiveType, rec: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(src, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -289,7 +249,9 @@ inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, a
     }
 }
 
-inline fun PrimitivePointer.acceptDouble(first: PrimitivePointer, second: PrimitivePointer, count: Int, action: (dst: PrimitiveType, fst: PrimitiveType, snd: PrimitiveType) -> PrimitiveType) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.acceptDouble(first: @BindPrimitives.Type1 PrimitivePointer, second: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+                                         action: (dst: PrimitiveType, fst: @BindPrimitives.Type1 PrimitiveType, snd: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
     require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
 
@@ -358,9 +320,9 @@ inline fun PrimitivePointer.acceptTriple(first: PrimitivePointer, second: Primit
     }
 }
 
-@PrimitiveBinding(type1 = [DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
-    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG, DataType.FLOAT, DataType.DOUBLE])
-inline fun PrimitivePointer.combine(other: @Type1 PrimitivePointer, count: Int, action: (fst: PrimitiveType, snd: @Type1 PrimitiveType) -> Unit) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.combine(other: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+                                    action: (fst: PrimitiveType, snd: @BindPrimitives.Type1 PrimitiveType) -> Unit) {
     require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
 
     var end = count

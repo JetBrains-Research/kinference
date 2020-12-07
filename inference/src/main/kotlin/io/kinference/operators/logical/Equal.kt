@@ -37,52 +37,52 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
                     DataType.BYTE -> {
                         val f = (first as ByteNDArray).array.pointer()
                         val s = (second as ByteNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.SHORT -> {
                         val f = (first as ShortNDArray).array.pointer()
                         val s = (second as ShortNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.INT -> {
                         val f = (first as IntNDArray).array.pointer()
                         val s = (second as IntNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.LONG -> {
                         val f = (first as LongNDArray).array.pointer()
                         val s = (second as LongNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.UBYTE -> {
                         val f = (first as UByteNDArray).array.pointer()
                         val s = (second as UByteNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.USHORT -> {
                         val f = (first as UShortNDArray).array.pointer()
                         val s = (second as UShortNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.UINT -> {
                         val f = (first as UIntNDArray).array.pointer()
                         val s = (second as UIntNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.ULONG -> {
                         val f = (first as ULongNDArray).array.pointer()
                         val s = (second as ULongNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.FLOAT -> {
                         val f = (first as FloatNDArray).array.pointer()
                         val s = (second as FloatNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.DOUBLE -> {
                         val f = (first as DoubleNDArray).array.pointer()
                         val s = (second as DoubleNDArray).array.pointer()
-                        pointer.acceptDouble(f, s, dest.linearSize) { a, b -> a == b }
+                        pointer.acceptDouble(f, s, dest.linearSize) { _, a, b -> a == b }
                     }
                     DataType.BOOLEAN -> {
                         val f = (first as BooleanNDArray).array.pointer()

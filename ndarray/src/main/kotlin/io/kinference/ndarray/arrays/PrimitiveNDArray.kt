@@ -1,4 +1,4 @@
-@file:GenerateWithPrimitives
+@file:GeneratePrimitives(DataType.NUMBER)
 @file:Suppress("DuplicatedCode", "unused")
 
 package io.kinference.ndarray.arrays
@@ -7,13 +7,12 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.primitives.annotations.GenerateWithPrimitives
-import io.kinference.primitives.annotations.PrimitiveClass
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
-@PrimitiveClass
+@GenerateNameFromPrimitives
 open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArray {
     constructor(shape: IntArray, divider: Int = 1) : this(PrimitiveTiledArray(shape, divider), Strides(shape))
     constructor(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, divider, init), Strides(shape))
@@ -55,7 +54,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return PrimitiveNDArray(newArray, newStrides)
     }
 
-    override val type = DataType.UNKNOWN
+    override val type = DataType.CurrentPrimitive
 
     final override var strides: Strides = strides
         protected set
@@ -716,7 +715,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 }
 
-@PrimitiveClass
+@GenerateNameFromPrimitives
 interface PrimitiveMap : PrimitiveToPrimitiveFunction {
     fun apply(value: PrimitiveType): PrimitiveType
 }

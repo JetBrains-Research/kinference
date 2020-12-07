@@ -1,4 +1,4 @@
-@file:GenerateWithPrimitives
+@file:GeneratePrimitives(DataType.NUMBER)
 
 package io.kinference.ndarray.arrays
 
@@ -6,11 +6,10 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.isScalar
-import io.kinference.primitives.annotations.GenerateWithPrimitives
-import io.kinference.primitives.annotations.PrimitiveClass
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 
-@PrimitiveClass
+@GenerateNameFromPrimitives
 open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
     constructor(shape: IntArray, divider: Int = 1) : this(PrimitiveTiledArray(shape, divider), Strides(shape))
     constructor(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, divider, init), Strides(shape))

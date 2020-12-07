@@ -685,7 +685,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             DataType.FLOAT -> castFloat(tensor.data as FloatNDArray, to)
             DataType.DOUBLE -> castDouble(tensor.data as DoubleNDArray, to)
             DataType.BOOLEAN -> castBoolean(tensor.data as BooleanNDArray, to)
-            else -> throw IllegalStateException("Unsupported type")
+            else -> throw IllegalStateException("Unsupported type ${tensor.data.type}")
         }
 
         return listOf(casted.asTensor("output"))
