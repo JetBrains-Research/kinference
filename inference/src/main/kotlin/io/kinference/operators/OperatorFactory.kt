@@ -12,6 +12,7 @@ import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.Equal
 import io.kinference.operators.logical.Not
 import io.kinference.operators.math.*
+import io.kinference.operators.ml.TreeEnsembleRegressor
 import io.kinference.operators.quantization.DequantizeLinear
 import io.kinference.operators.quantization.DynamicQuantizeLinear
 import io.kinference.operators.seq.ConcatFromSequence
@@ -61,6 +62,7 @@ object OperatorFactory {
         "Squeeze" -> Squeeze(attributes, inputs, outputs)
         "Tanh" -> Tanh(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
+        "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
