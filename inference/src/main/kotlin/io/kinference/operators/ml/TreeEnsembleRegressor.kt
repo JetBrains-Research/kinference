@@ -6,6 +6,7 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.DoubleNDArray
 import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
@@ -60,7 +61,8 @@ class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: Lis
             inputData
         } else {
             inputData as DoubleNDArray
-            FloatNDArray(inputData.strides.shape)
+            val pointer = DoublePointer(inputData.array)
+            FloatNDArray(inputData.shape) { pointer.getAndIncrement().toFloat() }
         }
         return listOf(treeEnsemble.execute(floatInput).asTensor("Y"))
     }
