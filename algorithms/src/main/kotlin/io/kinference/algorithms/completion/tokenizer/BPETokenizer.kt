@@ -4,6 +4,9 @@ import com.github.benmanes.caffeine.cache.Cache
 import io.kinference.algorithms.completion.loader.CompletionModelLoader
 import io.kinference.algorithms.completion.utils.Caching
 
+/**
+ * Tokenizer based on BPE algorithm, which used in GPT-2, but without bytes
+ */
 class BPETokenizer(loader: CompletionModelLoader) {
     private val encodeCache: Cache<String, IntArray> = Caching.default()
     private val decodeCache: Cache<IntArray, String> = Caching.default()
@@ -145,7 +148,7 @@ class BPETokenizer(loader: CompletionModelLoader) {
         } else {
             result.addAll(recursiveSplit(left, isFinal))
         }
-        if (isFinal && vocab.containsKey(right) || !isFinal && right in vocab) {
+        if (right in vocab) {
             result.add(right)
         } else {
             result.addAll(recursiveSplit(right, isFinal))

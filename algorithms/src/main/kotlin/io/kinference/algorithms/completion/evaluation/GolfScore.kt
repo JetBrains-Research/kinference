@@ -2,7 +2,7 @@ package io.kinference.algorithms.completion.evaluation
 
 import java.lang.Double.min
 
-class GolfScore(val text: String) {
+internal class GolfScore(val text: String) {
     private val scores = DoubleArray(text.length + 20) { Double.MAX_VALUE }
     private var prevScores = DoubleArray(text.length + 20)
 

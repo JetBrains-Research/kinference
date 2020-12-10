@@ -25,10 +25,9 @@ internal abstract class BaseCompletionsGenerator(internal val model: ModelWrappe
         for (completion in completions) {
             // TODO: convert to one function?
             val trimmedCompletion = completion.trimEnding().trimAfterSentenceEnd()
-            if (trimmedCompletion.text.isEmpty()
-                || trimmedCompletion.text.length == 1 && !completion.text[0].isLetterOrDigit()
-                || !tokenizer.isValidString(trimmedCompletion.text)
-            ) continue
+            val oneSpecificChar = trimmedCompletion.text.length == 1 && !completion.text[0].isLetterOrDigit()
+            val containsInvalidSymbols = !tokenizer.isValidString(trimmedCompletion.text)
+            if (trimmedCompletion.text.isEmpty() || oneSpecificChar || containsInvalidSymbols) continue
 
             val words = trimmedCompletion.text.trim().split(' ')
             val targetLen = words.size

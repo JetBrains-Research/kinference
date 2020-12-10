@@ -3,9 +3,12 @@ package io.kinference.algorithms.completion.evaluation
 import io.kinference.algorithms.completion.CompletionModel
 import kotlin.collections.ArrayList
 
+/**
+ * Base class for metrics with some common methods for it
+ */
 abstract class Metric(val name: String) {
     companion object {
-        fun contextPrefixGenerator(text: String, context: String = "", context_len: Int = 50): List<Pair<String, String>> {
+        fun contextPrefixGenerator(text: String, context: String = "", contextLen: Int = 50): List<Pair<String, String>> {
             val result = ArrayList<Pair<String, String>>()
             val words = ArrayList<String>()
             var word = ""
@@ -19,7 +22,7 @@ abstract class Metric(val name: String) {
             result.add(Pair(context, ""))
             for (c in text) {
                 if (splitters.contains(c)) {
-                    if (words.size == context_len) {
+                    if (words.size == contextLen) {
                         words.removeAt(0)
                     }
                     if (word != "") {

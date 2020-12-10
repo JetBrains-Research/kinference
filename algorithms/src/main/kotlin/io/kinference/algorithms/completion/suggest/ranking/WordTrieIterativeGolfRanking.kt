@@ -54,7 +54,7 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
         return Pair(words, wProbs)
     }
 
-    private fun patchedTrie(words: List<String>, probs: List<Double>, cand_pos: Int): Pair<GolfTrie, Double> {
+    private fun patchedTrie(words: List<String>, probs: List<Double>, candPos: Int): Pair<GolfTrie, Double> {
         val resultTrie = copyByPath(words)
         assert(words.size == probs.size)
 
@@ -64,20 +64,20 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
 
         var diff = 0.0
         if (!resultTrie.updated && prefixState.prefix != "") {
-            var score = (1 - prob) * scores[prefix.length] + prob * (tabsNum + cand_pos)
+            var score = (1 - prob) * scores[prefix.length] + prob * (tabsNum + candPos)
             var newScore = min(resultTrie.scores[prefix.length], score)
             diff += resultTrie.scores[prefix.length] - newScore
             resultTrie.scores[prefix.length] = newScore
             // backspace
             for (i in prefix.length - 1..0) {
-                score = (1 - prob) * scores[i] + prob * (tabsNum + cand_pos + abs(prefix.length - i))
+                score = (1 - prob) * scores[i] + prob * (tabsNum + candPos + abs(prefix.length - i))
                 newScore = min(resultTrie.scores[i], score)
                 diff += resultTrie.scores[i] - newScore
                 resultTrie.scores[i] = newScore
             }
             // ordinary typing
             for (i in prefix.length + 1 until scores.size) {
-                score = (1 - prob) * scores[i] + prob * (tabsNum + cand_pos + abs(prefix.length - i))
+                score = (1 - prob) * scores[i] + prob * (tabsNum + candPos + abs(prefix.length - i))
                 newScore = min(resultTrie.scores[i], score)
                 diff += resultTrie.scores[i] - newScore
                 resultTrie.scores[i] = newScore
@@ -103,7 +103,7 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
             GolfTrie(tokenizer, PrefixState(prefix, prob, tabsNum), resultTrie.scores.clone())
         }
 
-        val (newChild, diff_add) = child.patchedTrie(words.subList(1, words.size), probs.subList(1, probs.size), cand_pos)
+        val (newChild, diff_add) = child.patchedTrie(words.subList(1, words.size), probs.subList(1, probs.size), candPos)
         resultTrie.children[prefix] = newChild
         diff += diff_add
         // if len(words) > 1:

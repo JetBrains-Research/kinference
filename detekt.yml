@@ -498,7 +498,7 @@ style:
     active: true
   LoopWithTooManyJumpStatements:
     active: true
-    maxJumpCount: 1
+    maxJumpCount: 3
   MagicNumber:
     active: false
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
