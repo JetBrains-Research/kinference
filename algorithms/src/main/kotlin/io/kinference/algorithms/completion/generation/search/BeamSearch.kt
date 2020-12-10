@@ -42,7 +42,7 @@ internal class BeamSearch(
             }
         }
 
-        var samples = topk1d(logProbs, min((1 + eosIds.size) * searchSize, logProbs.size))
+        var samples = topk1d(logProbs, searchSize)
         val sampleScores = logProbs.sliceArray(samples)
 
         val samplesStepLogProbs = expStepLogProbs.sliceArray(samples)
