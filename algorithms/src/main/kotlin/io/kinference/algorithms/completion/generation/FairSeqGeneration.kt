@@ -56,6 +56,11 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
                     scores[i][j] = scores[i][j] + err_num * logSpellProb
                 }
             }
+
+            // ban tokens with bad symbols
+            for (j in tokenizer.invalidIds) {
+                scores[i][j] = Double.NEGATIVE_INFINITY
+            }
         }
 
         return scores

@@ -25,11 +25,11 @@ abstract class Metric(val name: String) {
                     if (word != "") {
                         words.add(word)
                     }
-                    if (c == ' ') {
-                        word = " "
+                    word = if (c == ' ') {
+                        " "
                     } else {
                         words.add(c + "")
-                        word = ""
+                        ""
                     }
                 } else {
                     word += c

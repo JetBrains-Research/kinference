@@ -20,6 +20,7 @@ class BPETokenizer(loader: CompletionModelLoader) {
     private val reversedCodes: MutableMap<String, MergeCandidate> = HashMap()
 
     val eosTokenId = 50256
+    val invalidIds: MutableSet<Int> = HashSet()
     val vocabSize: Int
         get() = vocab.size
 
@@ -35,14 +36,24 @@ class BPETokenizer(loader: CompletionModelLoader) {
             codes[pair] = codes.size
             reversedCodes[left + right] = pair
         }
+
+        for ((s, id) in vocab.entries) {
+            if (!isValidString(s)) {
+                invalidIds.add(id)
+            }
+        }
+    }
+
+    fun isValidString(s: String): Boolean {
+        return s == s.replace(Regex("[^ -~Ġ]"), "")
     }
 
     private fun preprocess(s: String): String {
-        return s.replace(' ', 'Ġ')
+        return s.replace(Regex("[^ -~]"), "").replace(' ', 'Ġ')
     }
 
     private fun postprocess(s: String): String {
-        return s.replace('Ġ', ' ')
+        return s.replace('Ġ', ' ').replace(Regex("[^ -~]"), "")
     }
 
     private fun internalTokenize(word: String): List<String> {
