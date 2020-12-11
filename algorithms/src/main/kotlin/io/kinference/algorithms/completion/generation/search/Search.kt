@@ -12,26 +12,6 @@ internal abstract class Search(
     val repetitionPenalty: Double = 1.0
 ) {
 
-//    data class HypothesisInfo(val hypothesis: IntArray, val info: GenerationInfo) {
-//        override fun equals(other: Any?): Boolean {
-//            if (this === other) return true
-//            if (javaClass != other?.javaClass) return false
-//
-//            other as HypothesisInfo
-//
-//            if (!hypothesis.contentEquals(other.hypothesis)) return false
-//            if (info != other.info) return false
-//
-//            return true
-//        }
-//
-//        override fun hashCode(): Int {
-//            var result = hypothesis.contentHashCode()
-//            result = 31 * result + info.hashCode()
-//            return result
-//        }
-//    }
-
     /**
      * Current batch size
      */

@@ -45,22 +45,4 @@ class GenerationInfo(initProbs: List<Double> = ArrayList(), initIds: List<Int> =
         ids = ids.copyOfRange(realLeft, realRight)
         return this
     }
-
-//    override fun equals(other: Any?): Boolean {
-//        if (this === other) return true
-//        if (javaClass != other?.javaClass) return false
-//
-//        other as GenerationInfo
-//
-//        if (!ids.contentEquals(other.ids)) return false
-//        if (!probs.contentEquals(other.probs)) return false
-//
-//        return true
-//    }
-//
-//    override fun hashCode(): Int {
-//        var result = ids.contentHashCode()
-//        result = 31 * result + info.hashCode()
-//        return result
-//    }
 }

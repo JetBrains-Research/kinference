@@ -22,9 +22,6 @@ data class CompletionConfig(
     val generation: Generation,
     val filter: Filter
 ) {
-    /**
-     * Tokenizer configuration that is used in completion model
-     */
 
     /**
      * GPT-like model configuration that is used in completion model

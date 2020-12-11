@@ -3,6 +3,7 @@ package io.kinference.algorithms.completion.model
 import io.kinference.algorithms.completion.CompletionModelFactory
 import io.kinference.algorithms.completion.CompletionModels
 import io.kinference.algorithms.completion.evaluation.GolfMetric
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
@@ -26,9 +27,10 @@ class QualityTest {
         One of the key features of Kotless is its ability to embed into existing applications. Kotless makes super easy deployment of existing Spring and Ktor applications to AWS serverless platform.
     """.trimIndent()
 
-//    @Test
-//    @Tag("heavy")
-    fun main() {
+    @Disabled
+    @Test
+    @Tag("heavy")
+    fun `test golf`() {
         val completionModel = CompletionModelFactory.createCompletionModel(CompletionModels.v6)
         val metric = GolfMetric()
         val start = System.currentTimeMillis()
@@ -37,17 +39,5 @@ class QualityTest {
         println(golfScore)  // 0.6530454895913647
         println("Time: " + (System.currentTimeMillis() - start))
         assert(golfScore < 0.8)
-
-        //        0.6507324595219738 - после фильтрации неправильных токенов
-//        0.7987663839629915 - repPen 5
-//        0.7833461835003855 - repPen 2
-
-//        бан
-//        0.6507324595219738
-//        Time: 380461
-
-//        без бана
-//        0.6507324595219738
-//        Time: 365310
     }
 }
