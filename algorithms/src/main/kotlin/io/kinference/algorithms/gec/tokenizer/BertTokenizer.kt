@@ -5,11 +5,11 @@ import io.kinference.ndarray.arrays.IntNDArray
 class BertTokenizer(val vocabPath: Path,
                     override val doLowerCase: Boolean = true,
                     val doBasicTokenize: Boolean = true,
-                    val unkToken: String = "[UNK]",
-                    val sepToken: String = "[SEP]",
-                    val padToken: String = "[PAD]",
-                    val clsToken: String = "[CLS]",
-                    val maskToken: String = "[MASK]",
+                    override val unkToken: String = "[UNK]",
+                    override val sepToken: String = "[SEP]",
+                    override val padToken: String = "[PAD]",
+                    override val clsToken: String = "[CLS]",
+                    override val maskToken: String = "[MASK]",
                     val tokenizeChineseChars: Boolean = true, ): PreTrainedTokenizer
 {
     private val vocab = load_vocab()
@@ -53,7 +53,7 @@ class BertTokenizer(val vocabPath: Path,
         return splitTokens
     }
 
-    fun encode(text: String, addSpecialTokens: Boolean) : List<Int> {
+    override fun encode(text: String, addSpecialTokens: Boolean) : List<Int> {
         val tokenizedText = tokenize(text)
         val encoded = mutableListOf<Int>()
         if (addSpecialTokens){
@@ -66,6 +66,10 @@ class BertTokenizer(val vocabPath: Path,
             encoded.add(vocab.getOrDefault(sepToken, vocab.get(unkToken)!!))
         }
         return encoded
+    }
+
+    override fun decode(ids: List<Int>): String {
+        TODO("Not yet implemented")
     }
 
     fun encodeBatch(texts: List<String>, addSpecialTokens: Boolean) : List<List<Int>>{

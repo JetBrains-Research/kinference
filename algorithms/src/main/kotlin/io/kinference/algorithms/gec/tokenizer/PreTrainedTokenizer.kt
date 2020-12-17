@@ -3,6 +3,23 @@ package io.kinference.algorithms.gec.tokenizer
 interface PreTrainedTokenizer{
     val vocabSize: Int
     val doLowerCase: Boolean
+    val unkToken: String
+    val sepToken: String
+    val padToken: String
+    val clsToken: String
+    val maskToken: String
+
+    val unkId: Int
+        get() = convertTokenToId_(unkToken)
+    val sepId: Int
+        get() = convertTokenToId_(sepToken)
+    val padId: Int
+        get() = convertTokenToId_(padToken)
+    val clsId: Int
+        get() = convertTokenToId_(clsToken)
+    val maskId: Int
+        get() = convertTokenToId_(maskToken)
+
 
     fun length() : Int{
         return vocabSize
@@ -13,6 +30,10 @@ interface PreTrainedTokenizer{
    fun convertTokenToId_(token: String): Int
 
    fun convertIdToToken_(id: Int): String
+
+   fun encode(text: String, addSpecialTokens: Boolean): List<Int>
+
+   fun decode(ids: List<Int>): String
 
     fun splitOnToken(tok: String, text: String): List<String>{
         val result = mutableListOf<String>()
