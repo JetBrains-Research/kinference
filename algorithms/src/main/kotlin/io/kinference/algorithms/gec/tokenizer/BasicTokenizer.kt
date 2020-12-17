@@ -4,13 +4,21 @@ import io.kinference.algorithms.gec.tokenizer.utils.isPunctuation
 import io.kinference.algorithms.gec.tokenizer.utils.isWhitespace
 import io.kinference.algorithms.gec.tokenizer.utils.whitespaceTokenize
 import java.text.Normalizer
+import java.util.ArrayList
 
 class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
+
+    /**
+     * BasicTokenizer provides simple tokenization based on punctuation and accents
+     * [doLowerCase] - boolean value for cased and uncased variants
+     * [stripAccents] - boolean value for stripping accents
+     */
 
     fun tokenize(text: String): List<String>{
         val mText = cleanText(text)
         val origTokens = whitespaceTokenize(mText)
-        val splitTokens = mutableListOf<String>()
+        val splitTokens = ArrayList<String>()
+
         for (token in origTokens){
             var mToken = ""
             if (doLowerCase){
@@ -60,8 +68,7 @@ class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
         var i = 0
         var startNewWord = true
         val output = mutableListOf<MutableList<String>>()
-        while (i < chars.size){
-            val char = chars[i]
+        for (char in chars){
             if (isPunctuation(char)){
                 output.add(mutableListOf(char.toString()))
                 startNewWord = true
@@ -73,12 +80,7 @@ class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
                 startNewWord = false
                 output.last().add(char.toString())
             }
-            i += 1
         }
-        val out = mutableListOf<String>()
-        for (item in output){
-            out.add(item.joinToString(""))
-        }
-        return out
+        return output.map { it.joinToString("") }
     }
 }

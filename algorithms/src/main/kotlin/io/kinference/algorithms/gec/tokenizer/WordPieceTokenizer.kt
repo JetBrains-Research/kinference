@@ -1,45 +1,51 @@
 package io.kinference.algorithms.gec.tokenizer
 import io.kinference.algorithms.gec.tokenizer.utils.whitespaceTokenize
 
-class WordPieceTokenizer(val vocab: Map<String, Int>, val unk_token: String, val max_input_chars_per_word: Int = 100){
+class WordPieceTokenizer(val vocab: Map<String, Int>, val unkToken: String, val maxInputCharsPerWord: Int = 100){
+    /**
+     * Implementation of transformers WordPieceTokenizer which based on vocabulary
+     * [vocab] - vocabulary map <Token, TokenIndex>
+     * [unkToken] - token for unknown words
+     * [maxInputCharsPerWord] - maximum number of characters in word
+     */
     fun tokenize(text: String): List<String>{
-        val out = mutableListOf<String>()
+        val out = ArrayList<String>()
 
         for (token in whitespaceTokenize(text)){
             val chars = token.toCharArray()
-            if (chars.size > max_input_chars_per_word){
-                out.add(unk_token)
+            if (chars.size > maxInputCharsPerWord){
+                out.add(unkToken)
                 continue
             }
-            var is_bad = false
+            var isBad = false
             var start = 0
-            val sub_tokens = mutableListOf<String>()
+            val subTokens = ArrayList<String>()
             while (start < chars.size){
                 var end = chars.size
-                var cur_substr: String? = null
+                var curSubstr: String? = null
                 while (start < end){
                     var substr = chars.slice(start..end-1).joinToString("")
                     if (start > 0){
                         substr = "##" + substr
                     }
                     if (vocab.containsKey(substr)){
-                        cur_substr = substr
+                        curSubstr = substr
                         break
                     }
                     end -= 1
                 }
-                if (cur_substr == null){
-                    is_bad = true
+                if (curSubstr == null){
+                    isBad = true
                     break
                 }
-                sub_tokens.add(cur_substr)
+                subTokens.add(curSubstr)
                 start = end
             }
-            if (is_bad){
-                out.add(unk_token)
+            if (isBad){
+                out.add(unkToken)
             }
             else{
-                for (item in sub_tokens){
+                for (item in subTokens){
                     out.add(item)
                 }
             }

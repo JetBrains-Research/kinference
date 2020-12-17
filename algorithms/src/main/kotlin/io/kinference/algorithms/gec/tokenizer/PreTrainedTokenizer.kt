@@ -1,6 +1,20 @@
 package io.kinference.algorithms.gec.tokenizer
 
+/**
+ * Base interface for all Tokenizers which trying to mimic transformers Tokenizers
+ */
+
 interface PreTrainedTokenizer{
+    /**
+     * Base class for Tokenizer which using the vocabulary should implement following parameters
+     * [vocabSize] - length of Tokenizer vocabulary
+     * [doLowerCase] - boolean value for cased and uncased tokenizers
+     * [unkToken] - token which denotes unknown word
+     * [sepToken] - token which denotes end of sentence/end of segment
+     * [padToken] - token which denotes padding token for batch processing
+     * [clsToken] - token which denotes begin of sentence/begin of segment
+     * [maskToken] - token which denotes masking token for masked language modeling (not use in our approach)
+     */
     val vocabSize: Int
     val doLowerCase: Boolean
     val unkToken: String
@@ -65,29 +79,20 @@ interface PreTrainedTokenizer{
         return result
     }
 
-    fun splitOnTokens(tok_list: List<String>, text: String): List<String>{
+    fun splitOnTokens(tokList: List<String>, text: String): List<String>{
         if (text.trimEnd().trimStart().isNullOrEmpty()){
-            return listOf()
+            return emptyList()
         }
-        if (tok_list.isNullOrEmpty()){
+        if (tokList.isNullOrEmpty()){
             return tokenize_(text)
         }
-        val tokenized_text = mutableListOf<String>()
-        var text_list = mutableListOf(text)
+        var textList = mutableListOf(text)
 
-        for (tok in tok_list){
-            val token_text = mutableListOf<String>()
-            for (sub_text in text_list){
-                token_text += splitOnToken(tok, sub_text)
-            }
-            text_list = token_text
+        for (tok in tokList){
+            val tokenizedText = textList.map { subText -> splitOnToken(tok, subText) }
+            textList = tokenizedText.flatten() as MutableList<String>
         }
-
-        val result = mutableListOf<List<String>>()
-
-        for (token in tokenized_text){
-            result.add(tokenize_(token))
-        }
+        val result = textList.map { token: String -> tokenize_(token) }
         return result.flatten()
 
     }
@@ -107,19 +112,11 @@ interface PreTrainedTokenizer{
             return listOf<Int>()
         }
 
-        val ids = mutableListOf<Int>()
-        for (token in tokens){
-            ids.add(convertTokenToId_(token))
-        }
-        return ids
+        return tokens.map { token -> convertTokenToId_(token) }
     }
 
     fun convertIdsToTokens(ids: List<Int>): List<String>{
-        val tokens = mutableListOf<String>()
-        for (index in ids){
-            tokens.add(convertIdToToken_(index))
-        }
-        return tokens
+        return ids.map { id -> convertIdToToken_(id) }
     }
 
     fun covertTokensToString(tokens: List<String>): String{

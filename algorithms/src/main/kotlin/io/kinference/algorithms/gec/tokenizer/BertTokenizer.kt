@@ -12,6 +12,13 @@ class BertTokenizer(val vocabPath: Path,
                     override val maskToken: String = "[MASK]",
                     val tokenizeChineseChars: Boolean = true, ): PreTrainedTokenizer
 {
+    /**
+     * BertTokenizer is implementation of transformers BertTokenizer
+     * [vocabPath] - for now is local vocab path
+     * [doLowerCase] - boolean value for cased and uncased variants
+     * [tokenizeChineseChars] - boolean value for now not used
+     */
+
     private val vocab = load_vocab()
     private val idsToToken = vocab.entries.associate { it.value to it.key }
 
@@ -22,11 +29,7 @@ class BertTokenizer(val vocabPath: Path,
 
     fun load_vocab(): Map<String, Int>{
         val vocab = mutableMapOf<String, Int>()
-        val tmp = mutableListOf<String>()
-        vocabPath.toFile().reader().use { reader ->
-            reader.forEachLine { line -> tmp.add(line)
-            }
-        }
+        val tmp = vocabPath.toFile().readLines()
         for ((value, key) in tmp.withIndex()){
             vocab[key] = value
         }
@@ -84,8 +87,9 @@ class BertTokenizer(val vocabPath: Path,
 
     fun encode2tensor(text: String, addSpecialTokens: Boolean) : TokenizedInputs{
         val encoded = encode(text, addSpecialTokens)
-        val inputIds = IntNDArray(shape = IntArray(size = 2, init = {i: Int ->  if (i==0) 1 else encoded.size}),
-                          init = {i: Int -> encoded[i]})
+        val inputIds = IntNDArray(
+            shape = IntArray(size = 2, init = {i: Int ->  if (i==0) 1 else encoded.size}),
+            init = {i: Int -> encoded[i]})
         return TokenizedInputs(inputsIds = inputIds, padTokenId = vocab.get(padToken)!!)
     }
 
