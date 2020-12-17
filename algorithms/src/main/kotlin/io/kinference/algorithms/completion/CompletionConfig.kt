@@ -10,8 +10,6 @@ import java.io.InputStream
  *
  * @param loader is a loader with which model can be loaded
  * @param numSuggestions is a total number of suggestions model should generate
- * @param tokenizer is a configuration of tokenizer for this model, should be
- * taken from `config.json` distributed with model
  * @param model is a configuration of GPT-like model, it is also should be taken
  * from `config.json` and is distributed with model
  * @param generation is a configuration of generation process
@@ -20,20 +18,15 @@ import java.io.InputStream
 data class CompletionConfig(
     val loader: CompletionModelLoader,
     val numSuggestions: Int,
-    val tokenizer: Tokenizer,
     val model: Model,
     val generation: Generation,
     val filter: Filter
 ) {
-    /**
-     * Tokenizer configuration that is used in completion model
-     */
-    data class Tokenizer(val maxSeqLen: Int)
 
     /**
      * GPT-like model configuration that is used in completion model
      */
-    class Model(val numAttentionHeads: Int, val hiddenSize: Int, val numLayer: Int, val vocabSize: Int)
+    class Model(val numAttentionHeads: Int, val hiddenSize: Int, val numLayer: Int, val vocabSize: Int, val maxSeqLen: Int)
 
     /**
      * Configuration of pre-filtering used in completion model
@@ -106,17 +99,11 @@ data class CompletionConfig(
         fun fromGetter(total: Int, getter: (String) -> InputStream): CompletionConfig {
             val loader = getModelLoader(getter)
 
-            val tokenizer = getTokenizerConfig(loader.getConfig())
             val model = getModelConfig(loader.getConfig())
 
-            return CompletionConfig(loader, total, tokenizer, model, Generation.default, Filter.default)
+            return CompletionConfig(loader, total, model, Generation.default, Filter.default)
         }
 
-        private fun getTokenizerConfig(config: Map<String, Int>): Tokenizer {
-            val maxSeqLen = config.getOrDefault("n_ctx", 30)
-
-            return Tokenizer(maxSeqLen)
-        }
 
         private fun getModelLoader(getter: (String) -> InputStream): CompletionModelLoader = CompletionModelLoader.FromGetter(
             { getter("model.onnx").use { it.readBytes() } },
@@ -130,8 +117,9 @@ data class CompletionConfig(
             val hiddenSize = config.getOrDefault("n_emb", 256)
             val numLayer = config.getOrDefault("n_layer", 4)
             val vocabSize = config.getOrDefault("vocab_size", 20000)
+            val maxSeqLen = config.getOrDefault("n_ctx", 30)
 
-            return Model(numAttentionHeads, hiddenSize, numLayer, vocabSize)
+            return Model(numAttentionHeads, hiddenSize, numLayer, vocabSize, maxSeqLen)
         }
     }
 }

@@ -1,9 +1,6 @@
 package io.kinference.algorithms.completion.model
 
 import io.kinference.algorithms.completion.*
-import io.kinference.algorithms.completion.suggest.collector.FairSeqCompletionsGenerator
-import io.kinference.algorithms.completion.suggest.filtering.ProbFilterModel
-import io.kinference.algorithms.completion.suggest.ranking.ProbRankingModel
 import org.junit.jupiter.api.*
 import java.lang.System.currentTimeMillis
 
@@ -35,11 +32,7 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun `test performance`() {
-        val completionsCollector = FairSeqCompletionsGenerator(CompletionModels.v6)
-        val rankingModel = ProbRankingModel()
-        val filterModel = ProbFilterModel()
-
-        val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel)
+        val completionModel = CompletionModelFactory.createCompletionModel(CompletionModels.v6)
 
         performanceTest(completionModel, CompletionModels.v6)
     }
@@ -47,11 +40,7 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun `test accuracy`() {
-        val completionsCollector = FairSeqCompletionsGenerator(CompletionModels.v6)
-        val rankingModel = ProbRankingModel()
-        val filterModel = ProbFilterModel()
-
-        val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel)
+        val completionModel = CompletionModelFactory.createCompletionModel(CompletionModels.v6)
 
         accuracyTest(completionModel, CompletionModels.v6)
     }
@@ -60,11 +49,7 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun `test bpe problem`() {
-        val completionsCollector = FairSeqCompletionsGenerator(CompletionModels.v6)
-        val rankingModel = ProbRankingModel()
-        val filterModel = ProbFilterModel()
-
-        val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel)
+        val completionModel = CompletionModelFactory.createCompletionModel(CompletionModels.v6)
 
         completionModel.complete("Hello my dear friends", "", CompletionModels.v6)
     }
@@ -72,11 +57,7 @@ class FullModelPassTest {
     @Test
     @Tag("heavy")
     fun `test dictionary problem`() {
-        val completionsCollector = FairSeqCompletionsGenerator(CompletionModels.v6)
-        val rankingModel = ProbRankingModel()
-        val filterModel = ProbFilterModel()
-
-        val completionModel = CompletionModel(completionsCollector, rankingModel, filterModel)
+        val completionModel = CompletionModelFactory.createCompletionModel(CompletionModels.v6)
 
         val completions = completionModel.complete("Remove old", " modu", CompletionModels.v6)
         Assertions.assertTrue(

@@ -42,7 +42,7 @@ internal class BeamSearch(
             }
         }
 
-        var samples = topk1d(logProbs, min((1 + eosIds.size) * searchSize, logProbs.size))
+        var samples = topk1d(logProbs, searchSize)
         val sampleScores = logProbs.sliceArray(samples)
 
         val samplesStepLogProbs = expStepLogProbs.sliceArray(samples)
@@ -76,23 +76,9 @@ internal class BeamSearch(
         }
     }
 
-    override fun maskedHypotheses(mask: BooleanArray): List<List<HypothesisInfo>> {
-        val ans = ArrayList<HypothesisInfo>()
+    override fun currentHypotheses(): List<List<GenerationInfo>> {
         getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
-        for (i in hypotheses.indices) {
-            if (mask[i]) {
-                ans.add(HypothesisInfo(hypotheses[i].toIntArray(), GenerationInfo(eachStepProbs[i])))
-            }
-        }
-
-        return listOf(ans)
-    }
-
-    override fun currentHypotheses(): List<List<HypothesisInfo>> {
-        getNormalizedScores().apply { for (i in this.indices) this[i] = exp(this[i]) }
-        val ans = List(hypotheses.size) {
-            HypothesisInfo(hypotheses[it].toIntArray(), GenerationInfo(eachStepProbs[it]))
-        }
+        val ans = List(hypotheses.size) { GenerationInfo(eachStepProbs[it], hypotheses[it]) }
 
         return listOf(ans)
     }
@@ -114,7 +100,7 @@ internal class BeamSearch(
             hypotheses[i].add(samples[i])
             eachStepProbs[i].add(stepLogProbs[i])
         }
-        stashTerminated(samples)
+//        stashTerminated(samples)
     }
 
     private fun stashTerminated(samples: IntArray) {

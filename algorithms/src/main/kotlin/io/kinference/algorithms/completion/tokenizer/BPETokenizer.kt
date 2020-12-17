@@ -4,7 +4,10 @@ import com.github.benmanes.caffeine.cache.Cache
 import io.kinference.algorithms.completion.loader.CompletionModelLoader
 import io.kinference.algorithms.completion.utils.Caching
 
-internal class BPETokenizer(loader: CompletionModelLoader) {
+/**
+ * Tokenizer based on BPE algorithm, which used in GPT-2, but without bytes
+ */
+class BPETokenizer(loader: CompletionModelLoader) {
     private val encodeCache: Cache<String, IntArray> = Caching.default()
     private val decodeCache: Cache<IntArray, String> = Caching.default()
 
@@ -20,6 +23,7 @@ internal class BPETokenizer(loader: CompletionModelLoader) {
     private val reversedCodes: MutableMap<String, MergeCandidate> = HashMap()
 
     val eosTokenId = 50256
+    val invalidIds: MutableSet<Int> = HashSet()
     val vocabSize: Int
         get() = vocab.size
 
@@ -35,14 +39,24 @@ internal class BPETokenizer(loader: CompletionModelLoader) {
             codes[pair] = codes.size
             reversedCodes[left + right] = pair
         }
+
+        for ((s, id) in vocab.entries) {
+            if (!isValidString(s)) {
+                invalidIds.add(id)
+            }
+        }
+    }
+
+    fun isValidString(s: String): Boolean {
+        return s == s.replace(Regex("[^ -~Ġ]"), "")
     }
 
     private fun preprocess(s: String): String {
-        return s.replace(' ', 'Ġ')
+        return s.replace(Regex("[^ -~]"), "").replace(' ', 'Ġ')
     }
 
     private fun postprocess(s: String): String {
-        return s.replace('Ġ', ' ')
+        return s.replace('Ġ', ' ').replace(Regex("[^ -~]"), "")
     }
 
     private fun internalTokenize(word: String): List<String> {
@@ -134,7 +148,7 @@ internal class BPETokenizer(loader: CompletionModelLoader) {
         } else {
             result.addAll(recursiveSplit(left, isFinal))
         }
-        if (isFinal && vocab.containsKey(right) || !isFinal && right in vocab) {
+        if (right in vocab) {
             result.add(right)
         } else {
             result.addAll(recursiveSplit(right, isFinal))
