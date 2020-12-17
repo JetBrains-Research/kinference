@@ -69,7 +69,9 @@ class BertTokenizer(val vocabPath: Path,
     }
 
     override fun decode(ids: List<Int>): String {
-        TODO("Not yet implemented")
+        val tokens = mutableListOf<String>()
+        ids.forEach { tokens.add(idsToToken.getOrDefault(it, unkToken)) }
+        return tokens.joinToString(" ")
     }
 
     fun encodeBatch(texts: List<String>, addSpecialTokens: Boolean) : List<List<Int>>{
