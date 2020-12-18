@@ -2,37 +2,36 @@ package io.kinference.algorithms.gec.utils
 
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 
-fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String{
+fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String {
     val formDict = verbsVocab.verbs2verbs[token]
-    return if (formDict == null){
+    return if (formDict == null) {
         token
-    } else{
+    } else {
         val verb = formDict[form]
         verb ?: token
     }
 }
 
-fun transformUsingSplit(token: String): List<String>{
+fun transformUsingSplit(token: String): List<String> {
     return token.split("-")
 }
 
-fun transformUsingCase(token: String, case: String): String{
-    if (case == "LOWER"){
+fun transformUsingCase(token: String, case: String): String {
+    if (case == "LOWER") {
         return token.toLowerCase()
-    }
-    else if (case == "UPPER"){
+    } else if (case == "UPPER") {
         return token.toUpperCase()
-    }
-    else if (case == "CAPITAL"){
+    } else if (case == "CAPITAL") {
         return token.capitalize()
-    }
-    else if (case == "CAPITAL_1"){
-        return token
-    }
-    else if (case == "UPPER_-1"){
-        return token
-    }
-    else{
+    } else if (case == "CAPITAL_1") {
+        val first = token[0]
+        val rst = token.substring(startIndex = 1).capitalize()
+        return first + rst
+    } else if (case == "UPPER_-1") {
+        val last = token[-1]
+        val rst = token.substring(startIndex = 0, endIndex = token.length - 1)
+        return rst.toUpperCase() + last
+    } else {
         return token
     }
 }
