@@ -1,10 +1,10 @@
 package io.kinference.algorithms.gec.tokenizer.utils
 
 object CharUtils {
-    val controlChars = setOf(CharCategory.UNASSIGNED, CharCategory.CONTROL,
+    private val controlChars = setOf(CharCategory.UNASSIGNED, CharCategory.CONTROL,
         CharCategory.FORMAT, CharCategory.PRIVATE_USE, CharCategory.SURROGATE)
 
-    val punctuationChars = setOf(CharCategory.DASH_PUNCTUATION, CharCategory.CONNECTOR_PUNCTUATION,
+    private val punctuationChars = setOf(CharCategory.DASH_PUNCTUATION, CharCategory.CONNECTOR_PUNCTUATION,
         CharCategory.END_PUNCTUATION, CharCategory.START_PUNCTUATION, CharCategory.OTHER_PUNCTUATION)
 
     fun isPunctuation(category: CharCategory): Boolean {

@@ -4,7 +4,12 @@ package io.kinference.algorithms.gec.tokenizer
  * Base interface for all Tokenizers which trying to mimic transformers Tokenizers
  */
 
-interface PreTrainedTokenizer {
+abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
+                                   val unkToken: String,
+                                   val sepToken: String,
+                                   val padToken: String,
+                                   val clsToken: String,
+                                   val maskToken: String) {
     /**
      * Base class for Tokenizer which using the vocabulary should implement following parameters
      * [vocabSize] - length of Tokenizer vocabulary
@@ -15,39 +20,29 @@ interface PreTrainedTokenizer {
      * [clsToken] - token which denotes begin of sentence/begin of segment
      * [maskToken] - token which denotes masking token for masked language modeling (not use in our approach)
      */
-    val vocabSize: Int
-    val doLowerCase: Boolean
-    val unkToken: String
-    val sepToken: String
-    val padToken: String
-    val clsToken: String
-    val maskToken: String
 
-    val unkId: Int
-        get() = convertTokenToIdOnToken(unkToken)
-    val sepId: Int
-        get() = convertTokenToIdOnToken(sepToken)
-    val padId: Int
-        get() = convertTokenToIdOnToken(padToken)
-    val clsId: Int
-        get() = convertTokenToIdOnToken(clsToken)
-    val maskId: Int
-        get() = convertTokenToIdOnToken(maskToken)
+    abstract val vocabSize: Int
+
+    val unkId: Int by lazy { convertTokenToIdOnToken(unkToken) }
+    val sepId: Int by lazy { convertTokenToIdOnToken(sepToken) }
+    val padId: Int by lazy { convertTokenToIdOnToken(padToken) }
+    val clsId: Int by lazy { convertTokenToIdOnToken(clsToken) }
+    val maskId: Int by lazy { convertTokenToIdOnToken(maskToken) }
 
 
     fun length(): Int {
         return vocabSize
     }
 
-    fun tokenizeText(text: String): List<String>
+    abstract fun tokenizeText(text: String): List<String>
 
-    fun convertTokenToIdOnToken(token: String): Int
+    abstract fun convertTokenToIdOnToken(token: String): Int
 
-    fun convertIdToTokenOnToken(id: Int): String
+    abstract fun convertIdToTokenOnToken(id: Int): String
 
-    fun encode(text: String, addSpecialTokens: Boolean): List<Int>
+    abstract fun encode(text: String, addSpecialTokens: Boolean): List<Int>
 
-    fun decode(ids: List<Int>): String
+    abstract fun decode(ids: List<Int>): String
 
     fun splitOnToken(tok: String, text: String): List<String> {
         val result = mutableListOf<String>()

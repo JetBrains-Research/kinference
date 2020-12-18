@@ -5,15 +5,18 @@ import io.kinference.ndarray.arrays.IntNDArray
 
 class BertTokenizer(
     val vocabPath: Path,
-    override val doLowerCase: Boolean = true,
+    doLowerCase: Boolean = true,
     val doBasicTokenize: Boolean = true,
-    override val unkToken: String = "[UNK]",
-    override val sepToken: String = "[SEP]",
-    override val padToken: String = "[PAD]",
-    override val clsToken: String = "[CLS]",
-    override val maskToken: String = "[MASK]",
+    unkToken: String = "[UNK]",
+    sepToken: String = "[SEP]",
+    padToken: String = "[PAD]",
+    clsToken: String = "[CLS]",
+    maskToken: String = "[MASK]",
     val tokenizeChineseChars: Boolean = true,
-) : PreTrainedTokenizer {
+) : PreTrainedTokenizer(doLowerCase = doLowerCase,
+    unkToken = unkToken, sepToken = sepToken,
+    padToken = padToken, clsToken = clsToken, maskToken = maskToken) {
+
     /**
      * BertTokenizer is implementation of transformers BertTokenizer
      * [vocabPath] - for now is local vocab path
