@@ -8,13 +8,13 @@ import java.lang.StringBuilder
 import java.text.Normalizer
 import java.util.ArrayList
 
-class BasicTokenizer(private val doLowerCase: Boolean, private val stripAccents: Boolean) {
 
-    /**
-     * BasicTokenizer provides simple tokenization based on punctuation and accents
-     * [doLowerCase] - boolean value for cased and uncased variants
-     * [stripAccents] - boolean value for stripping accents
-     */
+/**
+ * BasicTokenizer provides simple tokenization based on punctuation and accents
+ * @param doLowerCase - boolean value for cased and uncased variants
+ * @param stripAccents - boolean value for stripping accents
+ */
+class BasicTokenizer(private val doLowerCase: Boolean, private val stripAccents: Boolean) {
 
     fun tokenize(text: String): List<String> {
         val mText = cleanText(text)

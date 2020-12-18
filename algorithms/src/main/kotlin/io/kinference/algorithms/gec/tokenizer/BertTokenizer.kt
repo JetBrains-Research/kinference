@@ -3,6 +3,13 @@ package io.kinference.algorithms.gec.tokenizer
 import java.nio.file.Path
 import io.kinference.ndarray.arrays.IntNDArray
 
+
+/**
+ * BertTokenizer is implementation of transformers BertTokenizer
+ * @param vocabPath - for now is local vocab path
+ * @param doLowerCase - boolean value for cased and uncased variants
+ * @param tokenizeChineseChars - boolean value for now not used
+ */
 class BertTokenizer(
     val vocabPath: Path,
     doLowerCase: Boolean = true,
@@ -16,13 +23,6 @@ class BertTokenizer(
 ) : PreTrainedTokenizer(doLowerCase = doLowerCase,
     unkToken = unkToken, sepToken = sepToken,
     padToken = padToken, clsToken = clsToken, maskToken = maskToken) {
-
-    /**
-     * BertTokenizer is implementation of transformers BertTokenizer
-     * [vocabPath] - for now is local vocab path
-     * [doLowerCase] - boolean value for cased and uncased variants
-     * [tokenizeChineseChars] - boolean value for now not used
-     */
 
     private val vocab = load_vocab()
     private val idsToToken = vocab.entries.associate { it.value to it.key }

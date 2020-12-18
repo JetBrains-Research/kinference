@@ -1,8 +1,15 @@
 package io.kinference.algorithms.gec.tokenizer
 
 /**
- * Base interface for all Tokenizers which trying to mimic transformers Tokenizers
- */
+ * Base class for Tokenizer which using the vocabulary should implement following parameters
+ * @param vocabSize - length of Tokenizer vocabulary
+ * @param doLowerCase - boolean value for cased and uncased tokenizers
+ * @param unkToken - token which denotes unknown word
+ * @param sepToken - token which denotes end of sentence/end of segment
+ * @param padToken - token which denotes padding token for batch processing
+ * @param clsToken - token which denotes begin of sentence/begin of segment
+ * @param maskToken - token which denotes masking token for masked language modeling (not use in our approach)
+*/
 
 abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
                                    val unkToken: String,
@@ -10,16 +17,6 @@ abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
                                    val padToken: String,
                                    val clsToken: String,
                                    val maskToken: String) {
-    /**
-     * Base class for Tokenizer which using the vocabulary should implement following parameters
-     * [vocabSize] - length of Tokenizer vocabulary
-     * [doLowerCase] - boolean value for cased and uncased tokenizers
-     * [unkToken] - token which denotes unknown word
-     * [sepToken] - token which denotes end of sentence/end of segment
-     * [padToken] - token which denotes padding token for batch processing
-     * [clsToken] - token which denotes begin of sentence/begin of segment
-     * [maskToken] - token which denotes masking token for masked language modeling (not use in our approach)
-     */
 
     abstract val vocabSize: Int
 

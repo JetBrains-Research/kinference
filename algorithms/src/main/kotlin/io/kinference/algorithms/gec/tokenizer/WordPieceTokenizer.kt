@@ -2,13 +2,13 @@ package io.kinference.algorithms.gec.tokenizer
 
 import io.kinference.algorithms.gec.tokenizer.utils.whitespaceTokenize
 
+/**
+ * Implementation of transformers WordPieceTokenizer which based on vocabulary
+ * @param vocab - vocabulary map <Token, TokenIndex>
+ * @param unkToken - token for unknown words
+ * @param maxInputCharsPerWord - maximum number of characters in word
+ */
 class WordPieceTokenizer(val vocab: Map<String, Int>, val unkToken: String, val maxInputCharsPerWord: Int = 100) {
-    /**
-     * Implementation of transformers WordPieceTokenizer which based on vocabulary
-     * [vocab] - vocabulary map <Token, TokenIndex>
-     * [unkToken] - token for unknown words
-     * [maxInputCharsPerWord] - maximum number of characters in word
-     */
     fun tokenize(text: String): List<String> {
         val out = ArrayList<String>()
 

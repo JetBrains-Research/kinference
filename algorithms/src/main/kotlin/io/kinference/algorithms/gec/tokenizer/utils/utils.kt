@@ -1,18 +1,30 @@
 package io.kinference.algorithms.gec.tokenizer.utils
 
-object CharUtils {
+private object CharUtils {
     private val controlChars = setOf(CharCategory.UNASSIGNED, CharCategory.CONTROL,
         CharCategory.FORMAT, CharCategory.PRIVATE_USE, CharCategory.SURROGATE)
 
     private val punctuationChars = setOf(CharCategory.DASH_PUNCTUATION, CharCategory.CONNECTOR_PUNCTUATION,
         CharCategory.END_PUNCTUATION, CharCategory.START_PUNCTUATION, CharCategory.OTHER_PUNCTUATION)
 
-    fun isPunctuation(category: CharCategory): Boolean {
-        return category in punctuationChars
+    fun isPunctuation(char: Char): Boolean {
+        if (char.category in punctuationChars){
+            return true
+        }
+        if ((char.toInt() in 33..47) || (char.toInt() in 58..64) || (char.toInt() in 91..96) || (char.toInt() in 123..126)){
+            return true
+        }
+        return false
     }
 
-    fun isControl(category: CharCategory): Boolean {
-        return category in controlChars
+    fun isControl(char: Char): Boolean {
+        if (char == '\t' || char == '\n' || char == '\r') {
+            return false
+        }
+        if (char.category in controlChars) {
+            return true
+        }
+        return false
     }
 }
 
@@ -29,23 +41,9 @@ fun isWhitespace(char: Char): Boolean {
 }
 
 fun isControl(char: Char): Boolean {
-    if (char == '\t' || char == '\n' || char == '\r') {
-        return false
-    }
-    if (CharUtils.isControl(char.category)) {
-        return true
-    }
-    return false
+    return CharUtils.isControl(char)
 }
 
 fun isPunctuation(char: Char): Boolean {
-    val cp = char.toInt()
-
-    if ((cp in 33..47) || (cp in 58..64) || (cp in 91..96) || (cp in 123..126)) {
-        return true
-    }
-    if (CharUtils.isPunctuation(char.category)) {
-        return true
-    }
-    return false
+    return CharUtils.isPunctuation(char)
 }
