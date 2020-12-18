@@ -1,12 +1,14 @@
 package io.kinference.algorithms.gec.tokenizer
+
 import io.kinference.algorithms.gec.tokenizer.utils.isControl
 import io.kinference.algorithms.gec.tokenizer.utils.isPunctuation
 import io.kinference.algorithms.gec.tokenizer.utils.isWhitespace
 import io.kinference.algorithms.gec.tokenizer.utils.whitespaceTokenize
+import java.lang.StringBuilder
 import java.text.Normalizer
 import java.util.ArrayList
 
-class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
+class BasicTokenizer(private val doLowerCase: Boolean, private val stripAccents: Boolean) {
 
     /**
      * BasicTokenizer provides simple tokenization based on punctuation and accents
@@ -14,19 +16,19 @@ class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
      * [stripAccents] - boolean value for stripping accents
      */
 
-    fun tokenize(text: String): List<String>{
+    fun tokenize(text: String): List<String> {
         val mText = cleanText(text)
         val origTokens = whitespaceTokenize(mText)
         val splitTokens = ArrayList<String>()
 
-        for (token in origTokens){
+        for (token in origTokens) {
             var mToken = ""
-            if (doLowerCase){
+            if (doLowerCase) {
                 mToken = token.toLowerCase()
-                if (stripAccents){
+                if (stripAccents) {
                     mToken = runStripAccents(mToken)
                 }
-            }else if(stripAccents){
+            } else if (stripAccents) {
                 mToken = runStripAccents(token)
             }
             splitTokens += runSplitOnPunc(mToken)
@@ -34,28 +36,27 @@ class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
         return whitespaceTokenize(splitTokens.joinToString(" "))
     }
 
-    private fun cleanText(text: String): String{
-        val output  = mutableListOf<String>()
-        for (char in text){
+    private fun cleanText(text: String): String {
+        val output = mutableListOf<String>()
+        for (char in text) {
             val cp = char.toInt()
-            if (cp == 0 || cp == 0xFFFD || isControl(char)){
+            if (cp == 0 || cp == 0xFFFD || isControl(char)) {
                 continue
             }
-            if (isWhitespace(char)){
+            if (isWhitespace(char)) {
                 output.add(" ")
-            }
-            else{
+            } else {
                 output.add(char.toString())
             }
         }
         return output.joinToString("")
     }
 
-    private fun runStripAccents(text: String): String{
+    private fun runStripAccents(text: String): String {
         val mText = Normalizer.normalize(text, Normalizer.Form.NFD)
-        val output = mutableListOf<Char>()
-        for (char in mText){
-            if (char.category == CharCategory.NON_SPACING_MARK){
+        val output = ArrayList<Char>()
+        for (char in mText) {
+            if (char.category == CharCategory.NON_SPACING_MARK) {
                 continue
             }
             output.add(char)
@@ -63,24 +64,22 @@ class BasicTokenizer(val doLowerCase: Boolean, val stripAccents: Boolean) {
         return output.joinToString("")
     }
 
-    private fun runSplitOnPunc(text: String): List<String>{
+    private fun runSplitOnPunc(text: String): List<String> {
         val chars = text.toCharArray()
-        var i = 0
         var startNewWord = true
-        val output = mutableListOf<MutableList<String>>()
-        for (char in chars){
-            if (isPunctuation(char)){
-                output.add(mutableListOf(char.toString()))
+        val output = ArrayList<StringBuilder>()
+        for (char in chars) {
+            if (isPunctuation(char)) {
+                output.add(StringBuilder().append(char.toString()))
                 startNewWord = true
-            }
-            else{
-                if (startNewWord){
-                    output.add(mutableListOf())
+            } else {
+                if (startNewWord) {
+                    output.add(StringBuilder())
                 }
                 startNewWord = false
-                output.last().add(char.toString())
+                output.last().append(char.toString())
             }
         }
-        return output.map { it.joinToString("") }
+        return output.map { it.toString() }
     }
 }
