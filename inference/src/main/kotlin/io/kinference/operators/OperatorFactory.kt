@@ -4,6 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.onnx.NodeProto
 import io.kinference.operators.activations.*
+import io.kinference.operators.flow.If
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
@@ -41,6 +42,7 @@ object OperatorFactory {
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
+        "If" -> If(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
         "Loop" -> Loop(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
