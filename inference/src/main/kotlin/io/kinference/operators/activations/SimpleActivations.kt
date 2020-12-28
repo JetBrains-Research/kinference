@@ -2,8 +2,8 @@ package io.kinference.operators.activations
 
 import io.kinference.attributes.Attribute
 import io.kinference.ndarray.arrays.*
-import io.kinference.operators.IOInfo
-import io.kinference.operators.OperatorInfo
+import io.kinference.onnx.AttributeProto
+import io.kinference.operators.*
 import io.kinference.operators.math.tanh
 import io.kinference.primitives.types.DataType
 import kotlin.math.exp
@@ -39,6 +39,34 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
         val activateDouble = object : DoubleMap {
             override fun apply(value: Double): Double = max(0.0, value)
         }
+    }
+
+    override fun activate(input: NDArray): NDArray = when (input.type) {
+        DataType.FLOAT -> input.map(activateFloat)
+        DataType.DOUBLE -> input.map(activateDouble)
+        else -> error("Unsupported operation")
+    }
+}
+
+class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
+
+        private val INFO = OperatorInfo("LeakyRelu",
+            listOf(AttributeInfo("alpha", setOf(AttributeProto.AttributeType.FLOAT), default = 0.01f)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
+        )
+    }
+
+    val alpha: Float by attribute()
+
+    private val activateFloat = object : FloatMap {
+        override fun apply(value: Float): Float = if (value < 0) value * alpha else value
+    }
+
+    private val activateDouble = object : DoubleMap {
+        override fun apply(value: Double): Double = if (value < 0) value * alpha else value
     }
 
     override fun activate(input: NDArray): NDArray = when (input.type) {

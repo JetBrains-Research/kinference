@@ -46,6 +46,7 @@ object OperatorFactory {
         "LSTM" -> LSTM(attributes, inputs, outputs)
         "Loop" -> Loop(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
+        "LeakyRelu" -> LeakyRelu(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
