@@ -1,62 +1,66 @@
 package io.kinference.algorithms.gec.tokenizer
 
-interface PreTrainedTokenizer{
-    val vocabSize: Int
-    val doLowerCase: Boolean
-    val unkToken: String
-    val sepToken: String
-    val padToken: String
-    val clsToken: String
-    val maskToken: String
+/**
+ * Base class for Tokenizer which using the vocabulary should implement following parameters
+ * @param vocabSize - length of Tokenizer vocabulary
+ * @param doLowerCase - boolean value for cased and uncased tokenizers
+ * @param unkToken - token which denotes unknown word
+ * @param sepToken - token which denotes end of sentence/end of segment
+ * @param padToken - token which denotes padding token for batch processing
+ * @param clsToken - token which denotes begin of sentence/begin of segment
+ * @param maskToken - token which denotes masking token for masked language modeling (not use in our approach)
+*/
 
-    val unkId: Int
-        get() = convertTokenToId_(unkToken)
-    val sepId: Int
-        get() = convertTokenToId_(sepToken)
-    val padId: Int
-        get() = convertTokenToId_(padToken)
-    val clsId: Int
-        get() = convertTokenToId_(clsToken)
-    val maskId: Int
-        get() = convertTokenToId_(maskToken)
+abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
+                                   val unkToken: String,
+                                   val sepToken: String,
+                                   val padToken: String,
+                                   val clsToken: String,
+                                   val maskToken: String) {
+
+    abstract val vocabSize: Int
+
+    val unkId: Int by lazy { convertTokenToIdOnToken(unkToken) }
+    val sepId: Int by lazy { convertTokenToIdOnToken(sepToken) }
+    val padId: Int by lazy { convertTokenToIdOnToken(padToken) }
+    val clsId: Int by lazy { convertTokenToIdOnToken(clsToken) }
+    val maskId: Int by lazy { convertTokenToIdOnToken(maskToken) }
 
 
-    fun length() : Int{
+    fun length(): Int {
         return vocabSize
     }
 
-   fun tokenize_(text: String): List<String>
+    abstract fun tokenizeText(text: String): List<String>
 
-   fun convertTokenToId_(token: String): Int
+    abstract fun convertTokenToIdOnToken(token: String): Int
 
-   fun convertIdToToken_(id: Int): String
+    abstract fun convertIdToTokenOnToken(id: Int): String
 
-   fun encode(text: String, addSpecialTokens: Boolean): List<Int>
+    abstract fun encode(text: String, addSpecialTokens: Boolean): List<Int>
 
-   fun decode(ids: List<Int>): String
+    abstract fun decode(ids: List<Int>): String
 
-    fun splitOnToken(tok: String, text: String): List<String>{
+    fun splitOnToken(tok: String, text: String): List<String> {
         val result = mutableListOf<String>()
         val split_text = text.split(tok)
 
-        for ((i, subText) in split_text.withIndex()){
+        for ((i, subText) in split_text.withIndex()) {
             var mSubText: String = subText
-            if (i < split_text.size - 1){
+            if (i < split_text.size - 1) {
                 mSubText = mSubText.trimEnd()
             }
-            if (i > 0){
+            if (i > 0) {
                 mSubText = mSubText.trimStart()
             }
-            if (i == 0 && !mSubText.isNullOrEmpty()){
+            if (i == 0 && !mSubText.isNullOrEmpty()) {
                 result.add(tok)
-            }
-            else if(i == mSubText.length - 1){
-                if (!mSubText.isNullOrEmpty()){
+            } else if (i == mSubText.length - 1) {
+                if (!mSubText.isNullOrEmpty()) {
                     result.add(mSubText)
                 }
-            }
-            else{
-                if (!mSubText.isNullOrEmpty()){
+            } else {
+                if (!mSubText.isNullOrEmpty()) {
                     result.add(mSubText)
                 }
                 result.add(tok)
@@ -65,64 +69,46 @@ interface PreTrainedTokenizer{
         return result
     }
 
-    fun splitOnTokens(tok_list: List<String>, text: String): List<String>{
-        if (text.trimEnd().trimStart().isNullOrEmpty()){
-            return listOf()
+    fun splitOnTokens(tokList: List<String>, text: String): List<String> {
+        if (text.trimEnd().trimStart().isNullOrEmpty()) {
+            return emptyList()
         }
-        if (tok_list.isNullOrEmpty()){
-            return tokenize_(text)
+        if (tokList.isNullOrEmpty()) {
+            return tokenizeText(text)
         }
-        val tokenized_text = mutableListOf<String>()
-        var text_list = mutableListOf(text)
+        var textList = mutableListOf(text)
 
-        for (tok in tok_list){
-            val token_text = mutableListOf<String>()
-            for (sub_text in text_list){
-                token_text += splitOnToken(tok, sub_text)
-            }
-            text_list = token_text
+        for (tok in tokList) {
+            val tokenizedText = textList.map { subText -> splitOnToken(tok, subText) }
+            textList = tokenizedText.flatten() as MutableList<String>
         }
-
-        val result = mutableListOf<List<String>>()
-
-        for (token in tokenized_text){
-            result.add(tokenize_(token))
-        }
+        val result = textList.map { token: String -> tokenizeText(token) }
         return result.flatten()
 
     }
 
-    fun tokenize(text: String): List<String>{
-        val mText: String = if (doLowerCase){
+    fun tokenize(text: String): List<String> {
+        val mText: String = if (doLowerCase) {
             text.toLowerCase()
-        }
-        else{
+        } else {
             text
         }
         return splitOnTokens(listOf(), mText)
     }
 
     fun convertTokensToIds(tokens: List<String>): List<Int> {
-        if (tokens.isNullOrEmpty()){
-            return listOf<Int>()
+        if (tokens.isNullOrEmpty()) {
+            return emptyList()
         }
 
-        val ids = mutableListOf<Int>()
-        for (token in tokens){
-            ids.add(convertTokenToId_(token))
-        }
-        return ids
+        return tokens.map { token -> convertTokenToIdOnToken(token) }
     }
 
-    fun convertIdsToTokens(ids: List<Int>): List<String>{
-        val tokens = mutableListOf<String>()
-        for (index in ids){
-            tokens.add(convertIdToToken_(index))
-        }
-        return tokens
+    fun convertIdsToTokens(ids: List<Int>): List<String> {
+        return ids.map { id -> convertIdToTokenOnToken(id) }
     }
 
-    fun covertTokensToString(tokens: List<String>): String{
+    fun covertTokensToString(tokens: List<String>): String {
         return tokens.joinToString(" ")
     }
 }
