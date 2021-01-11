@@ -8,13 +8,13 @@ import io.kinference.ndarray.arrays.LongNDArray
 
 data class LogitResults(val logitsTag: FloatNDArray, val logitsDTags: FloatNDArray)
 
-class Seq2Logits(modelPath: String){
+class Seq2Logits(modelPath: String) {
 
     private val model = Model.load(modelPath)
 
     operator fun invoke(sents: LongNDArray, attentionMask: LongNDArray): LogitResults {
         val listResults = model.predict(listOf(sents.asTensor(name = "input_ids"),
-            attentionMask.asTensor(name = "attention_mask"))).map { (it as Tensor).data  }
+            attentionMask.asTensor(name = "attention_mask"))).map { (it as Tensor).data }
 
         val logitsTag = listResults[0] as FloatNDArray
         val logitsDTags = listResults[1] as FloatNDArray

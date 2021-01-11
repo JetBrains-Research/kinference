@@ -9,7 +9,7 @@ interface TextProcessor {
 
     fun encodeAsTokens(text: String): List<String>
 
-    fun decodeTokens(tokens: List<String>): String{
+    fun decodeTokens(tokens: List<String>): String {
         return tokens.joinToString(" ")
     }
 
@@ -30,7 +30,7 @@ interface TextProcessor {
     val numWords: Int
 }
 
-class TransformersTextprocessor(val modelNameOrPath: String): TextProcessor {
+class TransformersTextprocessor(val modelNameOrPath: String) : TextProcessor {
     val tokenizer = AutoTokenizer.fromPretrained(modelNameOrPath)
 
     override fun encodeAsIds(text: String): List<Int> {

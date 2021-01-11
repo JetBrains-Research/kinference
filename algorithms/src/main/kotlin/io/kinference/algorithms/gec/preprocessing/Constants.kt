@@ -1,29 +1,29 @@
 package io.kinference.algorithms.gec.preprocessing
 
-abstract class Tag{
+abstract class Tag {
     abstract val value: String
 }
 
-object tagKeep: Tag() {
+object TagKeep : Tag() {
     override val value: String = "\$KEEP"
 }
 
-object tagPad: Tag() {
+object TagPad : Tag() {
     override val value: String = "@@PADDING@@"
 }
 
-object tagUnk: Tag() {
+object TagUnk : Tag() {
     override val value: String = "@@UNKNOWN@@"
 }
 
-object tagCorrect: Tag() {
+object TagCorrect : Tag() {
     override val value: String = "CORRECT"
 }
 
-object tagIncorrect: Tag() {
+object TagIncorrect : Tag() {
     override val value: String = "INCORRECT"
 }
 
-object tagDelete: Tag() {
+object TagDelete : Tag() {
     override val value: String = "\$DELETE"
 }

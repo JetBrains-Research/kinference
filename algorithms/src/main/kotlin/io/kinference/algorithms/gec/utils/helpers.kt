@@ -42,7 +42,7 @@ fun offsetCalc(sentIds: List<List<Int>>, offsetType: String): List<Int> {
     if (offsetType == "first") {
         var acc = 1
         val tokenPlaceIdx = mutableListOf<Int>(acc)
-        for (wordLen in wordLens.dropLast(1)){
+        for (wordLen in wordLens.dropLast(1)) {
             acc += wordLen
             tokenPlaceIdx.add(acc)
         }
@@ -53,32 +53,25 @@ fun offsetCalc(sentIds: List<List<Int>>, offsetType: String): List<Int> {
     }
 }
 
-fun createMessageBasedOnTag(tag: String): String{
-    if (tag == "\$TRANSFORM_CASE_CAPITAL"){
+fun createMessageBasedOnTag(tag: String): String {
+    if (tag == "\$TRANSFORM_CASE_CAPITAL") {
         return "Capitalized first letter"
-    }
-    else if(tag.startsWith("\$TRANSFORM_VERB")){
+    } else if (tag.startsWith("\$TRANSFORM_VERB")) {
         return "Incorrect verb form"
-    }
-    else if(tag in listOf("\$TRANSFORM_AGREEMENT_PLURAL", "\$TRANSFORM_AGREEMENT_SINGULAR")){
+    } else if (tag in listOf("\$TRANSFORM_AGREEMENT_PLURAL", "\$TRANSFORM_AGREEMENT_SINGULAR")) {
         return "Incorrect word form"
-    }
-    else if(tag == "\$DELETE_SPACES"){
+    } else if (tag == "\$DELETE_SPACES") {
         return "Rudimentary spaces"
-    }
-    else if (tag.startsWith("\$APPEND_") or tag.startsWith("\$REPLACE_")){
+    } else if (tag.startsWith("\$APPEND_") or tag.startsWith("\$REPLACE_")) {
         val last = tag.split('_').last()
-        if (isPunctuation(last.toCharArray().last())){
+        if (isPunctuation(last.toCharArray().last())) {
             return "Incorrect punctuation"
-        }
-        else if(last in listOf("a", "an", "the")){
+        } else if (last in listOf("a", "an", "the")) {
             return "Article error"
-        }
-        else{
+        } else {
             return "Grammatical error"
         }
-    }
-    else{
+    } else {
         return "Grammatical error"
     }
 }
