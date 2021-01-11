@@ -73,6 +73,10 @@ class GecTaggerFeaturesIterator(
 
     override operator fun next(): GecTaggerFeaturesOutput {
 
+        if (iteratorValue >= dataset.size()){
+            throw NoSuchElementException()
+        }
+
         val subData = hashMapOf<String, List<Any>>()
         val from = iteratorValue
         val to = min(iteratorValue + batchSize, dataset.size())

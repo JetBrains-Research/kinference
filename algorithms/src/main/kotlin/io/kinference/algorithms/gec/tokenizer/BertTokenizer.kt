@@ -24,7 +24,7 @@ class BertTokenizer(
     unkToken = unkToken, sepToken = sepToken,
     padToken = padToken, clsToken = clsToken, maskToken = maskToken) {
 
-    private val vocab = load_vocab()
+    private val vocab = loadVocab()
     private val idsToToken = vocab.entries.associate { it.value to it.key }
 
     private val wordPieceTokenizer = WordPieceTokenizer(vocab, unkToken)
@@ -32,7 +32,7 @@ class BertTokenizer(
 
     override val vocabSize: Int = vocab.size
 
-    fun load_vocab(): Map<String, Int> {
+    fun loadVocab(): Map<String, Int> {
         val tmp = vocabPath.toFile().readLines()
         return tmp.withIndex().map { (value, key) -> key to value }.toMap()
     }

@@ -12,6 +12,18 @@ data class CorrectionResult(val sentence: String, val corrections: SentenceCorre
 
 /**
  * Main class for correction generation.
+ * @param model
+ * @param textProcessor
+ * @param labelsVocab
+ * @param dTagsVocab
+ * @param verbsVocab
+ * @param preprocessor
+ * @param postprocessor
+ * @param iterations
+ * @param minCorrectionProb
+ * @param minErrorProb
+ * @param confidence
+ *
  */
 class GECCorrector(val model: Seq2Logits,
                    private val textProcessor: TransformersTextprocessor,
@@ -21,7 +33,6 @@ class GECCorrector(val model: Seq2Logits,
                    private val preprocessor: GecPreprocessor,
                    private val postprocessor: GecPostprocessor,
                    val iterations: Int = 3,
-                   val useSpellcheckerFirst: Boolean = false,
                    minCorrectionProb: Double = 0.0,
                    minErrorProb: Double = 0.0,
                    confidence: Double = 0.0) {
