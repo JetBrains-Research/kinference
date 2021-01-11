@@ -2,21 +2,27 @@ package io.kinference.algorithms.gec.preprocessing
 
 import java.io.File
 import java.io.InputStream
-import java.nio.file.Path
 
 class Vocabulary {
-    val token2index : MutableMap<String, Int> = mutableMapOf()
-    val index2token : MutableMap<Int, String> = mutableMapOf()
+    val token2index = HashMap<String, Int>()
+    val index2token = HashMap<Int, String>()
 
     companion object {
-        fun loadFromFile(path: Path): Vocabulary{
+        fun loadFromFile(path: String): Vocabulary{
             val vocab = Vocabulary()
+            val inputStream: InputStream = File(path).inputStream()
+            val lineList = ArrayList<String>()
+
+            inputStream.bufferedReader().useLines { lines -> lines.forEach { lineList.add(it)} }
+            for (line in lineList){
+                vocab.addToken(line)
+            }
             return vocab
         }
     }
 
     fun addToken(token: String){
-        if (token2index.containsKey(token)){
+        if (!token2index.containsKey(token)){
             val index = token2index.keys.size
             token2index[token] = index
             index2token[index] = token
@@ -76,11 +82,11 @@ class VerbsFormVocabulary{
     val verbs2verbs: MutableMap<String, MutableMap<String, String>, > = mutableMapOf()
 
     companion object {
-        fun setupVerbsFormVocab(path: String){
+        fun setupVerbsFormVocab(path: String): VerbsFormVocabulary{
             val vocab = VerbsFormVocabulary()
 
             val inputStream: InputStream = File(path).inputStream()
-            val lineList = mutableListOf<String>()
+            val lineList = ArrayList<String>()
 
             inputStream.bufferedReader().useLines { lines -> lines.forEach { lineList.add(it)} }
             for (line in lineList){
@@ -92,6 +98,7 @@ class VerbsFormVocabulary{
                 val outVerb = inOutVerb[1]
                 vocab.addVerb(inVerb, form, outVerb)
             }
+            return vocab
         }
     }
     fun addVerb(inVerb: String, form: String, outVerb: String){
@@ -102,5 +109,4 @@ class VerbsFormVocabulary{
             verbs2verbs[inVerb] = mutableMapOf(form to outVerb)
         }
     }
-
 }
