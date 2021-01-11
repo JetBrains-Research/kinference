@@ -2,7 +2,9 @@ package io.kinference.algorithms.gec.corrector
 
 import kotlin.math.min
 
-
+/**
+ * GecTagger feature from sentence
+ */
 data class GecTaggerFeatures(val sent: String,
                              val sentId: Int,
                              val tokSent: List<String>,
@@ -10,16 +12,25 @@ data class GecTaggerFeatures(val sent: String,
                              val flatEncSent: List<Int>,
                              val offset: List<Int>)
 
+/**
+ * Batch Output from DataLoader
+ */
 data class GecTaggerFeaturesOutput(val sentIds: List<Int>,
                                    val sentences: List<List<Int>>,
                                    val offsets: List<List<Int>>,
                                    val lens: List<Int>)
 
+/**
+ * Iterator output
+ */
 data class GecTaggerIteratorOut(val sentId: Int,
                                 val sentence: List<Int>,
                                 val offset: List<Int>,
                                 val len: Int)
 
+/**
+ * Features data storage class
+ */
 class GecTaggerFeaturesData(val data: List<GecTaggerFeatures>) {
     operator fun get(index: Int): GecTaggerIteratorOut {
         val sentence = data[index]
@@ -35,6 +46,9 @@ class GecTaggerFeaturesData(val data: List<GecTaggerFeatures>) {
     }
 }
 
+/**
+ * DataLoader implementation for specific GEC task
+ */
 class GecTaggerFeaturesDataLoader(
     val dataset: GecTaggerFeaturesData,
     val batchSize: Int, val padId: Int) : Iterable<GecTaggerFeaturesOutput> {
@@ -44,6 +58,9 @@ class GecTaggerFeaturesDataLoader(
     }
 }
 
+/**
+ * Helper class for DataLoader
+ */
 class GecTaggerFeaturesIterator(
     val dataset: GecTaggerFeaturesData,
     val batchSize: Int, val padId: Int) : Iterator<GecTaggerFeaturesOutput> {

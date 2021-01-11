@@ -10,10 +10,16 @@ import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.gather
 import io.kinference.operators.activations.Softmax
 
+/**
+ * result class from GecTagger for realization corrections
+ */
 data class GecTaggerResult(val tagsIds: IntNDArray,
                            val porbsTags: FloatNDArray,
                            val maxIncorrectProb: FloatNDArray)
 
+/**
+ * Class for generation tags from sentence
+ */
 class GecTagger(
     val model: Seq2Logits,
     val textProcessor: TransformersTextprocessor,
@@ -23,6 +29,9 @@ class GecTagger(
     val minErrorProb: Double,
     val confidence: Double,
 ) {
+    /**
+     * tags genereation from list of features
+     */
     fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
         val dataset = GecTaggerFeaturesData(sentences)
         val loader = GecTaggerFeaturesDataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.tokenizer.padId)
@@ -70,6 +79,9 @@ class GecTagger(
         return tagsObjects
     }
 
+    /**
+     * tags genereation from of sentence feature
+     */
     fun correct(sentence: GecTaggerFeatures): TagSentObject {
         val encs = sentence.flatEncSent
         val tokens = sentence.tokSent
@@ -102,7 +114,7 @@ class GecTagger(
 
     }
 
-    fun badArgmax(tensor: FloatNDArray): IntNDArray {
+    private fun badArgmax(tensor: FloatNDArray): IntNDArray {
         val argMaxTensor = IntNDArray(shape = IntArray(size = 2, init = { i: Int -> if (i == 0) tensor.shape[0] else tensor.shape[1] }), init = { 0 })
 
         for (batchIdx in 0 until tensor.shape[0]) {
@@ -115,7 +127,7 @@ class GecTagger(
         return argMaxTensor
     }
 
-    fun predictTags(sents: LongNDArray, attentionMask: LongNDArray, offset: LongNDArray): GecTaggerResult {
+    private fun predictTags(sents: LongNDArray, attentionMask: LongNDArray, offset: LongNDArray): GecTaggerResult {
         val logitsResult = model(sents, attentionMask)
         var logitsTags = logitsResult.logitsTag
         var logitsDTags = logitsResult.logitsDTags
@@ -195,7 +207,7 @@ class GecTagger(
         return GecTaggerResult(tagsIds = tags, porbsTags = probsBestTags, maxIncorrectProb = probsIncorrect)
     }
 
-    fun decodeTags(tagsIds: List<Int>, porbsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
+    private fun decodeTags(tagsIds: List<Int>, porbsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
         if (maxIncorrectProb < minErrorProb) {
             return tagsIds.map { TagKeep.value }
         }

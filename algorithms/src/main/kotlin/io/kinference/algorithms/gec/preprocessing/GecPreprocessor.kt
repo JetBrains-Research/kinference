@@ -5,10 +5,16 @@ import io.kinference.algorithms.gec.utils.Token
 import io.kinference.algorithms.gec.utils.TokenRange
 import io.kinference.algorithms.gec.utils.calculateTokensBordersAndWithSpaces
 
+/**
+ * Base class for preprocessors
+ */
 abstract class GecPreprocessor {
     abstract fun preprocess(sentId: Int, sentence: String): SentenceCorrections
 }
 
+/**
+ * Basic Preprocessor realization for inference
+ */
 class GecCorrectionPreprocessor(val textProcessor: TransformersTextprocessor,
                                 val useStartToken: Boolean, val useForEval: Boolean) : GecPreprocessor() {
 

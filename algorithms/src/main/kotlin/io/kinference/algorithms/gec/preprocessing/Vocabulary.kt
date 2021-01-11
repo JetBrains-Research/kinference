@@ -3,6 +3,9 @@ package io.kinference.algorithms.gec.preprocessing
 import java.io.File
 import java.io.InputStream
 
+/**
+ * Vocabulary for tokens/tags
+ */
 class Vocabulary {
     val token2index = HashMap<String, Int>()
     val index2token = HashMap<Int, String>()
@@ -67,17 +70,11 @@ class Vocabulary {
         return result
     }
 
-//    @classmethod
-//    def load_from_file(cls, path: Path) -> 'Vocabulary':
-//    vocab = Vocabulary()
-//    with path.open(mode='rt', encoding='utf-8') as f:
-//    token_to_index: Dict[str, int] = json.loads(f.read())
-//
-//    vocab._token_to_index = token_to_index  # pylint: disable=W0212
-//    vocab._index_to_token = {i: t for t, i in token_to_index.items()}  # pylint: disable=W0212
-//    return vocab
 }
 
+/**
+ * Vocbalulary for forms of verbs
+ */
 class VerbsFormVocabulary {
     val verbs2verbs: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 

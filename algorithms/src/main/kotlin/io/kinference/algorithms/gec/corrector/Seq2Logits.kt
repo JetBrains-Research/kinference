@@ -6,8 +6,14 @@ import io.kinference.model.Model
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 
+/**
+ * Result of tag prediction
+ */
 data class LogitResults(val logitsTag: FloatNDArray, val logitsDTags: FloatNDArray)
 
+/**
+ * Class which hold Bert model for tags prediction
+ */
 class Seq2Logits(modelPath: String) {
 
     private val model = Model.load(modelPath)

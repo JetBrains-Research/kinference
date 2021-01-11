@@ -2,6 +2,9 @@ package io.kinference.algorithms.gec.preprocessing
 
 import io.kinference.algorithms.gec.tokenizer.AutoTokenizer
 
+/**
+ * Interface for realization of text processors
+ */
 interface TextProcessor {
     fun encodeAsIds(text: String): List<Int>
 
@@ -30,6 +33,9 @@ interface TextProcessor {
     val numWords: Int
 }
 
+/**
+ * TextProcessor from transformer tokenizer for text processing
+ */
 class TransformersTextprocessor(val modelNameOrPath: String) : TextProcessor {
     val tokenizer = AutoTokenizer.fromPretrained(modelNameOrPath)
 

@@ -5,8 +5,14 @@ import io.kinference.algorithms.gec.preprocessing.*
 import io.kinference.algorithms.gec.utils.*
 import kotlin.math.min
 
+/**
+ * data class for Correction result from each iteration
+ */
 data class CorrectionResult(val sentence: String, val corrections: SentenceCorrections)
 
+/**
+ * Main class for correction generation.
+ */
 class GECCorrector(val model: Seq2Logits,
                    private val textProcessor: TransformersTextprocessor,
                    labelsVocab: Vocabulary,
@@ -29,22 +35,34 @@ class GECCorrector(val model: Seq2Logits,
         confidence = confidence
     )
 
+    /**
+     * calculate correction for batch sentence for evaluation
+     */
     fun toCorrectedSentences(sentences: List<String>): List<CorrectionResult> {
 
         val corrections = calculateSentenceCorrectionsList(sentences)
         return corrections.map { CorrectionResult(sentence = postprocessor.postprocess(it), corrections = it) }
     }
 
+    /**
+     * calculate correction for one sentence
+     */
     fun evaluateCorrectionsInFewIterations(sentence: String): List<TextCorrection> {
         val sentCorrection = calculateSentenceCorrections(sentence)
         return toTextCorrections(sentCorrection)
     }
 
+    /**
+     * calculate corrections for batch of sentence
+     */
     fun evaluateCorrectionsListInFewIterations(sentences: List<String>): List<List<TextCorrection>> {
         val sentCorrections = calculateSentenceCorrectionsList(sentences)
         return sentCorrections.map { toTextCorrections(it) }
     }
 
+    /**
+     * textCorrection generation
+     */
     private fun toTextCorrections(sentCorrections: SentenceCorrections): List<TextCorrection> {
 
         val textCorrections = sentCorrections.toTextCorrections()
@@ -52,7 +70,10 @@ class GECCorrector(val model: Seq2Logits,
         return textCorrections
     }
 
-    fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<Token>): List<GecTaggerFeatures> {
+    /**
+     * generation feature vectors for sentence
+     */
+    private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<Token>): List<GecTaggerFeatures> {
         val tokSent = tokens.map { it.text }
         val encodedTokens = ArrayList<List<Int>>()
 
@@ -84,6 +105,9 @@ class GECCorrector(val model: Seq2Logits,
         return features
     }
 
+    /**
+     * calculate SentenceCorrections for each correction iteration
+     */
     private fun calculateSentenceCorrections(sentence: String): SentenceCorrections {
         val sentCorrections = preprocessor.preprocess(sentId = 0, sentence = sentence)
         for (idx in 0 until iterations) {
@@ -107,6 +131,9 @@ class GECCorrector(val model: Seq2Logits,
         return sentCorrections
     }
 
+    /**
+     * calculate list SentenceCorrection for each correction iteration
+     */
     private fun calculateSentenceCorrectionsList(sentences: List<String>): List<SentenceCorrections> {
         val correctionList = sentences.mapIndexed { index, sentence -> preprocessor.preprocess(index, sentence) }
         for (idx in 0 until iterations) {
@@ -139,6 +166,9 @@ class GECCorrector(val model: Seq2Logits,
         return correctionList
     }
 
+    /**
+     * bool for check is final iteration
+     */
     private fun isFinalIteration(sentObj: SentenceCorrections, taggedSentence: TagSentObject): Boolean {
         for (tag in taggedSentence.tags) {
             if (tag != TagKeep.value) {

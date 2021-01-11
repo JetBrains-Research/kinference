@@ -3,6 +3,9 @@ package io.kinference.algorithms.gec.postprocessing
 import io.kinference.algorithms.gec.utils.SentenceCorrections
 import io.kinference.algorithms.gec.utils.TextCorrection
 
+/**
+ * function which create new sentence from incorrect sentence and TextCorrection list
+ */
 fun transformSentence(incorrectSentence: String, corrections: List<TextCorrection>): String {
     var corrSentence = incorrectSentence
     var offset = 0
@@ -14,10 +17,16 @@ fun transformSentence(incorrectSentence: String, corrections: List<TextCorrectio
     return corrSentence
 }
 
+/**
+ * Postprocessor class
+ */
 abstract class GecPostprocessor {
     abstract fun postprocess(sentObj: SentenceCorrections): String
 }
 
+/**
+ * Basic realization of postprocessor
+ */
 class GecCorrectionPostprocessor() : GecPostprocessor() {
 
     override fun postprocess(sentObj: SentenceCorrections): String {

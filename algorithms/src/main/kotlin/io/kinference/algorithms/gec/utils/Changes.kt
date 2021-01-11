@@ -20,6 +20,9 @@ internal object AppendNoSpace {
     }
 }
 
+/**
+ * Changes of token for every correction iteration
+ */
 data class TokenChanges(val replacement: String,
                         var tokenizedReplacement: List<String>? = null,
                         val usedTokensNum: Int = 1) {
@@ -31,6 +34,9 @@ data class TokenChanges(val replacement: String,
     }
 }
 
+/**
+ * class which generates TokenChages on every iteration
+ */
 class TokenChangesGenerator(val tokens: List<Token>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
     fun generateTokenChanges(): List<TokenChanges?> {
         val changesList = ArrayList<TokenChanges?>()

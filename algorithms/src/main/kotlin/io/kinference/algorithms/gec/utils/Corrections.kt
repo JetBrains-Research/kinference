@@ -6,11 +6,17 @@ import io.kinference.algorithms.gec.preprocessing.TagDelete
 import io.kinference.algorithms.gec.preprocessing.TagKeep
 import kotlin.math.abs
 
+/**
+ * Class which implements sentence-part correction. Output of GecCorrector
+ */
 data class TextCorrection(val errorRange: Pair<Int, Int>,
                           val underlineRange: Pair<Int, Int>,
                           val replacement: String,
                           val massage: String)
 
+/**
+ * Sentence piece class which change tokens using corrections
+ */
 data class SentenceCorrections(val sentId: Int, val sent: String,
                                var tokens: List<Token>,
                                val corrections: HashMap<String, TokenCorrection> = HashMap(),
@@ -61,7 +67,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
 
     }
 
-    fun addTokenCorrection(token: Token, correction: TokenCorrection) {
+    private fun addTokenCorrection(token: Token, correction: TokenCorrection) {
         val changedTokens = ArrayList<Token>()
         val tokenPos = token.position
         for ((pos, t) in correction.changedTokens.withIndex()) {
