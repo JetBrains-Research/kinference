@@ -4,6 +4,12 @@ import kotlin.math.min
 
 /**
  * GecTagger feature from sentence
+ * @param sent - string which represents a sentence
+ * @param sentId - Id of sentence
+ * @param tokSent - sentence which splited on tokens
+ * @param encTokSent - encoded tokens from tokenizer
+ * @param flatEncSent - flatted tokens from encTokSent
+ * @param offset - indexes from flatEncSent which represent where token to start
  */
 data class GecTaggerFeatures(val sent: String,
                              val sentId: Int,
@@ -77,7 +83,6 @@ class GecTaggerFeaturesIterator(
             throw NoSuchElementException()
         }
 
-        val subData = hashMapOf<String, List<Any>>()
         val from = iteratorValue
         val to = min(iteratorValue + batchSize, dataset.size())
 

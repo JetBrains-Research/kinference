@@ -12,17 +12,17 @@ data class CorrectionResult(val sentence: String, val corrections: SentenceCorre
 
 /**
  * Main class for correction generation.
- * @param model
- * @param textProcessor
- * @param labelsVocab
- * @param dTagsVocab
- * @param verbsVocab
- * @param preprocessor
- * @param postprocessor
- * @param iterations
- * @param minCorrectionProb
- * @param minErrorProb
- * @param confidence
+ * @param model - Seq2Logits class which can predict tags for each token in sequence
+ * @param textProcessor - TransformersTextprocessor class for processing sequences
+ * @param labelsVocab - label vocabulary
+ * @param dTagsVocab - detection tags vocabulary
+ * @param verbsVocab - verbs form vocabulary
+ * @param preprocessor - sequence preprocessor
+ * @param postprocessor - correction postprocessor
+ * @param iterations - quantity of iterations which model should do for returning corrections
+ * @param minCorrectionProb - minimum probability for correction
+ * @param minErrorProb - minimum probability for error
+ * @param confidence - bias for not-changing strategy
  *
  */
 class GECCorrector(val model: Seq2Logits,
@@ -77,7 +77,7 @@ class GECCorrector(val model: Seq2Logits,
     private fun toTextCorrections(sentCorrections: SentenceCorrections): List<TextCorrection> {
 
         val textCorrections = sentCorrections.toTextCorrections()
-        val correctedSentence = postprocessor.postprocess(sentCorrections)
+        // val correctedSentence = postprocessor.postprocess(sentCorrections)
         return textCorrections
     }
 
@@ -90,7 +90,6 @@ class GECCorrector(val model: Seq2Logits,
 
         for (token in tokens) {
             if (token.isUsed) {
-                assert(token.encodedData != null)
                 encodedTokens.add(token.encodedData)
             }
         }

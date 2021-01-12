@@ -19,6 +19,13 @@ data class GecTaggerResult(val tagsIds: IntNDArray,
 
 /**
  * Class for generation tags from sentence
+ * @param model - Seq2Logits class which can predict tags for each token in sequence
+ * @param textProcessor - TransformersTextprocessor class for processing sequences
+ * @param labelsVocabulary - label vocabulary
+ * @param dTagsVocabulary - detection tags vocabulary
+ * @param minCorrectionProb - minimum probability for correction
+ * @param minErrorProb - minimum probability for error
+ * @param confidence - bias for not-changing strategy
  */
 class GecTagger(
     val model: Seq2Logits,
@@ -134,7 +141,7 @@ class GecTagger(
 
         val batchSize = logitsTags.shape[0]
         val seqSize = logitsTags.shape[1]
-        val hiddenSize = logitsTags.shape[2]
+        // val hiddenSize = logitsTags.shape[2]
 
         if (offset.shape.size == 1) {
             logitsTags = logitsTags.gather(indices = offset, axis = 1) as FloatNDArray
@@ -194,12 +201,12 @@ class GecTagger(
         val probsIncorrect = FloatNDArray(shape = IntArray(size = 1, init = { batchSize }), init = { 0.0f })
 
         for (batchIdx in 0 until batchSize) {
-            var sentenceIncorrProbs = ArrayList<Float>()
+            val sentenceIncorrProbs = ArrayList<Float>()
 
             for (seqIdx in 0 until probsDTags.shape[1]) {
                 sentenceIncorrProbs.add(probsDTags.array.pointer(startIndex = batchIdx * probsDTags.shape[1] + seqIdx * probsDTags.shape[2] + 3).get())
             }
-            sentenceIncorrProbs!!.max()?.let { probsIncorrect.array.pointer(startIndex = batchIdx).set(value = it) }
+            sentenceIncorrProbs.maxOrNull()?.let { probsIncorrect.array.pointer(startIndex = batchIdx).set(value = it) }
         }
         assert(tags.shape.lastIndex == probsBestTags.shape.lastIndex)
         assert(tags.shape[0] == probsIncorrect.shape[0])

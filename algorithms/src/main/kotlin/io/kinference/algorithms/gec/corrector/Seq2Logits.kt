@@ -13,6 +13,7 @@ data class LogitResults(val logitsTag: FloatNDArray, val logitsDTags: FloatNDArr
 
 /**
  * Class which hold Bert model for tags prediction
+ * @param modelPath - name of the model
  */
 class Seq2Logits(modelPath: String) {
 

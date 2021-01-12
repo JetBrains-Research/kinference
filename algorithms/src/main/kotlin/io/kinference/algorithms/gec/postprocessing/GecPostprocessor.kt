@@ -5,6 +5,8 @@ import io.kinference.algorithms.gec.utils.TextCorrection
 
 /**
  * function which create new sentence from incorrect sentence and TextCorrection list
+ * @param incorrectSentence - original sentence
+ * @param corrections - corrections of sentence
  */
 fun transformSentence(incorrectSentence: String, corrections: List<TextCorrection>): String {
     var corrSentence = incorrectSentence
