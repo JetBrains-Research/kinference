@@ -1,5 +1,8 @@
 package io.kinference.algorithms.gec.tokenizer.utils
 
+/**
+ * Class for char classification for preprocessing text data
+ */
 object CharUtils {
     private val controlChars = setOf(CharCategory.UNASSIGNED, CharCategory.CONTROL,
         CharCategory.FORMAT, CharCategory.PRIVATE_USE, CharCategory.SURROGATE)
