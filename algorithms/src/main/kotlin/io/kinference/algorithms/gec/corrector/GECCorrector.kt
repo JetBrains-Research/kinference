@@ -6,11 +6,6 @@ import io.kinference.algorithms.gec.utils.*
 import kotlin.math.min
 
 /**
- * data class for Correction result from each iteration
- */
-data class CorrectionResult(val sentence: String, val corrections: SentenceCorrections)
-
-/**
  * Main class for correction generation.
  * @param model - Seq2Logits class which can predict tags for each token in sequence
  * @param textProcessor - TransformersTextprocessor class for processing sequences
@@ -45,6 +40,11 @@ class GECCorrector(val model: Seq2Logits,
         minErrorProb = minErrorProb,
         confidence = confidence
     )
+
+    /**
+     * data class for Correction result from each iteration
+     */
+    data class CorrectionResult(val sentence: String, val corrections: SentenceCorrections)
 
     /**
      * calculate correction for batch sentence for evaluation
@@ -86,17 +86,12 @@ class GECCorrector(val model: Seq2Logits,
      */
     private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<Token>): List<GecTaggerFeatures> {
         val tokSent = tokens.map { it.text }
-        val encodedTokens = ArrayList<List<Int>>()
 
-        for (token in tokens) {
-            if (token.isUsed) {
-                encodedTokens.add(token.encodedData)
-            }
-        }
+        val encodedTokens = tokens.filter { it.isUsed }.map { it.encodedData }
 
         val features = ArrayList<GecTaggerFeatures>()
         val modelMaxLen = 512   // TODO(Add to tokenizer field ModelMaxLength)
-        for (sliceStart in 0 until encodedTokens.size step modelMaxLen) {
+        for (sliceStart in encodedTokens.indices step modelMaxLen) {
             val sliceEnd = min(a = sliceStart + modelMaxLen, b = encodedTokens.size)
             val encodedTokensSlice = encodedTokens.subList(fromIndex = sliceStart, toIndex = sliceEnd)
             val offsets = offsetCalc(encodedTokensSlice, "first")
@@ -181,7 +176,7 @@ class GECCorrector(val model: Seq2Logits,
      */
     private fun isFinalIteration(sentObj: SentenceCorrections, taggedSentence: TagSentObject): Boolean {
         for (tag in taggedSentence.tags) {
-            if (tag != TagKeep.value) {
+            if (tag != Tag.Keep.value) {
                 return false
             }
         }

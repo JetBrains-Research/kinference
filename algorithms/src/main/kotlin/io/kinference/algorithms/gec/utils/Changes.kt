@@ -4,7 +4,7 @@ import io.kinference.algorithms.gec.preprocessing.*
 import java.lang.IllegalArgumentException
 
 internal object EmptyTags {
-    private val tags: List<Tag> = listOf(TagPad, TagUnk, TagKeep)
+    private val tags: List<Tag> = listOf(Tag.Pad, Tag.Unk, Tag.Keep)
     private val values = tags.map { it.value }
 
     fun isEmptyTag(tag: String): Boolean {
@@ -16,7 +16,7 @@ internal object AppendNoSpace {
     private val values: Set<String> = setOf("-", ",", ".", ";", ":", "!", "?", "'s", "'m", "'d", "'ve", "'ll", "'re", "n't", "'t")
 
     fun inNoSpaceCharacters(tok: String): Boolean {
-        return values.contains(tok)
+        return tok in values
     }
 }
 

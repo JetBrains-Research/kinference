@@ -2,7 +2,7 @@ package io.kinference.algorithms.gec.preprocessing
 
 import io.kinference.algorithms.gec.utils.SentenceCorrections
 import io.kinference.algorithms.gec.utils.Token
-import io.kinference.algorithms.gec.utils.TokenRange
+import io.kinference.algorithms.gec.utils.Token.TokenRange
 import io.kinference.algorithms.gec.utils.calculateTokensBordersAndWithSpaces
 
 /**

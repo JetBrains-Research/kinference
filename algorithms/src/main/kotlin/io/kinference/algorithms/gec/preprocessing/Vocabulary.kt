@@ -25,11 +25,11 @@ class Vocabulary {
     }
 
     fun addToken(token: String) {
-        if (!token2index.containsKey(token)) {
-            val index = token2index.keys.size
-            token2index[token] = index
-            index2token[index] = token
-        }
+        if (token2index.containsKey(token)) return
+
+        val index = token2index.keys.size
+        token2index[token] = index
+        index2token[index] = token
     }
 
     fun addTokens(tokens: List<String>) {
@@ -76,7 +76,7 @@ class Vocabulary {
  * Vocbalulary for forms of verbs
  */
 class VerbsFormVocabulary {
-    val verbs2verbs: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
+    val verbs2verbs: MutableMap<String, MutableMap<String, String>> = HashMap()
 
     companion object {
         fun setupVerbsFormVocab(path: String): VerbsFormVocabulary {

@@ -1,11 +1,6 @@
 package io.kinference.algorithms.gec.utils
 
 /**
- * Information about token
- */
-data class TokenRange(val start: Int, val end: Int, val withSpace: Boolean)
-
-/**
  * Token-wise correction class
  */
 data class TokenCorrection(val tag: String, val errorClass: String, var changedTokens: List<Token>)
@@ -15,6 +10,11 @@ data class TokenCorrection(val tag: String, val errorClass: String, var changedT
  */
 data class Token(var text: String, var encodedData: List<Int>,
                  val tokenRange: TokenRange, val isFirst: Boolean, var isUsed: Boolean) {
+
+    /**
+     * Information about token
+     */
+    data class TokenRange(val start: Int, val end: Int, val withSpace: Boolean)
 
     var position: String = "none"
 

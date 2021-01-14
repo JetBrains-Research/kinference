@@ -36,7 +36,7 @@ interface TextProcessor {
 /**
  * TextProcessor from transformer tokenizer for text processing
  */
-class TransformersTextprocessor(val modelNameOrPath: String) : TextProcessor {
+class TransformersTextprocessor(modelNameOrPath: String) : TextProcessor {
     val tokenizer = AutoTokenizer.fromPretrained(modelNameOrPath)
 
     override fun encodeAsIds(text: String): List<Int> {
@@ -55,24 +55,45 @@ class TransformersTextprocessor(val modelNameOrPath: String) : TextProcessor {
         return tokenizer.covertTokensToString(tokens)
     }
 
+    /**
+     * Begin of sentence (BOS) token id
+     */
     override val bosId: Int
         get() = tokenizer.clsId
 
+    /**
+     * End of sentence (EOS) token id
+     */
     override val eosId: Int
         get() = tokenizer.sepId
 
+    /**
+     * Padding token id
+     */
     override val padId: Int
         get() = tokenizer.padId
 
+    /**
+     * Mask token id
+     */
     override val maskId: Int
         get() = tokenizer.maskId
 
+    /**
+     * Unknown token id
+     */
     override val unkId: Int
         get() = tokenizer.unkId
 
+    /**
+     * Separative token id (For Transformer-like architecture)
+     */
     override val sepId: Int
         get() = tokenizer.sepId
 
+    /**
+     * CLS token id (For Transformer-like architecture)
+     */
     override val clsId: Int
         get() = tokenizer.clsId
 

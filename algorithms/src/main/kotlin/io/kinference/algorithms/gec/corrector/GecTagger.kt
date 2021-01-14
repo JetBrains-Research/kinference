@@ -1,21 +1,14 @@
 package io.kinference.algorithms.gec.corrector
 
+import io.kinference.algorithms.gec.preprocessing.Tag
 import io.kinference.algorithms.gec.preprocessing.TransformersTextprocessor
 import io.kinference.algorithms.gec.preprocessing.Vocabulary
-import io.kinference.algorithms.gec.preprocessing.TagKeep
 import io.kinference.algorithms.gec.utils.TagSentObject
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.gather
 import io.kinference.operators.activations.Softmax
-
-/**
- * result class from GecTagger for realization corrections
- */
-data class GecTaggerResult(val tagsIds: IntNDArray,
-                           val porbsTags: FloatNDArray,
-                           val maxIncorrectProb: FloatNDArray)
 
 /**
  * Class for generation tags from sentence
@@ -37,11 +30,18 @@ class GecTagger(
     val confidence: Double,
 ) {
     /**
+     * result class from GecTagger for realization corrections
+     */
+    data class Result(val tagsIds: IntNDArray,
+                      val porbsTags: FloatNDArray,
+                      val maxIncorrectProb: FloatNDArray)
+
+    /**
      * tags genereation from list of features
      */
     fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
-        val dataset = GecTaggerFeaturesData(sentences)
-        val loader = GecTaggerFeaturesDataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.tokenizer.padId)
+        val dataset = GecTaggerFeatures.Data(sentences)
+        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.tokenizer.padId)
         val tagsObjects = ArrayList<TagSentObject>()
         for ((batchIdx, batch) in loader.withIndex()) {
 
@@ -67,7 +67,7 @@ class GecTagger(
                 }
             }) as LongNDArray
 
-            val result: GecTaggerResult = predictTags(tensorSent, attentionMask, tensorOffset)
+            val result: Result = predictTags(tensorSent, attentionMask, tensorOffset)
             for (idx in 0 until result.tagsIds.shape[0]) {
                 val tagsSentIds = ArrayList<Int>()
                 result.tagsIds.array.pointer(startIndex = idx * innerOffsetSize).forEach(count = lens[idx], action = { tagsSentIds.add(it) })
@@ -107,7 +107,7 @@ class GecTagger(
             }
         }) as LongNDArray
 
-        val result: GecTaggerResult = predictTags(tensorSent, attentionMask, tensorOffset)
+        val result: Result = predictTags(tensorSent, attentionMask, tensorOffset)
 
         val tagsSentIds = ArrayList<Int>()
         result.tagsIds.array.pointer(startIndex = 0).forEach(count = result.tagsIds.shape[1], action = { tagsSentIds.add(it) })
@@ -134,7 +134,7 @@ class GecTagger(
         return argMaxTensor
     }
 
-    private fun predictTags(sents: LongNDArray, attentionMask: LongNDArray, offset: LongNDArray): GecTaggerResult {
+    private fun predictTags(sents: LongNDArray, attentionMask: LongNDArray, offset: LongNDArray): Result {
         val logitsResult = model(sents, attentionMask)
         var logitsTags = logitsResult.logitsTag
         var logitsDTags = logitsResult.logitsDTags
@@ -211,14 +211,14 @@ class GecTagger(
         assert(tags.shape.lastIndex == probsBestTags.shape.lastIndex)
         assert(tags.shape[0] == probsIncorrect.shape[0])
 
-        return GecTaggerResult(tagsIds = tags, porbsTags = probsBestTags, maxIncorrectProb = probsIncorrect)
+        return Result(tagsIds = tags, porbsTags = probsBestTags, maxIncorrectProb = probsIncorrect)
     }
 
     private fun decodeTags(tagsIds: List<Int>, porbsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
         if (maxIncorrectProb < minErrorProb) {
-            return tagsIds.map { TagKeep.value }
+            return tagsIds.map { Tag.Keep.value }
         }
 
-        return porbsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else TagKeep.value }
+        return porbsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else Tag.Keep.value }
     }
 }

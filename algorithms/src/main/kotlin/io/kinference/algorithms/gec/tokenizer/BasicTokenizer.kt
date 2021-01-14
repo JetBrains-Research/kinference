@@ -1,7 +1,6 @@
 package io.kinference.algorithms.gec.tokenizer
 
-import io.kinference.algorithms.gec.tokenizer.utils.isControl
-import io.kinference.algorithms.gec.tokenizer.utils.isPunctuation
+import io.kinference.algorithms.gec.tokenizer.utils.CharUtils
 import io.kinference.algorithms.gec.tokenizer.utils.isWhitespace
 import io.kinference.algorithms.gec.tokenizer.utils.whitespaceTokenize
 import java.lang.StringBuilder
@@ -37,10 +36,10 @@ class BasicTokenizer(private val doLowerCase: Boolean, private val stripAccents:
     }
 
     private fun cleanText(text: String): String {
-        val output = mutableListOf<String>()
+        val output = ArrayList<String>()
         for (char in text) {
             val cp = char.toInt()
-            if (cp == 0 || cp == 0xFFFD || isControl(char)) {
+            if (cp == 0 || cp == 0xFFFD || CharUtils.isControl(char)) {
                 continue
             }
             if (isWhitespace(char)) {
@@ -69,7 +68,7 @@ class BasicTokenizer(private val doLowerCase: Boolean, private val stripAccents:
         var startNewWord = true
         val output = ArrayList<StringBuilder>()
         for (char in chars) {
-            if (isPunctuation(char)) {
+            if (CharUtils.isPunctuation(char)) {
                 output.add(StringBuilder().append(char.toString()))
                 startNewWord = true
             } else {

@@ -1,9 +1,9 @@
 package io.kinference.algorithms.gec.utils
 
+import io.kinference.algorithms.gec.preprocessing.Tag
 import io.kinference.algorithms.gec.preprocessing.TransformersTextprocessor
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
-import io.kinference.algorithms.gec.preprocessing.TagDelete
-import io.kinference.algorithms.gec.preprocessing.TagKeep
+import io.kinference.algorithms.gec.utils.Token.TokenRange
 import kotlin.math.abs
 
 /**
@@ -197,22 +197,22 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
 
             for (token in tokens) {
                 if (corrections.containsKey(token.position) &&
-                    corrections.get(token.position)!!.tag == TagDelete.value) {
+                    corrections.get(token.position)!!.tag == Tag.Delete.value) {
                     isDelete.add(true)
                 } else {
                     isDelete.add(false)
                 }
             }
-            tag = if (isDelete.all { it }) TagDelete.value else TagKeep.value
+            tag = if (isDelete.all { it }) Tag.Delete.value else Tag.Keep.value
             word = endToken.text
             withSpace = endToken.tokenRange.withSpace
         }
 
-        if (tag == TagDelete.value) {
+        if (tag == Tag.Delete.value) {
             startEnd = Pair(startEnd.first, startEnd.second + 1)
         }
 
-        if (tag == TagDelete.value && !withSpace && word != " ") {
+        if (tag == Tag.Delete.value && !withSpace && word != " ") {
             return Pair(startEnd.first, startEnd.second + 1)
         } else {
             return Pair(startEnd.first, startEnd.second)

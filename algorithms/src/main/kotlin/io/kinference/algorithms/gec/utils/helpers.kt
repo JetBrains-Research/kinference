@@ -1,7 +1,8 @@
 package io.kinference.algorithms.gec.utils
 
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
-import io.kinference.algorithms.gec.tokenizer.utils.isPunctuation
+import io.kinference.algorithms.gec.tokenizer.utils.CharUtils
+import io.kinference.algorithms.gec.utils.Token.TokenRange
 
 fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String {
     val formDict = verbsVocab.verbs2verbs[token]
@@ -64,7 +65,7 @@ fun createMessageBasedOnTag(tag: String): String {
         return "Rudimentary spaces"
     } else if (tag.startsWith("\$APPEND_") or tag.startsWith("\$REPLACE_")) {
         val last = tag.split('_').last()
-        if (isPunctuation(last.toCharArray().last())) {
+        if (CharUtils.isPunctuation(last.toCharArray().last())) {
             return "Incorrect punctuation"
         } else if (last in listOf("a", "an", "the")) {
             return "Article error"

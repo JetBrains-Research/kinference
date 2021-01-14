@@ -1,6 +1,6 @@
 package io.kinference.algorithms.gec.tokenizer.utils
 
-private object CharUtils {
+object CharUtils {
     private val controlChars = setOf(CharCategory.UNASSIGNED, CharCategory.CONTROL,
         CharCategory.FORMAT, CharCategory.PRIVATE_USE, CharCategory.SURROGATE)
 
@@ -38,12 +38,4 @@ fun whitespaceTokenize(text: String): List<String> {
 
 fun isWhitespace(char: Char): Boolean {
     return char.isWhitespace()
-}
-
-fun isControl(char: Char): Boolean {
-    return CharUtils.isControl(char)
-}
-
-fun isPunctuation(char: Char): Boolean {
-    return CharUtils.isPunctuation(char)
 }

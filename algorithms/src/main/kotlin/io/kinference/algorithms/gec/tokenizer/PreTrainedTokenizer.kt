@@ -42,7 +42,7 @@ abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
     abstract fun decode(ids: List<Int>): String
 
     fun splitOnToken(tok: String, text: String): List<String> {
-        val result = mutableListOf<String>()
+        val result = ArrayList<String>()
         val split_text = text.split(tok)
 
         for ((i, subText) in split_text.withIndex()) {
@@ -93,7 +93,7 @@ abstract class PreTrainedTokenizer(val doLowerCase: Boolean,
         } else {
             text
         }
-        return splitOnTokens(listOf(), mText)
+        return splitOnTokens(emptyList(), mText)
     }
 
     fun convertTokensToIds(tokens: List<String>): List<Int> {
