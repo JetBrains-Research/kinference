@@ -1,6 +1,8 @@
 package io.kinference.ndarray.broadcasting
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.primitives.types.DataType
 
 // TODO remove to different module
 fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
@@ -41,6 +43,20 @@ object Broadcasting {
         val newShape = broadcastShape(inputs.map { it.shape })
 
         require(destination.shape.contentEquals(newShape))
+
+        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
+
+        broadcast(
+            wrappedInputs,
+            destination,
+            op
+        )
+        return destination
+    }
+
+    fun applyWithBroadcast(inputs: List<NDArray>, destType: DataType, op: (List<NDArray>, MutableNDArray) -> Unit): MutableNDArray {
+        val newShape = broadcastShape(inputs.map { it.shape })
+        val destination = allocateNDArray(destType, newShape)
 
         val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
 
