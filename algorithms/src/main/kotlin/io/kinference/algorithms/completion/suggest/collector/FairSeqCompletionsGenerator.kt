@@ -20,17 +20,13 @@ internal class FairSeqCompletionsGenerator(model: ModelWrapper, tokenizer: BPETo
         val completionsByLen = beamSearch.generate(inputIds, prefix, config)
         for (completionsGroup in completionsByLen) {
             val completions = decodeSequences(completionsGroup)
-            result.addAll(completions[0])
+            result.addAll(completions)
         }
 
         return result
     }
 
-    private fun decodeSequences(sequences: List<List<GenerationInfo>>): List<List<CompletionModel.CompletionResult>> {
-        val result = ArrayList<List<CompletionModel.CompletionResult>>(sequences.size)
-        for (group in sequences) {
-            result.add(group.map { CompletionModel.CompletionResult(tokenizer.decode(it.ids), it) })
-        }
-        return result
+    private fun decodeSequences(sequences: List<GenerationInfo>): List<CompletionModel.CompletionResult> {
+        return sequences.map { CompletionModel.CompletionResult(tokenizer.decode(it.ids), it) }
     }
 }

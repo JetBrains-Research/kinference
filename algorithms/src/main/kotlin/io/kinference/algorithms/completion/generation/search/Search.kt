@@ -1,31 +1,32 @@
 package io.kinference.algorithms.completion.generation.search
 
-import io.kinference.algorithms.completion.generation.GenerationInfo
-
-
 internal abstract class Search(
-    val eosIds: IntArray,
     val vocabSize: Int,
     val searchSize: Int,
-    val lenNormBase: Double = 0.0,
-    val lenNormPow: Double = 0.0,
     val repetitionPenalty: Double = 1.0
 ) {
+
+    internal data class StepResult(val sortMask: IntArray, val newTokens: IntArray)
 
     /**
      * Current batch size
      */
     abstract val batchSize: Int
 
-    abstract fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): IntArray
+    abstract fun step(stepLogProbs: Array<DoubleArray>, context: IntArray): StepResult
 
     /**
-     * List of list of tuples of current hypotheses and theirs scores
+     * List of list of current hypotheses
      */
-    abstract fun currentHypotheses(): List<List<GenerationInfo>>
+    abstract fun hypotheses(): List<List<Int>>
 
     /**
      * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
      */
     abstract fun lastPredictions(): IntArray
+
+    /**
+     * Scores of hypotheses
+     */
+    abstract fun scores(): List<Double>
 }
