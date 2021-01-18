@@ -18,7 +18,7 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
 
     private var prefixes: List<PrefixInfo>? = null
     private var mems: List<NDArray>? = null
-    private var eachStepProbs: List<MutableList<Double>> = listOf(arrayListOf())
+    private var eachStepProbs: List<MutableList<Double>> = listOf(ArrayList())
     private var nextLogProbs: Array<DoubleArray>? = null
 
     private val vocabSize: Int
@@ -88,7 +88,6 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
             array
         }
 
-//        eachStepProbs = eachStepProbs.slice(sortMask)
         eachStepProbs = sortMask.map { ArrayList(eachStepProbs[it]) }
         prefixes = prefixes!!.slice(sortMask)
     }

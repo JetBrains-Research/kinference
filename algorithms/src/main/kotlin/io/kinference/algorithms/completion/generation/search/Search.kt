@@ -18,7 +18,7 @@ internal abstract class Search(
     /**
      * List of list of current hypotheses
      */
-    abstract fun hypotheses(): List<MutableList<Int>>
+    abstract fun hypotheses(): List<List<Int>>
 
     /**
      * Tensor of last tokens of the current hypotheses with shape (batch_size,) to make a batch for a model
@@ -28,5 +28,5 @@ internal abstract class Search(
     /**
      * Scores of hypotheses
      */
-    abstract fun scores(): MutableList<Double>
+    abstract fun scores(): List<Double>
 }

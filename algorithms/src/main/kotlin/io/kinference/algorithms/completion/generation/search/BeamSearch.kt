@@ -70,18 +70,14 @@ internal class BeamSearch(
         }
     }
 
-    override fun hypotheses(): List<MutableList<Int>> {
-        return hypotheses
-    }
+    override fun hypotheses(): List<List<Int>> = hypotheses
 
     override fun lastPredictions(): IntArray {
         assert(hypotheses.isNotEmpty() && hypotheses[0].size > 0) { "Can't get last predictions if no steps have been performed" }
         return IntArray(hypotheses.size) { hypotheses[it].last() }
     }
 
-    override fun scores(): MutableList<Double> {
-        return scores
-    }
+    override fun scores(): List<Double> = scores
 
     private fun initSortMask() {
         sortMask = IntArray(batchSize) { it }
