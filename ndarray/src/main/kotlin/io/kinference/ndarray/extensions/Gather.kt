@@ -22,6 +22,13 @@ fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
     val actualAxis = this.indexAxis(axis)
     val dst = createGatherDstArray(actualAxis, indices, shape, type)
 
+    return this.gather(indices, axis, dst)
+}
+
+//TODO: implement checking shapes
+fun NDArray.gather(indices: NDArray, axis: Int = 0, dst: MutableNDArray): NDArray {
+    val actualAxis = this.indexAxis(axis)
+
     val block = computeBlockSize(fromDim = actualAxis + 1)
     val dataBatch = computeBlockSize(fromDim = actualAxis)
     val indicesSize = indices.strides.linearSize

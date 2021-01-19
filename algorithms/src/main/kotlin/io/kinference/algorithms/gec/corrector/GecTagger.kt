@@ -1,14 +1,13 @@
 package io.kinference.algorithms.gec.corrector
 
-import io.kinference.algorithms.gec.preprocessing.Tag
-import io.kinference.algorithms.gec.preprocessing.TransformersTextprocessor
-import io.kinference.algorithms.gec.preprocessing.Vocabulary
+import io.kinference.algorithms.gec.preprocessing.*
 import io.kinference.algorithms.gec.utils.TagSentObject
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
-import io.kinference.ndarray.extensions.concatenate
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gather
 import io.kinference.operators.activations.Softmax
+import io.kinference.primitives.types.DataType
 
 /**
  * Class for generation tags from sentence
@@ -37,7 +36,7 @@ class GecTagger(
                       val maxIncorrectProb: FloatNDArray)
 
     /**
-     * tags genereation from list of features
+     * tags generation from list of features
      */
     fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
         val dataset = GecTaggerFeatures.Data(sentences)
@@ -87,7 +86,7 @@ class GecTagger(
     }
 
     /**
-     * tags genereation from of sentence feature
+     * tags generation from of sentence feature
      */
     fun correct(sentence: GecTaggerFeatures): TagSentObject {
         val encs = sentence.flatEncSent
@@ -141,40 +140,27 @@ class GecTagger(
 
         val batchSize = logitsTags.shape[0]
         val seqSize = logitsTags.shape[1]
-        // val hiddenSize = logitsTags.shape[2]
+        val hiddenSize = logitsTags.shape[2]
 
-        if (offset.shape.size == 1) {
-            logitsTags = logitsTags.gather(indices = offset, axis = 1) as FloatNDArray
-            logitsDTags = logitsDTags.gather(indices = offset, axis = 1) as FloatNDArray
-        } else {
-            val logitsTagsPerBatch = ArrayList<FloatNDArray>()
-            val logitsDTagsPerBatch = ArrayList<FloatNDArray>()
-            for (batchIdx in 0 until batchSize) {
-                var logitsTagsSlice = logitsTags.slice(starts = listOf(batchIdx, 0, 0).toIntArray(), ends = listOf(batchIdx + 1, logitsTags.shape[1], logitsTags.shape[2]).toIntArray(), steps = listOf(1, 1, 1).toIntArray()) as FloatNDArray
-                var logitsDTagsSlice = logitsDTags.slice(starts = listOf(batchIdx, 0, 0).toIntArray(), ends = listOf(batchIdx + 1, logitsDTags.shape[1], logitsDTags.shape[2]).toIntArray(), steps = listOf(1, 1, 1).toIntArray()) as FloatNDArray
-                val offsetSlice = offset.slice(starts = listOf(batchIdx, 0, 0).toIntArray(), ends = listOf(batchIdx + 1, offset.shape[1]).toIntArray(), steps = listOf(1, 1).toIntArray()).reshape(shape = listOf(offset.shape[1]).toIntArray()) as LongNDArray
+        val actualOffset = if (offset.shape.size == 1) offset.reshapeView(intArrayOf(1, offset.shape[0])) else offset
 
-//                var offsetMask = offsetSlice.map(object : LongMap {
-//                    override fun apply(value: Long): Long {
-//                        return if (value != 0L)
-//                            1
-//                        else
-//                            0
-//                    }
-//                }) as LongNDArray
+        val logitsTagsOutput = allocateNDArray(DataType.FLOAT, intArrayOf(batchSize, actualOffset.shape[1], hiddenSize))
+        val logitsDTagsOutput = allocateNDArray(DataType.FLOAT, intArrayOf(batchSize, actualOffset.shape[1], logitsDTags.shape.last()))
 
+        for (batchIdx in 0 until batchSize) {
+            val logitsTagsSlice = logitsTags.view(batchIdx)
+            val logitsDTagsSlice = logitsDTags.view(batchIdx)
+            val offsetSlice = actualOffset.view(batchIdx)
 
-                logitsTagsSlice = logitsTagsSlice.gather(indices = offsetSlice, axis = 1) as FloatNDArray
-                logitsDTagsSlice = logitsDTagsSlice.gather(indices = offsetSlice, axis = 1) as FloatNDArray
+            val logitsTagsOutputSlice = logitsTagsOutput.viewMutable(batchIdx)
+            val logitsDTagsOutputSlice = logitsDTagsOutput.viewMutable(batchIdx)
 
-//                logitsTagsSlice = (logitsTagsSlice * offsetMask) as FloatNDArray
-//                logitsDTagsSlice = (logitsDTagsSlice * offsetMask) as FloatNDArray
-                logitsTagsPerBatch.add(logitsTagsSlice)
-                logitsDTagsPerBatch.add(logitsDTagsSlice)
-            }
-            logitsTags = logitsTagsPerBatch.concatenate(axis = 0) as FloatNDArray
-            logitsDTags = logitsDTagsPerBatch.concatenate(axis = 0) as FloatNDArray
+            logitsTagsSlice.gather(offsetSlice, 0, logitsTagsOutputSlice)
+            logitsDTagsSlice.gather(offsetSlice, 0, logitsDTagsOutputSlice)
         }
+
+        logitsTags = logitsTagsOutput as FloatNDArray
+        logitsDTags = logitsDTagsOutput as FloatNDArray
 
         val probsTags = Softmax.softmax(logitsTags, axis = logitsTags.shape.lastIndex) as FloatNDArray
         val probsDTags = Softmax.softmax(logitsDTags, axis = logitsDTags.shape.lastIndex) as FloatNDArray
