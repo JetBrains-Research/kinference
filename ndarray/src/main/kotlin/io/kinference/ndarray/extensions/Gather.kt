@@ -1,6 +1,5 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.primitives.types.DataType
@@ -9,13 +8,18 @@ fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): In
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
-fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
+private fun computeGatherShape(shape: IntArray, axis: Int, indices: NDArray): IntArray {
     val newShape = IntArray(shape.size + indices.rank - 1)
     shape.copyInto(newShape, 0, 0, axis)
     indices.shape.copyInto(newShape, axis)
     shape.copyInto(newShape, axis + indices.rank, axis + 1)
-    val newStrides = Strides(newShape)
-    return allocateNDArray(type, newStrides)
+
+    return newShape
+}
+
+fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
+    val newShape = computeGatherShape(shape, axis, indices)
+    return allocateNDArray(type, newShape)
 }
 
 fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
@@ -25,8 +29,11 @@ fun NDArray.gather(indices: NDArray, axis: Int = 0): NDArray {
     return this.gather(indices, axis, dst)
 }
 
-//TODO: implement checking shapes
 fun NDArray.gather(indices: NDArray, axis: Int = 0, dst: MutableNDArray): NDArray {
+    val gatherOutputShape = computeGatherShape(shape, axis, indices)
+
+    require(dst.shape.contentEquals(gatherOutputShape)) { "Incorrect destination shape" }
+
     val actualAxis = this.indexAxis(axis)
 
     val block = computeBlockSize(fromDim = actualAxis + 1)
