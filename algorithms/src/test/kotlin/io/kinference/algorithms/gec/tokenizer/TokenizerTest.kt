@@ -1,15 +1,15 @@
 package io.kinference.algorithms.gec.tokenizer
 
-import io.kinference.data.tensors.asTensor
-import io.kinference.ndarray.arrays.IntNDArray
-import org.junit.jupiter.api.Assertions.*
+import io.kinference.algorithms.gec.ConfigLoader
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 
 class TokenizerTest {
 
-    private val tokenizer = BertTokenizer(vocabPath = Paths.get("/Users/Ivan.Dolgov/ivandolgov/projects/vocabs/bert-base-uncased"))
+    private val config = ConfigLoader.v2
+
+    private val tokenizer = config.bertTokenizer //BertTokenizer(vocabPath = Paths.get("/Users/Ivan.Dolgov/ivandolgov/projects/vocabs/bert-base-uncased"))
     private val texts = listOf(
         "Where's your bag?",
         "Horaaaaay!",

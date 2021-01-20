@@ -7,12 +7,8 @@ import java.nio.file.Paths
  */
 class AutoTokenizer {
     companion object {
-        fun fromPretrained(modelNameOrPath: String): PreTrainedTokenizer {
-            if (modelNameOrPath == "bert-base-uncased") {
-                return BertTokenizer(vocabPath = Paths.get("/Users/Ivan.Dolgov/ivandolgov/projects/vocabs/bert-base-uncased"))
-            } else {
-                throw NotImplementedError("Not implemented yet")
-            }
+        fun fromPretrained(modelPath: String): PreTrainedTokenizer {
+            return BertTokenizer(vocabPath = Paths.get(modelPath))
         }
     }
 }

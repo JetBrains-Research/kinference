@@ -1,38 +1,46 @@
 package io.kinference.algorithms.gec.model
 
+import io.kinference.algorithms.gec.ConfigLoader
 import io.kinference.algorithms.gec.corrector.GECCorrector
-import io.kinference.algorithms.gec.corrector.Seq2Logits
 import io.kinference.algorithms.gec.postprocessing.GecCorrectionPostprocessor
 import io.kinference.algorithms.gec.postprocessing.GecPostprocessor
-import io.kinference.algorithms.gec.preprocessing.*
+import io.kinference.algorithms.gec.preprocessing.GecCorrectionPreprocessor
+import io.kinference.algorithms.gec.preprocessing.GecPreprocessor
 import io.kinference.algorithms.gec.utils.TextCorrection
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+
+fun getFromResources(path: String): String = object {}.javaClass.getResource(path)!!.path!!
 
 class CorrectorTest {
 
-    private val model = Seq2Logits("/Users/Ivan.Dolgov/ivandolgov/model&test/model.onnx")
-    private val textProcessor: TransformersTextprocessor = TransformersTextprocessor("bert-base-uncased")
-    private val labelsVocab: Vocabulary = Vocabulary.loadFromFile("/Users/Ivan.Dolgov/ivandolgov/projects/grazie-ml/grazie/gec/config/labels.txt")
-    private val dTagsVocab: Vocabulary = Vocabulary.loadFromFile("/Users/Ivan.Dolgov/ivandolgov/projects/grazie-ml/grazie/gec/config/d_tags.txt")
-    private val verbsVocab: VerbsFormVocabulary = VerbsFormVocabulary.setupVerbsFormVocab("/Users/Ivan.Dolgov/ivandolgov/projects/grazie-ml/grazie/gec/config/verb-form-vocab.txt")
-    private val preprocessor: GecPreprocessor = GecCorrectionPreprocessor(textProcessor = textProcessor, useStartToken = true, useForEval = false)
+    private val config = ConfigLoader.v2
+
+    private val preprocessor: GecPreprocessor = GecCorrectionPreprocessor(textProcessor = config.textProcessor, useStartToken = true, useForEval = false)
     private val postprocessor: GecPostprocessor = GecCorrectionPostprocessor()
 
-    private val gecCorrector = GECCorrector(model, textProcessor, labelsVocab, dTagsVocab, verbsVocab, preprocessor, postprocessor, iterations = 5)
+    private val gecCorrector = GECCorrector(
+        config.model,
+        config.textProcessor,
+        config.labelsVocab,
+        config.dTagsVocab,
+        config.verbsVocab,
+        preprocessor,
+        postprocessor,
+        iterations = 5
+    )
 
+    private val textSimpleMistakes = listOf(
+        "It are bad .",
+        "It are even more interesting .",
+        "What I sure about is the fact that I am going to need an official certificate in order to prove that I 've studied the language .",
+        "I am easy going person with a lot of empathy for children .",
+        "I study English because I love it and I 'd like to speak very fluently and watch a movie without a subtitles .",
+        "And I likes cake too .",
+        "It are bad things to do and I think it is a good thing s to do it and"
+    )
 
-
-    private val textSimpleMistakes = listOf("It are bad .",
-                                            "It are even more interesting .",
-                                            "What I sure about is the fact that I am going to need an official certificate in order to prove that I 've studied the language .",
-                                            "I am easy going person with a lot of empathy for children .",
-                                            "I study English because I love it and I 'd like to speak very fluently and watch a movie without a subtitles .",
-                                            "And I likes cake too .",
-                                            "It are bad things to do and I think it is a good thing s to do it and")
-
-    private val answersSimpleMistakes = listOf(listOf(TextCorrection(errorRange = Pair(3, 6), underlineRange = Pair(3, 6), replacement = "is", massage = "Grammatical error")),
+    private val answersSimpleMistakes = listOf(
+        listOf(TextCorrection(errorRange = Pair(3, 6), underlineRange = Pair(3, 6), replacement = "is", massage = "Grammatical error")),
                                                listOf(TextCorrection(errorRange = Pair(3, 6), underlineRange = Pair(3, 6), replacement = "is", massage = "Grammatical error")),
                                                listOf(TextCorrection(errorRange = Pair(5, 6), underlineRange = Pair(5, 6), replacement = "I am", massage = "Grammatical error")),
                                                listOf(TextCorrection(errorRange = Pair(2, 15), underlineRange = Pair(2, 15), replacement = "am an easy", massage = "Complex error")),

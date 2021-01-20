@@ -36,8 +36,8 @@ interface TextProcessor {
 /**
  * TextProcessor from transformer tokenizer for text processing
  */
-class TransformersTextprocessor(modelNameOrPath: String) : TextProcessor {
-    val tokenizer = AutoTokenizer.fromPretrained(modelNameOrPath)
+class TransformersTextprocessor(modelPath: String) : TextProcessor {
+    val tokenizer = AutoTokenizer.fromPretrained(modelPath)
 
     override fun encodeAsIds(text: String): List<Int> {
         return tokenizer.encode(text, false)
