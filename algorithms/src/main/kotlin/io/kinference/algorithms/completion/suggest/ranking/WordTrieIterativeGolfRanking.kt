@@ -3,15 +3,19 @@ package io.kinference.algorithms.completion.suggest.ranking
 import io.kinference.algorithms.completion.CompletionModel
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import java.lang.Double.min
-import kotlin.math.abs
+import java.lang.Integer.max
+import java.lang.Math.abs
 
 
 internal data class PrefixState(val prefix: String, val prob: Double, val tab_num: Int)
 
 
-internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: PrefixState = PrefixState("", 1.0, 0),
-                        var scores: DoubleArray = DoubleArray(50)) {
-//    var scores = DoubleArray(50)
+internal class GolfTrie(private val tokenizer: BPETokenizer,
+                        private val prefixState: PrefixState = PrefixState("", 1.0, 0),
+                        initScores: DoubleArray? = null,
+                        prefix: String = ""
+) {
+    private var scores: DoubleArray = initScores ?: DoubleArray(50) { i -> max(0, i - prefix.length).toDouble() }
     private val children = HashMap<String, GolfTrie>()
     var updated = false
 
@@ -118,12 +122,12 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
         return patchedTrie(words, probs, pos).second
     }
 
-    fun mergeTries(trie: GolfTrie) {
+    private fun mergeTries(trie: GolfTrie) {
         for ((word, child) in trie.children.entries) {
-            if (children.containsKey(word)) {
+            if (!children.containsKey(word)) {
                 children[word] = child
             } else {
-                children[word]?.mergeTries(child)
+                children[word]!!.mergeTries(child)
             }
         }
         scores = trie.scores
@@ -142,13 +146,9 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
 internal class WordTrieIterativeGolfRanking(internal val tokenizer: BPETokenizer,
                                    private val numSeqs: Int,
                                    private val minFirstScore: Double) : RankingModel {
-//    private fun createScore(): GolfTrie {
-//        return GolfTrie(tokenizer)
-//    }
-
     override fun rank(context: String, prefix: String,
                       completions: List<CompletionModel.CompletionResult>): List<CompletionModel.CompletionResult> {
-        val score = GolfTrie(tokenizer)
+        val score = GolfTrie(tokenizer, prefix = prefix)
         val topListed = ArrayList<CompletionModel.CompletionResult>()
         val numIters = Integer.min(completions.size, numSeqs)
         var currentVariants = completions
