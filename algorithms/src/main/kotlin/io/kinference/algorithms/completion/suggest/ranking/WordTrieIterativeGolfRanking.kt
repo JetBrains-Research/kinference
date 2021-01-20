@@ -118,15 +118,23 @@ internal class GolfTrie(private val tokenizer: BPETokenizer, val prefixState: Pr
         return patchedTrie(words, probs, pos).second
     }
 
+    fun mergeTries(trie: GolfTrie) {
+        for ((word, child) in trie.children.entries) {
+            if (children.containsKey(word)) {
+                children[word] = child
+            } else {
+                children[word]?.mergeTries(child)
+            }
+        }
+        scores = trie.scores
+        updated = trie.updated
+    }
+
     fun update(completion:  CompletionModel.CompletionResult, pos: Int) {
         val (words, probs) = toWords(completion)
         val newTrie = patchedTrie(words, probs, pos).first
 
-        newTrie.children.forEach { (word, child) ->
-            children[word] = child
-            scores = newTrie.scores
-            updated = newTrie.updated
-        }
+        mergeTries(newTrie)
     }
 }
 
