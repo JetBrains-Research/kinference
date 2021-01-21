@@ -6,7 +6,6 @@ import io.kinference.algorithms.gec.corrector.correction.TextCorrection
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.postprocessing.GecPostprocessor
 import io.kinference.algorithms.gec.preprocessing.*
-import io.kinference.algorithms.gec.utils.offsetCalc
 import kotlin.math.min
 
 /**
@@ -184,5 +183,21 @@ class GECCorrector(
         }
 
         sentObj.isCorrect = true
+    }
+
+    private fun offsetCalc(sentIds: List<List<Int>>, offsetType: String): List<Int> {
+        val wordLens = sentIds.map { it.size }
+        if (offsetType == "first") {
+            var acc = 1
+            val tokenPlaceIdx = mutableListOf(acc)
+            for (wordLen in wordLens.dropLast(1)) {
+                acc += wordLen
+                tokenPlaceIdx.add(acc)
+            }
+            return tokenPlaceIdx
+
+        } else {
+            throw NotImplementedError("Not implemented error")
+        }
     }
 }

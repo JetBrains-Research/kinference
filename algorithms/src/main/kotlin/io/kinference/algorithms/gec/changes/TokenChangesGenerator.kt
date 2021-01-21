@@ -106,7 +106,7 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, priv
 //            val splits = tag.split("_", limit = 2)
 //            return TokenChanges((, tokenText, form=splits.last()))
 //        }
-        throw IllegalArgumentException("Unknown transformation type $tag")
+        error("Unknown transformation type $tag")
     }
 
     private fun applyAppendTag(idx: Int): Pair<Int, TokenChanges?> {
@@ -145,7 +145,6 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, priv
     }
 
     private fun applyMergeTag(idx: Int): Pair<Int, TokenChanges?> {
-
         if (!tags[idx].startsWith("\$MERGE_")) {
             return Pair(idx, null)
         }
@@ -156,10 +155,7 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, priv
         var newIdx = idx
         val startIdx = idx
         while (newIdx < tags.size - 1 && (tags[newIdx] == "\$MERGE_SPACE" || tags[newIdx] == "\$MERGE_HYPHEN")) {
-            val mergeSymbol =
-                if (tags[newIdx] == "\$MERGE_SPACE")
-                    " "
-                else "-"
+            val mergeSymbol = if (tags[newIdx] == "\$MERGE_SPACE") " " else "-"
 
             replacement = "${replacement}${mergeSymbol}${tokens[newIdx + 1].text}"
             if (mergeSymbol == "-") {
