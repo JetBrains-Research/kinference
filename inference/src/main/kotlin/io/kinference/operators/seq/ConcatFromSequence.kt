@@ -2,14 +2,14 @@ package io.kinference.operators.seq
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXDataType
-import io.kinference.data.seq.TensorSeq
+import io.kinference.data.seq.Sequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TensorSeq, Tensor>(INFO, attributes, inputs, outputs) {
+    : Operator<Sequence, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -28,8 +28,8 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<S
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val newAxis: Boolean by attribute("new_axis") { it: Number -> it.toInt() == 1 }
 
-    override fun apply(context: Context, inputs: List<TensorSeq?>): List<Tensor?> {
-        val srcTensors = inputs.first()!!.data
+    override fun apply(context: Context, inputs: List<Sequence?>): List<Tensor?> {
+        val srcTensors = inputs.first()!!.data as List<Tensor>
         val tensor = if (newAxis) srcTensors.stack(axis) else srcTensors.concatenate(axis)
         return listOf(tensor)
     }

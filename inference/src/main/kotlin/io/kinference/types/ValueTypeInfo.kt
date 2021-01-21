@@ -43,21 +43,25 @@ class TensorShape(private val dims: List<Dimension>) {
     }
 }
 
-abstract class ValueTypeInfo(val type: DataType) {
+sealed class ValueTypeInfo {
     companion object {
         fun create(proto: TypeProto) = when {
             proto.tensor_type != null -> TensorTypeInfo(proto.tensor_type)
             proto.sequence_type != null -> SequenceTypeInfo(proto.sequence_type)
-            proto.map_type != null -> TODO("support maps")
+            proto.map_type != null -> MapTypeInfo(proto.map_type)
             else -> error("One should be present")
         }
     }
-}
 
-class TensorTypeInfo(val shape: TensorShape, type: DataType) : ValueTypeInfo(type) {
-    constructor(proto: TypeProto.Tensor) : this(TensorShape(proto.shape!!), DataType.fromValue(proto.elem_type!!)!!)
-}
+    class TensorTypeInfo(val shape: TensorShape, val type: DataType) : ValueTypeInfo() {
+        constructor(proto: TypeProto.Tensor) : this(TensorShape(proto.shape!!), DataType.fromValue(proto.elem_type!!)!!)
+    }
 
-class SequenceTypeInfo(type: DataType) : ValueTypeInfo(type) {
-    constructor(proto: TypeProto.Sequence) : this(DataType.fromValue(proto.elem_type!!.tensor_type!!.elem_type!!)!!)
+    class SequenceTypeInfo(val type: DataType) : ValueTypeInfo() {
+        constructor(proto: TypeProto.Sequence) : this(DataType.fromValue(proto.elem_type!!.tensor_type!!.elem_type!!)!!)
+    }
+
+    class MapTypeInfo(val keyType: DataType, val valueType: ValueTypeInfo) : ValueTypeInfo() {
+        constructor(proto: TypeProto.Map) : this(DataType.fromValue(proto.key_type!!)!!, create(proto.value_type!!))
+    }
 }

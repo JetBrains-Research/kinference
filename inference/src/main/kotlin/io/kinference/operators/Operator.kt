@@ -3,7 +3,6 @@ package io.kinference.operators
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.data.seq.TensorSeq
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.isScalar
@@ -88,18 +87,18 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
             require(constraint != null) { "Unexpected $what '${value.info.name}' for '${info.name}' operator" }
 
             if (constraint is VariadicIOInfo) {
-                if (variadicCounter == 0) variadicType = value.info.type
+                //if (variadicCounter == 0) variadicType = value.info.type
                 variadicCounter++
 
-                if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
+                //if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
             }
 
             require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
-            require(value.info.type in constraint.types) { "Wrong $what type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.info.type}, Expected: ${constraint.types}" }
+            //require(value.info.type in constraint.types) { "Wrong $what type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.info.type}, Expected: ${constraint.types}" }
             if (constraint.scalar) {
                 when (value.type) {
                     ONNXDataType.ONNX_TENSOR -> require((value as Tensor).data.isScalar()) { "${what.capitalize()} '${value.info.name}' must be a scalar for '${info.name}' operator" }
-                    ONNXDataType.ONNX_SEQUENCE -> require((value as TensorSeq).data.all { it.data.isScalar() }) { "${what.capitalize()} '${value.info.name}' must be a list of scalars for '${info.name}' operator" }
+                    //ONNXDataType.ONNX_SEQUENCE -> require((value as Sequence).data.all { it.data.isScalar() }) { "${what.capitalize()} '${value.info.name}' must be a list of scalars for '${info.name}' operator" }
                 }
             }
         }

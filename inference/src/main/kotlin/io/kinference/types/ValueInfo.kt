@@ -3,8 +3,7 @@ package io.kinference.types
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.onnx.ValueInfoProto
 
-//TODO: optionally support maps and sequences
-abstract class ValueInfo(val name: String, val type: DataType) {
+sealed class ValueInfo(val name: String) {
     companion object {
         fun create(proto: ValueInfoProto): ValueInfo {
             val type = proto.type!!
@@ -15,16 +14,22 @@ abstract class ValueInfo(val name: String, val type: DataType) {
                     TensorInfo(proto.name!!, dataType, shape)
                 }
                 type.sequence_type != null -> {
-                    val tensorTypes = type.sequence_type.elem_type!!.tensor_type!!
-                    SequenceInfo(proto.name!!, DataType.fromValue(tensorTypes.elem_type!!)!!)
+                    val elementTypes = ValueTypeInfo.create(type.sequence_type.elem_type!!)
+                    SequenceInfo(proto.name!!, elementTypes)
                 }
-                type.map_type != null -> TODO("Maps are not supported")
+                type.map_type != null -> {
+                    val keyType = DataType.fromValue(type.map_type.key_type!!)!!
+                    val valueType = ValueTypeInfo.create(type.map_type.value_type!!)
+                    MapInfo(proto.name!!, keyType, valueType)
+                }
                 else -> error("Unsupported data type")
             }
         }
     }
+
+    class TensorInfo(name: String, val type: DataType, val shape: TensorShape) : ValueInfo(name)
+
+    class SequenceInfo(name: String, val type: ValueTypeInfo) : ValueInfo(name)
+
+    class MapInfo(name: String, val keyType: DataType, val valueType: ValueTypeInfo) : ValueInfo(name)
 }
-
-class TensorInfo(name: String, type: DataType, val shape: TensorShape) : ValueInfo(name, type)
-
-class SequenceInfo(name: String, type: DataType) : ValueInfo(name, type)

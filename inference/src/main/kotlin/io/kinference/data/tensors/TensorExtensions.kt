@@ -5,7 +5,7 @@ import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.onnx.TensorProto
 import io.kinference.primitives.types.DataType
-import io.kinference.types.TensorInfo
+import io.kinference.types.ValueInfo.TensorInfo
 import io.kinference.types.TensorShape
 
 fun TensorProto.DataType.resolveLocalDataType(): DataType {
