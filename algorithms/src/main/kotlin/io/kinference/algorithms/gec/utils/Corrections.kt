@@ -3,29 +3,38 @@ package io.kinference.algorithms.gec.utils
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
-import io.kinference.algorithms.gec.utils.Token.TokenRange
+import io.kinference.algorithms.gec.utils.GECToken.TokenRange
 import kotlin.math.abs
 
 /**
- * Class which implements sentence-part correction. Output of GecCorrector
+ * Correction of error in text -- output of GEC model.
+ *
+ * @param errorRange is a range for which replacement is prepared
+ * @param underlineRange is a range that should be highlighted
+ * @param replacement is a suggestion of fix
+ * @param message is a description of fix
  */
-data class TextCorrection(val errorRange: Pair<Int, Int>,
-                          val underlineRange: Pair<Int, Int>,
+data class TextCorrection(val errorRange: IntRange,
+                          val underlineRange: IntRange,
                           val replacement: String,
-                          val massage: String)
+                          val message: String) {
+    /** Apply correction to this sentence */
+    fun apply(sentence: String): String = sentence.replaceRange(errorRange, replacement)
+}
 
 /**
  * Sentence piece class which change tokens using corrections
  */
-data class SentenceCorrections(val sentId: Int, val sent: String,
-                               var tokens: List<Token>,
+data class SentenceCorrections(val sentId: Int,
+                               val sent: String,
+                               var tokens: List<GECToken>,
                                val corrections: HashMap<String, TokenCorrection> = HashMap(),
                                var isCorrect: Boolean = false) {
     init {
         tokens.forEachIndexed() { pos, t -> t.position = pos.toString() }
     }
 
-    fun addTokenToCorrections(tokenSentence: List<Token>, taggedSentence: TagSentObject,
+    fun addTokenToCorrections(tokenSentence: List<GECToken>, taggedSentence: TagSentObject,
                               encoder: PreTrainedTextEncoder, verbsFormVocabulary: VerbsFormVocabulary) {
         assert(taggedSentence.tokens == tokenSentence.map { it.text })
         val changesGenerator = TokenChangesGenerator(tokenSentence, taggedSentence.tags, verbsFormVocabulary = verbsFormVocabulary)
@@ -36,27 +45,27 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
             val tag = taggedSentence.tags[idx]
             val changes = changesList[idx] ?: continue
 
-            val changedTokens = ArrayList<Token>()
+            val changedTokens = ArrayList<GECToken>()
             if (changes.replacement == "") {
 //                token.text = ""
 //                token.encodedData = emptyList()
 //                token.isUsed = false
 
-                changedTokens.add(Token(text = "", tokenRange = token.tokenRange,
-                    encodedData = emptyList(), isUsed = false, isFirst = token.isFirst))
+                changedTokens.add(GECToken(text = "", range = token.range,
+                    encoded = emptyList(), isUsed = false, isFirst = token.isFirst))
             } else {
                 val tokenRangeList = calculateTokensBordersAndWithSpaces(text = changes.replacement,
-                    tokens = changes.tokenizedReplacement!!, textWithSpace = token.tokenRange.withSpace)
+                    tokens = changes.tokenizedReplacement!!, textWithSpace = token.range.withSpace)
 
                 val withSpaces = tokenRangeList.map { it.withSpace }
 
-                val start = tokenSentence[idx].tokenRange.start
-                val end = tokenSentence[idx + changes.usedTokensNum - 1].tokenRange.end
+                val start = tokenSentence[idx].range.start
+                val end = tokenSentence[idx + changes.usedTokensNum - 1].range.end
 
                 for (index in changes.tokenizedReplacement!!.indices) {
-                    changedTokens.add(Token(text = changes.tokenizedReplacement!![index],
-                        tokenRange = TokenRange(start = start, end = end, withSpace = withSpaces[index]),
-                        encodedData = encoder.encodeAsIds(changes.tokenizedReplacement!![index], false),
+                    changedTokens.add(GECToken(text = changes.tokenizedReplacement!![index],
+                        range = TokenRange(start = start, end = end, withSpace = withSpaces[index]),
+                        encoded = encoder.encodeAsIds(changes.tokenizedReplacement!![index], false),
                         isUsed = token.isUsed, isFirst = false))
                 }
             }
@@ -67,8 +76,8 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
 
     }
 
-    private fun addTokenCorrection(token: Token, correction: TokenCorrection) {
-        val changedTokens = ArrayList<Token>()
+    private fun addTokenCorrection(token: GECToken, correction: TokenCorrection) {
+        val changedTokens = ArrayList<GECToken>()
         val tokenPos = token.position
         for ((pos, t) in correction.changedTokens.withIndex()) {
             t.position = "${tokenPos}.${pos}"
@@ -88,17 +97,17 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
         return result
     }
 
-    fun toCorrectedTokenSentence(): List<Token> {
-        val correctedSentence = ArrayList<Token>()
+    fun toCorrectedTokenSentence(): List<GECToken> {
+        val correctedSentence = ArrayList<GECToken>()
         for (token in tokens) {
             correctedSentence += parseTokenCorrection(token)
         }
         return correctedSentence
     }
 
-    private fun parseTokenCorrection(token: Token): List<Token> {
+    private fun parseTokenCorrection(token: GECToken): List<GECToken> {
         if (corrections.contains(token.position)) {
-            val ctokens = ArrayList<Token>()
+            val ctokens = ArrayList<GECToken>()
 
             for (cToken in corrections[token.position]!!.changedTokens) {
                 ctokens += parseTokenCorrection(cToken)
@@ -109,12 +118,12 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
         }
     }
 
-    private fun parseTokenCorrectionToString(token: Token): List<String> {
+    private fun parseTokenCorrectionToString(token: GECToken): List<String> {
         return parseTokenCorrection(token).map { it.text }
     }
 
-    private fun getTokensToMerge(): List<List<Token>> {
-        val tokensToCorrect = ArrayList<Token>()
+    private fun getTokensToMerge(): List<List<GECToken>> {
+        val tokensToCorrect = ArrayList<GECToken>()
 
         for (token in tokens) {
             if (token.position in corrections) {
@@ -128,7 +137,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
             return emptyList()
         }
 
-        val tokensToMerge = ArrayList<List<Token>>()
+        val tokensToMerge = ArrayList<List<GECToken>>()
         var currentMerge = mutableListOf(tokensToCorrect[0])
 
         val from = 1
@@ -153,25 +162,25 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
         return tokensToMerge
     }
 
-    private fun isNeighbour(one: Token, two: Token, radius: Int = 3): Boolean {
+    private fun isNeighbour(one: GECToken, two: GECToken, radius: Int = 3): Boolean {
         assert(radius >= 1)
         return abs(two.initialTokenPosition() - one.initialTokenPosition()) <= radius
     }
 
-    private fun getInBetweenTokens(one: Token, two: Token): List<Token> {
+    private fun getInBetweenTokens(one: GECToken, two: GECToken): List<GECToken> {
         assert(one.initialTokenPosition() <= two.initialTokenPosition())
         return tokens.subList(fromIndex = one.initialTokenPosition() + 1,
             toIndex = two.initialTokenPosition())
     }
 
-    private fun constructMergedCorrection(tokens: List<Token>): TextCorrection {
+    private fun constructMergedCorrection(tokens: List<GECToken>): TextCorrection {
         return TextCorrection(errorRange = createErrorRange(tokens),
             underlineRange = createUnderlineRange(tokens),
-            massage = createMessage(tokens),
+            message = createMessage(tokens),
             replacement = createReplacement(tokens))
     }
 
-    private fun createErrorRange(tokens: List<Token>): Pair<Int, Int> {
+    private fun createErrorRange(tokens: List<GECToken>): IntRange {
         val tag: String
         var startEnd: Pair<Int, Int>
         val word: String
@@ -181,13 +190,13 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
             val token = tokens[0]
             assert(token.position in corrections)
             tag = corrections[token.position]!!.tag
-            startEnd = Pair(token.tokenRange.start, token.tokenRange.end)
+            startEnd = Pair(token.range.start, token.range.end)
             word = token.text
-            withSpace = token.tokenRange.withSpace
+            withSpace = token.range.withSpace
         } else {
             val startToken = tokens[0]
             val endToken = tokens.last()
-            startEnd = Pair(startToken.tokenRange.start, endToken.tokenRange.end)
+            startEnd = Pair(startToken.range.start, endToken.range.end)
             assert(startToken.position in corrections && endToken.position in corrections)
             val isDelete = ArrayList<Boolean>()
 
@@ -201,49 +210,43 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
             }
             tag = if (isDelete.all { it }) GECTag.DELETE.value else GECTag.KEEP.value
             word = endToken.text
-            withSpace = endToken.tokenRange.withSpace
+            withSpace = endToken.range.withSpace
         }
 
         if (tag == GECTag.DELETE.value) {
             startEnd = Pair(startEnd.first, startEnd.second + 1)
         }
 
-        if (tag == GECTag.DELETE.value && !withSpace && word != " ") {
-            return Pair(startEnd.first, startEnd.second + 1)
+        return if (tag == GECTag.DELETE.value && !withSpace && word != " ") {
+            IntRange(startEnd.first, startEnd.second)
         } else {
-            return Pair(startEnd.first, startEnd.second)
+            IntRange(startEnd.first, startEnd.second - 1)
         }
     }
 
-    private fun createUnderlineRange(tokens: List<Token>): Pair<Int, Int> {
+    private fun createUnderlineRange(tokens: List<GECToken>): IntRange = IntRange(tokens.first().range.start, tokens.last().range.end - 1)
+
+    private fun createMessage(tokens: List<GECToken>): String {
         return if (tokens.size == 1) {
-            Pair(tokens[0].tokenRange.start, tokens[0].tokenRange.end)
-        } else {
-            Pair(tokens[0].tokenRange.start, tokens.last().tokenRange.end)
-        }
-    }
-
-    private fun createMessage(tokens: List<Token>): String {
-        if (tokens.size == 1) {
             assert(tokens[0].position in corrections)
-            return corrections[tokens[0].position]!!.errorClass
+            corrections[tokens[0].position]!!.errorClass
         } else {
-            return "Complex error"
+            "Complex error"
         }
     }
 
-    private fun createReplacement(tokens: List<Token>): String {
+    private fun createReplacement(tokens: List<GECToken>): String {
         var replacement = ""
         for (token in tokens) {
             var tokenReplacement = ""
             if (token.position in corrections) {
                 for (cToken in parseTokenCorrection(token)) {
-                    tokenReplacement = updateReplacementString(tokenReplacement, cToken.text, withSpace = cToken.tokenRange.withSpace)
+                    tokenReplacement = updateReplacementString(tokenReplacement, cToken.text, withSpace = cToken.range.withSpace)
                 }
             } else {
                 tokenReplacement = token.text
             }
-            replacement = updateReplacementString(replacement, tokenReplacement, withSpace = token.tokenRange.withSpace)
+            replacement = updateReplacementString(replacement, tokenReplacement, withSpace = token.range.withSpace)
         }
         return replacement
     }

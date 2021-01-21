@@ -2,7 +2,7 @@ package io.kinference.algorithms.gec.utils
 
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 import io.kinference.algorithms.gec.tokenizer.utils.CharUtils
-import io.kinference.algorithms.gec.utils.Token.TokenRange
+import io.kinference.algorithms.gec.utils.GECToken.TokenRange
 
 fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String {
     val formDict = verbsVocab.verbs2verbs[token]

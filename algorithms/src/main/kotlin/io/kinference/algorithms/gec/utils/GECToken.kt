@@ -3,13 +3,13 @@ package io.kinference.algorithms.gec.utils
 /**
  * Token-wise correction class
  */
-data class TokenCorrection(val tag: String, val errorClass: String, var changedTokens: List<Token>)
+data class TokenCorrection(val tag: String, val errorClass: String, var changedTokens: List<GECToken>)
 
 /**
- * Token class
+ * Tokens used in GEC
  */
-data class Token(var text: String, var encodedData: List<Int>,
-                 val tokenRange: TokenRange, val isFirst: Boolean, var isUsed: Boolean) {
+data class GECToken(val text: String, val encoded: List<Int>, val range: TokenRange,
+                    val isFirst: Boolean, val isUsed: Boolean) {
 
     /**
      * Information about token
@@ -25,5 +25,4 @@ data class Token(var text: String, var encodedData: List<Int>,
     fun isStartToken(): Boolean {
         return text == "\$START"
     }
-
 }

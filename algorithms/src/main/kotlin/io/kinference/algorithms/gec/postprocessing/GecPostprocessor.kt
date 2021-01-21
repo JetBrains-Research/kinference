@@ -1,23 +1,7 @@
 package io.kinference.algorithms.gec.postprocessing
 
-import io.kinference.algorithms.gec.utils.SentenceCorrections
-import io.kinference.algorithms.gec.utils.TextCorrection
+import io.kinference.algorithms.gec.utils.*
 
-/**
- * function which create new sentence from incorrect sentence and TextCorrection list
- * @param incorrectSentence - original sentence
- * @param corrections - corrections of sentence
- */
-fun transformSentence(incorrectSentence: String, corrections: List<TextCorrection>): String {
-    var corrSentence = incorrectSentence
-    var offset = 0
-    for (correction in corrections) {
-        val startEnd = correction.errorRange
-        corrSentence = corrSentence.substring(startIndex = 0, endIndex = offset + startEnd.first) + correction.replacement + corrSentence.substring(startIndex = offset + startEnd.second)
-        offset += correction.replacement.length - (startEnd.second - startEnd.first)
-    }
-    return corrSentence
-}
 
 /**
  * Postprocessor class
@@ -35,5 +19,21 @@ class GecCorrectionPostprocessor : GecPostprocessor() {
         val textCorrections = sentObj.toTextCorrections()
 
         return transformSentence(original, textCorrections)
+    }
+
+    /**
+     * function which create new sentence from incorrect sentence and TextCorrection list
+     * @param sentence original sentence
+     * @param corrections corrections of sentence
+     */
+    private fun transformSentence(sentence: String, corrections: List<TextCorrection>): String {
+        var result = sentence
+        var offset = 0
+        for (correction in corrections) {
+            val startEnd = correction.errorRange
+            result = result.replaceRange(correction.errorRange.withOffset(offset), correction.replacement)
+            offset += correction.replacement.length - (startEnd.endInclusive - startEnd.start)
+        }
+        return result
     }
 }

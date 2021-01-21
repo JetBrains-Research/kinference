@@ -86,10 +86,10 @@ class GECCorrector(val model: Seq2Logits,
     /**
      * generation feature vectors for sentence
      */
-    private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<Token>): List<GecTaggerFeatures> {
+    private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<GECToken>): List<GecTaggerFeatures> {
         val tokSent = tokens.map { it.text }
 
-        val encodedTokens = tokens.filter { it.isUsed }.map { it.encodedData }
+        val encodedTokens = tokens.filter { it.isUsed }.map { it.encoded }
 
         val features = ArrayList<GecTaggerFeatures>()
         val modelMaxLen = 512   // TODO(Add to tokenizer field ModelMaxLength)
@@ -118,7 +118,7 @@ class GECCorrector(val model: Seq2Logits,
     private fun calculateSentenceCorrections(sentence: String): SentenceCorrections {
         val sentCorrections = preprocessor.preprocess(sentId = 0, sentence = sentence)
         for (idx in 0 until iterations) {
-            val tokens: List<Token> = sentCorrections.toCorrectedTokenSentence().filter { token -> token.isUsed }
+            val tokens: List<GECToken> = sentCorrections.toCorrectedTokenSentence().filter { token -> token.isUsed }
             val taggerFeatures = generateTaggerFeatures(sentCorrections, tokens)
             val tagged = taggerFeatures.map { tagger.correct(it) }
             if (tagged.size > 1) {

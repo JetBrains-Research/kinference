@@ -38,76 +38,99 @@ class CorrectorTest {
     )
 
     private val answersSimpleMistakes = listOf(
-        listOf(TextCorrection(errorRange = Pair(3, 6), underlineRange = Pair(3, 6), replacement = "is", massage = "Grammatical error")),
-                                               listOf(TextCorrection(errorRange = Pair(3, 6), underlineRange = Pair(3, 6), replacement = "is", massage = "Grammatical error")),
-                                               listOf(TextCorrection(errorRange = Pair(5, 6), underlineRange = Pair(5, 6), replacement = "I am", massage = "Grammatical error")),
-                                               listOf(TextCorrection(errorRange = Pair(2, 15), underlineRange = Pair(2, 15), replacement = "am an easy", massage = "Complex error")),
-                                               listOf(TextCorrection(errorRange = Pair(97, 99), underlineRange = Pair(97, 98), replacement = "", massage = "Grammatical error")),
-                                               listOf(TextCorrection(errorRange = Pair(6, 11), underlineRange = Pair(6, 11), replacement = "like", massage = "Incorrect verb form")),
-                                               listOf(TextCorrection(errorRange = Pair(0, 2), underlineRange = Pair(0, 2), replacement = "There", massage = "Grammatical error"), TextCorrection(errorRange = Pair(55, 57), underlineRange = Pair(55, 56), replacement = "", massage = "Grammatical error")))
+        listOf(TextCorrection(errorRange = IntRange(3, 5), underlineRange = IntRange(3, 5), replacement = "is", message = "Grammatical error")),
+        listOf(TextCorrection(errorRange = IntRange(3, 5), underlineRange = IntRange(3, 5), replacement = "is", message = "Grammatical error")),
+        listOf(TextCorrection(errorRange = IntRange(5, 5), underlineRange = IntRange(5, 5), replacement = "I am", message = "Grammatical error")),
+        listOf(TextCorrection(errorRange = IntRange(2, 14), underlineRange = IntRange(2, 14), replacement = "am an easy", message = "Complex error")),
+        listOf(TextCorrection(errorRange = IntRange(97, 98), underlineRange = IntRange(97, 97), replacement = "", message = "Grammatical error")),
+        listOf(TextCorrection(errorRange = IntRange(6, 10), underlineRange = IntRange(6, 10), replacement = "like", message = "Incorrect verb form")),
+        listOf(
+            TextCorrection(errorRange = IntRange(0, 1), underlineRange = IntRange(0, 1), replacement = "There", message = "Grammatical error"),
+            TextCorrection(errorRange = IntRange(55, 56), underlineRange = IntRange(55, 55), replacement = "", message = "Grammatical error")
+        )
+    )
 
-    private val textComplexMistakes = listOf("I 've change the place and I do n't knows which one is the best for me .",
-                                             "As I 'm new here , I 'm lost and do n't know where is to my hotel .",
-                                             "You do n't need to worry about your writing skills any more , improving you 're text has never be more easier !",
-                                             "It are an friend .",
-                                             "I have travelled around most of European countries and I be able to understanding , talking and writin highly three languages: Spanish, English and French.",
-                                             "I 'll hopes it does not involve inconvenience to you .",
-                                             "It is give to the body the energy as well as regular work of the heart .")
+    private val textComplexMistakes = listOf(
+        "I 've change the place and I do n't knows which one is the best for me .",
+        "As I 'm new here , I 'm lost and do n't know where is to my hotel .",
+        "You do n't need to worry about your writing skills any more , improving you 're text has never be more easier !",
+        "It are an friend .",
+        "I have travelled around most of European countries and I be able to understanding , talking and writin highly three languages: Spanish, English and French.",
+        "I 'll hopes it does not involve inconvenience to you .",
+        "It is give to the body the energy as well as regular work of the heart ."
+    )
 
-    private val answersComplexMistakes = listOf(listOf(TextCorrection(errorRange = Pair(6, 12), underlineRange = Pair(6, 12), replacement = "changed", massage = "Incorrect verb form"), TextCorrection(errorRange=Pair(36, 41), underlineRange=Pair(36, 41), replacement="know", massage="Incorrect verb form")),
-                                                emptyList(),
-                                                listOf(TextCorrection(errorRange= Pair(95, 102), underlineRange=Pair(95, 102), replacement="been", massage="Complex error")),
-                                                listOf(TextCorrection(errorRange=Pair(3, 16), underlineRange=Pair(3, 16), replacement="is friend", massage="Complex error")),
-                                                listOf(TextCorrection(errorRange=Pair(29, 32), underlineRange=Pair(29, 31), replacement="", massage="Grammatical error"), TextCorrection(errorRange=Pair(55, 56), underlineRange=Pair(55, 56), replacement="I will", massage="Grammatical error"), TextCorrection(errorRange=Pair(68, 109), underlineRange=Pair(68, 109), replacement="understand , talk and write", massage="Complex error")),
-                                                listOf(TextCorrection(errorRange=Pair(6, 11), underlineRange=Pair(6, 11), replacement="hope", massage="Incorrect verb form")),
-                                                listOf(TextCorrection(errorRange=Pair(6, 10), underlineRange=Pair(6, 10), replacement="given", massage="Incorrect verb form"))
-                                                )
+    private val answersComplexMistakes = listOf(
+        listOf(
+            TextCorrection(errorRange = IntRange(6, 11), underlineRange = IntRange(6, 11), replacement = "changed", message = "Incorrect verb form"),
+            TextCorrection(errorRange = IntRange(36, 40), underlineRange = IntRange(36, 40), replacement = "know", message = "Incorrect verb form")
+        ),
+        emptyList(),
+        listOf(TextCorrection(errorRange = IntRange(95, 101), underlineRange = IntRange(95, 101), replacement = "been", message = "Complex error")),
+        listOf(TextCorrection(errorRange = IntRange(3, 15), underlineRange = IntRange(3, 15), replacement = "is friend", message = "Complex error")),
+        listOf(
+            TextCorrection(errorRange = IntRange(29, 31), underlineRange = IntRange(29, 30), replacement = "", message = "Grammatical error"),
+            TextCorrection(errorRange = IntRange(55, 55), underlineRange = IntRange(55, 55), replacement = "I will", message = "Grammatical error"),
+            TextCorrection(
+                errorRange = IntRange(68, 108),
+                underlineRange = IntRange(68, 108),
+                replacement = "understand , talk and write",
+                message = "Complex error"
+            )
+        ),
+        listOf(TextCorrection(errorRange = IntRange(6, 10), underlineRange = IntRange(6, 10), replacement = "hope", message = "Incorrect verb form")),
+        listOf(TextCorrection(errorRange = IntRange(6, 9), underlineRange = IntRange(6, 9), replacement = "given", message = "Incorrect verb form"))
+    )
 
-    private val textNoMistakes = listOf("I 've changed places and I do n't know which one is the best for me .",
-                                        "I am an easy going person with a lot of empathy for children .",
-                                        "Just paste your text here and check the ' Check Text ' button .",
-                                        "I click the colored phrases for details on potential errors .",
-                                        "Or use this text to see a few of the problems that LanguageTool can detect .",
-                                        "I am an easy going person with a lot of empathy for children .",
-                                        "Or use this text to see a few of the problems that LanguageTool can detect .",
-                                        "What I am sure about is the fact that I am going to need an official certificate in order to prove that I 've studied the language .",
-                                        "I 've seen your advertisements for jobs on the internet and I 'm writing to apply for a summer job as an instructor and keeper of children in your camp .")
+    private val textNoMistakes = listOf(
+        "I 've changed places and I do n't know which one is the best for me .",
+        "I am an easy going person with a lot of empathy for children .",
+        "Just paste your text here and check the ' Check Text ' button .",
+        "I click the colored phrases for details on potential errors .",
+        "Or use this text to see a few of the problems that LanguageTool can detect .",
+        "I am an easy going person with a lot of empathy for children .",
+        "Or use this text to see a few of the problems that LanguageTool can detect .",
+        "What I am sure about is the fact that I am going to need an official certificate in order to prove that I 've studied the language .",
+        "I 've seen your advertisements for jobs on the internet and I 'm writing to apply for a summer job as an instructor and keeper of children in your camp ."
+    )
 
-    private val answersEmptyMistates = listOf(emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList(),
-                                              emptyList<TextCorrection>())
+    private val answersEmptyMistates = listOf(
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        emptyList<TextCorrection>()
+    )
 
     @Test
     @Tag("heavy")
-    fun testSimpleMistak(){
+    fun testSimpleMistakes() {
         val oneSimpleMistakes = ArrayList<List<TextCorrection>>()
 
-        for (text in textSimpleMistakes){
+        for (text in textSimpleMistakes) {
             oneSimpleMistakes.add(gecCorrector.evaluateCorrectionsInFewIterations(text))
         }
 
         val batchSimpleMistakes = gecCorrector.evaluateCorrectionsListInFewIterations(textSimpleMistakes)
 
-        assert(oneSimpleMistakes.size == answersSimpleMistakes.size)
-        assert(answersSimpleMistakes.size == batchSimpleMistakes.size)
-        for (idx in textSimpleMistakes.indices){
-            Assertions.assertEquals(oneSimpleMistakes[idx], answersSimpleMistakes[idx])
-            Assertions.assertEquals(batchSimpleMistakes[idx], answersSimpleMistakes[idx])
+        Assertions.assertEquals(answersSimpleMistakes.size, oneSimpleMistakes.size)
+        Assertions.assertEquals(answersSimpleMistakes.size, batchSimpleMistakes.size)
+        for (idx in textSimpleMistakes.indices) {
+            Assertions.assertEquals(answersSimpleMistakes[idx], oneSimpleMistakes[idx])
+            Assertions.assertEquals(answersSimpleMistakes[idx], batchSimpleMistakes[idx])
         }
     }
 
     @Test
     @Tag("heavy")
-    fun testComplexMistakes(){
+    fun testComplexMistakes() {
         val oneComplexMistakes = ArrayList<List<TextCorrection>>()
 
-        for (text in textComplexMistakes){
+        for (text in textComplexMistakes) {
             oneComplexMistakes.add(gecCorrector.evaluateCorrectionsInFewIterations(text))
         }
 
@@ -115,7 +138,7 @@ class CorrectorTest {
 
         assert(oneComplexMistakes.size == answersComplexMistakes.size)
         assert(answersComplexMistakes.size == batchComplexMistakes.size)
-        for (idx in textComplexMistakes.indices){
+        for (idx in textComplexMistakes.indices) {
             Assertions.assertEquals(oneComplexMistakes[idx], answersComplexMistakes[idx])
             Assertions.assertEquals(batchComplexMistakes[idx], answersComplexMistakes[idx])
         }
@@ -123,10 +146,10 @@ class CorrectorTest {
 
     @Test
     @Tag("heavy")
-    fun testEmptyMistakes(){
+    fun testEmptyMistakes() {
         val oneEmptyMistakes = ArrayList<List<TextCorrection>>()
 
-        for (text in textNoMistakes){
+        for (text in textNoMistakes) {
             oneEmptyMistakes.add(gecCorrector.evaluateCorrectionsInFewIterations(text))
         }
 
@@ -134,7 +157,7 @@ class CorrectorTest {
 
         assert(oneEmptyMistakes.size == answersEmptyMistates.size)
         assert(answersEmptyMistates.size == batchEmptyMistakes.size)
-        for (idx in textComplexMistakes.indices){
+        for (idx in textComplexMistakes.indices) {
             Assertions.assertEquals(oneEmptyMistakes[idx], answersEmptyMistates[idx])
             Assertions.assertEquals(batchEmptyMistakes[idx], answersEmptyMistates[idx])
         }

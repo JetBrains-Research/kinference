@@ -38,7 +38,7 @@ data class TokenChanges(val replacement: String,
 /**
  * class which generates TokenChages on every iteration
  */
-class TokenChangesGenerator(val tokens: List<Token>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
+class TokenChangesGenerator(val tokens: List<GECToken>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
     fun generateTokenChanges(): List<TokenChanges?> {
         val changesList = ArrayList<TokenChanges?>()
         var idx = 0
