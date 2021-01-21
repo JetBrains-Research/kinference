@@ -1,50 +1,18 @@
-package io.kinference.algorithms.gec.utils
+package io.kinference.algorithms.gec.changes
 
 import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
-import io.kinference.algorithms.gec.preprocessing.*
-import java.lang.IllegalArgumentException
-
-internal object EmptyTags {
-    private val tags: List<GECTag> = listOf(GECTag.PAD, GECTag.UNK, GECTag.KEEP)
-    private val values = tags.map { it.value }
-
-    fun isEmptyTag(tag: String): Boolean {
-        return values.contains(tag)
-    }
-}
-
-internal object AppendNoSpace {
-    private val values: Set<String> = setOf("-", ",", ".", ";", ":", "!", "?", "'s", "'m", "'d", "'ve", "'ll", "'re", "n't", "'t")
-
-    fun inNoSpaceCharacters(tok: String): Boolean {
-        return tok in values
-    }
-}
-
-/**
- * Changes of token for every correction iteration
- */
-data class TokenChanges(val replacement: String,
-                        var tokenizedReplacement: List<String>? = null,
-                        val usedTokensNum: Int = 1) {
-
-    init {
-        if (tokenizedReplacement == null) {
-            tokenizedReplacement = listOf(replacement)
-        }
-    }
-}
+import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 
 /**
  * class which generates TokenChages on every iteration
  */
-class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
+class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, private val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
     fun generateTokenChanges(): List<TokenChanges?> {
         val changesList = ArrayList<TokenChanges?>()
         var idx = 0
         while (idx < tokens.size) {
-            if (EmptyTags.isEmptyTag(tags[idx])) {
+            if (GECTag.from(tags[idx])?.isNonChanging == true) {
                 changesList.add(null)
                 idx += 1
                 continue
@@ -62,7 +30,7 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val 
     }
 
     private fun applyTokenTag(idx: Int): Pair<Int, TokenChanges?> {
-        if (EmptyTags.isEmptyTag(tags[idx])) {
+        require(GECTag.from(tags[idx])?.isNonChanging?.not() ?: true ) {
             throw IllegalArgumentException("tag_str should be a meaningful error token not ${tags[idx]}")
         }
         val pairDelete = applyDeleteTag(idx)
@@ -71,18 +39,25 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val 
         val pairAppend = applyAppendTag(idx)
         val pairMerge = applyMergeTag(idx)
 
-        if (pairDelete.second != null) {
-            return pairDelete
-        } else if (pairReplace.second != null) {
-            return pairReplace
-        } else if (pairTransform.second != null) {
-            return pairTransform
-        } else if (pairAppend.second != null) {
-            return pairAppend
-        } else if (pairMerge.second != null) {
-            return pairMerge
-        } else {
-            return Pair(idx, TokenChanges(tokens[idx].text))
+        return when {
+            pairDelete.second != null -> {
+                pairDelete
+            }
+            pairReplace.second != null -> {
+                pairReplace
+            }
+            pairTransform.second != null -> {
+                pairTransform
+            }
+            pairAppend.second != null -> {
+                pairAppend
+            }
+            pairMerge.second != null -> {
+                pairMerge
+            }
+            else -> {
+                Pair(idx, TokenChanges(tokens[idx].text))
+            }
         }
     }
 
@@ -110,15 +85,21 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val 
 
         if (tag.startsWith("\$TRANSFORM_CASE")) {
             val splits = tag.split("_", limit = 3)
-            return Pair(idx, TokenChanges(transformUsingCase(tokenText, case = splits.last())))
+            return Pair(idx, TokenChanges(Transformations.transformUsingCase(tokenText, case = splits.last())))
         }
         if (tag.startsWith("\$TRANSFORM_VERB")) {
             val splits = tag.split("_", limit = 3)
-            return Pair(idx, TokenChanges(transformUsingVerb(tokenText,
-                form = splits.last(), verbsVocab = verbsFormVocabulary)))
+            return Pair(
+                idx, TokenChanges(
+                    Transformations.transformUsingVerb(
+                        tokenText,
+                        form = splits.last(), verbsVocab = verbsFormVocabulary
+                    )
+                )
+            )
         }
         if (tag.startsWith("\$TRANSFORM_SPLIT")) {
-            val parts = transformUsingSplit(tokenText)
+            val parts = Transformations.transformUsingSplit(tokenText)
             return Pair(idx, TokenChanges(replacement = parts.joinToString { " " }, tokenizedReplacement = parts))
         }
 //        if (tag.startsWith("\$TRANSFORM_AGREEMENT")){
@@ -137,11 +118,15 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val 
         val appendWord = tags[idx].split("_", limit = 2).last()
 
         if (tags[idx] != "\$APPEND_-") {
-            return if (tokens[idx].isStartToken()) {
-                Pair(idx, TokenChanges("$appendWord "))
-            } else if (AppendNoSpace.inNoSpaceCharacters(appendWord)) {
-                Pair(idx, TokenChanges("${tokenText}${appendWord}", tokenizedReplacement = listOf(tokenText, appendWord)))
-            } else Pair(idx, TokenChanges("$tokenText $appendWord", tokenizedReplacement = listOf(tokenText, appendWord)))
+            return when {
+                tokens[idx].isStartToken() -> {
+                    Pair(idx, TokenChanges("$appendWord "))
+                }
+                AppendNoSpace.inNoSpaceCharacters(appendWord) -> {
+                    Pair(idx, TokenChanges("${tokenText}${appendWord}", tokenizedReplacement = listOf(tokenText, appendWord)))
+                }
+                else -> Pair(idx, TokenChanges("$tokenText $appendWord", tokenizedReplacement = listOf(tokenText, appendWord)))
+            }
         }
 
         //APPEND_-

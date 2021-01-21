@@ -1,9 +1,12 @@
 package io.kinference.algorithms.gec.corrector.correction
 
 import io.kinference.algorithms.gec.GECTag
+import io.kinference.algorithms.gec.changes.TokenChangesGenerator
+import io.kinference.algorithms.gec.classifier.GECClassifier
 import io.kinference.algorithms.gec.corrector.GECTagger
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
+import io.kinference.algorithms.gec.tokenizer.TokenRange
 import io.kinference.algorithms.gec.utils.*
 import kotlin.math.abs
 
@@ -34,7 +37,6 @@ data class SentenceCorrections(
         /**
          * Information about token
          */
-        data class TokenRange(val start: Int, val end: Int, val withSpace: Boolean)
 
         var position: String = "none"
 
@@ -75,19 +77,19 @@ data class SentenceCorrections(
                     )
                 )
             } else {
-                val tokenRangeList = calculateTokensBordersAndWithSpaces(
+                val tokenRangeList = TokenRange.findTokensInText(
                     text = changes.replacement,
                     tokens = changes.tokenizedReplacement!!, textWithSpace = token.range.withSpace
                 )
 
                 val start = tokenSentence[idx].range.start
-                val end = tokenSentence[idx + changes.usedTokensNum - 1].range.end
+                val end = tokenSentence[idx + changes.usedTokensNum - 1].range.endExclusive
 
                 for (index in changes.tokenizedReplacement!!.indices) {
                     changedTokens.add(
                         GECToken(
                             text = changes.tokenizedReplacement!![index],
-                            range = GECToken.TokenRange(start = start, end = end, withSpace = tokenRangeList[index].withSpace),
+                            range = TokenRange(start = start, endExclusive = end, withSpace = tokenRangeList[index].withSpace),
                             encoded = encoder.encodeAsIds(changes.tokenizedReplacement!![index], false),
                             isUsed = token.isUsed, isFirst = false
                         )
@@ -95,10 +97,8 @@ data class SentenceCorrections(
                 }
             }
             addTokenCorrection(
-                token = token, correction = TokenCorrection(
-                    tag = tag, errorClass = createMessageBasedOnTag(tag),
-                    changedTokens = changedTokens
-                )
+                token = token,
+                correction = TokenCorrection(tag = tag, errorClass = GECClassifier.classifyError(tag), changedTokens = changedTokens)
             )
         }
 
@@ -199,14 +199,14 @@ data class SentenceCorrections(
             require(token.position in corrections)
 
             tag = corrections[token.position]!!.tag
-            range = IntRange(token.range.start, token.range.end)
+            range = IntRange(token.range.start, token.range.endExclusive)
             word = token.text
             withSpace = token.range.withSpace
         } else {
             val startToken = tokens[0]
             val endToken = tokens.last()
 
-            range = IntRange(startToken.range.start, endToken.range.end)
+            range = IntRange(startToken.range.start, endToken.range.endExclusive)
             require(startToken.position in corrections && endToken.position in corrections)
             val isDelete = ArrayList<Boolean>()
 
@@ -235,7 +235,7 @@ data class SentenceCorrections(
         }
     }
 
-    private fun createUnderlineRange(tokens: List<GECToken>): IntRange = IntRange(tokens.first().range.start, tokens.last().range.end - 1)
+    private fun createUnderlineRange(tokens: List<GECToken>): IntRange = IntRange(tokens.first().range.start, tokens.last().range.endExclusive - 1)
 
     private fun createMessage(tokens: List<GECToken>): String {
         return if (tokens.size == 1) {

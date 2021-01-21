@@ -3,7 +3,7 @@ package io.kinference.algorithms.gec.preprocessing
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.tokenizer.utils.tokenizeByWhitespace
 import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
-import io.kinference.algorithms.gec.utils.calculateTokensBordersAndWithSpaces
+import io.kinference.algorithms.gec.tokenizer.TokenRange
 
 /** Preprocessor is used to tokenize and pre-filter tokens and generation input for first iteration  */
 interface GecPreprocessor {
@@ -18,14 +18,14 @@ class GecCorrectionPreprocessor(
 
     override fun preprocess(sentId: Int, sentence: String): SentenceCorrections {
         val tokenizedSentence = sentence.tokenizeByWhitespace()
-        val tokensRanges: List<SentenceCorrections.GECToken.TokenRange> = calculateTokensBordersAndWithSpaces(text = sentence, tokens = tokenizedSentence, textWithSpace = false)
+        val tokensRanges: List<TokenRange> = TokenRange.findTokensInText(text = sentence, tokens = tokenizedSentence, textWithSpace = false)
 
         val tokens = ArrayList<SentenceCorrections.GECToken>()
         if (useStartToken) {
             tokens.add(
                 SentenceCorrections.GECToken(
                     text = "\$START", encoded = encoder.encodeAsIds("\$START", false),
-                    range = SentenceCorrections.GECToken.TokenRange(start = 0, end = 0, withSpace = false), isFirst = false, isUsed = true
+                    range = TokenRange(start = 0, endExclusive = 0, withSpace = false), isFirst = false, isUsed = true
                 )
             )
         }
