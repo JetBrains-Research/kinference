@@ -16,6 +16,7 @@ internal class GPT2ModelWrapper(loader: CompletionModelLoader, config: Completio
     private val hiddenSize = config.hiddenSize
     private val numLayer = config.numLayer
     private val vocabSize = config.vocabSize
+    override val maxSeqLen = config.maxSeqLen
 
     override fun initLogProbs(inputIds: Array<IntArray>): ModelOutputSeq {
         val batchSize = inputIds.size

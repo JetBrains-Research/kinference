@@ -166,7 +166,7 @@ class Tensor(val data: NDArray, override val info: TensorInfo) : ONNXData(ONNXDa
                     DataType.INT16 -> ShortNDArray.scalar(buffer.short)
                     DataType.INT8 -> ByteNDArray.scalar(buffer.get())
                     DataType.UINT8 -> UByteNDArray.scalar(buffer.get().toUByte())
-                    DataType.BOOL -> BooleanNDArray.scalar(buffer.int != 0)
+                    DataType.BOOL -> BooleanNDArray.scalar(buffer.get() != (0).toByte())
                     else -> error("Unsupported data type $type")
                 }.asTensor(proto.name)
             } else createScalarNDArray(type.resolveLocalDataType(), array[0]).asTensor(proto.name)

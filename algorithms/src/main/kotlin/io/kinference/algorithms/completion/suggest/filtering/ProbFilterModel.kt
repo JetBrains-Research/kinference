@@ -9,7 +9,7 @@ import kotlin.math.ln
  * Naive version of filtering that uses probability of completion from completion model and
  * and filters out variants with too small completion length or non-symbol starting completions
  */
-class ProbFilterModel : FilterModel {
+internal class ProbFilterModel : FilterModel {
     override fun filter(
         context: String,
         prefix: String,

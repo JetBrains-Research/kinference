@@ -11,7 +11,7 @@ class EqualTest {
         TestRunner.runFromResources(getTargetPath("test_equal"))
     }
 
-    //@Test
+    @Test
     fun `test equal with broadcast`() {
         TestRunner.runFromResources(getTargetPath("test_equal_bcast"))
     }

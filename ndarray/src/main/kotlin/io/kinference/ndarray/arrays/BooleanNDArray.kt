@@ -3,6 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.BooleanPointer
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
+import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
@@ -31,7 +32,27 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
     override fun view(vararg axes: Int): NDArray {
-        TODO("Not yet implemented")
+        for ((i, axis) in axes.withIndex()) {
+            require(shape[i] > axis)
+        }
+
+        val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
+
+        val newShape = shape.copyOfRange(axes.size, shape.size)
+        val newStrides = Strides(newShape)
+
+        if (array.blockSize == 0)
+            return BooleanNDArray(array, newStrides)
+
+
+        val offsetBlocks = offset / array.blockSize
+
+        val countBlocks = newStrides.linearSize / array.blockSize
+
+        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
+        val newArray = BooleanTiledArray(copyBlocks)
+
+        return BooleanNDArray(newArray, newStrides)
     }
 
     override fun singleValue(): Boolean {
@@ -136,8 +157,21 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
+    constructor(shape: IntArray, divider: Int = 1) : this(BooleanTiledArray(shape, divider), Strides(shape))
+
     override fun viewMutable(vararg axes: Int): MutableNDArray {
-        TODO()
+        val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
+        val offsetBlocks = offset / array.blockSize
+
+        val newShape = shape.copyOfRange(axes.size, shape.size)
+        val newStrides = Strides(newShape)
+
+        val countBlocks = newStrides.linearSize / array.blockSize
+
+        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
+        val newArray = BooleanTiledArray(copyBlocks)
+
+        return MutableBooleanNDArray(newArray, newStrides)
     }
 
     override fun copyIfNotMutable(): MutableNDArray {

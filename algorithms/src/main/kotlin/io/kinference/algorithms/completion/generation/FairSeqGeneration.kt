@@ -9,8 +9,7 @@ import io.kinference.algorithms.completion.generation.search.Search
 import io.kinference.algorithms.completion.tokenizer.BPETokenizer
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.NDArray
-import kotlin.math.ln
-import kotlin.math.min
+import kotlin.math.*
 
 internal class FairSeqGeneration(private val model: ModelWrapper, private val tokenizer: BPETokenizer) {
     data class PrefixInfo(val text: String, val errLimit: Int)
@@ -19,9 +18,8 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
 
     private var prefixes: List<PrefixInfo>? = null
     private var mems: List<NDArray>? = null
-
-    private val eosTokenId: Int
-        get() = tokenizer.eosTokenId
+    private var eachStepProbs: List<MutableList<Double>> = listOf(ArrayList())
+    private var nextLogProbs: Array<DoubleArray>? = null
 
     private val vocabSize: Int
         get() = tokenizer.vocabSize
@@ -31,14 +29,7 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
     private fun getSearch(config: CompletionConfig.Generation): Search {
         require(config.numGroups == 1) { "num groups > 1 is not supported" }
 
-        return BeamSearch(
-            intArrayOf(eosTokenId),
-            vocabSize,
-            config.numBeams,
-            config.lenNormBase,
-            config.lenNormPow,
-            config.repetitionPenalty
-        )
+        return BeamSearch(vocabSize, config.numBeams, config.repetitionPenalty)
     }
 
     private fun modifyScore(scores: Array<DoubleArray>): Array<DoubleArray> {
@@ -56,22 +47,25 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
                     scores[i][j] = scores[i][j] + err_num * logSpellProb
                 }
             }
+
+            // ban tokens with bad symbols
+//            for (j in tokenizer.invalidIds) {
+//                scores[i][j] = Double.NEGATIVE_INFINITY
+//            }
         }
 
         return scores
     }
 
-    private fun initLogProbs(context: IntArray): Array<DoubleArray> {
+    private fun initLogProbs(context: IntArray) {
         val logProbs = model.initLastLogProbs(arrayOf(context))
         mems = logProbs.pastStates
-
-        return modifyScore(logSoftmax(logProbs.logProbs))
+        nextLogProbs = modifyScore(logSoftmax(logProbs.logProbs))
     }
 
-    private fun initState(context: IntArray, prefix: String, config: CompletionConfig.Generation): Array<DoubleArray> {
+    private fun initState(prefix: String, config: CompletionConfig.Generation) {
         logSpellProb = ln(config.spellProb)
         prefixes = listOf(PrefixInfo(prefix, config.prefixErrLimit))
-        return initLogProbs(context)
     }
 
     private fun sortState(sortMask: IntArray) {
@@ -94,14 +88,25 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
             array
         }
 
+        eachStepProbs = sortMask.map { ArrayList(eachStepProbs[it]) }
         prefixes = prefixes!!.slice(sortMask)
     }
 
-    private fun getLogProbs(data: IntArray): Array<DoubleArray> {
+    private fun updateState(sortMask: IntArray, newTokensIds: IntArray) {
+        sortState(sortMask)
+
+        sortMask.zip(newTokensIds).forEachIndexed {
+            index, (batchInd, tokenInd) -> eachStepProbs[index].add(exp(nextLogProbs!![batchInd][tokenInd]))
+        }
+
+        updatePrefix(newTokensIds)
+    }
+
+    private fun getLogProbs(data: IntArray) {
         val logProbs = model.getLastLogProbs(data, mems!!)
         mems = logProbs.pastStates
 
-        return modifyScore(logSoftmax(logProbs.logProbs))
+        nextLogProbs = modifyScore(logSoftmax(logProbs.logProbs))
     }
 
     private fun updatePrefix(newTokensIds: IntArray) {
@@ -125,25 +130,26 @@ internal class FairSeqGeneration(private val model: ModelWrapper, private val to
         prefixes = null
     }
 
-    fun generate(context: IntArray, prefix: String, config: CompletionConfig.Generation): List<List<List<Search.HypothesisInfo>>> {
+    private fun currentHypothesis(search: Search): List<GenerationInfo> {
+        return search.hypotheses().zip(eachStepProbs).map { (hyp, probs) -> GenerationInfo(probs, hyp) }
+    }
+
+    fun generate(context: IntArray, prefix: String, config: CompletionConfig.Generation): List<List<GenerationInfo>> {
         val search = getSearch(config)
 
-        val oneLogProbs = initState(context, prefix, config)
-        var logProbs = Array(search.batchSize) { oneLogProbs[0] }
+        initState(prefix, config)
+        initLogProbs(context)
         sortState(IntArray(search.batchSize))
 
-        val result = ArrayList<List<List<Search.HypothesisInfo>>>()
+        val result = ArrayList<List<GenerationInfo>>()
         for (i in 0 until config.maxLen) {
-            val selectedInds = search.step(logProbs, context)
-            sortState(selectedInds)
-
-            val lastPredictions = search.lastPredictions()
-            updatePrefix(lastPredictions)
+            val stepResult = search.step(nextLogProbs!!, context)
+            updateState(stepResult.sortMask, stepResult.newTokens)
 
             if (i < config.maxLen - 1) {
-                logProbs = getLogProbs(lastPredictions)
+                getLogProbs(stepResult.newTokens)
             }
-            result.add(search.currentHypotheses())
+            result.add(currentHypothesis(search))
         }
 
         resetState()

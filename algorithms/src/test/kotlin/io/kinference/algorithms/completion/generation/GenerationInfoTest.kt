@@ -14,7 +14,7 @@ class GenerationInfoTest {
         val probs = listOf(0.1, 0.4)
         val gi = GenerationInfo(probs)
         assert(gi.probs.size == 2)
-        gi.add(0.3)
+        gi.add(1, 0.3)
         assert(gi.probs.size == 3)
         assert(gi.probs[2] == 0.3)
     }

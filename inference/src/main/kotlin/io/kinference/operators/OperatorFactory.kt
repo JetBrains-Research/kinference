@@ -4,13 +4,13 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.onnx.NodeProto
 import io.kinference.operators.activations.*
+import io.kinference.operators.flow.If
 import io.kinference.operators.flow.Loop
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
 import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.layer.recurrent.lstm.LSTM
-import io.kinference.operators.logical.Equal
-import io.kinference.operators.logical.Not
+import io.kinference.operators.logical.*
 import io.kinference.operators.math.*
 import io.kinference.operators.ml.TreeEnsembleRegressor
 import io.kinference.operators.quantization.DequantizeLinear
@@ -42,9 +42,11 @@ object OperatorFactory {
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
+        "If" -> If(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
         "Loop" -> Loop(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
+        "LeakyRelu" -> LeakyRelu(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
@@ -64,6 +66,7 @@ object OperatorFactory {
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
+        "Greater" -> Greater(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

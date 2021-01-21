@@ -21,7 +21,7 @@ class FairSeqGenerationTest {
         val prefix = " wo"
         val contextIds = tokenizer.encode(text)
         val result = generator.generate(contextIds, prefix, CompletionConfig.Generation.default)
-        val variants = result.map { it[0].map { h -> tokenizer.decode(h.hypothesis) } }
+        val variants = result.map { it.map { info -> tokenizer.decode(info.ids) } }
 
         assertEquals(variants[0].toSet(), setOf(" would", " work", " world", " working", " won"))
 
