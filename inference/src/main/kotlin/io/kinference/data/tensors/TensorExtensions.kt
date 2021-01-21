@@ -5,8 +5,7 @@ import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.onnx.TensorProto
 import io.kinference.primitives.types.DataType
-import io.kinference.types.ValueInfo.TensorInfo
-import io.kinference.types.TensorShape
+import io.kinference.types.*
 
 fun TensorProto.DataType.resolveLocalDataType(): DataType {
     return when(this) {
@@ -42,7 +41,7 @@ fun DataType.resolveProtoDataType(): TensorProto.DataType {
     }
 }
 
-fun NDArray.asTensor(name: String? = null) = Tensor(this, TensorInfo(name ?: "", type.resolveProtoDataType(), TensorShape(this.shape)))
+fun NDArray.asTensor(name: String? = null) = Tensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()), name ?: ""))
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape

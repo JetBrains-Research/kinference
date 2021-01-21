@@ -13,6 +13,7 @@ import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.*
 import io.kinference.operators.math.*
 import io.kinference.operators.ml.TreeEnsembleRegressor
+import io.kinference.operators.ml.ZipMap
 import io.kinference.operators.quantization.DequantizeLinear
 import io.kinference.operators.quantization.DynamicQuantizeLinear
 import io.kinference.operators.seq.ConcatFromSequence
@@ -41,6 +42,7 @@ object OperatorFactory {
         "Gather" -> Gather(attributes, inputs, outputs)
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
+        "Greater" -> Greater(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "If" -> If(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
@@ -66,7 +68,7 @@ object OperatorFactory {
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
-        "Greater" -> Greater(attributes, inputs, outputs)
+        "ZipMap" -> ZipMap(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

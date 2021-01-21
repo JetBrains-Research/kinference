@@ -57,8 +57,8 @@ sealed class ValueTypeInfo {
         constructor(proto: TypeProto.Tensor) : this(TensorShape(proto.shape!!), DataType.fromValue(proto.elem_type!!)!!)
     }
 
-    class SequenceTypeInfo(val type: DataType) : ValueTypeInfo() {
-        constructor(proto: TypeProto.Sequence) : this(DataType.fromValue(proto.elem_type!!.tensor_type!!.elem_type!!)!!)
+    class SequenceTypeInfo(val elementType: ValueTypeInfo) : ValueTypeInfo() {
+        constructor(proto: TypeProto.Sequence) : this(create(proto.elem_type!!))
     }
 
     class MapTypeInfo(val keyType: DataType, val valueType: ValueTypeInfo) : ValueTypeInfo() {

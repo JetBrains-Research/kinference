@@ -3,6 +3,7 @@ package io.kinference.utils
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.TensorProto
+import io.kinference.types.ValueTypeInfo
 import org.junit.jupiter.api.Assertions
 
 object Assertions {
@@ -10,7 +11,8 @@ object Assertions {
         Assertions.assertEquals(expected.type, actual.type, "Types of tensors ${expected.info.name} do not match")
         Assertions.assertArrayEquals(expected.data.shape, actual.data.shape)
 
-        when (expected.info.type) {
+        val typeInfo = expected.info.typeInfo as ValueTypeInfo.TensorTypeInfo
+        when (typeInfo.type) {
             TensorProto.DataType.FLOAT -> {
                 val expectedArray = (expected.data as FloatNDArray).array.toArray()
                 val actualArray = (actual.data as FloatNDArray).array.toArray()

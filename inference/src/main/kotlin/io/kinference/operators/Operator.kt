@@ -84,7 +84,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
                 return@zip
             }
 
-            require(constraint != null) { "Unexpected $what '${value.info.name}' for '${info.name}' operator" }
+            requireNotNull(constraint) { "Unexpected $what '${value.info.name}' for '${info.name}' operator" }
 
             if (constraint is VariadicIOInfo) {
                 //if (variadicCounter == 0) variadicType = value.info.type
@@ -136,7 +136,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
      */
     fun <T> getAttribute(key: String): T {
         val value = getAttributeOrNull<T>(key)
-        require(value != null) { "Attribute '$key' not found or don't have a default value" }
+        requireNotNull(value) { "Attribute '$key' not found or don't have a default value" }
         return value
     }
 
@@ -150,7 +150,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
      */
     fun <T> getAttributeOrNull(key: String): T? {
         val info = info.attributes[key]
-        require(info != null) { "Attribute '$key' not specified in the '${this.info.name}' operator" }
+        requireNotNull(info) { "Attribute '$key' not specified in the '${this.info.name}' operator" }
 
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }

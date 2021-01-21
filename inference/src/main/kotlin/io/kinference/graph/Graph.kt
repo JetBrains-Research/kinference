@@ -5,6 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.onnx.*
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -138,10 +139,10 @@ class Graph(proto: GraphProto) {
 
     fun prepareInput(name: String, value: List<Any>): Tensor {
         val inputInfo = inputs.find { it.name == name }
-        require(inputInfo != null) { "Input with name $name is not found" }
-        require(inputInfo is ValueInfo.TensorInfo) { "Only tensor inputs are supported" }
+        requireNotNull(inputInfo) { "Input with name $name is not found" }
+        require(inputInfo.typeInfo is ValueTypeInfo.TensorTypeInfo) { "Only tensor inputs are supported" }
 
-        return Tensor(value, inputInfo.type)
+        return Tensor(value, inputInfo.typeInfo.type)
     }
 
     fun prepareInput(proto: TensorProto): Tensor {
