@@ -1,6 +1,7 @@
 package io.kinference.algorithms.gec.utils
 
 import io.kinference.algorithms.gec.GECTag
+import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
 import io.kinference.algorithms.gec.preprocessing.*
 import java.lang.IllegalArgumentException
 
@@ -38,7 +39,7 @@ data class TokenChanges(val replacement: String,
 /**
  * class which generates TokenChages on every iteration
  */
-class TokenChangesGenerator(val tokens: List<GECToken>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
+class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, val tags: List<String>, val verbsFormVocabulary: VerbsFormVocabulary) {
     fun generateTokenChanges(): List<TokenChanges?> {
         val changesList = ArrayList<TokenChanges?>()
         var idx = 0

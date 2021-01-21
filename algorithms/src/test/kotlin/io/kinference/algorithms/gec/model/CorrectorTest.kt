@@ -6,7 +6,7 @@ import io.kinference.algorithms.gec.postprocessing.GecCorrectionPostprocessor
 import io.kinference.algorithms.gec.postprocessing.GecPostprocessor
 import io.kinference.algorithms.gec.preprocessing.GecCorrectionPreprocessor
 import io.kinference.algorithms.gec.preprocessing.GecPreprocessor
-import io.kinference.algorithms.gec.utils.TextCorrection
+import io.kinference.algorithms.gec.corrector.correction.TextCorrection
 import org.junit.jupiter.api.*
 
 class CorrectorTest {

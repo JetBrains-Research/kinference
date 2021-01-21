@@ -1,8 +1,8 @@
 package io.kinference.algorithms.gec.utils
 
+import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 import io.kinference.algorithms.gec.tokenizer.utils.CharUtils
-import io.kinference.algorithms.gec.utils.GECToken.TokenRange
 
 fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String {
     val formDict = verbsVocab.verbs2verbs[token]
@@ -77,22 +77,26 @@ fun createMessageBasedOnTag(tag: String): String {
     }
 }
 
-fun calculateTokensBordersAndWithSpaces(text: String, tokens: List<String>, textWithSpace: Boolean = false): List<TokenRange> {
-    val result = ArrayList<TokenRange>()
+fun calculateTokensBordersAndWithSpaces(text: String, tokens: List<String>, textWithSpace: Boolean = false): List<SentenceCorrections.GECToken.TokenRange> {
+    val result = ArrayList<SentenceCorrections.GECToken.TokenRange>()
     var startFrom = 0
     for ((idx, token) in tokens.withIndex()) {
         val startIdxAndString = text.findAnyOf(strings = listOf(token), startIndex = startFrom)!!
 
         val withSpace: Boolean
-        assert(startIdxAndString.first != -1)
+        require(startIdxAndString.first != -1)
         if (idx == 0 && textWithSpace) {
             withSpace = true
         } else {
             withSpace = startIdxAndString.first >= startFrom + 1
         }
-        result.add(TokenRange(start = startIdxAndString.first,
-            end = startIdxAndString.first + token.length,
-            withSpace = withSpace))
+        result.add(
+            SentenceCorrections.GECToken.TokenRange(
+                start = startIdxAndString.first,
+                end = startIdxAndString.first + token.length,
+                withSpace = withSpace
+            )
+        )
         startFrom = startIdxAndString.first + token.length
 
     }

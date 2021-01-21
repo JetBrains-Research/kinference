@@ -3,7 +3,6 @@ package io.kinference.algorithms.gec.corrector
 import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.preprocessing.*
-import io.kinference.algorithms.gec.utils.TagSentObject
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.extensions.allocateNDArray
@@ -30,28 +29,27 @@ class GECTagger(
     val minErrorProb: Double,
     val confidence: Double,
 ) {
+    data class TagSentObject(val sentId: Int, val tags: List<String>, val tokens: List<String>)
+
+
     /**
      * result class from GecTagger for realization corrections
      */
-    data class Result(val tagsIds: IntNDArray,
-                      val porbsTags: FloatNDArray,
-                      val maxIncorrectProb: FloatNDArray)
+    data class Result(val tagsIds: IntNDArray, val probsTags: FloatNDArray, val maxIncorrectProb: FloatNDArray)
 
     /**
      * tags generation from list of features
      */
     fun correctList(sentences: List<GECTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
         val loader = GECTaggerFeatures.DataLoader(dataset = sentences, batchSize = 20, padId = encoder.padId)
+
         val tagsObjects = ArrayList<TagSentObject>()
         for ((batchIdx, batch) in loader.withIndex()) {
-
-            val sentIds = batch.sentIds
-            val offsetBatch = batch.offsets
-            val sentsBatch = batch.sentences
-            val lens = batch.lens
+            val (sentIds, sentsBatch, offsetBatch, lens) = batch
 
             val innerSentsSize = sentsBatch[0].size
             val innerOffsetSize = offsetBatch[0].size
+
             val tensorSent = LongNDArray(shape = IntArray(size = 2, init = { i: Int -> if (i == 0) sentsBatch.size else innerSentsSize }),
                 init = { i: Int -> sentsBatch[i / innerSentsSize][i % innerSentsSize].toLong() })
 
@@ -59,13 +57,8 @@ class GECTagger(
                 init = { i: Int -> offsetBatch[i / innerOffsetSize][i % innerOffsetSize].toLong() })
 
             val attentionMask = tensorSent.map(object : LongMap {
-                override fun apply(value: Long): Long {
-                    return if (value != encoder.padId.toLong())
-                        1
-                    else
-                        0
-                }
-            }) as LongNDArray
+                override fun apply(value: Long): Long = if (value != encoder.padId.toLong()) 1 else 0}
+            ) as LongNDArray
 
             val result: Result = predictTags(tensorSent, attentionMask, tensorOffset)
             for (idx in 0 until result.tagsIds.shape[0]) {
@@ -73,10 +66,10 @@ class GECTagger(
                 result.tagsIds.array.pointer(startIndex = idx * innerOffsetSize).forEach(count = lens[idx], action = { tagsSentIds.add(it) })
 
                 val probsSentTags = ArrayList<Float>()
-                result.porbsTags.array.pointer(startIndex = idx * innerOffsetSize).forEach(count = lens[idx], action = { probsSentTags.add(it) })
+                result.probsTags.array.pointer(startIndex = idx * innerOffsetSize).forEach(count = lens[idx], action = { probsSentTags.add(it) })
 
                 val maxSentIncorrectDTags = result.maxIncorrectProb
-                assert(tagsSentIds.size == sentences[batchSize * batchIdx + idx].tokSent.size)
+                require(tagsSentIds.size == sentences[batchSize * batchIdx + idx].tokSent.size)
 
                 val tags = decodeTags(tagsSentIds, probsSentTags, maxSentIncorrectDTags.array.pointer().get())
 
@@ -99,12 +92,7 @@ class GECTagger(
         val tensorOffset = LongNDArray(shape = IntArray(size = 1, init = { offset.size }), init = { i: Int -> offset[i].toLong() })
 
         val attentionMask = tensorSent.map(object : LongMap {
-            override fun apply(value: Long): Long {
-                return if (value != encoder.padId.toLong())
-                    1
-                else
-                    0
-            }
+            override fun apply(value: Long): Long = if (value != encoder.padId.toLong()) 1 else 0
         }) as LongNDArray
 
         val result: Result = predictTags(tensorSent, attentionMask, tensorOffset)
@@ -113,9 +101,9 @@ class GECTagger(
         result.tagsIds.array.pointer(startIndex = 0).forEach(count = result.tagsIds.shape[1], action = { tagsSentIds.add(it) })
 
         val probsSentTags = ArrayList<Float>()
-        result.porbsTags.array.pointer(startIndex = 0).forEach(count = result.porbsTags.shape[1], action = { probsSentTags.add(it) })
+        result.probsTags.array.pointer(startIndex = 0).forEach(count = result.probsTags.shape[1], action = { probsSentTags.add(it) })
 
-        val tags = decodeTags(tagsIds = tagsSentIds, porbsTags = probsSentTags, maxIncorrectProb = result.maxIncorrectProb.array.pointer(0).get())
+        val tags = decodeTags(tagsIds = tagsSentIds, probsTags = probsSentTags, maxIncorrectProb = result.maxIncorrectProb.array.pointer(0).get())
 
         return TagSentObject(sentId = sentence.sentId, tags = tags, tokens = tokens)
 
@@ -180,7 +168,8 @@ class GECTagger(
 
         for (batchIdx in 0 until batchSize) {
             for (seqIdx in 0 until probsTags.shape[1]) {
-                val value = probsTags.array.pointer(startIndex = (batchIdx * probsTags.shape[1] + seqIdx) * probsTags.shape[2] + tags.array.pointer(batchIdx * tags.shape[1] + seqIdx).get()).get()
+                val value = probsTags.array.pointer(startIndex = (batchIdx * probsTags.shape[1] + seqIdx) * probsTags.shape[2]
+                    + tags.array.pointer(batchIdx * tags.shape[1] + seqIdx).get()).get()
                 probsBestTags.array.pointer(batchIdx * probsTags.shape[1] + seqIdx).set(value = value)
             }
         }
@@ -188,24 +177,24 @@ class GECTagger(
         val probsIncorrect = FloatNDArray(shape = IntArray(size = 1, init = { batchSize }), init = { 0.0f })
 
         for (batchIdx in 0 until batchSize) {
-            val sentenceIncorrProbs = ArrayList<Float>()
+            val sentenceIncorrectProbs = ArrayList<Float>()
 
             for (seqIdx in 0 until probsDTags.shape[1]) {
-                sentenceIncorrProbs.add(probsDTags.array.pointer(startIndex = batchIdx * probsDTags.shape[1] + seqIdx * probsDTags.shape[2] + 3).get())
+                sentenceIncorrectProbs.add(probsDTags.array.pointer(startIndex = batchIdx * probsDTags.shape[1] + seqIdx * probsDTags.shape[2] + 3).get())
             }
-            sentenceIncorrProbs.maxOrNull()?.let { probsIncorrect.array.pointer(startIndex = batchIdx).set(value = it) }
+            sentenceIncorrectProbs.maxOrNull()?.let { probsIncorrect.array.pointer(startIndex = batchIdx).set(value = it) }
         }
-        assert(tags.shape.lastIndex == probsBestTags.shape.lastIndex)
-        assert(tags.shape[0] == probsIncorrect.shape[0])
+        require(tags.shape.lastIndex == probsBestTags.shape.lastIndex)
+        require(tags.shape[0] == probsIncorrect.shape[0])
 
-        return Result(tagsIds = tags, porbsTags = probsBestTags, maxIncorrectProb = probsIncorrect)
+        return Result(tagsIds = tags, probsTags = probsBestTags, maxIncorrectProb = probsIncorrect)
     }
 
-    private fun decodeTags(tagsIds: List<Int>, porbsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
+    private fun decodeTags(tagsIds: List<Int>, probsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
         if (maxIncorrectProb < minErrorProb) {
             return tagsIds.map { GECTag.KEEP.value }
         }
 
-        return porbsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else GECTag.KEEP.value }
+        return probsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else GECTag.KEEP.value }
     }
 }

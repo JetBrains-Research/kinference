@@ -1,5 +1,7 @@
 package io.kinference.algorithms.gec.postprocessing
 
+import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
+import io.kinference.algorithms.gec.corrector.correction.TextCorrection
 import io.kinference.algorithms.gec.utils.*
 
 
