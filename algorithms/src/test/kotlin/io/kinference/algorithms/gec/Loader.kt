@@ -3,9 +3,9 @@ package io.kinference.algorithms.gec
 import io.kinference.algorithms.gec.corrector.Seq2Logits
 import io.kinference.algorithms.gec.preprocessing.*
 import io.kinference.algorithms.gec.encoder.BertTextEncoder
+import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.loaders.S3Client
 import java.io.File
-import java.nio.file.Path
 
 object ConfigLoader {
     private val testData = File("../build/test-data")
@@ -24,9 +24,9 @@ object ConfigLoader {
 
 data class Config(
     val model: Seq2Logits,
-    val textProcessor: TransformersTextProcessor,
-    val labelsVocab: Vocabulary,
-    val dTagsVocab: Vocabulary,
+    val encoder: PreTrainedTextEncoder,
+    val labelsVocab: TokenVocabulary,
+    val dTagsVocab: TokenVocabulary,
     val verbsVocab: VerbsFormVocabulary,
     val bertTokenizer: BertTextEncoder
 ) {
@@ -39,11 +39,17 @@ data class Config(
                 return if (file.exists()) file.path else error("File $fileName not found")
             }
 
+            fun getFileInFolder(fileName: String): File {
+                val file = File(folder, fileName)
+
+                return if (file.exists()) file else error("File $fileName not found")
+            }
+
             val model = Seq2Logits(getPathInFolder("model.onnx"))
-            val textProcessor = TransformersTextProcessor(getPathInFolder("bert_base_uncased"))
-            val labelsVocab = Vocabulary.loadFromFile(getPathInFolder("labels.txt"))
-            val dTagsVocab = Vocabulary.loadFromFile(getPathInFolder("d_tags.txt"))
-            val verbsFormVocab = VerbsFormVocabulary.setupVerbsFormVocab(getPathInFolder("verb_form_vocab.txt"))
+            val textProcessor = BertTextEncoder(getFileInFolder("bert_base_uncased"))
+            val labelsVocab = TokenVocabulary.load(getFileInFolder("labels.txt"))
+            val dTagsVocab = TokenVocabulary.load(getFileInFolder("d_tags.txt"))
+            val verbsFormVocab = VerbsFormVocabulary.load(getFileInFolder("verb_form_vocab.txt"))
             val bertTokenizer = BertTextEncoder(File(getPathInFolder("bert_base_uncased")))
 
             return Config(model, textProcessor, labelsVocab, dTagsVocab, verbsFormVocab, bertTokenizer)

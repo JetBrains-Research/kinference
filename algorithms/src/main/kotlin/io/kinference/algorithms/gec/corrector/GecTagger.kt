@@ -1,5 +1,7 @@
 package io.kinference.algorithms.gec.corrector
 
+import io.kinference.algorithms.gec.GECTag
+import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.preprocessing.*
 import io.kinference.algorithms.gec.utils.TagSentObject
 import io.kinference.ndarray.arrays.*
@@ -12,7 +14,7 @@ import io.kinference.primitives.types.DataType
 /**
  * Class for generation tags from sentence
  * @param model - Seq2Logits class which can predict tags for each token in sequence
- * @param textProcessor - TransformersTextprocessor class for processing sequences
+ * @param encoder - TransformersTextprocessor class for processing sequences
  * @param labelsVocabulary - label vocabulary
  * @param dTagsVocabulary - detection tags vocabulary
  * @param minCorrectionProb - minimum probability for correction
@@ -21,9 +23,9 @@ import io.kinference.primitives.types.DataType
  */
 class GecTagger(
     val model: Seq2Logits,
-    val textProcessor: TransformersTextProcessor,
-    val labelsVocabulary: Vocabulary,
-    val dTagsVocabulary: Vocabulary,
+    val encoder: PreTrainedTextEncoder,
+    val labelsVocabulary: TokenVocabulary,
+    val dTagsVocabulary: TokenVocabulary,
     val minCorrectionProb: Double,
     val minErrorProb: Double,
     val confidence: Double,
@@ -40,7 +42,7 @@ class GecTagger(
      */
     fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
         val dataset = GecTaggerFeatures.Data(sentences)
-        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.padId)
+        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = encoder.padId)
         val tagsObjects = ArrayList<TagSentObject>()
         for ((batchIdx, batch) in loader.withIndex()) {
 
@@ -59,7 +61,7 @@ class GecTagger(
 
             val attentionMask = tensorSent.map(object : LongMap {
                 override fun apply(value: Long): Long {
-                    return if (value != textProcessor.padId.toLong())
+                    return if (value != encoder.padId.toLong())
                         1
                     else
                         0
@@ -99,7 +101,7 @@ class GecTagger(
 
         val attentionMask = tensorSent.map(object : LongMap {
             override fun apply(value: Long): Long {
-                return if (value != textProcessor.padId.toLong())
+                return if (value != encoder.padId.toLong())
                     1
                 else
                     0
@@ -202,9 +204,9 @@ class GecTagger(
 
     private fun decodeTags(tagsIds: List<Int>, porbsTags: ArrayList<Float>, maxIncorrectProb: Float): List<String> {
         if (maxIncorrectProb < minErrorProb) {
-            return tagsIds.map { Tag.Keep.value }
+            return tagsIds.map { GECTag.KEEP.value }
         }
 
-        return porbsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else Tag.Keep.value }
+        return porbsTags.mapIndexed { index, prob -> if (prob > minCorrectionProb) labelsVocabulary.getTokenByIndex(tagsIds[index]) else GECTag.KEEP.value }
     }
 }

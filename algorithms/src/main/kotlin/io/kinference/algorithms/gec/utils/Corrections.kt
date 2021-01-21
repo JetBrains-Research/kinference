@@ -1,7 +1,7 @@
 package io.kinference.algorithms.gec.utils
 
-import io.kinference.algorithms.gec.preprocessing.Tag
-import io.kinference.algorithms.gec.preprocessing.TransformersTextProcessor
+import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
+import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 import io.kinference.algorithms.gec.utils.Token.TokenRange
 import kotlin.math.abs
@@ -26,7 +26,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
     }
 
     fun addTokenToCorrections(tokenSentence: List<Token>, taggedSentence: TagSentObject,
-                              textProcessor: TransformersTextProcessor, verbsFormVocabulary: VerbsFormVocabulary) {
+                              encoder: PreTrainedTextEncoder, verbsFormVocabulary: VerbsFormVocabulary) {
         assert(taggedSentence.tokens == tokenSentence.map { it.text })
         val changesGenerator = TokenChangesGenerator(tokenSentence, taggedSentence.tags, verbsFormVocabulary = verbsFormVocabulary)
         val changesList = changesGenerator.generateTokenChanges()
@@ -56,7 +56,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
                 for (index in changes.tokenizedReplacement!!.indices) {
                     changedTokens.add(Token(text = changes.tokenizedReplacement!![index],
                         tokenRange = TokenRange(start = start, end = end, withSpace = withSpaces[index]),
-                        encodedData = textProcessor.encodeAsIds(changes.tokenizedReplacement!![index]),
+                        encodedData = encoder.encodeAsIds(changes.tokenizedReplacement!![index], false),
                         isUsed = token.isUsed, isFirst = false))
                 }
             }
@@ -193,22 +193,22 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
 
             for (token in tokens) {
                 if (corrections.containsKey(token.position) &&
-                    corrections.get(token.position)!!.tag == Tag.Delete.value) {
+                    corrections.get(token.position)!!.tag == GECTag.DELETE.value) {
                     isDelete.add(true)
                 } else {
                     isDelete.add(false)
                 }
             }
-            tag = if (isDelete.all { it }) Tag.Delete.value else Tag.Keep.value
+            tag = if (isDelete.all { it }) GECTag.DELETE.value else GECTag.KEEP.value
             word = endToken.text
             withSpace = endToken.tokenRange.withSpace
         }
 
-        if (tag == Tag.Delete.value) {
+        if (tag == GECTag.DELETE.value) {
             startEnd = Pair(startEnd.first, startEnd.second + 1)
         }
 
-        if (tag == Tag.Delete.value && !withSpace && word != " ") {
+        if (tag == GECTag.DELETE.value && !withSpace && word != " ") {
             return Pair(startEnd.first, startEnd.second + 1)
         } else {
             return Pair(startEnd.first, startEnd.second)

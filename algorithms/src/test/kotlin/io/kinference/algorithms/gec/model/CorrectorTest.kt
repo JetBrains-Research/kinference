@@ -13,12 +13,12 @@ class CorrectorTest {
 
     private val config = ConfigLoader.v2
 
-    private val preprocessor: GecPreprocessor = GecCorrectionPreprocessor(textProcessor = config.textProcessor, useStartToken = true, useForEval = false)
+    private val preprocessor: GecPreprocessor = GecCorrectionPreprocessor(encoder = config.encoder, useStartToken = true)
     private val postprocessor: GecPostprocessor = GecCorrectionPostprocessor()
 
     private val gecCorrector = GECCorrector(
         config.model,
-        config.textProcessor,
+        config.encoder,
         config.labelsVocab,
         config.dTagsVocab,
         config.verbsVocab,

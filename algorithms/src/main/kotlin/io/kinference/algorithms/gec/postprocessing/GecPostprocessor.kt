@@ -30,7 +30,6 @@ abstract class GecPostprocessor {
  * Basic realization of postprocessor
  */
 class GecCorrectionPostprocessor : GecPostprocessor() {
-
     override fun postprocess(sentObj: SentenceCorrections): String {
         val original = sentObj.sent
         val textCorrections = sentObj.toTextCorrections()

@@ -1,5 +1,7 @@
 package io.kinference.algorithms.gec.corrector
 
+import io.kinference.algorithms.gec.GECTag
+import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.postprocessing.GecPostprocessor
 import io.kinference.algorithms.gec.preprocessing.*
 import io.kinference.algorithms.gec.utils.*
@@ -8,22 +10,22 @@ import kotlin.math.min
 /**
  * Main class for correction generation.
  * @param model - Seq2Logits class which can predict tags for each token in sequence
- * @param textProcessor - TransformersTextprocessor class for processing sequences
- * @param labelsVocab - label vocabulary
- * @param dTagsVocab - detection tags vocabulary
- * @param verbsVocab - verbs form vocabulary
- * @param preprocessor - sequence preprocessor
- * @param postprocessor - correction postprocessor
- * @param iterations - quantity of iterations which model should do for returning corrections
- * @param minCorrectionProb - minimum probability for correction
- * @param minErrorProb - minimum probability for error
- * @param confidence - bias for not-changing strategy
+ * @param textProcessor TransformersTextprocessor class for processing sequences
+ * @param labelsVocab label vocabulary
+ * @param dTagsVocab detection tags vocabulary
+ * @param verbsVocab verbs form vocabulary
+ * @param preprocessor sequence preprocessor
+ * @param postprocessor correction postprocessor
+ * @param iterations quantity of iterations which model should do for returning corrections
+ * @param minCorrectionProb minimum probability for correction
+ * @param minErrorProb minimum probability for error
+ * @param confidence bias for not-changing strategy
  *
  */
 class GECCorrector(val model: Seq2Logits,
-                   private val textProcessor: TransformersTextProcessor,
-                   labelsVocab: Vocabulary,
-                   dTagsVocab: Vocabulary,
+                   private val encoder: PreTrainedTextEncoder,
+                   labelsVocab: TokenVocabulary,
+                   dTagsVocab: TokenVocabulary,
                    private val verbsVocab: VerbsFormVocabulary,
                    private val preprocessor: GecPreprocessor,
                    private val postprocessor: GecPostprocessor,
@@ -33,7 +35,7 @@ class GECCorrector(val model: Seq2Logits,
                    confidence: Double = 0.0) {
     private val tagger = GecTagger(
         model = model,
-        textProcessor = textProcessor,
+        encoder = encoder,
         labelsVocabulary = labelsVocab,
         dTagsVocabulary = dTagsVocab,
         minCorrectionProb = minCorrectionProb,
@@ -97,7 +99,7 @@ class GECCorrector(val model: Seq2Logits,
             val offsets = offsetCalc(encodedTokensSlice, "first")
             var flatTokens: List<Int> = encodedTokensSlice.flatten()
 
-            flatTokens = listOf(textProcessor.clsId) + flatTokens + listOf(textProcessor.sepId)
+            flatTokens = listOf(encoder.clsId) + flatTokens + listOf(encoder.sepId)
 
             features.add(GecTaggerFeatures(
                 sent = sentObj.sent,
@@ -126,7 +128,7 @@ class GECCorrector(val model: Seq2Logits,
             sentCorrections.addTokenToCorrections(
                 tokenSentence = tokens,
                 taggedSentence = tagged[0],
-                textProcessor = textProcessor,
+                encoder = encoder,
                 verbsFormVocabulary = verbsVocab
             )
             if (isFinalIteration(sentObj = sentCorrections, taggedSentence = tagged[0])) {
@@ -143,7 +145,7 @@ class GECCorrector(val model: Seq2Logits,
         val correctionList = sentences.mapIndexed { index, sentence -> preprocessor.preprocess(index, sentence) }
         for (idx in 0 until iterations) {
             val iterationCorrections = correctionList.filter { c -> !c.isCorrect }
-            val tokensDict = iterationCorrections.map { it.sentId to it.toCorrectedTokenSentence().filter { token -> token.isUsed }.toList() }.toMap()
+            val tokensDict = iterationCorrections.associate { it.sentId to it.toCorrectedTokenSentence().filter { token -> token.isUsed }.toList() }
             val preprocessedSentences = ArrayList<GecTaggerFeatures>()
 
             for (corrections in iterationCorrections) {
@@ -159,7 +161,7 @@ class GECCorrector(val model: Seq2Logits,
                 correctionList[tagged.sentId].addTokenToCorrections(
                     tokenSentence = tokensDict[tagged.sentId]!!,
                     taggedSentence = tagged,
-                    textProcessor = textProcessor,
+                    encoder = encoder,
                     verbsFormVocabulary = verbsVocab)
                 isFinalIteration(correctionList[tagged.sentId], tagged)
             }
@@ -171,15 +173,12 @@ class GECCorrector(val model: Seq2Logits,
         return correctionList
     }
 
-    /**
-     * bool for check is final iteration
-     */
+    /** Check whether iterations should be stopped for this sentence */
     private fun isFinalIteration(sentObj: SentenceCorrections, taggedSentence: TagSentObject): Boolean {
-        for (tag in taggedSentence.tags) {
-            if (tag != Tag.Keep.value) {
-                return false
-            }
+        if (taggedSentence.tags.any { it != GECTag.KEEP.value && it != GECTag.UNK.value }) {
+            return false
         }
+
         sentObj.isCorrect = true
         return true
     }

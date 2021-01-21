@@ -1,10 +1,11 @@
 package io.kinference.algorithms.gec.utils
 
+import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.preprocessing.*
 import java.lang.IllegalArgumentException
 
 internal object EmptyTags {
-    private val tags: List<Tag> = listOf(Tag.Pad, Tag.Unk, Tag.Keep)
+    private val tags: List<GECTag> = listOf(GECTag.PAD, GECTag.UNK, GECTag.KEEP)
     private val values = tags.map { it.value }
 
     fun isEmptyTag(tag: String): Boolean {
