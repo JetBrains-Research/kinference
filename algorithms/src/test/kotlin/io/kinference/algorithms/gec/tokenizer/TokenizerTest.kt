@@ -9,7 +9,7 @@ class TokenizerTest {
 
     private val config = ConfigLoader.v2
 
-    private val tokenizer = config.bertTokenizer //BertTokenizer(vocabPath = Paths.get("/Users/Ivan.Dolgov/ivandolgov/projects/vocabs/bert-base-uncased"))
+    private val tokenizer = config.bertTokenizer
     private val texts = listOf(
         "Where's your bag?",
         "Horaaaaay!",

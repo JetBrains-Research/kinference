@@ -31,7 +31,7 @@ data class SentenceCorrections(val sentId: Int,
                                val corrections: HashMap<String, TokenCorrection> = HashMap(),
                                var isCorrect: Boolean = false) {
     init {
-        tokens.forEachIndexed() { pos, t -> t.position = pos.toString() }
+        tokens.forEachIndexed { pos, t -> t.position = pos.toString() }
     }
 
     fun addTokenToCorrections(tokenSentence: List<GECToken>, taggedSentence: TagSentObject,

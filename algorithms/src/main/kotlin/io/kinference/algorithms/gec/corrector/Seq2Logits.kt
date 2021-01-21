@@ -8,19 +8,19 @@ import io.kinference.ndarray.arrays.LongNDArray
 
 /**
  * Class which hold Bert model for tags prediction
- * @param modelPath - name of the model
+ * @param model name of the model
  */
-class Seq2Logits(modelPath: String) {
+class Seq2Logits(model: String) {
 
-    private val model = Model.load(modelPath)
+    private val model = Model.load(model)
 
     /**
      * Result of tag prediction
      */
     data class LogitResults(val logitsTag: FloatNDArray, val logitsDTags: FloatNDArray)
 
-    operator fun invoke(sents: LongNDArray, attentionMask: LongNDArray): LogitResults {
-        val listResults = model.predict(listOf(sents.asTensor(name = "input_ids"),
+    operator fun invoke(sentences: LongNDArray, attentionMask: LongNDArray): LogitResults {
+        val listResults = model.predict(listOf(sentences.asTensor(name = "input_ids"),
             attentionMask.asTensor(name = "attention_mask"))).map { (it as Tensor).data }
 
         val logitsTag = listResults[0] as FloatNDArray

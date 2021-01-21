@@ -13,15 +13,15 @@ import io.kinference.primitives.types.DataType
 
 /**
  * Class for generation tags from sentence
- * @param model - Seq2Logits class which can predict tags for each token in sequence
- * @param encoder - TransformersTextprocessor class for processing sequences
- * @param labelsVocabulary - label vocabulary
- * @param dTagsVocabulary - detection tags vocabulary
- * @param minCorrectionProb - minimum probability for correction
- * @param minErrorProb - minimum probability for error
- * @param confidence - bias for not-changing strategy
+ * @param model Seq2Logits class which can predict tags for each token in sequence
+ * @param encoder TransformersTextprocessor class for processing sequences
+ * @param labelsVocabulary label vocabulary
+ * @param dTagsVocabulary detection tags vocabulary
+ * @param minCorrectionProb minimum probability for correction
+ * @param minErrorProb minimum probability for error
+ * @param confidence bias for not-changing strategy
  */
-class GecTagger(
+class GECTagger(
     val model: Seq2Logits,
     val encoder: PreTrainedTextEncoder,
     val labelsVocabulary: TokenVocabulary,
@@ -40,9 +40,8 @@ class GecTagger(
     /**
      * tags generation from list of features
      */
-    fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
-        val dataset = GecTaggerFeatures.Data(sentences)
-        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = encoder.padId)
+    fun correctList(sentences: List<GECTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
+        val loader = GECTaggerFeatures.DataLoader(dataset = sentences, batchSize = 20, padId = encoder.padId)
         val tagsObjects = ArrayList<TagSentObject>()
         for ((batchIdx, batch) in loader.withIndex()) {
 
@@ -90,7 +89,7 @@ class GecTagger(
     /**
      * tags generation from of sentence feature
      */
-    fun correct(sentence: GecTaggerFeatures): TagSentObject {
+    fun correct(sentence: GECTaggerFeatures): TagSentObject {
         val encs = sentence.flatEncSent
         val tokens = sentence.tokSent
         val offset = sentence.offset

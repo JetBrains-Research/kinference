@@ -33,7 +33,7 @@ class GECCorrector(val model: Seq2Logits,
                    minCorrectionProb: Double = 0.0,
                    minErrorProb: Double = 0.0,
                    confidence: Double = 0.0) {
-    private val tagger = GecTagger(
+    private val tagger = GECTagger(
         model = model,
         encoder = encoder,
         labelsVocabulary = labelsVocab,
@@ -86,12 +86,12 @@ class GECCorrector(val model: Seq2Logits,
     /**
      * generation feature vectors for sentence
      */
-    private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<GECToken>): List<GecTaggerFeatures> {
+    private fun generateTaggerFeatures(sentObj: SentenceCorrections, tokens: List<GECToken>): List<GECTaggerFeatures> {
         val tokSent = tokens.map { it.text }
 
         val encodedTokens = tokens.filter { it.isUsed }.map { it.encoded }
 
-        val features = ArrayList<GecTaggerFeatures>()
+        val features = ArrayList<GECTaggerFeatures>()
         val modelMaxLen = 512   // TODO(Add to tokenizer field ModelMaxLength)
         for (sliceStart in encodedTokens.indices step modelMaxLen) {
             val sliceEnd = min(a = sliceStart + modelMaxLen, b = encodedTokens.size)
@@ -101,7 +101,7 @@ class GECCorrector(val model: Seq2Logits,
 
             flatTokens = listOf(encoder.clsId) + flatTokens + listOf(encoder.sepId)
 
-            features.add(GecTaggerFeatures(
+            features.add(GECTaggerFeatures(
                 sent = sentObj.sent,
                 sentId = sentObj.sentId,
                 tokSent = tokSent,
@@ -146,7 +146,7 @@ class GECCorrector(val model: Seq2Logits,
         for (idx in 0 until iterations) {
             val iterationCorrections = correctionList.filter { c -> !c.isCorrect }
             val tokensDict = iterationCorrections.associate { it.sentId to it.toCorrectedTokenSentence().filter { token -> token.isUsed }.toList() }
-            val preprocessedSentences = ArrayList<GecTaggerFeatures>()
+            val preprocessedSentences = ArrayList<GECTaggerFeatures>()
 
             for (corrections in iterationCorrections) {
                 val features = generateTaggerFeatures(corrections, tokens = tokensDict[corrections.sentId]!!)
