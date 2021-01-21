@@ -283,8 +283,11 @@ inline fun PrimitivePointer.acceptDouble(first: @BindPrimitives.Type1 PrimitiveP
     }
 }
 
-inline fun PrimitivePointer.acceptTriple(first: PrimitivePointer, second: PrimitivePointer, third: PrimitivePointer, count: Int,
-                                         action: (dst: PrimitiveType, fst: PrimitiveType, snd: PrimitiveType, trd: PrimitiveType) -> PrimitiveType) {
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.acceptTriple(
+    first: PrimitivePointer, second: PrimitivePointer, third: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+    action: (dst: PrimitiveType, fst: PrimitiveType, snd: PrimitiveType, trd: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType
+) {
     require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
     require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
     require(this.isCompatibleBySize(third, count)) { "Pointers not compatible by available elements" }
