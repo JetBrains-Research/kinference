@@ -62,7 +62,7 @@ class TokenizerTest {
     @Tag("heavy")
     fun testTokenize(){
         for ((idx, text) in texts.withIndex()){
-            val res = tokenizer.tokenize(text)
+            val res = tokenizer.encodeAsTokens(text)
             assertEquals(res, tokenizeAnswer[idx])
         }
     }
@@ -71,7 +71,7 @@ class TokenizerTest {
     @Tag("heavy")
     fun testEncode(){
         for ((idx, text) in texts.withIndex()){
-            val res = tokenizer.encode(text, addSpecialTokens = true)
+            val res = tokenizer.encodeAsIds(text, withSpecialTokens = true)
             assertEquals(res, encodedAnswer[idx])
         }
     }
@@ -79,7 +79,7 @@ class TokenizerTest {
     @Test
     @Tag("heavy")
     fun testEncodeBatch(){
-        val res = tokenizer.encodeBatch(texts, addSpecialTokens = true)
+        val res = tokenizer.encodeAsIds(texts, withSpecialTokens = true)
         assertEquals(res, encodedAnswer)
     }
 

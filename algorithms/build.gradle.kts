@@ -32,4 +32,17 @@ publishJar {
     }
 }
 
+
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("heavy")
+        excludeTags("benchmark")
+    }
+    maxHeapSize = "20m"
+
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
 useHeavyTests()

@@ -2,7 +2,7 @@ package io.kinference.algorithms.gec
 
 import io.kinference.algorithms.gec.corrector.Seq2Logits
 import io.kinference.algorithms.gec.preprocessing.*
-import io.kinference.algorithms.gec.tokenizer.BertTokenizer
+import io.kinference.algorithms.gec.encoder.BertTextEncoder
 import io.kinference.loaders.S3Client
 import java.io.File
 import java.nio.file.Path
@@ -24,11 +24,11 @@ object ConfigLoader {
 
 data class Config(
     val model: Seq2Logits,
-    val textProcessor: TransformersTextprocessor,
+    val textProcessor: TransformersTextProcessor,
     val labelsVocab: Vocabulary,
     val dTagsVocab: Vocabulary,
     val verbsVocab: VerbsFormVocabulary,
-    val bertTokenizer: BertTokenizer
+    val bertTokenizer: BertTextEncoder
 ) {
     companion object {
         fun loadFromFolder(folder: File): Config {
@@ -40,11 +40,11 @@ data class Config(
             }
 
             val model = Seq2Logits(getPathInFolder("model.onnx"))
-            val textProcessor = TransformersTextprocessor(getPathInFolder("bert_base_uncased"))
+            val textProcessor = TransformersTextProcessor(getPathInFolder("bert_base_uncased"))
             val labelsVocab = Vocabulary.loadFromFile(getPathInFolder("labels.txt"))
             val dTagsVocab = Vocabulary.loadFromFile(getPathInFolder("d_tags.txt"))
             val verbsFormVocab = VerbsFormVocabulary.setupVerbsFormVocab(getPathInFolder("verb_form_vocab.txt"))
-            val bertTokenizer = BertTokenizer(Path.of(getPathInFolder("bert_base_uncased")))
+            val bertTokenizer = BertTextEncoder(File(getPathInFolder("bert_base_uncased")))
 
             return Config(model, textProcessor, labelsVocab, dTagsVocab, verbsFormVocab, bertTokenizer)
         }

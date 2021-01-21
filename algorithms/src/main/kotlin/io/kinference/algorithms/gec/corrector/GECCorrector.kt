@@ -21,7 +21,7 @@ import kotlin.math.min
  *
  */
 class GECCorrector(val model: Seq2Logits,
-                   private val textProcessor: TransformersTextprocessor,
+                   private val textProcessor: TransformersTextProcessor,
                    labelsVocab: Vocabulary,
                    dTagsVocab: Vocabulary,
                    private val verbsVocab: VerbsFormVocabulary,
@@ -97,7 +97,7 @@ class GECCorrector(val model: Seq2Logits,
             val offsets = offsetCalc(encodedTokensSlice, "first")
             var flatTokens: List<Int> = encodedTokensSlice.flatten()
 
-            flatTokens = listOf(textProcessor.tokenizer.clsId) + flatTokens + listOf(textProcessor.tokenizer.sepId)
+            flatTokens = listOf(textProcessor.clsId) + flatTokens + listOf(textProcessor.sepId)
 
             features.add(GecTaggerFeatures(
                 sent = sentObj.sent,

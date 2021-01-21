@@ -31,6 +31,9 @@ tasks.test {
 }
 
 
+useHeavyTests()
+useBenchmarkTests()
+
 sourceSets {
     main {
         allJava.srcDir(file("src/main/kotlin-gen"))
@@ -40,9 +43,6 @@ sourceSets {
 idea {
     module.generatedSourceDirs.plusAssign(files("src/main/kotlin-gen"))
 }
-
-useHeavyTests()
-useBenchmarkTests()
 
 dependencies {
     api(project(":ndarray"))

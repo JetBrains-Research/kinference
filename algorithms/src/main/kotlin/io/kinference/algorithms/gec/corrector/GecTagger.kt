@@ -21,7 +21,7 @@ import io.kinference.primitives.types.DataType
  */
 class GecTagger(
     val model: Seq2Logits,
-    val textProcessor: TransformersTextprocessor,
+    val textProcessor: TransformersTextProcessor,
     val labelsVocabulary: Vocabulary,
     val dTagsVocabulary: Vocabulary,
     val minCorrectionProb: Double,
@@ -40,7 +40,7 @@ class GecTagger(
      */
     fun correctList(sentences: List<GecTaggerFeatures>, batchSize: Int = 20): List<TagSentObject> {
         val dataset = GecTaggerFeatures.Data(sentences)
-        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.tokenizer.padId)
+        val loader = GecTaggerFeatures.DataLoader(dataset = dataset, batchSize = 20, padId = textProcessor.padId)
         val tagsObjects = ArrayList<TagSentObject>()
         for ((batchIdx, batch) in loader.withIndex()) {
 
@@ -169,7 +169,7 @@ class GecTagger(
             for (batchIdx in 0 until batchSize) {
                 for (seqIdx in 0 until seqSize) {
                     val value = probsTags.array.pointer(startIndex = batchIdx * seqSize + seqIdx + 3).get() + confidence
-                    probsTags.array.pointer(startIndex = batchIdx * seqSize + seqIdx + 3).set(value = (value as Float))
+                    probsTags.array.pointer(startIndex = batchIdx * seqSize + seqIdx + 3).set(value = value.toFloat())
                 }
             }
         }

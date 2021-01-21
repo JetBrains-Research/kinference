@@ -1,7 +1,7 @@
 package io.kinference.algorithms.gec.utils
 
 import io.kinference.algorithms.gec.preprocessing.Tag
-import io.kinference.algorithms.gec.preprocessing.TransformersTextprocessor
+import io.kinference.algorithms.gec.preprocessing.TransformersTextProcessor
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 import io.kinference.algorithms.gec.utils.Token.TokenRange
 import kotlin.math.abs
@@ -26,7 +26,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
     }
 
     fun addTokenToCorrections(tokenSentence: List<Token>, taggedSentence: TagSentObject,
-                              textProcessor: TransformersTextprocessor, verbsFormVocabulary: VerbsFormVocabulary) {
+                              textProcessor: TransformersTextProcessor, verbsFormVocabulary: VerbsFormVocabulary) {
         assert(taggedSentence.tokens == tokenSentence.map { it.text })
         val changesGenerator = TokenChangesGenerator(tokenSentence, taggedSentence.tags, verbsFormVocabulary = verbsFormVocabulary)
         val changesList = changesGenerator.generateTokenChanges()
@@ -37,7 +37,7 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
             val changes = changesList[idx] ?: continue
 
             val changedTokens = ArrayList<Token>()
-            if (changes!!.replacement == "") {
+            if (changes.replacement == "") {
 //                token.text = ""
 //                token.encodedData = emptyList()
 //                token.isUsed = false
@@ -81,15 +81,11 @@ data class SentenceCorrections(val sentId: Int, val sent: String,
 
     fun toTextCorrections(): List<TextCorrection> {
         val tokensToMerge = getTokensToMerge()
-        if (tokensToMerge != null) {
-            val result = ArrayList<TextCorrection>()
-            for (tokens in tokensToMerge) {
-                result.add(constructMergedCorrection(tokens))
-            }
-            return result
-        } else {
-            return emptyList()
+        val result = ArrayList<TextCorrection>()
+        for (tokens in tokensToMerge) {
+            result.add(constructMergedCorrection(tokens))
         }
+        return result
     }
 
     fun toCorrectedTokenSentence(): List<Token> {

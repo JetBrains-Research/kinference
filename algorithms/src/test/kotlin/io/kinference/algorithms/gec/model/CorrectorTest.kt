@@ -9,8 +9,6 @@ import io.kinference.algorithms.gec.preprocessing.GecPreprocessor
 import io.kinference.algorithms.gec.utils.TextCorrection
 import org.junit.jupiter.api.*
 
-fun getFromResources(path: String): String = object {}.javaClass.getResource(path)!!.path!!
-
 class CorrectorTest {
 
     private val config = ConfigLoader.v2

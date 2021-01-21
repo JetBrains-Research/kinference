@@ -15,7 +15,7 @@ abstract class GecPreprocessor {
 /**
  * Basic Preprocessor realization for inference
  */
-class GecCorrectionPreprocessor(val textProcessor: TransformersTextprocessor,
+class GecCorrectionPreprocessor(val textProcessor: TransformersTextProcessor,
                                 val useStartToken: Boolean, val useForEval: Boolean) : GecPreprocessor() {
 
     override fun preprocess(sentId: Int, sentence: String): SentenceCorrections {

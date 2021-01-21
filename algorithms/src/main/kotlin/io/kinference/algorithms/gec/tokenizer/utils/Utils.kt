@@ -14,6 +14,7 @@ object CharUtils {
         if (char.category in punctuationChars){
             return true
         }
+        //Punctuation symbols from ASCII
         if ((char.toInt() in 33..47) || (char.toInt() in 58..64) || (char.toInt() in 91..96) || (char.toInt() in 123..126)){
             return true
         }
@@ -30,15 +31,6 @@ object CharUtils {
         return false
     }
 }
+/** Tokenize text by whitespaces removing blank parts */
+fun String.tokenizeByWhitespace(): List<String> = split(" ").filter { it.isNotBlank() }
 
-fun whitespaceTokenize(text: String): List<String> {
-    val trimmed = text.trimStart().trimEnd()
-    if (trimmed == "") {
-        return emptyList()
-    }
-    return trimmed.split(" ")
-}
-
-fun isWhitespace(char: Char): Boolean {
-    return char.isWhitespace()
-}
