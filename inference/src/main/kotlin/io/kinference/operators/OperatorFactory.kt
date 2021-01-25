@@ -4,8 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.onnx.NodeProto
 import io.kinference.operators.activations.*
-import io.kinference.operators.flow.If
-import io.kinference.operators.flow.Loop
+import io.kinference.operators.flow.*
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
 import io.kinference.operators.layer.normalization.*
@@ -68,6 +67,7 @@ object OperatorFactory {
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
+        "Where" -> Where(attributes, inputs, outputs)
         "ZipMap" -> ZipMap(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>

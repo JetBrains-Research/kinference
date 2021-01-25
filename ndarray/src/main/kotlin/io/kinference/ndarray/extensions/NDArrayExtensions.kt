@@ -2,6 +2,9 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.broadcasting.Broadcasting.broadcastShape
+import io.kinference.primitives.types.DataType
 import kotlin.collections.toIntArray
 import kotlin.ranges.reversed
 
@@ -150,4 +153,35 @@ fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
     }
 
     return reshape(newShape)
+}
+
+fun NDArray.applyWithBroadcast(
+    other: NDArray,
+    destination: MutableNDArray,
+    ordered: Boolean = false,
+    op: (NDArray, NDArray, MutableNDArray) -> Unit
+): MutableNDArray {
+    val newShape = broadcastShape(listOf(this.shape, other.shape))
+
+    if (ordered) require(this.shape.contentEquals(newShape))
+
+    val opWithNewStructure = { inputs: List<NDArray>, dest: MutableNDArray -> op(inputs[0], inputs[1], dest) }
+
+    return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
+}
+
+fun NDArray.applyWithBroadcast(
+    other: NDArray,
+    destType: DataType = this.type,
+    ordered: Boolean = false,
+    op: (NDArray, NDArray, MutableNDArray) -> Unit
+): MutableNDArray {
+    val newShape = broadcastShape(listOf(this.shape, other.shape))
+
+    if (ordered) require(this.shape.contentEquals(newShape))
+
+    val destination = allocateNDArray(destType, Strides(newShape))
+    val opWithNewStructure = { inputs: List<NDArray>, dest: MutableNDArray -> op(inputs[0], inputs[1], dest) }
+
+    return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
 }

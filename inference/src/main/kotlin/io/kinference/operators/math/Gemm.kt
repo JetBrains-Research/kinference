@@ -6,7 +6,9 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.broadcasting.unsqueezeFirst
+import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.extensions.gemm
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
