@@ -687,6 +687,76 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
     }
 
+    override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
+        val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
+        val rightKek = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val count = shape[axis]
+
+        val outputShape = if (keepDims) shape.copyOf().apply { set(axis, 1) } else shape.sliceArray(shape.indices.minus(axis))
+        val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
+        val tempMaxValues = if (axis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(rightKek, outputArray.array.blockSize)
+
+        val inputPointer = this.array.pointer()
+
+        for (i in 0 until countIterations) {
+            var maxValuesPointer = tempMaxValues.pointer()
+
+            maxValuesPointer.accept(inputPointer, rightKek) { _, src -> src }
+
+            for (j in 1 until count) {
+                val outputPointer = outputArray.array.pointer(i * rightKek)
+                maxValuesPointer = tempMaxValues.pointer()
+
+                var end = rightKek
+
+                if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(maxValuesPointer)) {
+                    while (end > 0) {
+                        val outputBlock = outputPointer.currentBlock
+                        val offset = outputPointer.indexInBlock
+                        outputPointer.blockIncrement()
+
+                        val inputBlock = inputPointer.currentBlock
+                        inputPointer.blockIncrement()
+
+                        val maxValuesBlock = maxValuesPointer.currentBlock
+                        maxValuesPointer.blockIncrement()
+
+                        for (index in offset until min(outputBlock.size, offset + end)) {
+                            val value = inputBlock[index]
+                            val oldMaxValue = maxValuesBlock[index]
+                            if (value > oldMaxValue) {
+                                maxValuesBlock[index] = value
+                                outputBlock[index] = j
+                            } else if (selectLastIndex && value == oldMaxValue) {
+                                outputBlock[index] = j
+                            }
+                        }
+
+                        end -= outputBlock.size - offset
+                    }
+                } else {
+                    while (end > 0) {
+                        val value = inputPointer.getAndIncrement()
+                        val oldMaxValue = maxValuesPointer.get()
+
+                        if (value > oldMaxValue) {
+                            maxValuesPointer.set(value)
+                            outputPointer.set(j)
+                        } else if (selectLastIndex && value == oldMaxValue) {
+                            outputPointer.set(j)
+                        }
+
+                        maxValuesPointer.increment()
+                        outputPointer.increment()
+                        end--
+                    }
+                }
+            }
+        }
+
+        return outputArray
+    }
+
     override fun copyIfNotMutable(): MutableNDArray {
         return MutablePrimitiveNDArray(array.copyOf(), strides)
     }

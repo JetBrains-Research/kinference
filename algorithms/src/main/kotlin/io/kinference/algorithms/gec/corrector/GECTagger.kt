@@ -2,7 +2,7 @@ package io.kinference.algorithms.gec.corrector
 
 import io.kinference.algorithms.gec.GECTag
 import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
-import io.kinference.algorithms.gec.preprocessing.*
+import io.kinference.algorithms.gec.preprocessing.TokenVocabulary
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.extensions.allocateNDArray
@@ -109,19 +109,6 @@ class GECTagger(
 
     }
 
-    private fun badArgmax(tensor: FloatNDArray): IntNDArray {
-        val argMaxTensor = IntNDArray(shape = IntArray(size = 2, init = { i: Int -> if (i == 0) tensor.shape[0] else tensor.shape[1] }), init = { 0 })
-
-        for (batchIdx in 0 until tensor.shape[0]) {
-            for (seqIdx in 0 until tensor.shape[1]) {
-                val tmpVector = ArrayList<Float>()
-                tensor.array.pointer(startIndex = (seqIdx + batchIdx * tensor.shape[1]) * tensor.shape[2]).forEach(count = tensor.shape[2], action = { tmpVector.add(it) })
-                tmpVector.withIndex().maxByOrNull { it.value }?.index?.let { argMaxTensor.array.pointer(startIndex = batchIdx * tensor.shape[1] + seqIdx).set(it) }
-            }
-        }
-        return argMaxTensor
-    }
-
     private fun predictTags(sents: LongNDArray, attentionMask: LongNDArray, offset: LongNDArray): Result {
         val logitsResult = model(sents, attentionMask)
         var logitsTags = logitsResult.logitsTag
@@ -163,7 +150,7 @@ class GECTagger(
             }
         }
 
-        val tags = badArgmax(probsTags)
+        val tags = probsTags.argmax(probsTags.shape.lastIndex, keepDims = false)
         val probsBestTags = FloatNDArray(shape = IntArray(size = 2, init = { i: Int -> if (i == 0) probsTags.shape[0] else probsTags.shape[1] }), init = { 0.0f })
 
         for (batchIdx in 0 until batchSize) {
