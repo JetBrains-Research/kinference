@@ -4,13 +4,11 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.DoubleNDArray
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
-import io.kinference.operators.ml.trees.*
+import io.kinference.operators.ml.TreeEnsembleOperator.Companion.toFloatNDArray
+import io.kinference.operators.ml.trees.TreeEnsembleBuilder
 
 class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -56,14 +54,7 @@ class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: Lis
     private val treeEnsemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
-        val inputData = inputs[0]!!.data
-        val floatInput: FloatNDArray = if (inputData is FloatNDArray) {
-            inputData
-        } else {
-            inputData as DoubleNDArray
-            val pointer = DoublePointer(inputData.array)
-            FloatNDArray(inputData.shape) { pointer.getAndIncrement().toFloat() }
-        }
-        return listOf(treeEnsemble.execute(floatInput).asTensor("Y"))
+        val inputData = inputs[0]!!.data.toFloatNDArray()
+        return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
     }
 }

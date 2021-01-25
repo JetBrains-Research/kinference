@@ -2,6 +2,8 @@ package io.kinference.operators.ml
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 
@@ -16,9 +18,17 @@ abstract class TreeEnsembleOperator(info: OperatorInfo, attributes: Map<String, 
             TensorProto.DataType.DOUBLE
         )
 
-        val INPUTS_INFO = listOf(
+        internal val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false)
         )
+
+        internal fun NDArray.toFloatNDArray() = if (this is FloatNDArray) {
+            this
+        } else {
+            require(this is DoubleNDArray)
+            val pointer = DoublePointer(this.array)
+            FloatNDArray(this.shape) { pointer.getAndIncrement().toFloat() }
+        }
     }
 
     @Suppress("PropertyName")

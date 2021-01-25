@@ -36,7 +36,7 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: List<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
             val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
             val mapValueInfo = ValueInfo(mapInfo)
-            val rows = if (shape.size == 1) 1 else shape[0]
+            val rows = if (rank == 1) 1 else shape[0]
             val columns = shape.last()
 
             val inputPointer = FloatPointer(array)
@@ -66,7 +66,7 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         requireNotNull(labels) { "Class labels should be specified" }
 
         val input = inputs[0]!!.data as FloatNDArray
-        assert(input.shape.size == 2)
+        assert(input.rank == 2)
         assert(labels.size == input.shape.last())
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))

@@ -2,19 +2,24 @@ package io.kinference.operators.ml.trees
 
 import io.kinference.ndarray.toFloatArray
 import io.kinference.ndarray.toIntArray
+import io.kinference.onnx.TensorProto
 import io.kinference.operators.ml.*
 import kotlin.math.*
 
-internal class TreeEnsembleBuilder(val numTargets: Int, val info: TreeEnsembleOperator.BaseEnsembleInfo) {
+internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEnsembleInfo, private val labelsInfo: TreeEnsemble.LabelsInfo?) {
+    private val numTargets = labelsInfo?.labels?.size ?: 1
     private val numTrees: Int = info.nodes_treeids.distinct().size
     private val nodeValues: FloatArray = info.nodes_values.toFloatArray()
     private val featureIds: IntArray = info.nodes_featureids.toIntArray()
     private val treeDepths: IntArray = IntArray(numTrees)
     private val treeSizes: IntArray = IntArray(numTrees)
-    private var biases: FloatArray? = info.base_values?.toFloatArray()
-    private lateinit var leafValues: FloatArray
+    private var biases: FloatArray = info.base_values?.toFloatArray() ?: FloatArray(numTargets)
+    private val nonLeafValuesCount: IntArray = IntArray(numTrees)
+    private lateinit var weightValues: FloatArray
 
     init {
+        require(numTargets > 0) { "Number of targets should be > 0, got $numTargets" }
+
         val trees2nodes = info.nodes_treeids.zip(info.nodes_nodeids).groupBy { it.first }
         for (entry in trees2nodes) {
             val treeId = entry.key.toInt()
@@ -22,24 +27,23 @@ internal class TreeEnsembleBuilder(val numTargets: Int, val info: TreeEnsembleOp
             treeSizes[treeId] = currentNumNodes
             treeDepths[treeId] = DEPTH(currentNumNodes)
         }
-    }
 
-    init {
-        require(numTargets > 0) { "Number of targets should be > 0, got $numTargets" }
-    }
-
-
-    //TODO: build ensemble with multi-weight nodes (for TreeEnsembleClassifier)
-    fun withWeights(targetIds: List<Number>, targetNodeIds: List<Number>, targetTreeIds: List<Number>, targetWeights: List<Number>) {
-        assert(targetNodeIds.size == targetTreeIds.size)
-        assert(targetNodeIds.size == targetWeights.size)
-
-        leafValues = FloatArray(nodeValues.size)
-
-        for (i in targetNodeIds.indices) {
-            val treeOff = treeSizes.take(targetTreeIds[i].toInt()).fold(0, Int::plus)
-            leafValues[treeOff + targetNodeIds[i].toInt()] = targetWeights[i].toFloat()
+        for (entry in trees2nodes) {
+            val treeId = entry.key.toInt()
+            val treeOffset = treeSizes.take(treeId).fold(0, Int::plus)
+            for (tree2node in entry.value) {
+                val nodeOffset = tree2node.second.toInt() + treeOffset
+                if (info.nodes_modes[nodeOffset] != "LEAF") nonLeafValuesCount[treeId]++
+            }
         }
+    }
+
+    fun withWeights(targetIds: List<Number>, targetNodeIdsList: List<Number>, targetTreeIds: List<Number>, targetWeights: List<Number>) {
+        assert(targetNodeIdsList.size == targetTreeIds.size)
+        assert(targetNodeIdsList.size == targetWeights.size)
+        assert(!targetIds.chunked(numTargets).any { !checkOrder(it) })
+
+        weightValues = targetWeights.toFloatArray()
     }
 
     private fun checkNodeDependencies(trueNodeIds: List<Number>, falseNodeIds: List<Number>) {
@@ -59,23 +63,26 @@ internal class TreeEnsembleBuilder(val numTargets: Int, val info: TreeEnsembleOp
         }
     }
 
-    fun build(): AbstractTreeEnsemble {
+    fun build(): TreeEnsemble {
         val aggregatorName = if (info.aggregate_function in AGGREGATIONS) info.aggregate_function!! else DEFAULT_AGGREGATOR
         val postTransformName = if (info.post_transform in TRANSFORMATIONS) info.post_transform!! else DEFAULT_POST_TRANSFORM
         val aggregator = Aggregator[aggregatorName]
         val postTransform = PostTransform[postTransformName]
 
         checkNodeDependencies(info.nodes_truenodeids, info.nodes_falsenodeids)
-        return when {
-            numTargets == 1 -> SingleTargetEnsemble(aggregator, postTransform, treeDepths, treeSizes, featureIds, nodeValues, leafValues, biases ?: floatArrayOf(0f))
-            numTargets >= 1 -> error("Multi-target ensembles are not supported yet")
-            else -> error("Number of targets should be > 0, got $numTargets")
-        }
+        return TreeEnsemble(aggregator, postTransform, treeDepths, treeSizes, featureIds, nodeValues, nonLeafValuesCount, weightValues, biases, numTargets, labelsInfo)
     }
 
     companion object {
-        operator fun invoke(numTargets: Int, info: TreeEnsembleOperator.BaseEnsembleInfo, configure: TreeEnsembleBuilder.() -> Unit): TreeEnsembleBuilder {
-            return TreeEnsembleBuilder(numTargets, info).apply(configure)
+        operator fun invoke(info: TreeEnsembleOperator.BaseEnsembleInfo, labelsInfo: TreeEnsemble.LabelsInfo? = null, configure: TreeEnsembleBuilder.() -> Unit): TreeEnsembleBuilder {
+            return TreeEnsembleBuilder(info, labelsInfo).apply(configure)
+        }
+
+        private fun checkOrder(list: List<Number>): Boolean {
+            for (i in list.indices) {
+                if (list[i].toInt() != i) return false
+            }
+            return true
         }
 
         private fun checkInfo(info: TreeEnsembleOperator.BaseEnsembleInfo) {
@@ -88,10 +95,26 @@ internal class TreeEnsembleBuilder(val numTargets: Int, val info: TreeEnsembleOp
             assert(info.nodes_nodeids.size == info.nodes_featureids.size)
         }
 
-        internal fun fromInfo(info: TreeEnsembleRegressor.RegressorInfo): AbstractTreeEnsemble {
+        internal fun fromInfo(info: TreeEnsembleRegressor.RegressorInfo): TreeEnsemble {
             checkInfo(info)
-            return TreeEnsembleBuilder(info.n_targets.toInt(), info) {
+            return TreeEnsembleBuilder(info) {
                 withWeights(info.target_ids, info.target_nodeids, info.target_treeids, info.target_weights)
+            }.build()
+        }
+
+        private fun parseLabelsInfo(info: TreeEnsembleClassifier.ClassifierInfo): TreeEnsemble.LabelsInfo {
+            return when {
+                info.classlabels_int64s != null -> TreeEnsemble.LabelsInfo(info.classlabels_int64s!!, TensorProto.DataType.INT64)
+                info.classlabels_strings != null -> TreeEnsemble.LabelsInfo(info.classlabels_strings!!, TensorProto.DataType.STRING)
+                else -> error("Either classlabels_int64s or classlabels_strings should be present")
+            }
+        }
+
+        internal fun fromInfo(info: TreeEnsembleClassifier.ClassifierInfo): TreeEnsemble {
+            checkInfo(info)
+            val labels = parseLabelsInfo(info)
+            return TreeEnsembleBuilder(info, labels) {
+                withWeights(info.class_ids, info.class_nodeids, info.class_treeids, info.class_weights)
             }.build()
         }
 
