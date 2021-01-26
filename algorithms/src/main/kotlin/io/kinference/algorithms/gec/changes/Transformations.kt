@@ -1,7 +1,7 @@
 package io.kinference.algorithms.gec.changes
 
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
-
+/** Some default transformations that are used by grammar error correction module */
 object Transformations {
     fun transformUsingVerb(token: String, form: String, verbsVocab: VerbsFormVocabulary): String {
         return verbsVocab.verbs2verbs[token]?.get(form) ?: token

@@ -1,5 +1,6 @@
 package io.kinference.algorithms.gec.tokenizer
 
+/** Defines range in text in which token is located and if it had space on the left of it. */
 data class TokenRange(val start: Int, val endExclusive: Int, val withSpace: Boolean) {
     val range = IntRange(start, endExclusive - 1)
 

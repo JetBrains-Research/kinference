@@ -27,8 +27,10 @@ data class SentenceCorrections(
     var isCorrect: Boolean = false
 ) {
 
+    /** Correction of specific token*/
     data class TokenCorrection(val tag: String, val errorClass: String, var changedTokens: List<GECToken>)
 
+    /** GEC token with text, range and encoding data */
     data class GECToken(
         val text: String, val encoded: List<Int>, val range: TokenRange,
         val isFirst: Boolean, val isUsed: Boolean

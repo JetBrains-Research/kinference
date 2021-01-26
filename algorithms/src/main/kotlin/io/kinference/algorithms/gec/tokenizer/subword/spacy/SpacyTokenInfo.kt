@@ -1,4 +1,4 @@
-package io.kinference.algorithms.gec.pretokenizer.en
+package io.kinference.algorithms.gec.tokenizer.subword.spacy
 
 /**
  * TokenInfo token-level information about string
@@ -7,4 +7,4 @@ package io.kinference.algorithms.gec.pretokenizer.en
  * @param tag string pos tag
  * @param norm normalized string
  */
-data class TokenInfo (var orth: String, val lemma: String? = null, val tag: String? = null, val norm: String? = null)
+data class SpacyTokenInfo(var orth: String, val lemma: String? = null, val tag: String? = null, val norm: String? = null)

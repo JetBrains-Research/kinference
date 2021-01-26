@@ -2,6 +2,7 @@ package io.kinference.algorithms.gec.classifier
 
 import io.kinference.algorithms.gec.tokenizer.utils.CharUtils
 
+/** Naive classification of grammar errors */
 object GECClassifier {
     fun classifyError(tag: String): String {
         when {

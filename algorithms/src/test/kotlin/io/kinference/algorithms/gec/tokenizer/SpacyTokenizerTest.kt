@@ -1,8 +1,7 @@
 package io.kinference.algorithms.gec.tokenizer
 
-import io.kinference.algorithms.gec.pretokenizer.Tokenizer
+import io.kinference.algorithms.gec.tokenizer.subword.spacy.SpacyTokenizer
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 class SpacyTokenizerTest {
@@ -73,13 +72,12 @@ class SpacyTokenizerTest {
         listOf("In", "this", "paper", ",", "we", "propose", "a", "new", "Transformer", "-", "based", "neural", "language", "model", "DeBERTa", "(", "Decoding", "-", "enhanced", "BERT", "with", "disentangled", "attention", ")", "which", "has", "been", "proven", "to", "be", "more", "effective", "than", "\n ", "RoBERTa", "and", "BERT", "and", "after", "fine", "-", "tuning", "leads", "to", "better", "results", "on", "a", "wide", "range", "of", "NLP", "tasks", "."),
     )
 
-    val tokenizer = Tokenizer.load("en")
+    val tokenizer = SpacyTokenizer.loadEnglish()
 
     @Test
-    @Tag("heavy")
     fun testSpacyTokenize(){
         for ((idx, text) in texts.withIndex()){
-            val res = tokenizer(text)
+            val res = tokenizer.tokenize(text)
             Assertions.assertEquals(res, tokenizeAnswer[idx])
         }
     }
