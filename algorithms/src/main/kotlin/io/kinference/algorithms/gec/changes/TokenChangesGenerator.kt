@@ -102,10 +102,11 @@ class TokenChangesGenerator(val tokens: List<SentenceCorrections.GECToken>, priv
             val parts = Transformations.transformUsingSplit(tokenText)
             return Pair(idx, TokenChanges(replacement = parts.joinToString { " " }, tokenizedReplacement = parts))
         }
-//        if (tag.startsWith("\$TRANSFORM_AGREEMENT")){
-//            val splits = tag.split("_", limit = 2)
-//            return TokenChanges((, tokenText, form=splits.last()))
-//        }
+        if (tag.startsWith("\$TRANSFORM_AGREEMENT")){
+            val form = tag.split("_", limit = 2).last()
+            val newToken = Transformations.transformUsingPlural(token = tokenText, form = form)
+            return Pair(idx, TokenChanges(replacement = newToken))
+        }
         error("Unknown transformation type $tag")
     }
 
