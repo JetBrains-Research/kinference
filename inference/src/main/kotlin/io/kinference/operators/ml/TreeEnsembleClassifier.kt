@@ -66,14 +66,6 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
                 else -> error("Unsupported data type: $dataType")
             }
         }
-
-        private fun <T : Any> FloatNDArray.topClasses(labels: List<T>, dataType: TensorProto.DataType): NDArray {
-            val rows = this.rows
-            val shape = intArrayOf(this.shape[0])
-            return writeLabels(dataType, shape) {
-                labels[(rows[it] as FloatNDArray).maxIdx()]
-            }
-        }
     }
 
     @Suppress("PropertyName")
