@@ -34,8 +34,16 @@ class GecCorrectionPostprocessor : GecPostprocessor() {
         for (correction in corrections) {
             val startEnd = correction.errorRange
             result = result.replaceRange(correction.errorRange.withOffset(offset), correction.replacement)
-            offset += correction.replacement.length - (startEnd.endInclusive - startEnd.start)
+            offset += correction.replacement.length - (startEnd.endInclusive + 1 - startEnd.start)
         }
         return result
+    }
+}
+
+class GecEvalPostprocessor : GecPostprocessor() {
+    override fun postprocess(sentObj: SentenceCorrections): String {
+        val tokens = sentObj.toCorrectedTokenSentence()
+        val validTextTokens = tokens.map { it.text }.filter { it != "\$START" && it != "" }
+        return validTextTokens.joinToString(" ")
     }
 }
