@@ -29,4 +29,12 @@ object Transformations {
             else -> return token
         }
     }
+
+    fun transformUsingPlural(token: String, form: String): String{
+        when (form) {
+            "PLURAL" -> return token + "s"
+            "SINGULAR" -> return token.substring(startIndex = 0, endIndex = token.length - 1)
+            else -> return token
+        }
+    }
 }
