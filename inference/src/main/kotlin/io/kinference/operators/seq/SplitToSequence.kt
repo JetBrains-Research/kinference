@@ -2,17 +2,18 @@ package io.kinference.operators.seq
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXDataType
-import io.kinference.data.seq.TensorSeq
+import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
-import io.kinference.types.SequenceInfo
+import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo.SequenceTypeInfo
 
 class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, TensorSeq>(INFO, attributes, inputs, outputs) {
+    : Operator<Tensor, ONNXSequence>(INFO, attributes, inputs, outputs) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -36,7 +37,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<TensorSeq?> {
+    override fun apply(context: Context, inputs: List<Tensor?>): List<ONNXSequence?> {
         val parts = inputs.elementAtOrNull(1)
 
         val input = inputs[0]!!
@@ -46,6 +47,6 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
             input.splitWithAxis(parts, axis)
         }
 
-        return listOf(TensorSeq(tensors, SequenceInfo("output_sequence", tensors[0].info.type)))
+        return listOf(ONNXSequence(tensors, ValueInfo(SequenceTypeInfo(tensors[0].info.typeInfo), "output_sequence")))
     }
 }

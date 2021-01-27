@@ -10,8 +10,6 @@ import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
-import io.kinference.types.TensorInfo
-import io.kinference.types.TensorShape
 
 class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {

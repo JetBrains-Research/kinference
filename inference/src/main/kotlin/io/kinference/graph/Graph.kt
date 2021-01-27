@@ -5,10 +5,10 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.onnx.*
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 import org.slf4j.LoggerFactory
 import java.util.*
 
-//TODO: support general graphs
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 class Graph(proto: GraphProto) {
@@ -138,8 +138,11 @@ class Graph(proto: GraphProto) {
         get() = inputs.map { it.name }
 
     fun prepareInput(name: String, value: List<Any>): Tensor {
-        val type = inputs.find { it.name == name }?.type!!
-        return Tensor(value, type)
+        val inputInfo = inputs.find { it.name == name }
+        requireNotNull(inputInfo) { "Input with name $name is not found" }
+        require(inputInfo.typeInfo is ValueTypeInfo.TensorTypeInfo) { "Only tensor inputs are supported" }
+
+        return Tensor(value, inputInfo.typeInfo.type)
     }
 
     fun prepareInput(proto: TensorProto): Tensor {

@@ -15,20 +15,20 @@ object TestRunner {
 
     private val delta = (10.0).pow(-3)
 
-    data class TensorTestData(val actual: List<ONNXData>, val expected: List<ONNXData>)
+    data class ONNXTestData(val actual: List<ONNXData>, val expected: List<ONNXData>)
 
-    private fun runTestsFromS3(testPath: String, prefix: String): List<TensorTestData> {
+    private fun runTestsFromS3(testPath: String, prefix: String, testRunner: (File) -> List<ONNXTestData>): List<ONNXTestData> {
         val toFolder = File(testData, testPath)
         S3Client.copyObjects(prefix, toFolder)
-        return runTestsFromFolder(toFolder)
+        return testRunner(toFolder)
     }
 
-    private fun runTestsFromResources(testPath: String): List<TensorTestData> {
+    private fun runTestsFromResources(testPath: String): List<ONNXTestData> {
         val path = javaClass.getResource(testPath)!!.path
         return runTestsFromFolder(File(path))
     }
 
-    private fun runTestsFromFolder(path: File): List<TensorTestData> {
+    private fun runTestsFromFolder(path: File): List<ONNXTestData> {
         val model = Model.load(File(path, "model.onnx").absolutePath)
 
         return path.list()!!.filter { "test" in it }.map {
@@ -38,19 +38,19 @@ object TestRunner {
             val inputTensors = inputFiles.map { model.graph.prepareInput(TensorProto.ADAPTER.decode(it.readBytes())) }.toList()
             val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(it) }.toList()
             val actualOutputTensors = model.predict(inputTensors)
-            TensorTestData(expectedOutputTensors, actualOutputTensors)
+            ONNXTestData(expectedOutputTensors, actualOutputTensors)
         }
     }
 
-    fun runFromS3(path: String, prefix: String, delta: Double = TestRunner.delta) {
-        check(runTestsFromS3(path, prefix), delta)
+    fun runFromS3(path: String, prefix: String, testRunner: (File) -> List<ONNXTestData> = this::runTestsFromFolder, delta: Double = TestRunner.delta) {
+        check(runTestsFromS3(path, prefix, testRunner), delta)
     }
 
     fun runFromResources(path: String, delta: Double = TestRunner.delta) {
         check(runTestsFromResources(path), delta)
     }
 
-    private fun check(datasets: List<TensorTestData>, delta: Double = TestRunner.delta) {
+    private fun check(datasets: List<ONNXTestData>, delta: Double = TestRunner.delta) {
         for (dataSet in datasets) {
             val (expectedOutputTensors, actualOutputTensors) = dataSet
 
@@ -58,7 +58,7 @@ object TestRunner {
 
             for (expectedOutputTensor in expectedOutputTensors) {
                 val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.info.name] ?: error("Required tensor not found")
-                Assertions.assertEquals(expectedOutputTensor as Tensor, actualOutputTensor as Tensor, delta)
+                Assertions.assertEquals(expectedOutputTensor, actualOutputTensor, delta)
             }
         }
     }

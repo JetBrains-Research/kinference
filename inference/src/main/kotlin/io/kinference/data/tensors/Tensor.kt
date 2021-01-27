@@ -8,17 +8,16 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
-import io.kinference.types.TensorInfo
-import io.kinference.types.TensorShape
+import io.kinference.types.ValueInfo
 import okio.ByteString
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 //TODO: support segments
 //TODO: support external data
-class Tensor(val data: NDArray, info: TensorInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
+class Tensor(val data: NDArray, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
     override fun rename(name: String): ONNXData {
-        return Tensor(data, TensorInfo(name, info.type, TensorShape(data.shape)))
+        return Tensor(data, ValueInfo(info.typeInfo, name))
     }
 
     operator fun plus(other: Tensor): Tensor {

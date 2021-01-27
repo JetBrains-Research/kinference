@@ -59,6 +59,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
     testImplementation("com.microsoft.onnxruntime", "onnxruntime", "1.4.0")
+    testImplementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.0.1")
 
     testImplementation(project(":loaders"))
 }

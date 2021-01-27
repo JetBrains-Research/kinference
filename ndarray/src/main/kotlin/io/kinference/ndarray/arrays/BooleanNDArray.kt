@@ -204,7 +204,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
 
     override fun reshape(strides: Strides): MutableNDArray {
         this.strides = strides
-        return  this
+        return this
     }
 
     // TODO separate from PrimitiveArray (maybe LateInitArray will help)
