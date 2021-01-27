@@ -9,7 +9,7 @@ class GPTGrazieTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        TestRunner.runFromS3("/gpt2/grazie/distilled/quantized/v6/", "tests/gpt2/grazie/distilled/quantized/v6", 5.00)
+        TestRunner.runFromS3("/gpt2/grazie/distilled/quantized/v6/", "tests/gpt2/grazie/distilled/quantized/v6", delta = 5.00)
     }
 
     @Test
