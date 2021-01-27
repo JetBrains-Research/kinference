@@ -12,9 +12,9 @@ import io.kinference.algorithms.gec.tokenizer.subword.spacy.en.SpacyEnglishToken
  * @param urlRegex regex which match urls
  */
 class SpacyTokenizerSpecialCases {
-    private val tokenizerExceptions = SpacyEnglishTokenizerExceptions()
+    val tokenizerExceptions = SpacyEnglishTokenizerExceptions()
 
-    private val specialCases: MutableMap<String, List<SpacyTokenInfo>> = (tokenizerExceptions.exceptions + SpacyEnglish.BaseExceptions.exceptions).toMutableMap()
+    val specialCases: MutableMap<String, List<SpacyTokenInfo>> = (tokenizerExceptions.exceptions + SpacyEnglish.BaseExceptions.exceptions).toMutableMap()
 
 
     private val urls = """(?u)""" +

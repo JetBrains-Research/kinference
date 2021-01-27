@@ -16,7 +16,7 @@ class SpacyTokenizer(
     val prefix: Regex,
     private val infix: Regex,
     private val suffix: Regex,
-    private val specialCases: SpacyTokenizerSpecialCases,
+    val specialCases: SpacyTokenizerSpecialCases,
     private val vocab: Vocab
 ) : Tokenizer {
     companion object {

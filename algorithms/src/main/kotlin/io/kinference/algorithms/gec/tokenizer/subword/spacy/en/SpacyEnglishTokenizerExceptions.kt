@@ -229,7 +229,7 @@ class SpacyEnglishTokenizerExceptions {
         )
 
         for (verbData in verbDatas + verbs2){
-            val verbDataC = verbData
+            val verbDataC = verbData.copy()
             verbDataC.orth = verbDataC.orth.capitalize()
             for (data in listOf(verbData, verbDataC)){
                 exceptions[data.orth + "n't"] = listOf(data, SpacyTokenInfo(orth = "n't", lemma = "not", norm = "not"))
@@ -248,7 +248,7 @@ class SpacyEnglishTokenizerExceptions {
             }
         }
         for (verbData in verbs2){
-            val verbDataC = verbData
+            val verbDataC = verbData.copy()
             verbDataC.orth = verbDataC.orth.capitalize()
             for (data in listOf(verbData, verbDataC)){
                 exceptions[data.orth + "'ve"] = listOf(data, SpacyTokenInfo(orth = "'ve", lemma = "have"))
@@ -270,7 +270,7 @@ class SpacyEnglishTokenizerExceptions {
         )
 
         for (verbData in beVariations){
-            val verbDataC = verbData
+            val verbDataC = verbData.copy()
             verbDataC.orth = verbDataC.orth.capitalize()
             for (data in listOf(verbData, verbDataC)){
                 exceptions[data.orth + "n't"] = listOf(data, SpacyTokenInfo(orth = "n't", lemma = "not", norm = "not"))
@@ -288,7 +288,7 @@ class SpacyEnglishTokenizerExceptions {
             SpacyTokenInfo(orth = "somethin", lemma = "something", norm = "something")
         )
         for (excData in trailingApostrpopheData){
-            val excDataC = excData
+            val excDataC = excData.copy()
             excDataC.orth = excDataC.orth.capitalize()
             for (data in listOf(excData)){
                 val dataApos = data
@@ -305,7 +305,7 @@ class SpacyEnglishTokenizerExceptions {
         )
 
         for (excData in otherData){
-            val excDataApos = excData
+            val excDataApos = excData.copy()
             excDataApos.orth = "'" + excDataApos.orth
             for (data in listOf(excData, excDataApos)){
                 exceptions[data.orth] = listOf(data)

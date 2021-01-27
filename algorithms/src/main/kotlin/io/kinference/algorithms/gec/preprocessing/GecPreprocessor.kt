@@ -4,6 +4,7 @@ import io.kinference.algorithms.gec.encoder.PreTrainedTextEncoder
 import io.kinference.algorithms.gec.tokenizer.utils.tokenizeByWhitespace
 import io.kinference.algorithms.gec.corrector.correction.SentenceCorrections
 import io.kinference.algorithms.gec.tokenizer.TokenRange
+import io.kinference.algorithms.gec.tokenizer.subword.spacy.SpacyTokenizer
 
 /** Preprocessor is used to tokenize and pre-filter tokens and generation input for first iteration  */
 interface GecPreprocessor {
@@ -13,11 +14,20 @@ interface GecPreprocessor {
 /** Basic preprocessor implementation for inference only */
 class GecCorrectionPreprocessor(
     val encoder: PreTrainedTextEncoder,
-    val useStartToken: Boolean
+    val useStartToken: Boolean,
+    val evalTokenization: Boolean = false,
 ) : GecPreprocessor {
 
+    val pretokenizer: SpacyTokenizer = SpacyTokenizer.loadEnglish()
     override fun preprocess(sentId: Int, sentence: String): SentenceCorrections {
-        val tokenizedSentence = sentence.tokenizeByWhitespace()
+        val tokenizedSentence: List<String>
+
+        if (evalTokenization){
+            tokenizedSentence = evalTokenize(sentence)
+        }
+        else{
+            tokenizedSentence = tokenize(sentence)
+        }
         val tokensRanges: List<TokenRange> = TokenRange.findTokensInText(text = sentence, tokens = tokenizedSentence, textWithSpace = false)
 
         val tokens = ArrayList<SentenceCorrections.GECToken>()
@@ -47,5 +57,13 @@ class GecCorrectionPreprocessor(
 
     private fun isValidText(text: String): Boolean {
         return true
+    }
+
+    private fun evalTokenize(text: String): List<String>{
+        return text.tokenizeByWhitespace()
+    }
+
+    private fun tokenize(text: String): List<String>{
+        return pretokenizer.tokenize(text)
     }
 }
