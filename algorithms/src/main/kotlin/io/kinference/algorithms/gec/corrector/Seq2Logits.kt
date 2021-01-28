@@ -10,7 +10,7 @@ import io.kinference.ndarray.arrays.LongNDArray
  * Class which hold Bert model for tags prediction
  * @param model name of the model
  */
-class Seq2Logits(model: String) {
+class Seq2Logits(model: ByteArray) {
 
     private val model = Model.load(model)
 

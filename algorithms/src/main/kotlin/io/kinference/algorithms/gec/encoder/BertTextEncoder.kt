@@ -11,7 +11,7 @@ import java.io.File
  * @param toLowerCase boolean value for cased and uncased variants
  */
 class BertTextEncoder(
-    vocabularyFile: File,
+    vocabularyFile: String,
     toLowerCase: Boolean = true,
     private val doBasicTokenize: Boolean = true,
     unkToken: String = "[UNK]",
@@ -25,7 +25,7 @@ class BertTextEncoder(
     padToken = padToken, clsToken = clsToken, maskToken = maskToken
 ) {
 
-    private val vocabulary = vocabularyFile.readLines().withIndex().associate { (value, key) -> key to value }
+    private val vocabulary = vocabularyFile.lines().filter { it.isNotBlank() }.withIndex().associate { (value, key) -> key to value }
     private val idsToToken = vocabulary.entries.associate { it.value to it.key }
 
     private val wordPieceTokenizer = WordPieceTokenizer(vocabulary, unkToken)

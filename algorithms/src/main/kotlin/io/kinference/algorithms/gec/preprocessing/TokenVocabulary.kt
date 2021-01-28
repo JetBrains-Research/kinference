@@ -1,16 +1,14 @@
 package io.kinference.algorithms.gec.preprocessing
 
-import java.io.File
-
 /**
  * Vocabulary for tokens/tags
  */
 @Suppress("unused")
 data class TokenVocabulary(val token2index: MutableMap<String, Int> = HashMap(), val index2token: MutableMap<Int, String> = HashMap()) {
     companion object {
-        fun load(file: File): TokenVocabulary {
+        fun load(file: String): TokenVocabulary {
             val vocab = TokenVocabulary()
-            for (line in file.readLines()) {
+            for (line in file.lines().filter { it.isNotBlank() }) {
                 vocab.addToken(line)
             }
             return vocab
@@ -49,10 +47,10 @@ data class TokenVocabulary(val token2index: MutableMap<String, Int> = HashMap(),
  */
 data class VerbsFormVocabulary(val verbs2verbs: MutableMap<String, MutableMap<String, String>> = HashMap()) {
     companion object {
-        fun load(file: File): VerbsFormVocabulary {
+        fun load(file: String): VerbsFormVocabulary {
             val vocab = VerbsFormVocabulary()
 
-            for (line in file.readLines()) {
+            for (line in file.lines().filter { it.isNotBlank() }) {
                 val (verb, form) = line.split(':', limit = 2)
                 val (inVerb, outVerb) = verb.split('_', limit = 2)
                 vocab.addVerb(inVerb, form, outVerb)

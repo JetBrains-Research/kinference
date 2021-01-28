@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "io.kinference"
-version = "0.1.1"
+version = "0.1.2"
 
 plugins {
     id("tanvd.kosogor") version "1.0.10" apply true
