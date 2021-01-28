@@ -7,6 +7,7 @@ import io.kinference.algorithms.gec.preprocessing.TokenVocabulary
 import io.kinference.algorithms.gec.preprocessing.VerbsFormVocabulary
 import java.io.InputStream
 
+/** Configuration of GEC */
 data class GECConfig(
     val model: Seq2Logits,
     val encoder: PreTrainedTextEncoder,

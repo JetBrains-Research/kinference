@@ -29,6 +29,7 @@ class GECTagger(
     val minErrorProb: Double,
     val confidence: Double,
 ) {
+    /** Tangs inside sentence */
     data class TagSentObject(val sentId: Int, val tags: List<String>, val tokens: List<String>)
 
 

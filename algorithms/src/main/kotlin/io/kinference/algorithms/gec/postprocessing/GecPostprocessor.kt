@@ -40,6 +40,7 @@ class GecCorrectionPostprocessor : GecPostprocessor() {
     }
 }
 
+/** Postprocessor used by GEC during evaluation */
 class GecEvalPostprocessor : GecPostprocessor() {
     override fun postprocess(sentObj: SentenceCorrections): String {
         val tokens = sentObj.toCorrectedTokenSentence()

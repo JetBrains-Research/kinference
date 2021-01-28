@@ -6,6 +6,7 @@ import io.kinference.algorithms.gec.postprocessing.GecPostprocessor
 import io.kinference.algorithms.gec.preprocessing.GecCorrectionPreprocessor
 import io.kinference.algorithms.gec.preprocessing.GecPreprocessor
 
+/** Factory to create GECCorrection from GECConfig */
 object GECCorrectorFactory {
     fun createGECCorrector(config: GECConfig): GECCorrector {
         val preprocessor: GecPreprocessor = GecCorrectionPreprocessor(encoder = config.encoder, useStartToken = true, evalTokenization = true)
