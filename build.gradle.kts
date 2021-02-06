@@ -7,7 +7,7 @@ plugins {
     id("tanvd.kosogor") version "1.0.10" apply true
     idea apply true
 
-    kotlin("jvm") version "1.4.21" apply false
+    kotlin("multiplatform") version "1.4.21" apply false
 
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
 }
@@ -24,7 +24,7 @@ subprojects {
         plugin("tanvd.kosogor")
         plugin("idea")
 
-        plugin("kotlin")
+        plugin("org.jetbrains.kotlin.multiplatform")
 
         plugin("io.gitlab.arturbosch.detekt")
     }
