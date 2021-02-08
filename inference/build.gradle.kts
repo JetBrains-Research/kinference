@@ -36,6 +36,21 @@ kotlin {
                 events("passed", "skipped", "failed")
             }
         }
+
+        testRuns.create("heavy").executionTask {
+            group = "verification"
+
+            useJUnitPlatform {
+                includeTags("heavy")
+                excludeTags("benchmark")
+            }
+
+            maxHeapSize = "4G"
+
+            testLogging {
+                events("passed", "skipped", "failed")
+            }
+        }
     }
 
     sourceSets {
