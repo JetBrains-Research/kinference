@@ -1,11 +1,13 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
-
 group = rootProject.group
 version = rootProject.version
 
+plugins {
+    id("io.kinference.primitives") version "0.1.10" apply true
+}
+
 kotlin {
     jvm()
-    js() {
+    js {
         browser()
     }
 
@@ -18,36 +20,10 @@ kotlin {
 
             dependencies {
                 api(kotlin("stdlib"))
-                api("io.kinference.primitives:primitives-annotations:0.1.8")
+                api("io.kinference.primitives:primitives-annotations:0.1.10")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
     }
 }
 
-
-dependencies {
-    kotlinCompilerPluginClasspath("io.kinference.primitives", "kotlin-plugin", "0.1.8")
-}
-
-val generatedDir = "$projectDir/src/commonMain/kotlin-gen"
-val incrementalDir = "$buildDir/"
-
-tasks.withType<KotlinCompile<*>> {
-    kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + listOf(
-            "-P",
-            "plugin:io.kinference.primitives.kotlin-plugin:outputDir=$generatedDir",
-            "-P",
-            "plugin:io.kinference.primitives.kotlin-plugin:icOutputDir=$incrementalDir"
-        )
-    }
-}
-
-tasks["compileKotlinJs"].dependsOn("compileKotlinJvm")
-
-kotlin {
-    sourceSets["commonMain"].apply {
-        kotlin.srcDirs(generatedDir)
-    }
-}
