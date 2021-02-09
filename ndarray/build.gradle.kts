@@ -52,3 +52,8 @@ tasks.withType<KotlinCompile<*>> {
 
 tasks["compileKotlinJs"].dependsOn("compileKotlinJvm")
 
+kotlin {
+    sourceSets["commonMain"].apply {
+        kotlin.srcDirs(generatedDir)
+    }
+}
