@@ -15,6 +15,6 @@ class GraphValueOrderInfo {
     }
 
     fun getOrder(name: String): Int {
-        return orders.getOrDefault(name, Int.MAX_VALUE)
+        return orders.getOrElse(name) { Int.MAX_VALUE }
     }
 }

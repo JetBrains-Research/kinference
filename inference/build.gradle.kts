@@ -5,7 +5,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("com.squareup.wire") version "3.5.0" apply true
+    id("com.squareup.wire") version "3.6.0" apply true
     kotlin("kapt") apply true
 }
 
@@ -23,6 +23,10 @@ wire {
 }
 
 kotlin {
+    js {
+        browser()
+    }
+
     jvm {
         testRuns["test"].executionTask {
             useJUnitPlatform {
@@ -56,14 +60,14 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib"))
-                api("com.squareup.wire:wire-runtime-multiplatform:3.5.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                api(project(":ndarray"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api(project(":ndarray"))
                 api("ch.qos.logback:logback-classic:1.2.3")
             }
         }

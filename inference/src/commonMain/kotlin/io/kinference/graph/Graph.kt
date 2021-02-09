@@ -1,20 +1,22 @@
 package io.kinference.graph
 
+import io.kinference.Stack
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.onnx.*
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import org.slf4j.LoggerFactory
-import java.util.*
+//import org.slf4j.LoggerFactory
+//import java.util.*
+//import kotlin.jvm.java
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 class Graph(proto: GraphProto) {
-    companion object {
-        private val logger = LoggerFactory.getLogger(Graph::class.java)
-    }
+//    companion object {
+//        private val logger = LoggerFactory.getLogger(Graph::class.java)
+//    }
 
     val operators: List<Operator<ONNXData, ONNXData>>
     val inputs = proto.input.map { ValueInfo.create(it) }
@@ -170,7 +172,7 @@ class Graph(proto: GraphProto) {
         }
         for (input in inputs) {
             if (input.info.name !in availableInputs) {
-                logger.warn("Input node '${input.info.name}' not found in Graph and probably is excessive")
+//                logger.warn("Input node '${input.info.name}' not found in Graph and probably is excessive")
                 continue
             }
             context.putValue(input.info.name, input)

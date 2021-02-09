@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 
 group = "io.kinference"
 version = "0.1.2"
@@ -26,12 +27,17 @@ subprojects {
         plugin("io.gitlab.arturbosch.detekt")
     }
 
+    tasks.withType<KotlinCompile<*>> {
+        kotlinOptions {
+            freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xopt-in=kotlin.ExperimentalUnsignedTypes")
+        }
+    }
+
     tasks.withType<KotlinJvmCompile> {
         kotlinOptions {
             jvmTarget = "11"
             languageVersion = "1.4"
             apiVersion = "1.4"
-            freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xopt-in=kotlin.ExperimentalUnsignedTypes")
         }
     }
 

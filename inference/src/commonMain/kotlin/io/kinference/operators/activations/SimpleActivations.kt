@@ -61,11 +61,11 @@ class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Li
 
     val alpha: Float by attribute()
 
-    private val activateFloat = object : FloatMap {
+    private val activateFloat: FloatMap = object : FloatMap {
         override fun apply(value: Float): Float = if (value < 0) value * alpha else value
     }
 
-    private val activateDouble = object : DoubleMap {
+    private val activateDouble: DoubleMap = object : DoubleMap {
         override fun apply(value: Double): Double = if (value < 0) value * alpha else value
     }
 

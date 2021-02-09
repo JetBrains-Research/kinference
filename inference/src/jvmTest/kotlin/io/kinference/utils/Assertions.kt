@@ -71,7 +71,7 @@ object Assertions {
 
     fun assertEquals(expected: ONNXData, actual: ONNXData, delta: Double) {
         when (expected.type) {
-            ONNXDataType.ONNX_TENSOR -> assertEquals(expected as Tensor, actual as Tensor, delta)
+            ONNXDataType.ONNX_TENSOR -> assertEquals(expected as io.kinference.data.tensors.Tensor, actual as io.kinference.data.tensors.Tensor, delta)
             ONNXDataType.ONNX_MAP -> assertEquals(expected as ONNXMap, actual as ONNXMap, delta)
             ONNXDataType.ONNX_SEQUENCE -> assertEquals(expected as ONNXSequence, actual as ONNXSequence, delta)
         }

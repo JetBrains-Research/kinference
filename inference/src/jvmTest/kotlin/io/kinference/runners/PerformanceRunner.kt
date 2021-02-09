@@ -3,6 +3,7 @@ package io.kinference.runners
 import io.kinference.data.tensors.Tensor
 import io.kinference.loaders.S3Client
 import io.kinference.model.Model
+import io.kinference.model.load
 import io.kinference.utils.DataLoader
 import java.io.File
 

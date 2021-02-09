@@ -66,8 +66,8 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         requireNotNull(labels) { "Class labels should be specified" }
 
         val input = inputs[0]!!.data as FloatNDArray
-        assert(input.rank == 2)
-        assert(labels.size == input.shape.last())
+        require(input.rank == 2)
+        require(labels.size == input.shape.last())
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))
     }

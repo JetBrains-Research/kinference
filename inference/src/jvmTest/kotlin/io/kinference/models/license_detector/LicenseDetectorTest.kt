@@ -5,6 +5,7 @@ import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
+import io.kinference.model.load
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.onnx.TensorProto
 import io.kinference.runners.TestRunner

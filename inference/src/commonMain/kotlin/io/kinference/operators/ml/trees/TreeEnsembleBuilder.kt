@@ -39,16 +39,16 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
     }
 
     fun withWeights(targetIds: List<Number>, targetNodeIdsList: List<Number>, targetTreeIds: List<Number>, targetWeights: List<Number>) {
-        assert(targetNodeIdsList.size == targetTreeIds.size)
-        assert(targetNodeIdsList.size == targetWeights.size)
-        assert(!targetIds.chunked(numTargets).any { !checkOrder(it) })
+        require(targetNodeIdsList.size == targetTreeIds.size)
+        require(targetNodeIdsList.size == targetWeights.size)
+        require(!targetIds.chunked(numTargets).any { !checkOrder(it) })
 
         weightValues = targetWeights.toFloatArray()
     }
 
     private fun checkNodeDependencies(trueNodeIds: List<Number>, falseNodeIds: List<Number>) {
-        assert(trueNodeIds.size == falseNodeIds.size)
-        assert(trueNodeIds.size == nodeValues.size)
+        require(trueNodeIds.size == falseNodeIds.size)
+        require(trueNodeIds.size == nodeValues.size)
 
         var currentTreeOffset = 0
         for (size in treeSizes) {
@@ -89,10 +89,10 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
             val distinctModes = info.nodes_modes.toHashSet()
             require(distinctModes == SUPPORTED_MODES) { "Got unsupported tree ensemble node modes: ${distinctModes - SUPPORTED_MODES}" }
 
-            assert(info.nodes_nodeids.size == info.nodes_modes.size)
-            assert(info.nodes_nodeids.size == info.nodes_treeids.size)
-            assert(info.nodes_nodeids.size == info.nodes_values.size)
-            assert(info.nodes_nodeids.size == info.nodes_featureids.size)
+            require(info.nodes_nodeids.size == info.nodes_modes.size)
+            require(info.nodes_nodeids.size == info.nodes_treeids.size)
+            require(info.nodes_nodeids.size == info.nodes_values.size)
+            require(info.nodes_nodeids.size == info.nodes_featureids.size)
         }
 
         internal fun fromInfo(info: TreeEnsembleRegressor.RegressorInfo): TreeEnsemble {

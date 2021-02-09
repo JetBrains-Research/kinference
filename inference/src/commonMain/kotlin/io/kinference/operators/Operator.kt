@@ -58,7 +58,7 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
 
         for (attribute in attributes.values) {
             if (attribute.name !in info.attributes) {
-                System.err.println("Unknown attribute '${attribute.name}' in ${info.name} operator")
+                println("Unknown attribute '${attribute.name}' in ${info.name} operator")
             }
         }
     }
