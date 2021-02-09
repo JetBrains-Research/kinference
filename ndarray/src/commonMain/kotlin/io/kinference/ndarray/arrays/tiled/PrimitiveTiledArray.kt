@@ -8,8 +8,6 @@ import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
@@ -21,7 +19,6 @@ class PrimitiveTiledArray {
 
     companion object {
         const val MIN_BLOCK_SIZE = 512
-        val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
 
         private fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
             return when {

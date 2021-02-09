@@ -48,14 +48,14 @@ fun IntRange.toIntArray(): IntArray {
 
 fun Int.concat(array: IntArray): IntArray {
     val copy = IntArray(array.size + 1)
-    System.arraycopy(array, 0, copy, 1, array.size)
+    array.copyInto(copy, 1)
     copy[0] = this
     return copy
 }
 
 fun IntArray.concat(value: Int): IntArray {
     val copy = IntArray(size + 1)
-    System.arraycopy(this, 0, copy, 0, size)
+    this.copyInto(copy)
     copy[size] = value
     return copy
 }

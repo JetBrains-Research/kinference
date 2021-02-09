@@ -19,14 +19,12 @@ kotlin {
             dependencies {
                 api(kotlin("stdlib"))
                 api("io.kinference.primitives:primitives-annotations:0.1.8")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
 
         val jvmMain by getting {
-            dependencies {
-                api("org.slf4j:slf4j-api:1.7.30")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-            }
+
         }
     }
 }

@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.primitives.types.DataType
 
