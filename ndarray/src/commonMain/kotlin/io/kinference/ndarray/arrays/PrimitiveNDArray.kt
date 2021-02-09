@@ -519,8 +519,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         if (rBlockInRow > 1) {
-            wrapper()
-//            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
         } else {
             wrapper()
         }
@@ -574,8 +573,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         if (destination.blocksInRow > 1) {
-            wrapper()
-//            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
         } else {
             wrapper()
         }
