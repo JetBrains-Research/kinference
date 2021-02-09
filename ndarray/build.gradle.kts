@@ -13,7 +13,7 @@ kotlin {
         val commonMain by getting {
             repositories {
                 mavenCentral()
-                mavenLocal()
+                maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
             }
 
             dependencies {
@@ -21,10 +21,6 @@ kotlin {
                 api("io.kinference.primitives:primitives-annotations:0.1.8")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
-        }
-
-        val jvmMain by getting {
-
         }
     }
 }

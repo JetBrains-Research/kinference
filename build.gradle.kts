@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     repositories {
-        mavenLocal()
+        maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         jcenter()
         gradlePluginPortal()
     }
