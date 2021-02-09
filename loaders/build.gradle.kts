@@ -1,5 +1,3 @@
-import tanvd.kosogor.proxy.publishJar
-
 group = rootProject.group
 version = rootProject.version
 
@@ -21,16 +19,3 @@ kotlin {
         }
     }
 }
-
-//publishJar {
-//    bintray {
-//        username = "tanvd"
-//        repository = "io.kinference"
-//        info {
-//            description = "KInference loaders module"
-//            vcsUrl = "https://github.com/JetBrains-Research/kinference"
-//            githubRepo = "https://github.com/JetBrains-Research/kinference"
-//            labels.addAll(listOf("kotlin", "inference", "ml", "loader"))
-//        }
-//    }
-//}

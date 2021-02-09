@@ -4,16 +4,14 @@ group = "io.kinference"
 version = "0.1.2"
 
 plugins {
-    id("tanvd.kosogor") version "1.0.10" apply true
+    kotlin("multiplatform") version "1.4.30" apply false
     idea apply true
-
-    kotlin("multiplatform") version "1.4.21" apply false
-
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         jcenter()
         gradlePluginPortal()
     }
@@ -21,10 +19,9 @@ allprojects {
 
 subprojects {
     apply {
-        plugin("tanvd.kosogor")
-        plugin("idea")
-
         plugin("org.jetbrains.kotlin.multiplatform")
+
+        plugin("idea")
 
         plugin("io.gitlab.arturbosch.detekt")
     }

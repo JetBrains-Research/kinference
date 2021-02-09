@@ -8,6 +8,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         jcenter()
+        mavenLocal()
     }
 
     resolutionStrategy {

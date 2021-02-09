@@ -1,6 +1,5 @@
 import io.kinference.gradle.useBenchmarkTests
 import io.kinference.gradle.useHeavyTests
-import tanvd.kosogor.proxy.publishJar
 
 group = rootProject.group
 version = rootProject.version
@@ -87,17 +86,3 @@ kotlin {
 idea {
     module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
 }
-
-//publishJar {
-//    bintray {
-//        username = "tanvd"
-//        repository = "io.kinference"
-//        info {
-//            description = "KInference inference module"
-//            vcsUrl = "https://github.com/JetBrains-Research/kinference"
-//            githubRepo = "https://github.com/JetBrains-Research/kinference"
-//            labels.addAll(listOf("kotlin", "inference", "ml"))
-//        }
-//    }
-//}
-//
