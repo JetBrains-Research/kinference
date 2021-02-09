@@ -1,7 +1,6 @@
 package io.kinference.runners
 
 import io.kinference.data.ONNXData
-import io.kinference.data.tensors.Tensor
 import io.kinference.loaders.S3Client
 import io.kinference.model.Model
 import io.kinference.onnx.TensorProto

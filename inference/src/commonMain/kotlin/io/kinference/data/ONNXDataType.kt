@@ -4,5 +4,5 @@ package io.kinference.data
 enum class ONNXDataType {
     ONNX_TENSOR,
     ONNX_SEQUENCE,
-    ONNX_MAP
+    ONNX_MAP;
 }
