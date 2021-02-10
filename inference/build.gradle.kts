@@ -22,7 +22,14 @@ wire {
 
 kotlin {
     js {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+
+        }
     }
 
     jvm {
@@ -42,8 +49,6 @@ kotlin {
                 s3Test("catboost:license-detector:v1")
             }
         }
-
-
 
         testRuns.create("benchmark").executionTask {
             configureBenchmarkTests {
@@ -69,6 +74,14 @@ kotlin {
             }
         }
 
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+            }
+        }
+
         val jvmMain by getting {
             dependencies {
                 api("ch.qos.logback:logback-classic:1.2.3")
@@ -79,11 +92,21 @@ kotlin {
             dependencies {
                 implementation("org.openjdk.jmh:jmh-core:1.25.1")
 
-                implementation("org.junit.jupiter:junit-jupiter:5.6.2")
+                implementation(kotlin("test-junit5"))
+
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+
                 implementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
                 configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
+            }
+        }
+
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.4.2")
             }
         }
     }

@@ -5,11 +5,11 @@ import java.io.File
 
 actual object ResourcesTestDataLoader : TestDataLoader {
     actual override suspend fun bytes(path: TestDataLoader.Path): ByteArray {
-        return File(path.toAbsolutePath()).readBytes()
+        return File(path.toRelativePath()).readBytes()
     }
 
     actual override suspend fun text(path: TestDataLoader.Path): String {
-        return File(path.toAbsolutePath()).readText()
+        return File(path.toRelativePath()).readText()
     }
 }
 
