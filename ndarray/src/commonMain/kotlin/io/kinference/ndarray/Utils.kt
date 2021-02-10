@@ -1,9 +1,5 @@
 package io.kinference.ndarray
 
-import kotlinx.coroutines.CoroutineScope
-import kotlin.coroutines.CoroutineContext
-
-
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
 
@@ -71,5 +67,3 @@ val ERF_COEF = doubleArrayOf(
     -1.453152027,
     1.061405429
 )
-
-expect fun runBlocking(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit)
