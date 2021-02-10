@@ -2,34 +2,29 @@ package io.kinference.runners
 
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
-import io.kinference.model.load
-import io.kinference.utils.DataLoader
-import io.kinference.utils.TestResourceLoader
-import java.io.File
+import io.kinference.utils.*
 
 object PerformanceRunner {
-    private val testData = File("../build/test-data")
-
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
     private suspend fun runPerformanceFromS3(name: String, count: Int = 10): List<PerformanceResults> {
-        val toFolder = File(testData, "tests/${name.replace(":", "/")}/")
-        return runPerformanceFromFolder(toFolder, count)
+        val toFolder = name.replace(":", "/")
+        return runPerformanceFromFolder(S3TestDataLoader, toFolder, count)
     }
 
     private suspend fun runPerformanceFromResources(testPath: String, count: Int = 10): List<PerformanceResults> {
         val path = javaClass.getResource(testPath)!!.path
-        return runPerformanceFromFolder(File(path), count)
+        return runPerformanceFromFolder(ResourcesTestDataLoader, path, count)
     }
 
     data class TensorDataWithName(val tensors: List<Tensor>, val test: String)
 
-    private suspend fun runPerformanceFromFolder(path: File, count: Int = 10): List<PerformanceResults> {
-        val model = Model.load(TestResourceLoader.fileBytes("$path/model.onnx"))
-        val files = TestResourceLoader.fileText("$path/descriptor.txt").lines().map { it.drop(path.absolutePath.length) }
+    private suspend fun runPerformanceFromFolder(loader: TestDataLoader, path: String, count: Int = 10): List<PerformanceResults> {
+        val model = Model.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+        val files = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines()
         val datasets = files.filter { "test" in it }.groupBy { file -> file.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file }
-            val inputTensors = inputFiles.map { DataLoader.getTensor(TestResourceLoader.fileBytes(it)) }.toList()
+            val inputTensors = inputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
             TensorDataWithName(inputTensors, group)
         }
 

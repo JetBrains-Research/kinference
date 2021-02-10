@@ -18,4 +18,3 @@ class Model(proto: ModelProto) {
         }
     }
 }
-expect fun Model.Companion.load(file: String): Model

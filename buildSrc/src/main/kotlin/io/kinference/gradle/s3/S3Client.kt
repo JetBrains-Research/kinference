@@ -34,13 +34,17 @@ class S3Client(val config: Config) {
     }
 
     fun copyObjects(prefix: String, toFolder: File) {
+        toFolder.mkdirs()
+
         val objects = getObjects(prefix).filter { !it.key.endsWith("/") }
         val files = objects.map {
             val toKey = it.key.drop(prefix.length)
             File(toFolder, toKey)
         }
 
-        File(toFolder, "descriptor.txt").writeText(files.joinToString(separator = "\n") { it.absolutePath })
+        File(toFolder, "descriptor.txt").writeText(
+            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") { it.absolutePath.drop(toFolder.absolutePath.length + 1) }
+        )
 
         val toDownload = objects.zip(files).filter { (obj, file) ->
             //Have to use variant with size because of multipart etag in s3

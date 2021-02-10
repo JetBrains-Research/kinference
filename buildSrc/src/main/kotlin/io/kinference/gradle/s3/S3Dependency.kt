@@ -5,7 +5,7 @@ import java.io.File
 
 class S3Dependency(project: Project, private val path: String) {
     private val s3 = S3Client(Config(project.rootProject.file("credentials.conf")))
-    private val testData = project.rootProject.file("build/test-data")
+    private val testData = project.rootProject.file("build/s3")
 
     companion object {
 

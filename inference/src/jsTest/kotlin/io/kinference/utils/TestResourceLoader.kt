@@ -4,18 +4,31 @@ import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.khronos.webgl.Int8Array
 
-actual object TestResourceLoader : ResourceLoader {
-    override suspend fun fileBytes(path: String): ByteArray {
-        val response = window.fetch(path).await()
+actual object ResourcesTestDataLoader : TestDataLoader {
+    actual override suspend fun bytes(path: TestDataLoader.Path): ByteArray {
+        val response = window.fetch(path.toRelativePath()).await()
         val buffer = response.arrayBuffer().await()
-        val bytes = Int8Array(buffer).unsafeCast<ByteArray>()
 
-        return bytes
+        return Int8Array(buffer).unsafeCast<ByteArray>()
     }
 
-    override suspend fun fileText(path: String): String {
-        val response = window.fetch(path).await()
-        val text = response.text().await()
-        return text
+    actual override suspend fun text(path: TestDataLoader.Path): String {
+        val response = window.fetch(path.toRelativePath()).await()
+        return response.text().await()
     }
 }
+
+actual object S3TestDataLoader : TestDataLoader {
+    actual override suspend fun bytes(path: TestDataLoader.Path): ByteArray {
+        val response = window.fetch(TestDataLoader.Path("s3", path).toRelativePath()).await()
+        val buffer = response.arrayBuffer().await()
+
+        return Int8Array(buffer).unsafeCast<ByteArray>()
+    }
+
+    actual override suspend fun text(path: TestDataLoader.Path): String {
+        val response = window.fetch(TestDataLoader.Path("s3", path).toRelativePath()).await()
+        return response.text().await()
+    }
+}
+
