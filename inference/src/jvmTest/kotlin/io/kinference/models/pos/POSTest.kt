@@ -7,16 +7,14 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 class POSTest {
-    private fun getTargetPath(dirName: String) = "/pos/$dirName/"
-
     @Test
     fun `test POS-tagger`()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_pos_tagger"))
+        AccuracyRunner.runFromResources("/pos_tagger/")
     }
 
     @Test
     @Tag("heavy")
     fun `test POS-tagger performance`()  = TestRunner.runTest {
-        PerformanceRunner.runFromResources("/pos/test_pos_tagger/")
+        PerformanceRunner.runFromResources("/pos_tagger/")
     }
 }
