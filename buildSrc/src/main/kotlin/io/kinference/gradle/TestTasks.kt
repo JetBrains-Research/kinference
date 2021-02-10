@@ -9,7 +9,7 @@ fun Test.configureTests() {
         excludeTags("heavy")
         excludeTags("benchmark")
     }
-    maxHeapSize = "20m"
+    maxHeapSize = "400m"
 
     testLogging {
         events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)

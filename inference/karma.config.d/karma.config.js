@@ -6,7 +6,15 @@ function ResourceLoaderMiddleware() {
 
     return function (request, response, next) {
         const uri = decodeURI(request.originalUrl)
-        const content = fs.readFileSync(uri.startsWith('/absolute') ? uri.slice(9) : '../../../../inference' + uri);
+        let path = '';
+        if (uri.startsWith('/absolute')) {
+            path = uri.slice(9)
+        } else if (uri.startsWith('/s3')) {
+            path = '../../../../build/s3/tests' + uri.slice(3)
+        } else {
+            path = '../../../../inference' + uri
+        }
+        const content = fs.readFileSync(path);
         response.writeHead(200);
         response.end(content);
     }
@@ -17,10 +25,9 @@ config.plugins.push({
 });
 
 config.set({
-  logLevel: config.LOG_DEBUG,
   client: {
     mocha: {
-      timeout: 10000
+      timeout: 60000
     }
   }
 })

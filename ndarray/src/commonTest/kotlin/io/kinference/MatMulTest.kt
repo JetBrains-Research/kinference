@@ -52,9 +52,9 @@ class MatMulTest {
     fun test() {
         val random = Random(42)
 
-        val n = 512
-        val m = 512
-        val t = 512
+        val n = 1024
+        val m = 1024
+        val t = 1024
 
         val count = 10
 
