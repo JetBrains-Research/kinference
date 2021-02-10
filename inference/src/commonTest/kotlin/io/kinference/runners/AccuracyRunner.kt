@@ -2,6 +2,7 @@ package io.kinference.runners
 
 import io.kinference.data.ONNXData
 import io.kinference.model.Model
+import io.kinference.onnx.TensorProto
 import io.kinference.utils.*
 import kotlin.math.pow
 import kotlin.test.assertEquals
@@ -26,7 +27,8 @@ object AccuracyRunner {
         val files = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines()
         return files.filter { "test" in it }.groupBy { file -> file.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file }
-            val inputTensors = inputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
+            val inputTensorProtos = inputFiles.map { TensorProto.ADAPTER.decode(loader.bytes(TestDataLoader.Path(path, it))) }
+            val inputTensors = inputTensorProtos.map{ model.graph.prepareInput(it) }
 
             val outputFiles =  files.filter { file -> "output" in file }
             val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
