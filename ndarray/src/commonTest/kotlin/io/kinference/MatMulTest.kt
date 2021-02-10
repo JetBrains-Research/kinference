@@ -58,7 +58,7 @@ class MatMulTest {
 
         val count = 10
 
-        println("Start matrix multiplication test M: $m, N: $n, T: $t:\n")
+        println("Start matrix multiplication test M: $m, N: $n, T: $t:")
 
         val left = FloatArray(n * t) { random.nextFloat() }
         val right = FloatArray(t * m) { random.nextFloat() }
@@ -71,7 +71,7 @@ class MatMulTest {
             }
         }
 
-        println("Baseline: ${baselineTime / count}\n")
+        println("Baseline: ${baselineTime / count}")
 
         var counter = 0
         val leftTiled = TiledArray(Strides(intArrayOf(n, t))) { left[counter++] }
@@ -88,7 +88,7 @@ class MatMulTest {
             }
         }
 
-        println("Tiled Baseline: ${tiledBaselineTime / count}\n")
+        println("Tiled Baseline: ${tiledBaselineTime / count}")
 
         assertTrue(destBaseline.contentEquals(destTiledBaseline.toArray()))
     }

@@ -2,7 +2,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.10" apply true
+    id("io.kinference.primitives") version "0.1.12" apply true
 }
 
 kotlin {
@@ -10,7 +10,7 @@ kotlin {
 
     }
 
-    js(IR) {
+    js {
         browser {
             testTask {
                 useKarma {
@@ -30,7 +30,7 @@ kotlin {
             dependencies {
                 api(kotlin("stdlib"))
                 api(kotlin("stdlib-common"))
-                api("io.kinference.primitives:primitives-annotations:0.1.11")
+                api("io.kinference.primitives:primitives-annotations:0.1.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
