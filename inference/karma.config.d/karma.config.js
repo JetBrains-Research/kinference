@@ -5,7 +5,8 @@ function ResourceLoaderMiddleware() {
     const fs = require('fs');
 
     return function (request, response, next) {
-        const content = fs.readFileSync('../../../../inference' + decodeURI(request.originalUrl));
+        const uri = decodeURI(request.originalUrl)
+        const content = fs.readFileSync(uri.startsWith('/absolute') ? uri.slice(9) : '../../../../inference' + uri);
         response.writeHead(200);
         response.end(content);
     }
