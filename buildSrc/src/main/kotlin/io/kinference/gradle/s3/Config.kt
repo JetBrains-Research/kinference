@@ -2,11 +2,10 @@ package io.kinference.gradle.s3
 
 import java.io.File
 
-object Config {
+class Config(credentialsFile: File) {
     data class Credentials(val awsAccessKey: String, val awsSecretKey: String)
 
-    private val credentials: Credentials
-        get() = File("credentials.conf").readText().split("\n").map { it.trim() }.let { Credentials(it[0], it[1]) }
+    private val credentials: Credentials = credentialsFile.readText().split("\n").map { it.trim() }.let { Credentials(it[0], it[1]) }
 
     val awsAccessKey: String
         get() = System.getenv("AWS_ACCESS_KEY") ?: credentials.awsAccessKey

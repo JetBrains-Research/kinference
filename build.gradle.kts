@@ -13,8 +13,7 @@ plugins {
 allprojects {
     repositories {
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
-        jcenter()
-        gradlePluginPortal()
+        mavenCentral()
     }
 }
 

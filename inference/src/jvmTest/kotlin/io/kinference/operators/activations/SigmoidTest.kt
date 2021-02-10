@@ -1,18 +1,19 @@
 package io.kinference.operators.activations
 
-import io.kinference.runners.TestRunner
+import io.kinference.runners.AccuracyRunner
+import io.kinference.utils.TestRunner
 import org.junit.jupiter.api.Test
 
 class SigmoidTest {
     private fun getTargetPath(dirName: String) = "/sigmoid/$dirName/"
 
     @Test
-    fun `test sigmoid example`() {
-        TestRunner.runFromResources(getTargetPath("test_sigmoid_example"))
+    fun `test sigmoid example`()  = TestRunner.runTest {
+        AccuracyRunner.runFromResources(getTargetPath("test_sigmoid_example"))
     }
 
     @Test
-    fun `test sigmoid`() {
-        TestRunner.runFromResources(getTargetPath("test_sigmoid"))
+    fun `test sigmoid`()  = TestRunner.runTest {
+        AccuracyRunner.runFromResources(getTargetPath("test_sigmoid"))
     }
 }

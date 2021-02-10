@@ -10,9 +10,6 @@ plugins {
     kotlin("kapt") apply true
 }
 
-//useHeavyTests()
-//useBenchmarkTests()
-
 wire {
     sourcePath {
         srcDir("src/commonMain/proto")

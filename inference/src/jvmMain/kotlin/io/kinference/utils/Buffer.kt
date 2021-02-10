@@ -1,4 +1,4 @@
-package io.kinference
+package io.kinference.utils
 
 import okio.Buffer
 import java.lang.Double.*

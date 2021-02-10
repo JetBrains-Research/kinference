@@ -8,8 +8,8 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.TensorProto
 import io.kinference.onnx.TensorProto.DataType
-import io.kinference.readDoubleLe
-import io.kinference.readFloatLe
+import io.kinference.utils.readDoubleLe
+import io.kinference.utils.readFloatLe
 import io.kinference.types.ValueInfo
 import okio.*
 

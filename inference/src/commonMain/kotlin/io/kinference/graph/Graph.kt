@@ -1,6 +1,6 @@
 package io.kinference.graph
 
-import io.kinference.Stack
+import io.kinference.utils.Stack
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.onnx.*
