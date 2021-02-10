@@ -22,7 +22,7 @@ class LicenseDetectorTest {
     @Test
     @Tag("heavy")
     fun `test detector`() {
-        TestRunner.runFromS3(TEST_PATH, PREFIX, ::licenseDetectorTestRunner)
+        TestRunner.runFromS3("catboost:license-detector:v1", ::licenseDetectorTestRunner)
     }
 
     companion object {
@@ -61,8 +61,5 @@ class LicenseDetectorTest {
                 ONNXMap(map as Map<Any, ONNXData>, ValueInfo(elementType))
             }
         }
-
-        const val TEST_PATH = "/catboost/license_detector/"
-        const val PREFIX = "tests/catboost/license_detector/"
     }
 }

@@ -1,6 +1,5 @@
 rootProject.name = "kinference"
 
-include(":loaders")
 include(":inference")
 include(":ndarray")
 

@@ -9,12 +9,12 @@ class GECTest {
     @Test
     @Tag("heavy")
     fun `test gec model`() {
-        TestRunner.runFromS3("/tests/bert/gec/en/standard/v1/", "tests/bert/gec/en/standard/v1/")
+        TestRunner.runFromS3("bert:gec:en:standard:v2")
     }
 
     @Test
     @Tag("heavy")
     fun `test gec performance`() {
-        PerformanceRunner.runFromS3("/tests/bert/gec/en/standard/v1/", "tests/bert/gec/en/standard/v1/", count = 3)
+        PerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 3)
     }
 }

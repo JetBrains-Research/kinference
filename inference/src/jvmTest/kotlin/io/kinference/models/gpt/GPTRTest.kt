@@ -9,24 +9,24 @@ class GPTRTest {
     @Test
     @Tag("heavy")
     fun `test GPT model`() {
-        TestRunner.runFromS3("/gpt2/r/standard/v1/", "tests/gpt2/r-completion/standard/v1")
+        TestRunner.runFromS3("gpt2:r-completion:standard:v1")
     }
 
     @Test
     @Tag("heavy")
     fun `test GPT performance`() {
-        PerformanceRunner.runFromS3("/gpt2/r/standard/v1/", "tests/gpt2/r-completion/standard/v1")
+        PerformanceRunner.runFromS3("gpt2:r-completion:standard:v1")
     }
 
 
     @Test
     @Tag("heavy")
     fun `test GPT quantized model`() {
-        TestRunner.runFromS3("/gpt2/r/quantized/v1/", "tests/gpt2/r-completion/quantized/v1", delta = 2.4)
+        TestRunner.runFromS3("gpt2:r-completion:quantized:v1", delta = 2.4)
     }
     @Test
     @Tag("heavy")
     fun `test GPT quantized performance`() {
-        PerformanceRunner.runFromS3("/gpt2/r/quantized/v1/", "tests/gpt2/r-completion/quantized/v1")
+        PerformanceRunner.runFromS3("gpt2:r-completion:quantized:v1")
     }
 }

@@ -9,12 +9,12 @@ class BertTest {
     @Test
     @Tag("heavy")
     fun `test vanilla BERT model`() {
-        TestRunner.runFromS3("/bert/v1/", "tests/bert/standard/en/v1/")
+        TestRunner.runFromS3("bert:standard:en:v1")
     }
 
     @Test
     @Tag("heavy")
     fun `test BERT performance`() {
-        PerformanceRunner.runFromS3("/bert/v1/", "tests/bert/standard/en/v1/", count = 3)
+        PerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
     }
 }

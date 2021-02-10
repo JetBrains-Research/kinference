@@ -9,17 +9,12 @@ class MLRankerTest {
     @Test
     @Tag("heavy")
     fun `test ranker`() {
-        TestRunner.runFromS3(TEST_PATH, PREFIX)
+        TestRunner.runFromS3("catboost:ij-completion-ranker:v1")
     }
 
     @Test
     @Tag("heavy")
     fun `test ranker performance`() {
-        PerformanceRunner.runFromS3(TEST_PATH, PREFIX)
-    }
-
-    companion object {
-        const val TEST_PATH = "/catboost/ij_completion_ranker/"
-        const val PREFIX = "tests/catboost/ij_completion_ranker/"
+        PerformanceRunner.runFromS3("catboost:ij-completion-ranker:v1", count = 5)
     }
 }

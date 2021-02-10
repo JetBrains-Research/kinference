@@ -1,7 +1,6 @@
 package io.kinference.runners
 
 import io.kinference.data.ONNXData
-import io.kinference.loaders.S3Client
 import io.kinference.model.Model
 import io.kinference.model.load
 import io.kinference.onnx.TensorProto
@@ -17,9 +16,8 @@ object TestRunner {
 
     data class ONNXTestData(val actual: List<ONNXData>, val expected: List<ONNXData>)
 
-    private fun runTestsFromS3(testPath: String, prefix: String, testRunner: (File) -> List<ONNXTestData>): List<ONNXTestData> {
-        val toFolder = File(testData, testPath)
-        S3Client.copyObjects(prefix, toFolder)
+    private fun runTestsFromS3(name: String, testRunner: (File) -> List<ONNXTestData>): List<ONNXTestData> {
+        val toFolder = File(testData, "tests/${name.replace(":", "/")}/")
         return testRunner(toFolder)
     }
 
@@ -42,8 +40,8 @@ object TestRunner {
         }
     }
 
-    fun runFromS3(path: String, prefix: String, testRunner: (File) -> List<ONNXTestData> = this::runTestsFromFolder, delta: Double = TestRunner.delta) {
-        check(runTestsFromS3(path, prefix, testRunner), delta)
+    fun runFromS3(name: String, testRunner: (File) -> List<ONNXTestData> = this::runTestsFromFolder, delta: Double = TestRunner.delta) {
+        check(runTestsFromS3(name, testRunner), delta)
     }
 
     fun runFromResources(path: String, delta: Double = TestRunner.delta) {

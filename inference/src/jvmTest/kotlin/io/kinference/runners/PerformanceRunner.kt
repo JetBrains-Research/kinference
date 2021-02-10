@@ -1,7 +1,6 @@
 package io.kinference.runners
 
 import io.kinference.data.tensors.Tensor
-import io.kinference.loaders.S3Client
 import io.kinference.model.Model
 import io.kinference.model.load
 import io.kinference.utils.DataLoader
@@ -12,9 +11,8 @@ object PerformanceRunner {
 
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
-    private fun runPerformanceFromS3(testPath: String, prefix: String, count: Int = 10): List<PerformanceResults> {
-        val toFolder = File(testData, testPath)
-        S3Client.copyObjects(prefix, toFolder)
+    private fun runPerformanceFromS3(name: String, count: Int = 10): List<PerformanceResults> {
+        val toFolder = File(testData, "tests/${name.replace(":", "/")}/")
         return runPerformanceFromFolder(toFolder, count)
     }
 
@@ -49,8 +47,8 @@ object PerformanceRunner {
         return results
     }
 
-    fun runFromS3(testPath: String, prefix: String, count: Int = 20) {
-        output(runPerformanceFromS3(testPath, prefix, count))
+    fun runFromS3(name: String, count: Int = 20) {
+        output(runPerformanceFromS3(name, count))
     }
 
     fun runFromResources(testPath: String, count: Int = 20) {

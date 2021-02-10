@@ -1,4 +1,4 @@
-package io.kinference.loaders
+package io.kinference.gradle.s3
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials

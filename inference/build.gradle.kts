@@ -1,5 +1,6 @@
-import io.kinference.gradle.useBenchmarkTests
-import io.kinference.gradle.useHeavyTests
+import io.kinference.gradle.configureBenchmarkTests
+import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.configureTests
 
 group = rootProject.group
 version = rootProject.version
@@ -29,29 +30,34 @@ kotlin {
 
     jvm {
         testRuns["test"].executionTask {
-            useJUnitPlatform {
-                excludeTags("heavy")
-                excludeTags("benchmark")
-            }
-            maxHeapSize = "20m"
-
-            testLogging {
-                events("passed", "skipped", "failed")
-            }
+            configureTests()
         }
 
         testRuns.create("heavy").executionTask {
-            group = "verification"
-
-            useJUnitPlatform {
-                includeTags("heavy")
-                excludeTags("benchmark")
+            configureHeavyTests {
+                s3Test("bert:standard:en:v1")
+                s3Test("bert:gec:en:standard:v2")
+                s3Test("gpt2:flcc-py-completion:quantized:v2")
+                s3Test("gpt2:grazie:distilled:quantized:v6")
+                s3Test("gpt2:r-completion:standard:v1")
+                s3Test("gpt2:r-completion:quantized:v1")
+                s3Test("catboost:ij-completion-ranker:v1")
+                s3Test("catboost:license-detector:v1")
             }
+        }
 
-            maxHeapSize = "4G"
 
-            testLogging {
-                events("passed", "skipped", "failed")
+
+        testRuns.create("benchmark").executionTask {
+            configureBenchmarkTests {
+                s3Test("bert:standard:en:v1")
+                s3Test("bert:gec:en:standard:v2")
+                s3Test("gpt2:flcc-py-completion:quantized:v2")
+                s3Test("gpt2:grazie:distilled:quantized:v6")
+                s3Test("gpt2:r-completion:standard:v1")
+                s3Test("gpt2:r-completion:quantized:v1")
+                s3Test("catboost:ij-completion-ranker:v1")
+                s3Test("catboost:license-detector:v1")
             }
         }
     }
@@ -81,7 +87,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
                 configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
-                implementation(project(":loaders"))
             }
         }
     }
