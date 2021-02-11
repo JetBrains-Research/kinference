@@ -28,12 +28,16 @@ kotlin {
                 excludeTestsMatching("*.heavy_*")
                 excludeTestsMatching("*.benchmark_*")
             }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
         }
 
         testRuns.create("heavy").configureAllExecutions {
             filter {
                 includeTestsMatching("*.heavy_*")
             }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
             executionTask.get().doFirst {
                 S3Dependency.withDefaultS3Dependencies(this)
             }
@@ -43,6 +47,8 @@ kotlin {
             filter {
                 includeTestsMatching("*.benchmark_*")
             }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
             executionTask.get().doFirst {
                 S3Dependency.withDefaultS3Dependencies(this)
             }
@@ -60,14 +66,20 @@ kotlin {
     jvm {
         testRuns["test"].executionTask {
             configureTests()
+
+            enabled = !project.hasProperty("disable-tests")
         }
 
         testRuns.create("heavy").executionTask {
             configureHeavyTests()
+
+            enabled = !project.hasProperty("disable-tests")
         }
 
         testRuns.create("benchmark").executionTask {
             configureBenchmarkTests()
+
+            enabled = !project.hasProperty("disable-tests")
         }
     }
 
