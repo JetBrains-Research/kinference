@@ -60,8 +60,7 @@ open class PosTaggerBenchmarkORT {
 
 class PosTaggerBenchmark {
     @Test
-    @Tag("benchmark")
-    fun `pos-tagger performance`() {
+    fun benchmark_pos_tagger_performance() {
         val opts = OptionsBuilder()
             .include("PosTaggerBenchmark*")
             .build()

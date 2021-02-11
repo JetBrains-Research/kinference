@@ -5,46 +5,50 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 fun Test.configureTests() {
-    useJUnitPlatform {
-        excludeTags("heavy")
-        excludeTags("benchmark")
-    }
     maxHeapSize = "400m"
+
+    useJUnitPlatform()
+
+    filter {
+        excludeTestsMatching("*.heavy_*")
+        excludeTestsMatching("*.benchmark_*")
+    }
 
     testLogging {
         events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
     }
 }
 
-fun Test.configureHeavyTests(dependencies: S3Dependency.Context.() -> Unit = {}) {
-    val context = S3Dependency.Context(project).also { it.dependencies() }
-
+fun Test.configureHeavyTests() {
     group = "verification"
 
-    useJUnitPlatform {
-        includeTags("heavy")
-        excludeTags("benchmark")
-    }
+    useJUnitPlatform()
 
     maxHeapSize = "4G"
 
+
+    filter {
+        includeTestsMatching("*.heavy_*")
+    }
+
     testLogging {
         events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
     }
 
     doFirst {
-        context.dependencies.forEach { it.resolve() }
+        S3Dependency.withDefaultS3Dependencies(this)
     }
 }
 
-fun Test.configureBenchmarkTests(dependencies: S3Dependency.Context.() -> Unit = {}) {
-    val context = S3Dependency.Context(project).also { it.dependencies() }
-
+fun Test.configureBenchmarkTests() {
     group = "verification"
 
-    useJUnitPlatform {
-        excludeTags("heavy")
-        includeTags("benchmark")
+    maxHeapSize = "4G"
+
+    useJUnitPlatform()
+
+    filter {
+        includeTestsMatching("*.benchmark_*")
     }
 
     testLogging {
@@ -52,6 +56,6 @@ fun Test.configureBenchmarkTests(dependencies: S3Dependency.Context.() -> Unit =
     }
 
     doFirst {
-        context.dependencies.forEach { it.resolve() }
+        S3Dependency.withDefaultS3Dependencies(this)
     }
 }

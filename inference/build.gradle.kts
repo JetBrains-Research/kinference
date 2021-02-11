@@ -1,6 +1,7 @@
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
+import io.kinference.gradle.s3.S3Dependency
 
 group = rootProject.group
 version = rootProject.version
@@ -22,13 +23,37 @@ wire {
 
 kotlin {
     js {
+        testRuns["test"].configureAllExecutions {
+            filter {
+                excludeTestsMatching("*.heavy_*")
+                excludeTestsMatching("*.benchmark_*")
+            }
+        }
+
+        testRuns.create("heavy").configureAllExecutions {
+            filter {
+                includeTestsMatching("*.heavy_*")
+            }
+            executionTask.get().doFirst {
+                S3Dependency.withDefaultS3Dependencies(this)
+            }
+        }
+
+        testRuns.create("benchmark").configureAllExecutions {
+            filter {
+                includeTestsMatching("*.benchmark_*")
+            }
+            executionTask.get().doFirst {
+                S3Dependency.withDefaultS3Dependencies(this)
+            }
+        }
+
         browser {
             testTask {
                 useKarma {
                     useChromeHeadless()
                 }
             }
-
         }
     }
 
@@ -38,29 +63,11 @@ kotlin {
         }
 
         testRuns.create("heavy").executionTask {
-            configureHeavyTests {
-                s3Test("bert:standard:en:v1")
-                s3Test("bert:gec:en:standard:v2")
-                s3Test("gpt2:flcc-py-completion:quantized:v2")
-                s3Test("gpt2:grazie:distilled:quantized:v6")
-                s3Test("gpt2:r-completion:standard:v1")
-                s3Test("gpt2:r-completion:quantized:v1")
-                s3Test("catboost:ij-completion-ranker:v1")
-                s3Test("catboost:license-detector:v1")
-            }
+            configureHeavyTests()
         }
 
         testRuns.create("benchmark").executionTask {
-            configureBenchmarkTests {
-                s3Test("bert:standard:en:v1")
-                s3Test("bert:gec:en:standard:v2")
-                s3Test("gpt2:flcc-py-completion:quantized:v2")
-                s3Test("gpt2:grazie:distilled:quantized:v6")
-                s3Test("gpt2:r-completion:standard:v1")
-                s3Test("gpt2:r-completion:quantized:v1")
-                s3Test("catboost:ij-completion-ranker:v1")
-                s3Test("catboost:license-detector:v1")
-            }
+            configureBenchmarkTests()
         }
     }
 

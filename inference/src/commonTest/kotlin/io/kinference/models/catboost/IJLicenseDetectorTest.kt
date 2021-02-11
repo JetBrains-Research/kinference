@@ -1,6 +1,6 @@
-package io.kinference.models.license_detector
+package io.kinference.models.catboost
 
-class LicenseDetectorTest {
+class IJLicenseDetectorTest {
 //    @Test
 //    @Tag("heavy")
 //    fun `test detector`() {

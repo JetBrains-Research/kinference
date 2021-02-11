@@ -7,12 +7,12 @@ import kotlin.test.Test
 
 class IJCompletionRankerTest {
     @Test
-    fun test_ranker() = TestRunner.runTest {
+    fun heavy_test_ranker() = TestRunner.runTest {
         AccuracyRunner.runFromS3("catboost:ij-completion-ranker:v1")
     }
 
     @Test
-    fun test_ranker_performance() = TestRunner.runTest {
+    fun heavy_test_ranker_performance() = TestRunner.runTest {
         PerformanceRunner.runFromS3("catboost:ij-completion-ranker:v1", count = 5)
     }
 }

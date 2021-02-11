@@ -346,8 +346,7 @@ fun dotTiled(left: TiledArray, right: TiledArray, dest: TiledArray, m: Int, n: I
 @Disabled
 class BenchmarkTest {
     @Test
-    @Tag("heavy")
-    fun `test tiled dot`() {
+    fun heavy_test_tiled_dot() {
         val r1 = Random(100)
         val r2 = Random(100)
 
@@ -372,8 +371,7 @@ class BenchmarkTest {
     }
 
     @Test
-    @Tag("heavy")
-    fun `test copy dot`() {
+    fun heavy_test_copy_dot() {
         val r1 = Random(100)
 
         val n = 1024
@@ -395,8 +393,7 @@ class BenchmarkTest {
     }
 
     @Test
-    @Tag("benchmark")
-    fun `test dot performance`() {
+    fun benchmark_test_dot_performance() {
         val opts = OptionsBuilder()
             .include("DotBenchmark")
 //            .addProfiler("org.openjdk.jmh.profile.WinPerfAsmProfiler")

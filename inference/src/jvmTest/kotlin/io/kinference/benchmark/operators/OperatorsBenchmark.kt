@@ -133,8 +133,7 @@ open class OperatorsBenchmark {
     }
 
     @Test
-    @Tag("benchmark")
-    fun `operators performance`() {
+    fun benchmark_operators_performance() {
         val opts = OptionsBuilder()
             .include("OperatorsBenchmark")
             .build()
