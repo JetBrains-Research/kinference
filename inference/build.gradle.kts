@@ -89,6 +89,7 @@ kotlin {
                 api(kotlin("stdlib"))
                 api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("io.github.microutils:kotlin-logging:2.0.4")
                 api(project(":ndarray"))
             }
         }
