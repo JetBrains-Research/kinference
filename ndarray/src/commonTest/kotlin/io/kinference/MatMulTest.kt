@@ -1,58 +1,11 @@
 package io.kinference
 
 import io.kinference.ndarray.Strides
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
 import kotlin.random.Random
+import kotlin.test.*
 import kotlin.time.*
 
-class MatMulTest : FunSpec() {
-    init {
-        @OptIn(ExperimentalTime::class)
-        test("test") {
-            val random = Random(42)
-
-            val n = 1024
-            val m = 1024
-            val t = 1024
-
-            val count = 10
-
-            println("Start matrix multiplication test M: $m, N: $n, T: $t:")
-
-            val left = FloatArray(n * t) { random.nextFloat() }
-            val right = FloatArray(t * m) { random.nextFloat() }
-            var destBaseline = FloatArray(n * m)
-
-            val baselineTime = measureTime {
-                repeat(count) {
-                    destBaseline = FloatArray(n * m)
-                    dotBaseline(left, right, destBaseline, m, n, t)
-                }
-            }
-
-            println("Baseline: ${baselineTime / count}")
-
-            var counter = 0
-            val leftTiled = TiledArray(Strides(intArrayOf(n, t))) { left[counter++] }
-
-            counter = 0
-            val rightTiled = TiledArray(Strides(intArrayOf(t, m))) { right[counter++] }
-
-            var destTiledBaseline = TiledArray(Strides(intArrayOf(n, m))) { 0f }
-
-            val tiledBaselineTime = measureTime {
-                repeat(count) {
-                    destTiledBaseline = TiledArray(Strides(intArrayOf(n, m))) { 0f }
-                    dotTiledBaseline(leftTiled, rightTiled, destTiledBaseline, m, n, t)
-                }
-            }
-
-            println("Tiled Baseline: ${tiledBaselineTime / count}")
-
-            destBaseline shouldBe destTiledBaseline.toArray()
-        }
-    }
+class MatMulTest {
 
     private fun dotBaseline(left: FloatArray, right: FloatArray, dest: FloatArray, m: Int, n: Int, t: Int) {
         for (i in 0 until n) {
@@ -92,5 +45,51 @@ class MatMulTest : FunSpec() {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun test() {
+        val random = Random(42)
+
+        val n = 1024
+        val m = 1024
+        val t = 1024
+
+        val count = 10
+
+        println("Start matrix multiplication test M: $m, N: $n, T: $t:")
+
+        val left = FloatArray(n * t) { random.nextFloat() }
+        val right = FloatArray(t * m) { random.nextFloat() }
+        var destBaseline = FloatArray(n * m)
+
+        val baselineTime = measureTime {
+            repeat(count) {
+                destBaseline = FloatArray(n * m)
+                dotBaseline(left, right, destBaseline, m, n, t)
+            }
+        }
+
+        println("Baseline: ${baselineTime / count}")
+
+        var counter = 0
+        val leftTiled = TiledArray(Strides(intArrayOf(n, t))) { left[counter++] }
+
+        counter = 0
+        val rightTiled = TiledArray(Strides(intArrayOf(t, m))) { right[counter++] }
+
+        var destTiledBaseline = TiledArray(Strides(intArrayOf(n, m))) { 0f }
+
+        val tiledBaselineTime = measureTime {
+            repeat(count) {
+                destTiledBaseline = TiledArray(Strides(intArrayOf(n, m))) { 0f }
+                dotTiledBaseline(leftTiled, rightTiled, destTiledBaseline, m, n, t)
+            }
+        }
+
+        println("Tiled Baseline: ${tiledBaselineTime / count}")
+
+        assertTrue(destBaseline.contentEquals(destTiledBaseline.toArray()))
     }
 }

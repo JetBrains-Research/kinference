@@ -7,9 +7,7 @@ plugins {
 
 kotlin {
     jvm {
-        testRuns["test"].executionTask {
-            useJUnitPlatform()
-        }
+
     }
 
     js {
@@ -30,6 +28,8 @@ kotlin {
             }
 
             dependencies {
+                api(kotlin("stdlib"))
+                api(kotlin("stdlib-common"))
                 api("io.kinference.primitives:primitives-annotations:0.1.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
@@ -37,15 +37,28 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-framework-engine:4.4.1")
-                implementation("io.kotest:kotest-assertions-core:4.4.1")
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
             }
         }
 
         val jvmTest by getting {
             dependsOn(commonTest)
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:4.4.1")
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit"))
+            }
+        }
+
+        val jsMain by getting {
+            dependencies {
+                api(kotlin("stdlib-js"))
+            }
+        }
+
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
             }
         }
     }
