@@ -8,11 +8,16 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.TensorProto
 import io.kinference.types.ValueTypeInfo
+import mu.KotlinLogging
 import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.floor
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 object Assertions {
+    val logger = KotlinLogging.logger("Errors")
+
     @OptIn(ExperimentalUnsignedTypes::class)
     fun assertEquals(expected: Tensor, actual: Tensor, delta: Double) {
         assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.info.name} do not match")
@@ -23,21 +28,113 @@ object Assertions {
             TensorProto.DataType.FLOAT -> {
                 val expectedArray = (expected.data as FloatNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as FloatNDArray).array.toArray().toTypedArray()
-                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
+
+                val errorsArray = ArrayList<Float>(expectedArray.size)
+                for (i in expectedArray.indices) {
+                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                }
+
+                val averageError = errorsArray.sum() / errorsArray.size
+                val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1)
+
+                val sortedErrorsArray = errorsArray.sorted()
+
+                val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+                val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+                val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+                val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+                logger.info { "average error '${actual.info.name}' = $averageError\n" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+
+//                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.DOUBLE -> {
                 val expectedArray = (expected.data as DoubleNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as DoubleNDArray).array.toArray().toTypedArray()
+
+                val errorsArray = ArrayList<Double>(expectedArray.size)
+                for (i in expectedArray.indices) {
+                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                }
+
+                val averageError = errorsArray.sum() / errorsArray.size
+                val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1)
+
+                val sortedErrorsArray = errorsArray.sorted()
+
+                val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0.0 }
+                val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0.0 }
+                val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0.0 }
+                val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0.0 }
+
+                logger.info { "average error '${actual.info.name}' = $averageError\n" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r) }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.INT64 -> {
                 val expectedArray = (expected.data as LongNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as LongNDArray).array.toArray().toTypedArray()
+
+                val errorsArray = ArrayList<Long>(expectedArray.size)
+                for (i in expectedArray.indices) {
+                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                }
+
+                val averageError = errorsArray.sum() / errorsArray.size
+                val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
+
+                val sortedErrorsArray = errorsArray.sorted()
+
+                val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
+
+                logger.info { "average error '${actual.info.name}' = $averageError\n" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+
                 assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.INT32 -> {
                 val expectedArray = (expected.data as IntNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as IntNDArray).array.toArray().toTypedArray()
+
+                val errorsArray = ArrayList<Int>(expectedArray.size)
+                for (i in expectedArray.indices) {
+                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                }
+
+                val averageError = errorsArray.sum() / errorsArray.size
+                val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
+
+                val sortedErrorsArray = errorsArray.sorted()
+
+                val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
+
+                logger.info { "average error '${actual.info.name}' = $averageError\n" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+
                 Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.BOOL -> {
@@ -46,10 +143,32 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.UINT8 -> {
-                val actualArray = (actual.data as UByteNDArray).array.toArray()
-                ((expected.data as UByteNDArray).array.toArray()).forEachIndexed { index, value ->
-                    assertEquals(value, actualArray[index], "Tensor ${expected.info.name} does not match")
+                val expectedArray = (expected.data as UByteNDArray).array.toArray().toTypedArray()
+                val actualArray = (actual.data as UByteNDArray).array.toArray().toTypedArray()
+
+                val errorsArray = ArrayList<Int>(expectedArray.size)
+                for (i in expectedArray.indices) {
+                    errorsArray.add(abs(actualArray[i].toInt() - expectedArray[i].toInt()))
                 }
+
+                val averageError = errorsArray.sum() / errorsArray.size
+                val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
+
+                val sortedErrorsArray = errorsArray.sorted()
+
+                val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
+                val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
+
+                logger.info { "average error '${actual.info.name}' = $averageError\n" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+
+                Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
             else -> assertEquals(expected, actual, "Tensor ${expected.info.name} does not match")
         }
