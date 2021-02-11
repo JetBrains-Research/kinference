@@ -10,7 +10,7 @@ function ResourceLoaderMiddleware() {
         if (uri.startsWith('/absolute')) {
             path = uri.slice(9)
         } else if (uri.startsWith('/s3')) {
-            path = '../../../../build/s3/tests' + uri.slice(3)
+            path = '../../../../test-data/s3/tests' + uri.slice(3)
         } else {
             path = '../../../../inference' + uri
         }
@@ -25,12 +25,12 @@ config.plugins.push({
 });
 
 config.set({
-  browserDisconnectTimeout: 60000,
-  browserNoActivityTimeout: 60000,
-  pingTimeout: 60000,
+  browserDisconnectTimeout: 1200000,
+  browserNoActivityTimeout: 1200000,
+  pingTimeout: 1200000,
   client: {
     mocha: {
-      timeout: 60000
+      timeout: 1200000
     }
   }
 })

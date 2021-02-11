@@ -1,6 +1,7 @@
 .idea
 out
 build
+test-data
 .gradle
 *.iml
 **/kotlin-gen

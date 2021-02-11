@@ -6,7 +6,7 @@ import java.io.File
 
 class S3Dependency(project: Project, private val path: String) {
     private val s3 = S3Client(Config(project.rootProject.file("credentials.conf")))
-    private val testData = project.rootProject.file("build/s3")
+    private val testData = project.rootProject.file("test-data/s3")
 
     companion object {
         fun withDefaultS3Dependencies(task: Task) = with(task) {
