@@ -48,7 +48,7 @@ class MatMulTest {
     }
 
     @OptIn(ExperimentalTime::class)
-    @Test
+//    @Test
     fun test() {
         val random = Random(42)
 
@@ -56,7 +56,7 @@ class MatMulTest {
         val m = 1024
         val t = 1024
 
-        val count = 10
+        val count = 3
 
         println("Start matrix multiplication test M: $m, N: $n, T: $t:")
 

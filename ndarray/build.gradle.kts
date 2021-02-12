@@ -14,10 +14,12 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChromeHeadless()
+                    useChrome()
                 }
             }
         }
+
+        useCommonJs()
     }
 
     sourceSets {
@@ -29,7 +31,6 @@ kotlin {
 
             dependencies {
                 api(kotlin("stdlib"))
-                api(kotlin("stdlib-common"))
                 api("io.kinference.primitives:primitives-annotations:0.1.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
@@ -45,18 +46,18 @@ kotlin {
         val jvmTest by getting {
             dependsOn(commonTest)
             dependencies {
-                implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
             }
         }
 
         val jsMain by getting {
             dependencies {
-                api(kotlin("stdlib-js"))
+                implementation(npm("regl", "2.0.1"))
             }
         }
 
         val jsTest by getting {
+            dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-js"))
             }
