@@ -34,7 +34,7 @@ object Assertions {
                     errorsArray.add(abs(actualArray[i] - expectedArray[i]))
                 }
 
-                val averageError = errorsArray.sum() / errorsArray.size
+                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0f
                 val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
@@ -51,7 +51,7 @@ object Assertions {
                 logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
                 logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
 
-//                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
+                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.DOUBLE -> {
                 val expectedArray = (expected.data as DoubleNDArray).array.toArray().toTypedArray()
@@ -62,7 +62,7 @@ object Assertions {
                     errorsArray.add(abs(actualArray[i] - expectedArray[i]))
                 }
 
-                val averageError = errorsArray.sum() / errorsArray.size
+                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0.0
                 val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
@@ -90,7 +90,7 @@ object Assertions {
                     errorsArray.add(abs(actualArray[i] - expectedArray[i]))
                 }
 
-                val averageError = errorsArray.sum() / errorsArray.size
+                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
                 val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
@@ -118,7 +118,7 @@ object Assertions {
                     errorsArray.add(abs(actualArray[i] - expectedArray[i]))
                 }
 
-                val averageError = errorsArray.sum() / errorsArray.size
+                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
                 val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
@@ -151,7 +151,7 @@ object Assertions {
                     errorsArray.add(abs(actualArray[i].toInt() - expectedArray[i].toInt()))
                 }
 
-                val averageError = errorsArray.sum() / errorsArray.size
+                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
                 val standardDeviation = errorsArray.sumOf { (it - averageError).toDouble().pow(2) } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
