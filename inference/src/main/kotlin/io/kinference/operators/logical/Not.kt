@@ -5,7 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.MutableBooleanNDArray
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 
 class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

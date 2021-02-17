@@ -8,7 +8,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.ndarray.extensions.matmul
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 
 class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {

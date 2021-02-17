@@ -2,7 +2,7 @@ package io.kinference.operators
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.onnx.NodeProto
+import io.kinference.protobuf.message.NodeProto
 import io.kinference.operators.activations.*
 import io.kinference.operators.flow.*
 import io.kinference.operators.layer.attention.Attention

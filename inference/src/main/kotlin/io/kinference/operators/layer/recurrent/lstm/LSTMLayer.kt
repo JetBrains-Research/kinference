@@ -4,7 +4,7 @@ import io.kinference.data.tensors.*
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.TensorProto.DataType
+import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.operators.activations.Activation
 
 

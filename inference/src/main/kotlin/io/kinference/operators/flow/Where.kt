@@ -7,7 +7,7 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 

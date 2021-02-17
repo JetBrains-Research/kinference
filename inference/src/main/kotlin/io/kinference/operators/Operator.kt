@@ -6,8 +6,8 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.isScalar
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto.DataType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto.DataType
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

@@ -2,7 +2,7 @@ package io.kinference.operators.activations
 
 import io.kinference.attributes.Attribute
 import io.kinference.ndarray.arrays.*
-import io.kinference.onnx.AttributeProto
+import io.kinference.protobuf.message.AttributeProto
 import io.kinference.operators.*
 import io.kinference.operators.math.tanh
 import io.kinference.primitives.types.DataType

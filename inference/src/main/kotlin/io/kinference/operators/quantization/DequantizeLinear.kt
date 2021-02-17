@@ -5,8 +5,8 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 
 class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

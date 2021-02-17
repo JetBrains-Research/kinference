@@ -11,8 +11,8 @@ import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.extensions.indexAxis
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt

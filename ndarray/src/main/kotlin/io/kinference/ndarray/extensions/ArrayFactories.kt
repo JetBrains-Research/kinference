@@ -57,24 +57,11 @@ fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArray {
     return createNDArray(type, value, Strides(shape))
 }
 
-fun createZerosArray(type: DataType, size: Int): Any {
-    return when (type) {
-        DataType.DOUBLE -> DoubleArray(size)
-        DataType.FLOAT -> FloatArray(size)
-        DataType.LONG -> LongArray(size)
-        DataType.INT -> IntArray(size)
-        DataType.SHORT -> ShortArray(size)
-        DataType.BOOLEAN -> BooleanArray(size)
-        else -> error("Unsupported data type $type")
-    }
-}
-
-
 fun createScalarNDArray(type: DataType, value: Any): NDArray {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray.scalar(value as Double)
         DataType.FLOAT -> FloatNDArray.scalar(value as Float)
-        DataType.LONG -> LongNDArray.scalar(value as Long )
+        DataType.LONG -> LongNDArray.scalar(value as Long)
         DataType.INT -> IntNDArray.scalar(value as Int)
         DataType.SHORT -> ShortNDArray.scalar(value as Short)
         DataType.BOOLEAN -> BooleanNDArray.scalar(value as Boolean)

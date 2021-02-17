@@ -2,9 +2,11 @@ package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto.DataType
+import io.kinference.ndarray.arrays.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.operators.*
 
 class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
@@ -38,12 +40,12 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         @Suppress("UNCHECKED_CAST")
         val result = when (name) {
             "value" -> value
-            "value_float" -> Tensor(value!!, DataType.FLOAT)
-            "value_floats" -> Tensor(value!! as List<Any>, DataType.FLOAT)
-            "value_int" -> Tensor(value!!, DataType.INT64)
-            "value_ints" -> Tensor(value!! as List<Any>, DataType.INT64)
-            "value_string" -> Tensor(value!!, DataType.STRING)
-            "value_strings" -> Tensor(value!! as List<Any>, DataType.STRING)
+            "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
+            "value_floats" -> Tensor(value!! as FloatArray, DataType.FLOAT)
+            "value_int" -> LongNDArray.scalar(value as Long).asTensor()
+            "value_ints" -> Tensor(value!! as LongArray, DataType.INT64)
+            "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
+            "value_strings" -> Tensor(value!! as List<String>, DataType.STRING)
             else -> error("Unsupported data type")
         } as Tensor
         return listOf(result)

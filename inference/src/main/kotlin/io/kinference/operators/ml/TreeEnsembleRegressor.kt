@@ -4,8 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.operators.ml.TreeEnsembleOperator.Companion.toFloatNDArray
 import io.kinference.operators.ml.trees.TreeEnsembleBuilder
@@ -42,10 +42,10 @@ class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: Lis
     @Suppress("PropertyName")
     class RegressorInfo(map: Map<String, Any?>) : TreeEnsembleOperator.BaseEnsembleInfo(map) {
         val n_targets: Number by map
-        val target_ids: List<Number> by map
-        val target_nodeids: List<Number> by map
-        val target_treeids: List<Number> by map
-        val target_weights: List<Number> by map
+        val target_ids: LongArray by map
+        val target_nodeids: LongArray by map
+        val target_treeids: LongArray by map
+        val target_weights: FloatArray by map
     }
 
     private val ensembleInfo: RegressorInfo

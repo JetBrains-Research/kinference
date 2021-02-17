@@ -1,6 +1,7 @@
 rootProject.name = "kinference"
 
 include(":loaders")
+include(":reader")
 include(":inference")
 include(":ndarray")
 
@@ -18,3 +19,4 @@ pluginManagement {
         }
     }
 }
+

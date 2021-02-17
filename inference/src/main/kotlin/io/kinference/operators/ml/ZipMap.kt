@@ -8,8 +8,8 @@ import io.kinference.data.tensors.*
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.FloatPointer
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.types.*
 import kotlin.collections.HashMap
@@ -33,7 +33,16 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: List<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
+        private fun HashMap<Any, ONNXData>.writeLabeledValue(labelIdx: Int, labels: Any, value: Float) {
+            val tensor = FloatNDArray.scalar(value).asTensor()
+            when (labels) {
+                is LongArray -> this[labels[labelIdx]] = tensor
+                is List<*> -> this[labels[labelIdx]!!] = tensor
+                else -> error("Unsupported labels type")
+            }
+        }
+
+        private fun FloatNDArray.asSeqWithLabels(labels: Any, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
             val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
             val mapValueInfo = ValueInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
@@ -41,17 +50,17 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
             val inputPointer = FloatPointer(array)
             return ONNXSequence(seqInfo, rows) {
-                val map = HashMap<T, Tensor>(columns)
+                val map = HashMap<Any, ONNXData>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
-                    map[labels[it]] = FloatNDArray.scalar(value).asTensor()
+                    map.writeLabeledValue(it, labels, value)
                 }
-                ONNXMap(map as HashMap<Any, ONNXData>, mapValueInfo)
+                ONNXMap(map, mapValueInfo)
             }
         }
     }
 
-    private val classLabelsLong: List<Long>? by attributeOrNull("classlabels_int64s")
+    private val classLabelsLong: LongArray? by attributeOrNull("classlabels_int64s")
     private val classLabelsString: List<String>? by attributeOrNull("classlabels_strings")
 
     private val outputMapInfo: ValueTypeInfo.MapTypeInfo
@@ -67,7 +76,6 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         val input = inputs[0]!!.data as FloatNDArray
         assert(input.rank == 2)
-        assert(labels.size == input.shape.last())
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))
     }

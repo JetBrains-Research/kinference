@@ -5,7 +5,7 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
-import io.kinference.onnx.AttributeProto
+import io.kinference.protobuf.message.AttributeProto
 import io.kinference.operators.*
 
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

@@ -1,19 +1,17 @@
 package io.kinference.operators.ml.trees
 
-import io.kinference.ndarray.toFloatArray
 import io.kinference.ndarray.toIntArray
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.ml.*
-import kotlin.math.*
+import io.kinference.protobuf.message.TensorProto
+import kotlin.math.ceil
+import kotlin.math.log2
 
 internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEnsembleInfo, private val labelsInfo: TreeEnsemble.LabelsInfo?) {
     private val numTargets = labelsInfo?.labels?.size ?: 1
     private val numTrees: Int = info.nodes_treeids.distinct().size
-    private val nodeValues: FloatArray = info.nodes_values.toFloatArray()
-    private val featureIds: IntArray = info.nodes_featureids.toIntArray()
     private val treeDepths: IntArray = IntArray(numTrees)
     private val treeSizes: IntArray = IntArray(numTrees)
-    private var biases: FloatArray = info.base_values?.toFloatArray() ?: FloatArray(numTargets)
+    private var biases: FloatArray = info.base_values ?: FloatArray(numTargets)
     private val nonLeafValuesCount: IntArray = IntArray(numTrees)
     private lateinit var weightValues: FloatArray
 
@@ -38,17 +36,17 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
         }
     }
 
-    fun withWeights(targetIds: List<Number>, targetNodeIdsList: List<Number>, targetTreeIds: List<Number>, targetWeights: List<Number>) {
+    fun withWeights(targetIds: LongArray, targetNodeIdsList: LongArray, targetTreeIds: LongArray, targetWeights: FloatArray) {
         assert(targetNodeIdsList.size == targetTreeIds.size)
         assert(targetNodeIdsList.size == targetWeights.size)
-        assert(!targetIds.chunked(numTargets).any { !checkOrder(it) })
+        assert(!targetIds.asSequence().chunked(numTargets).any { !checkOrder(it) })
 
-        weightValues = targetWeights.toFloatArray()
+        weightValues = targetWeights
     }
 
-    private fun checkNodeDependencies(trueNodeIds: List<Number>, falseNodeIds: List<Number>) {
+    private fun checkNodeDependencies(trueNodeIds: LongArray, falseNodeIds: LongArray) {
         assert(trueNodeIds.size == falseNodeIds.size)
-        assert(trueNodeIds.size == nodeValues.size)
+        assert(trueNodeIds.size == info.nodes_values.size)
 
         var currentTreeOffset = 0
         for (size in treeSizes) {
@@ -70,7 +68,8 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
         val postTransform = PostTransform[postTransformName]
 
         checkNodeDependencies(info.nodes_truenodeids, info.nodes_falsenodeids)
-        return TreeEnsemble(aggregator, postTransform, treeDepths, treeSizes, featureIds, nodeValues, nonLeafValuesCount, weightValues, biases, numTargets, labelsInfo)
+        return TreeEnsemble(aggregator, postTransform, treeDepths, treeSizes, info.nodes_featureids.toIntArray(),
+                            info.nodes_values, nonLeafValuesCount, weightValues, biases, numTargets, labelsInfo)
     }
 
     companion object {
@@ -104,7 +103,7 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
 
         private fun parseLabelsInfo(info: TreeEnsembleClassifier.ClassifierInfo): TreeEnsemble.LabelsInfo {
             return when {
-                info.classlabels_int64s != null -> TreeEnsemble.LabelsInfo(info.classlabels_int64s!!, TensorProto.DataType.INT64)
+                info.classlabels_int64s != null -> TreeEnsemble.LabelsInfo(info.classlabels_int64s!!.toList(), TensorProto.DataType.INT64)
                 info.classlabels_strings != null -> TreeEnsemble.LabelsInfo(info.classlabels_strings!!, TensorProto.DataType.STRING)
                 else -> error("Either classlabels_int64s or classlabels_strings should be present")
             }

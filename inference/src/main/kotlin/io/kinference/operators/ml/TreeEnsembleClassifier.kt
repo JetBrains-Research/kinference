@@ -6,8 +6,8 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.operators.ml.TreeEnsembleOperator.Companion.toFloatNDArray
 import io.kinference.operators.ml.trees.TreeEnsembleBuilder
@@ -70,11 +70,11 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
 
     @Suppress("PropertyName")
     class ClassifierInfo(map: Map<String, Any?>) : TreeEnsembleOperator.BaseEnsembleInfo(map) {
-        val class_ids: List<Number> by map
-        val class_nodeids: List<Number> by map
-        val class_treeids: List<Number> by map
-        val class_weights: List<Number> by map
-        val classlabels_int64s: List<Number>? by map
+        val class_ids: LongArray by map
+        val class_nodeids: LongArray by map
+        val class_treeids: LongArray by map
+        val class_weights: FloatArray by map
+        val classlabels_int64s: LongArray? by map
         val classlabels_strings: List<String>? by map
     }
 

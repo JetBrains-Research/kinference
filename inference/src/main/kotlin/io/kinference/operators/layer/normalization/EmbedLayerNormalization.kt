@@ -4,11 +4,10 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import kotlin.math.sqrt
 

@@ -6,7 +6,7 @@ import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueTypeInfo
 import org.junit.jupiter.api.Assertions
 

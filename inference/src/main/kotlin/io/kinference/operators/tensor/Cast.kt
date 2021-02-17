@@ -7,8 +7,8 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 

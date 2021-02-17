@@ -2,7 +2,9 @@ package io.kinference.model
 
 import io.kinference.data.ONNXData
 import io.kinference.graph.Graph
-import io.kinference.onnx.ModelProto
+import io.kinference.protobuf.ProtobufReader
+import io.kinference.protobuf.message.ModelProto
+import okio.Buffer
 import java.io.File
 
 class Model(proto: ModelProto) {
@@ -16,7 +18,8 @@ class Model(proto: ModelProto) {
         fun load(file: String): Model = load(File(file).readBytes())
 
         fun load(bytes: ByteArray): Model {
-            val modelScheme = ModelProto.ADAPTER.decode(bytes)
+            val buffer = Buffer().write(bytes)
+            val modelScheme = ModelProto.decode(ProtobufReader(buffer))
             return Model(modelScheme)
         }
     }

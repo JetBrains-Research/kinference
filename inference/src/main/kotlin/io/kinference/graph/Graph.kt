@@ -2,8 +2,8 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
-import io.kinference.onnx.*
 import io.kinference.operators.*
+import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 import org.slf4j.LoggerFactory
@@ -36,10 +36,10 @@ class Graph(proto: GraphProto) {
                 if (attr.type == AttributeProto.AttributeType.GRAPH) {
                     val subGraphInputs: HashSet<String> = attr.g!!.input.mapTo(HashSet()) { it.name!! }
 
-                    val subGraphLocalInputs = attr.g.node.flatMapTo(HashSet()) { it.collectRequiredInputs() }
-                    subGraphInputs.addAll(attr.g.output.map { it.name!! })
+                    val subGraphLocalInputs = attr.g!!.node.flatMapTo(HashSet()) { it.collectRequiredInputs() }
+                    subGraphInputs.addAll(attr.g!!.output.map { it.name!! })
 
-                    val subGraphLocalOutputs = attr.g.node.flatMapTo(HashSet()) { it.output }
+                    val subGraphLocalOutputs = attr.g!!.node.flatMapTo(HashSet()) { it.output }
 
                     addAll((subGraphLocalInputs - subGraphLocalOutputs) - subGraphInputs)
                 }

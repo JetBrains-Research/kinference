@@ -9,8 +9,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.broadcasting.unsqueezeFirst
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 

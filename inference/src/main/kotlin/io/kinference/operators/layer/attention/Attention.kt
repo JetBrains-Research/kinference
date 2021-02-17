@@ -9,8 +9,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
 import io.kinference.operators.activations.Softmax
 import io.kinference.primitives.types.DataType

@@ -56,12 +56,12 @@ fun MutableNDArray.unsqueeze(vararg axes: Int): MutableNDArray {
     return reshape(newShape.toIntArray())
 }
 
-fun MutableNDArray.transpose(permutations: List<Number>? = null): MutableNDArray {
-    require(permutations.isNullOrEmpty() || permutations.size == rank) { "Axes permutations list size should match the number of axes" }
+fun MutableNDArray.transpose(permutations: IntArray? = null): MutableNDArray {
+    require(permutations.isNullOrEmpty() || permutations!!.size == rank) { "Axes permutations list size should match the number of axes" }
     if (this.rank == 2) return this.transpose2D()
 
-    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed().toIntArray() else permutations.toIntArray()
-    return this.transpose(actualPerm)
+    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed().toIntArray() else permutations
+    return this.transpose(actualPerm!!)
 }
 
 //if axis not 0

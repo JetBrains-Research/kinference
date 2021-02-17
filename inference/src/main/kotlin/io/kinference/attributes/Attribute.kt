@@ -2,8 +2,8 @@ package io.kinference.attributes
 
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Graph
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.AttributeProto.AttributeType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.AttributeProto.AttributeType
 
 class Attribute<T>(proto: AttributeProto, val value: T) {
     val name: String = proto.name!!
@@ -18,14 +18,14 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
             AttributeType.STRING -> Attribute(proto, proto.s!!.utf8())
             AttributeType.TENSOR -> Attribute(proto, Tensor.create(proto.t!!))
             AttributeType.GRAPH -> Attribute(proto, Graph(proto.g!!))
-            AttributeType.SPARSE_TENSOR -> TODO("Not supported in current version of MPP Inference")
-            AttributeType.FLOATS -> Attribute(proto, proto.floats)
-            AttributeType.INTS -> Attribute(proto, proto.ints)
+            AttributeType.SPARSE_TENSOR -> TODO("Not supported in current version of KInference")
+            AttributeType.FLOATS -> Attribute(proto, proto.floats!!)
+            AttributeType.INTS -> Attribute(proto, proto.ints!!)
             AttributeType.STRINGS -> Attribute(proto, proto.strings.map { it.utf8() })
             AttributeType.TENSORS -> Attribute(proto, proto.tensors.map { Tensor.create(it) })
             AttributeType.GRAPHS -> Attribute(proto, proto.graphs.map { Graph(it) })
-            AttributeType.SPARSE_TENSORS -> TODO("Not supported in current version of MPP Inference")
-            else -> error("Unsupported attribute type")
+            AttributeType.SPARSE_TENSORS -> TODO("Not supported in current version of KInference")
+            else -> error("Unsupported attribute type: ${proto.type}")
         }
     }
 }
