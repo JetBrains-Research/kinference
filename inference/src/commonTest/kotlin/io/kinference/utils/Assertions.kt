@@ -6,9 +6,9 @@ import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.logger
 import io.kinference.onnx.TensorProto
 import io.kinference.types.ValueTypeInfo
-import mu.KotlinLogging
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.floor
@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 object Assertions {
-    val logger = KotlinLogging.logger("Errors")
+    val logger = logger("Errors")
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun assertEquals(expected: Tensor, actual: Tensor, delta: Double) {
@@ -44,12 +44,12 @@ object Assertions {
                 val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
                 val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
 
-                logger.info { "average error '${actual.info.name}' = $averageError\n" }
-                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
-                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
-                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
-                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
-                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+                logger.info { "average error '${actual.info.name}' = $averageError" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
@@ -72,12 +72,12 @@ object Assertions {
                 val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0.0 }
                 val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0.0 }
 
-                logger.info { "average error '${actual.info.name}' = $averageError\n" }
-                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
-                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
-                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
-                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
-                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+                logger.info { "average error '${actual.info.name}' = $averageError" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r) }, delta, "Tensor ${expected.info.name} does not match")
             }
@@ -100,12 +100,12 @@ object Assertions {
                 val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
                 val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
 
-                logger.info { "average error '${actual.info.name}' = $averageError\n" }
-                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
-                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
-                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
-                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
-                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+                logger.info { "average error '${actual.info.name}' = $averageError" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
                 assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
@@ -128,12 +128,12 @@ object Assertions {
                 val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
                 val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
 
-                logger.info { "average error '${actual.info.name}' = $averageError\n" }
-                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
-                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
-                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
-                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
-                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+                logger.info { "average error '${actual.info.name}' = $averageError" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
                 Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
@@ -161,12 +161,12 @@ object Assertions {
                 val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0 }
                 val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0 }
 
-                logger.info { "average error '${actual.info.name}' = $averageError\n" }
-                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation\n" }
-                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50\n" }
-                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95\n" }
-                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99\n" }
-                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n\n" }
+                logger.info { "average error '${actual.info.name}' = $averageError" }
+                logger.info { "standard deviation '${actual.info.name}' = $standardDeviation" }
+                logger.info { "Percentile 50 '${actual.info.name}' = $percentile50" }
+                logger.info { "Percentile 95 '${actual.info.name}' = $percentile95" }
+                logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
+                logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
                 Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }

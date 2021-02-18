@@ -3,17 +3,17 @@ package io.kinference.graph
 import io.kinference.utils.Stack
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
+import io.kinference.ndarray.logger
 import io.kinference.onnx.*
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import mu.KotlinLogging
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 class Graph(proto: GraphProto) {
     companion object {
-        private val logger = KotlinLogging.logger(Graph::class.simpleName ?: "")
+        private val logger = logger(Graph::class.simpleName ?: "")
     }
 
     val operators: List<Operator<ONNXData, ONNXData>>
