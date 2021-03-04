@@ -29,6 +29,8 @@ class TensorProto(
     fun isString(): Boolean = stringData.isNotEmpty()
 
     companion object {
+        private val int32AvailableTypes = setOf(DataType.BOOL, DataType.INT8, DataType.UINT8, DataType.INT8, DataType.UINT8)
+
         fun decode(byteArray: ByteArray): TensorProto {
             val buffer = Buffer().write(byteArray)
             return decode(ProtobufReader(buffer))
@@ -70,7 +72,7 @@ class TensorProto(
         // convert data stored as int32 to the specified type
         private fun TensorProto.checkTiledData() {
             if (this.tiledData !is IntTiledArray || this.dataType == DataType.INT32) return
-            require(dataType == DataType.BOOL || dataType == DataType.INT8 || dataType == DataType.UINT8)
+            require(dataType in int32AvailableTypes) { "Conversion from int32 to $dataType is not supported" }
 
             val data = tiledData as IntTiledArray
             val pointer = IntPointer(data)
@@ -82,7 +84,7 @@ class TensorProto(
                 DataType.UINT8 -> UByteTiledArray(dims) { pointer.getAndIncrement().toUByte() }
                 DataType.INT16 -> ShortTiledArray(dims) { pointer.getAndIncrement().toShort() }
                 DataType.UINT16 -> UShortTiledArray(dims) { pointer.getAndIncrement().toUShort() }
-                else -> error("")
+                else -> error("Conversion from int32 to $dataType is not supported")
             }
             _tiledData.setTiled(newTiled)
         }
@@ -119,7 +121,7 @@ class TensorProto(
                 DataType.INT8 -> proto._tiledData.setTiled(ByteTiledArray(shape) { buffer[it] })
                 DataType.UINT8 -> proto._tiledData.setTiled(UByteTiledArray(shape) { buffer[it].toUByte() })
                 DataType.BOOL -> proto._tiledData.setTiled(BooleanTiledArray(shape) { buffer[it] != 0.toByte() })
-                DataType.STRING -> error("String data MUST not be present in rawData field")
+                DataType.STRING -> error("String data must not be present in rawData field")
                 else -> error("Unsupported data type ${proto.dataType}")
             }
         }
