@@ -27,7 +27,7 @@ useBenchmarkTests()
 
 dependencies {
     api(project(":ndarray"))
-    implementation(project(":reader"))
+    implementation(project(":serialization"))
 
     api("ch.qos.logback", "logback-classic", "1.2.3")
 

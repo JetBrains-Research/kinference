@@ -6,9 +6,9 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.operators.*
 import kotlin.math.sqrt
 
 class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -62,8 +62,10 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
             return maskIndices
         }
 
-        fun normalize(epsilon: Float, inputIds: IntNDArray, segmentIds: IntNDArray?,
-                      wordEmbed: FloatNDArray, posEmbed: FloatNDArray, segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray): MutableFloatNDArray {
+        fun normalize(
+            epsilon: Float, inputIds: IntNDArray, segmentIds: IntNDArray?,
+            wordEmbed: FloatNDArray, posEmbed: FloatNDArray, segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray
+        ): MutableFloatNDArray {
             val (batchSize, seqLen) = inputIds.shape
             val (_, hiddenSize) = wordEmbed.shape
             val output = MutableFloatNDArray(shape = intArrayOf(batchSize, seqLen, hiddenSize))
@@ -113,7 +115,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
                     val gammaPointer = gamma.array.pointer()
                     val betaPointer = beta.array.pointer()
 
-                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b ->  out / eps * g + b }
+                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b -> out / eps * g + b }
                 }
             }
 

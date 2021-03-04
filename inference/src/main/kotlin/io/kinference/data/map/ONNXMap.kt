@@ -5,7 +5,6 @@ import io.kinference.data.ONNXDataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import kotlin.collections.Map
 
 class ONNXMap(val data: Map<Any, ONNXData>, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_MAP, info) {
     val keyType: TensorProto.DataType

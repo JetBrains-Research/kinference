@@ -3,45 +3,12 @@ package io.kinference.data.tensors
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.types.*
 
-fun TensorProto.DataType.resolveLocalDataType(): DataType {
-    return when(this) {
-        TensorProto.DataType.DOUBLE -> DataType.DOUBLE
-        TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16 -> DataType.FLOAT
-        TensorProto.DataType.INT32 -> DataType.INT
-        TensorProto.DataType.INT64 -> DataType.LONG
-        TensorProto.DataType.INT16 -> DataType.SHORT
-        TensorProto.DataType.INT8-> DataType.BYTE
-        TensorProto.DataType.BOOL -> DataType.BOOLEAN
-        TensorProto.DataType.UINT32-> DataType.UINT
-        TensorProto.DataType.UINT64 -> DataType.ULONG
-        TensorProto.DataType.UINT16 -> DataType.USHORT
-        TensorProto.DataType.UINT8 -> DataType.UBYTE
-        else -> error("Cannot resolve data type")
-    }
-}
-
-fun DataType.resolveProtoDataType(): TensorProto.DataType {
-    return when(this) {
-        DataType.DOUBLE -> TensorProto.DataType.DOUBLE
-        DataType.FLOAT -> TensorProto.DataType.FLOAT
-        DataType.INT -> TensorProto.DataType.INT32
-        DataType.LONG -> TensorProto.DataType.INT64
-        DataType.SHORT -> TensorProto.DataType.INT16
-        DataType.BYTE -> TensorProto.DataType.INT8
-        DataType.BOOLEAN -> TensorProto.DataType.BOOL
-        DataType.UINT -> TensorProto.DataType.UINT32
-        DataType.ULONG -> TensorProto.DataType.UINT64
-        DataType.USHORT -> TensorProto.DataType.UINT16
-        DataType.UBYTE -> TensorProto.DataType.UINT8
-        else -> error("Cannot resolve data type")
-    }
-}
-
-fun NDArray.asTensor(name: String? = null) = Tensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()), name ?: ""))
+fun NDArray.asTensor(name: String? = null) =
+    Tensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()), name ?: ""))
 
 fun Collection<Tensor>.stack(axis: Int): Tensor {
     val fstShape = this.first().data.shape

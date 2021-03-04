@@ -4,9 +4,9 @@ import io.kinference.attributes.Attribute
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.protobuf.message.AttributeProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
 import kotlinx.coroutines.*
 import kotlin.math.exp
 import kotlin.math.min
@@ -20,7 +20,8 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1)
         )
 
-        private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO,
+        private val INFO = OperatorInfo(
+            "Softmax", ATTRIBUTES_INFO,
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )

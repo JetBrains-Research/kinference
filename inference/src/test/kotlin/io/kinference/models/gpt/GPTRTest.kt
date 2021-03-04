@@ -24,6 +24,7 @@ class GPTRTest {
     fun `test GPT quantized model`() {
         TestRunner.runFromS3("/gpt2/r/quantized/v1/", "tests/gpt2/r-completion/quantized/v1", delta = 2.4)
     }
+
     @Test
     @Tag("heavy")
     fun `test GPT quantized performance`() {

@@ -6,8 +6,8 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.unsqueeze
 import io.kinference.ndarray.toIntArray
-import io.kinference.protobuf.message.AttributeProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
 
 class Unsqueeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {

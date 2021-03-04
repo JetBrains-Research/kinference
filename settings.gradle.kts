@@ -1,7 +1,7 @@
 rootProject.name = "kinference"
 
 include(":loaders")
-include(":reader")
+include(":serialization")
 include(":inference")
 include(":ndarray")
 

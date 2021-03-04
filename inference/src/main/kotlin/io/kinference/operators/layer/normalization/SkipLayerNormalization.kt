@@ -7,13 +7,12 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.operators.*
 import kotlin.math.sqrt
 
-class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
+class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 
     companion object {
@@ -44,7 +43,14 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
 
-        private fun FloatNDArray.normalize(skip: FloatNDArray, gamma: FloatNDArray, beta: FloatNDArray, bias: FloatNDArray?, epsilon: Float, dst: MutableFloatNDArray) {
+        private fun FloatNDArray.normalize(
+            skip: FloatNDArray,
+            gamma: FloatNDArray,
+            beta: FloatNDArray,
+            bias: FloatNDArray?,
+            epsilon: Float,
+            dst: MutableFloatNDArray
+        ) {
             val (batchSize, seqLen, hiddenSize) = this.shape
             val steps = batchSize * seqLen
 

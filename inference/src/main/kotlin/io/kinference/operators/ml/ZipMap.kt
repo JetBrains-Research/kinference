@@ -4,15 +4,15 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
-import io.kinference.data.tensors.*
+import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.FloatPointer
+import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.operators.*
 import io.kinference.types.*
-import kotlin.collections.HashMap
 
 class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, ONNXSequence>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -68,7 +68,7 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
             val mapKeyType = if (classLabelsLong != null) TensorProto.DataType.INT64 else TensorProto.DataType.STRING
             val mapValueInfo = ValueTypeInfo.TensorTypeInfo(TensorShape.empty(), TensorProto.DataType.FLOAT)
             return ValueTypeInfo.MapTypeInfo(mapKeyType, mapValueInfo)
-    }
+        }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<ONNXSequence?> {
         val labels = classLabelsLong ?: classLabelsString

@@ -2,7 +2,6 @@ package io.kinference.operators
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.protobuf.message.NodeProto
 import io.kinference.operators.activations.*
 import io.kinference.operators.flow.*
 import io.kinference.operators.layer.attention.Attention
@@ -17,6 +16,7 @@ import io.kinference.operators.quantization.DynamicQuantizeLinear
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
+import io.kinference.protobuf.message.NodeProto
 
 object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
@@ -72,5 +72,5 @@ object OperatorFactory {
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 
-    fun create(proto: NodeProto) = create(proto.op_type, proto.attribute.map { Attribute.create(it) }.associateBy(Attribute<Any>::name), proto.input, proto.output)
+    fun create(proto: NodeProto) = create(proto.opType, proto.attribute.map { Attribute.create(it) }.associateBy(Attribute<Any>::name), proto.input, proto.output)
 }

@@ -68,14 +68,18 @@ internal class TreeEnsembleBuilder(private val info: TreeEnsembleOperator.BaseEn
         val postTransform = PostTransform[postTransformName]
 
         checkNodeDependencies(info.nodes_truenodeids, info.nodes_falsenodeids)
-        return TreeEnsemble(aggregator, postTransform, treeDepths, treeSizes, info.nodes_featureids.toIntArray(),
-                            info.nodes_values, nonLeafValuesCount, weightValues, biases, numTargets, labelsInfo)
+        return TreeEnsemble(
+            aggregator, postTransform, treeDepths, treeSizes, info.nodes_featureids.toIntArray(),
+            info.nodes_values, nonLeafValuesCount, weightValues, biases, numTargets, labelsInfo
+        )
     }
 
     companion object {
-        operator fun invoke(info: TreeEnsembleOperator.BaseEnsembleInfo, labelsInfo: TreeEnsemble.LabelsInfo? = null, configure: TreeEnsembleBuilder.() -> Unit): TreeEnsembleBuilder {
-            return TreeEnsembleBuilder(info, labelsInfo).apply(configure)
-        }
+        operator fun invoke(
+            info: TreeEnsembleOperator.BaseEnsembleInfo,
+            labelsInfo: TreeEnsemble.LabelsInfo? = null,
+            configure: TreeEnsembleBuilder.() -> Unit
+        ): TreeEnsembleBuilder = TreeEnsembleBuilder(info, labelsInfo).apply(configure)
 
         private fun checkOrder(list: List<Number>): Boolean {
             for (i in list.indices) {

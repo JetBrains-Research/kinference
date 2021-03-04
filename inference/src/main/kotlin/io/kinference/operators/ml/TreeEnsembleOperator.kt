@@ -4,11 +4,10 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.DoublePointer
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.TensorProto
 
-abstract class TreeEnsembleOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
+abstract class TreeEnsembleOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
     companion object {
         //TODO: Support integer types
         private val TYPE_CONSTRAINTS = setOf(

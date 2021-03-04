@@ -19,6 +19,21 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, divider: Int
     }
 }
 
+
+fun createArray(shape: IntArray, array: Any): Any {
+    return when (array) {
+        is DoubleArray -> DoubleTiledArray(shape) { array[it] }
+        is FloatArray -> FloatTiledArray(shape) { array[it] }
+        is LongArray -> LongTiledArray(shape) { array[it] }
+        is IntArray -> IntTiledArray(shape) { array[it] }
+        is ShortArray -> ShortTiledArray(shape) { array[it] }
+        is BooleanArray -> BooleanTiledArray(shape) { array[it] }
+        is ByteArray -> ByteTiledArray(shape) { array[it] }
+        is UByteArray -> UByteTiledArray(shape) { array[it] }
+        else -> error("Unsupported data type")
+    }
+}
+
 fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableNDArray {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleTiledArray, strides)
@@ -51,7 +66,6 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
         else -> error("Unsupported data type $type")
     }
 }
-
 
 fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArray {
     return createNDArray(type, value, Strides(shape))

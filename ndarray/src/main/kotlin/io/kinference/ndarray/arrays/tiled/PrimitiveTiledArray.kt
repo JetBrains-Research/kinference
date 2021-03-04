@@ -23,7 +23,7 @@ class PrimitiveTiledArray {
         const val MIN_BLOCK_SIZE = 512
         val logger: Logger = LoggerFactory.getLogger(PrimitiveTiledArray::class.java)
 
-        private fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
+        internal fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
             return when {
                 strides.linearSize == 0 -> 0
                 strides.shape.isEmpty() -> 1
