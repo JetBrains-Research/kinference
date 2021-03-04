@@ -29,7 +29,7 @@ class TensorProto(
     fun isString(): Boolean = stringData.isNotEmpty()
 
     companion object {
-        private val int32AvailableTypes = setOf(DataType.BOOL, DataType.INT8, DataType.UINT8, DataType.INT8, DataType.UINT8)
+        private val int32AvailableTypes = setOf(DataType.BOOL, DataType.INT8, DataType.UINT8, DataType.INT16, DataType.UINT16)
 
         fun decode(byteArray: ByteArray): TensorProto {
             val buffer = Buffer().write(byteArray)
