@@ -7,9 +7,9 @@ import okio.ByteString
 class ProtobufReader(private val reader: ProtoReader) {
     constructor(source: BufferedSource) : this(ProtoReader(source))
 
-    private var state = ReaderState()
+    private data class ReaderState(var tag: Int = -1, var move: Boolean = true)
 
-    internal data class ReaderState(var tag: Int = -1, var move: Boolean = true)
+    private var state = ReaderState()
 
     private fun moveNext() {
         if (state.move) {
@@ -36,11 +36,7 @@ class ProtobufReader(private val reader: ProtoReader) {
         return reader.endMessageAndGetUnknownFields(token)
     }
 
-    fun addUnknownField(
-        tag: Int,
-        fieldEncoding: FieldEncoding,
-        value: Any?
-    ) = reader.addUnknownField(tag, fieldEncoding, value)
+    fun addUnknownField(tag: Int, fieldEncoding: FieldEncoding, value: Any?) = reader.addUnknownField(tag, fieldEncoding, value)
 
     fun readUnknownField(tag: Int) = reader.readUnknownField(tag)
     fun <T> readValue(adapter: ProtoAdapter<T>) = adapter.decode(reader)

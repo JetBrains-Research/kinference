@@ -66,9 +66,9 @@ class Tensor(val data: NDArray, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_TE
             }
         }
 
-        private fun parseArray(proto: TensorProto) = when (proto.dataType) {
-            DataType.DOUBLE, DataType.FLOAT, DataType.INT64, DataType.INT32, DataType.BOOL, DataType.UINT8, DataType.INT8 -> proto.tiledData
-            DataType.STRING -> proto.stringData
+        private fun parseArray(proto: TensorProto) = when {
+            proto.isTiled() -> proto.tiledData
+            proto.isString() -> proto.stringData
             else -> error("Unsupported data type ${proto.dataType}")
         }
     }

@@ -25,6 +25,9 @@ class TensorProto(
     val tiledData: Any?
         get() = _tiledData.get(dims)
 
+    fun isTiled(): Boolean = _tiledData.hasData()
+    fun isString(): Boolean = stringData.isNotEmpty()
+
     companion object {
         fun decode(byteArray: ByteArray): TensorProto {
             val buffer = Buffer().write(byteArray)
@@ -64,16 +67,21 @@ class TensorProto(
 
         private fun TensorProto.hasData() = _tiledData.hasData() || stringData.isNotEmpty() || externalData.isNotEmpty()
 
+        // convert data stored as int32 to the specified type
         private fun TensorProto.checkTiledData() {
             if (this.tiledData !is IntTiledArray || this.dataType == DataType.INT32) return
             require(dataType == DataType.BOOL || dataType == DataType.INT8 || dataType == DataType.UINT8)
 
             val data = tiledData as IntTiledArray
             val pointer = IntPointer(data)
+
+            @Suppress("IMPLICIT_CAST_TO_ANY")
             val newTiled = when (dataType) {
                 DataType.BOOL -> BooleanTiledArray(dims) { pointer.getAndIncrement() != 0 }
                 DataType.INT8 -> ByteTiledArray(dims) { pointer.getAndIncrement().toByte() }
                 DataType.UINT8 -> UByteTiledArray(dims) { pointer.getAndIncrement().toUByte() }
+                DataType.INT16 -> ShortTiledArray(dims) { pointer.getAndIncrement().toShort() }
+                DataType.UINT16 -> UShortTiledArray(dims) { pointer.getAndIncrement().toUShort() }
                 else -> error("")
             }
             _tiledData.setTiled(newTiled)
@@ -99,6 +107,14 @@ class TensorProto(
                 DataType.INT32 -> {
                     val array = buffer.asIntBuffer()
                     proto._tiledData.setTiled(IntTiledArray(shape) { array[it] })
+                }
+                DataType.INT16 -> {
+                    val array = buffer.asShortBuffer()
+                    proto._tiledData.setTiled(ShortTiledArray(shape) { array[it] })
+                }
+                DataType.UINT16 -> {
+                    val array = buffer.asShortBuffer()
+                    proto._tiledData.setTiled(UShortTiledArray(shape) { array[it].toUShort() })
                 }
                 DataType.INT8 -> proto._tiledData.setTiled(ByteTiledArray(shape) { buffer[it] })
                 DataType.UINT8 -> proto._tiledData.setTiled(UByteTiledArray(shape) { buffer[it].toUByte() })

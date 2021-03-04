@@ -3,7 +3,7 @@ package io.kinference.protobuf.message
 import io.kinference.protobuf.ProtobufReader
 
 class ModelProto(
-    var ir_version: Long? = null,
+    var irVersion: Long? = null,
     val opSetImport: MutableList<OperatorSetIdProto> = ArrayList(),
     var producerName: String? = null,
     var producerVersion: String? = null,
@@ -18,7 +18,7 @@ class ModelProto(
             val proto = ModelProto()
             reader.forEachTag { tag ->
                 when (tag) {
-                    1 -> proto.ir_version = reader.readLong()
+                    1 -> proto.irVersion = reader.readLong()
                     2 -> proto.producerName = reader.readString()
                     3 -> proto.producerVersion = reader.readString()
                     4 -> proto.domain = reader.readString()
