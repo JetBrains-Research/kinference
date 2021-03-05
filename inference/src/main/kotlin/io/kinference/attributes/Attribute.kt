@@ -25,7 +25,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
             AttributeType.TENSORS -> Attribute(proto, proto.tensors.map { Tensor.create(it) })
             AttributeType.GRAPHS -> Attribute(proto, proto.graphs.map { Graph(it) })
             AttributeType.SPARSE_TENSORS -> TODO("Not supported in current version of KInference")
-            else -> error("Unsupported attribute type: ${proto.type}")
+            AttributeType.UNDEFINED -> error("Cannot get attribute ${proto.name} type")
         }
     }
 }

@@ -19,10 +19,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
     var reverseLstmData: LSTMData? = null
 
     override fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor> {
-        val forwardLayer =
-            LSTMLayer.create(hiddenSize, activations.subList(0, 3), "forward", forwardLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
-        val reverseLayer =
-            LSTMLayer.create(hiddenSize, activations.subList(3, 6), "reverse", reverseLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
+        val forwardLayer = LSTMLayer.create(hiddenSize, activations.subList(0, 3), "forward", forwardLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
+        val reverseLayer = LSTMLayer.create(hiddenSize, activations.subList(3, 6), "reverse", reverseLstmData!!, seqLength!!, batchSize!!, type!!.resolveProtoDataType())
 
         val (_, forwardLastOutput, forwardLastCellState) = forwardLayer.apply(inputs, sequenceLens, outputArray, startOffset)
         val (output, reverseLastOutput, reverseLastCellState) = reverseLayer.apply(inputs, sequenceLens, outputArray, startOffset + batchSize!! * hiddenSize)

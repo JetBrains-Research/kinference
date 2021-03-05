@@ -7,7 +7,7 @@ import okio.Buffer
 class AttributeProto(
     var name: String? = null,
     var refAttrName: String? = null,
-    var type: AttributeType? = null,
+    var type: AttributeType = AttributeType.UNDEFINED,
     var f: Float? = null,
     var i: Long? = null,
     var s: String? = null,

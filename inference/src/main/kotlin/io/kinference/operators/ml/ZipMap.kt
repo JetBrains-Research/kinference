@@ -33,16 +33,12 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun HashMap<Any, ONNXData>.writeLabeledValue(labelIdx: Int, labels: Any, value: Float) {
+        private fun <T : Any> HashMap<T, ONNXData>.writeLabeledValue(labelIdx: Int, labels: Labels<T>, value: Float) {
             val tensor = FloatNDArray.scalar(value).asTensor()
-            when (labels) {
-                is LongArray -> this[labels[labelIdx]] = tensor
-                is List<*> -> this[labels[labelIdx]!!] = tensor
-                else -> error("Unsupported labels type")
-            }
+            this[labels[labelIdx]] = tensor
         }
 
-        private fun FloatNDArray.asSeqWithLabels(labels: Any, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
+        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
             val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
             val mapValueInfo = ValueInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
@@ -50,18 +46,30 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
             val inputPointer = FloatPointer(array)
             return ONNXSequence(seqInfo, rows) {
-                val map = HashMap<Any, ONNXData>(columns)
+                val map = HashMap<T, ONNXData>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
                     map.writeLabeledValue(it, labels, value)
                 }
-                ONNXMap(map, mapValueInfo)
+                ONNXMap(map as Map<Any, ONNXData>, mapValueInfo)
             }
         }
     }
 
-    private val classLabelsLong: LongArray? by attributeOrNull("classlabels_int64s")
-    private val classLabelsString: List<String>? by attributeOrNull("classlabels_strings")
+    sealed class Labels<T> {
+        abstract operator fun get(i: Int): T
+
+        class StringLabels(val labels: List<String>): Labels<String>() {
+            override fun get(i: Int): String = labels[i]
+        }
+
+        class LongLabels(val labels: LongArray): Labels<Long>() {
+            override fun get(i: Int): Long = labels[i]
+        }
+    }
+
+    private val classLabelsLong: Labels.LongLabels? by attributeOrNull("classlabels_int64s") { labels: LongArray? -> Labels.LongLabels(labels!!) }
+    private val classLabelsString: Labels.StringLabels? by attributeOrNull("classlabels_strings") { labels: List<String>? -> Labels.StringLabels(labels!!) }
 
     private val outputMapInfo: ValueTypeInfo.MapTypeInfo
         get() {

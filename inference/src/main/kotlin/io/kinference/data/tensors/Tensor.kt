@@ -44,10 +44,10 @@ class Tensor(val data: NDArray, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_TE
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
 
-            return Tensor(array, type, proto.dims, proto.name, divider)
+            return Tensor(array!!, type, proto.dims, proto.name, divider)
         }
 
-        private operator fun invoke(value: Any?, type: DataType, dims: IntArray = IntArray(0), name: String? = "", divider: Int = 1): Tensor {
+        private operator fun invoke(value: Any, type: DataType, dims: IntArray = IntArray(0), name: String? = "", divider: Int = 1): Tensor {
             val name = name ?: ""
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleTiledArray, Strides(dims), divider).asTensor(name)
