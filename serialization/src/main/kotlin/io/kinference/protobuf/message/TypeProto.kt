@@ -15,83 +15,88 @@ class TypeProto(
             var sequenceType: Sequence? = null
             var mapType: Map? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> tensorType = Tensor.decode(reader)
-                    4 -> sequenceType = Sequence.decode(reader)
-                    5 -> mapType = Map.decode(reader)
-                    6 -> denotation = reader.readString()
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.TENSOR_TYPE -> tensorType = Tensor.decode(reader)
+                    ReaderTag.SEQ_TYPE -> sequenceType = Sequence.decode(reader)
+                    ReaderTag.MAP_TYPE -> mapType = Map.decode(reader)
+                    ReaderTag.DENOTATION -> denotation = reader.readString()
                 }
             }
-            return TypeProto(
-                denotation = denotation,
-                tensorType = tensorType,
-                sequenceType = sequenceType,
-                mapType = mapType
-            )
+            return TypeProto(denotation, tensorType, sequenceType, mapType)
         }
     }
 
-    class Tensor(
-        //ProtoTag = 1
-        val elem_type: Int? = null,
+    private enum class ReaderTag(val tag: Int) {
+        TENSOR_TYPE(1),
+        SEQ_TYPE(4),
+        MAP_TYPE(5),
+        DENOTATION(6);
 
-        //ProtoTag = 2
-        val shape: TensorShapeProto? = null
-    ) {
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
+        }
+    }
+
+    class Tensor(val elem_type: Int? = null, val shape: TensorShapeProto? = null) {
         companion object {
             fun decode(reader: ProtobufReader): Tensor {
-                var elem_type: Int? = null
+                var elemType: Int? = null
                 var shape: TensorShapeProto? = null
                 reader.forEachTag { tag ->
-                    when (tag) {
-                        1 -> elem_type = reader.readInt()
-                        2 -> shape = TensorShapeProto.decode(reader)
+                    when (ReaderTag.fromInt(tag)) {
+                        ReaderTag.ELEMENT_TYPE -> elemType = reader.readInt()
+                        ReaderTag.SHAPE -> shape = TensorShapeProto.decode(reader)
                         else -> reader.readUnknownField(tag)
                     }
                 }
-                return Tensor(elem_type = elem_type, shape = shape)
+                return Tensor(elemType, shape)
+            }
+        }
+
+        private enum class ReaderTag(val tag: Int) {
+            ELEMENT_TYPE(1),
+            SHAPE(2);
+
+            companion object {
+                fun fromInt(tag: Int) = values().first { it.tag == tag }
             }
         }
     }
 
-    class Sequence(
-        //ProtoTag = 1
-        val elem_type: TypeProto? = null
-    ) {
+    class Sequence(val elem_type: TypeProto? = null) {
         companion object {
             fun decode(reader: ProtobufReader): Sequence {
-                var elem_type: TypeProto? = null
+                var elemType: TypeProto? = null
                 reader.forEachTag { tag ->
-                    when (tag) {
-                        1 -> elem_type = TypeProto.decode(reader)
-                        else -> reader.readUnknownField(tag)
-                    }
+                    if (tag != 1) error("Unexpected tag $tag")
+                    elemType = TypeProto.decode(reader)
                 }
-                return Sequence(elem_type = elem_type)
+                return Sequence(elemType)
             }
         }
     }
 
-    class Map(
-        //ProtoTag = 1
-        val key_type: Int? = null,
-
-        //ProtoTag = 2
-        val value_type: TypeProto? = null
-    ) {
+    class Map(val key_type: Int? = null, val value_type: TypeProto? = null) {
         companion object {
             fun decode(reader: ProtobufReader): Map {
-                var key_type: Int? = null
-                var value_type: TypeProto? = null
+                var keyType: Int? = null
+                var valueType: TypeProto? = null
                 reader.forEachTag { tag ->
-                    when (tag) {
-                        1 -> key_type = reader.readInt()
-                        2 -> value_type = TypeProto.decode(reader)
-                        else -> reader.readUnknownField(tag)
+                    when (ReaderTag.fromInt(tag)) {
+                        ReaderTag.KEY_TYPE -> keyType = reader.readInt()
+                        ReaderTag.VALUE_TYPE -> valueType = TypeProto.decode(reader)
                     }
                 }
-                return Map(key_type = key_type, value_type = value_type)
+                return Map(keyType, valueType)
+            }
+        }
+
+        private enum class ReaderTag(val tag: Int) {
+            KEY_TYPE(1),
+            VALUE_TYPE(2);
+
+            companion object {
+                fun fromInt(tag: Int) = values().first { it.tag == tag }
             }
         }
     }

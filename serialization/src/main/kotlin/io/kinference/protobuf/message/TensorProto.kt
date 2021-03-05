@@ -40,26 +40,25 @@ class TensorProto(
             val proto = TensorProto()
             var rawData: ByteString? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> proto.dims = reader.readLongArray(tag).toIntArray()
-                    2 -> proto.dataType = DataType.fromValue(reader.readInt())
-                    3 -> proto.segment = Segment.decode(reader)
-                    4 -> reader.readFloatTiledArray(tag, proto.dims, proto._tiledData)
-                    5 -> reader.readIntTiledArray(tag, proto.dims, proto._tiledData)
-                    6 -> proto.stringData.add(reader.readBytes())
-                    7 -> reader.readLongTiledArray(tag, proto.dims, proto._tiledData)
-                    8 -> proto.name = reader.readString()
-                    9 -> rawData = reader.readBytes()
-                    10 -> reader.readDoubleTiledArray(tag, proto.dims, proto._tiledData)
-                    11 -> reader.readULongTiledArray(tag, proto.dims, proto._tiledData)
-                    12 -> reader.readString() // skip docstring
-                    13 -> proto.externalData.add(StringStringEntryProto.decode(reader))
-                    14 -> try {
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.DIMS -> proto.dims = reader.readLongArray(tag).toIntArray()
+                    ReaderTag.DATATYPE -> proto.dataType = DataType.fromValue(reader.readInt())
+                    ReaderTag.SEGMENT -> proto.segment = Segment.decode(reader)
+                    ReaderTag.FLOAT -> reader.readFloatTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.INT32 -> reader.readIntTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.STRING -> proto.stringData.add(reader.readBytes())
+                    ReaderTag.INT64 -> reader.readLongTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.NAME -> proto.name = reader.readString()
+                    ReaderTag.RAW -> rawData = reader.readBytes()
+                    ReaderTag.DOUBLE -> reader.readDoubleTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.UINT64 -> reader.readULongTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.DOC_STRING -> reader.readString() // skip docstring
+                    ReaderTag.EXTERNAL -> proto.externalData.add(StringStringEntryProto.decode(reader))
+                    ReaderTag.LOCATION -> try {
                         proto.dataLocation = reader.readValue(DataLocation.ADAPTER)
                     } catch (e: ProtoAdapter.EnumConstantNotFoundException) {
                         reader.addUnknownField(tag, FieldEncoding.VARINT, e.value.toLong())
                     }
-                    else -> reader.readUnknownField(tag)
                 }
             }
             if (rawData != null || !proto.hasData()) parseRaw(rawData, proto)
@@ -127,6 +126,27 @@ class TensorProto(
         }
     }
 
+    private enum class ReaderTag(val tag: Int) {
+        DIMS(1),
+        DATATYPE(2),
+        SEGMENT(3),
+        FLOAT(4),
+        INT32(5),
+        STRING(6),
+        INT64(7),
+        NAME(8),
+        RAW(9),
+        DOUBLE(10),
+        UINT64(11),
+        DOC_STRING(12),
+        EXTERNAL(13),
+        LOCATION(14);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
+        }
+    }
+
     enum class DataType(override val value: Int) : WireEnum {
         UNDEFINED(0),
         FLOAT(1),
@@ -180,13 +200,21 @@ class TensorProto(
                 var begin: Long? = null
                 var end: Long? = null
                 reader.forEachTag { tag ->
-                    when (tag) {
-                        1 -> begin = reader.readLong()
-                        2 -> end = reader.readLong()
-                        else -> reader.readUnknownField(tag)
+                    when (ReaderTag.fromInt(tag)) {
+                        ReaderTag.BEGIN -> begin = reader.readLong()
+                        ReaderTag.END -> end = reader.readLong()
                     }
                 }
                 return Segment(begin = begin, end = end)
+            }
+        }
+
+        private enum class ReaderTag(val tag: Int) {
+            BEGIN(1),
+            END(2);
+
+            companion object {
+                fun fromInt(tag: Int) = values().first { it.tag == tag }
             }
         }
     }
@@ -197,13 +225,13 @@ class TensorProto(
 
         companion object {
             val ADAPTER: ProtoAdapter<DataLocation> = object : EnumAdapter<DataLocation>(DataLocation::class) {
-                override fun fromValue(value: Int): DataLocation? = DataLocation.fromValue(value)
+                override fun fromValue(value: Int): DataLocation = DataLocation.fromValue(value)
             }
 
-            fun fromValue(value: Int): DataLocation? = when (value) {
+            fun fromValue(value: Int): DataLocation = when (value) {
                 0 -> DEFAULT
                 1 -> EXTERNAL
-                else -> null
+                else -> error("Cannot convert from value")
             }
         }
     }

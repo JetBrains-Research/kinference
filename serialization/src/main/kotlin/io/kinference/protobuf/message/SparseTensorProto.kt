@@ -14,14 +14,23 @@ class SparseTensorProto(
             var indices: TensorProto? = null
             var dims: LongArray? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> values = TensorProto.decode(reader)
-                    2 -> indices = TensorProto.decode(reader)
-                    3 -> dims = LongArraySerializer.decode(reader, tag)
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.VALUES -> values = TensorProto.decode(reader)
+                    ReaderTag.INDICES -> indices = TensorProto.decode(reader)
+                    ReaderTag.DIMS -> dims = LongArraySerializer.decode(reader, tag)
                 }
             }
             return SparseTensorProto(values = values, indices = indices, dims = dims)
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        VALUES(1),
+        INDICES(2),
+        DIMS(3);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

@@ -11,14 +11,23 @@ class ValueInfoProto(
             var name: String? = null
             var type: TypeProto? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> name = reader.readString()
-                    2 -> type = TypeProto.decode(reader)
-                    3 -> reader.readString() // skip docstring
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.NAME -> name = reader.readString()
+                    ReaderTag.TYPE -> type = TypeProto.decode(reader)
+                    ReaderTag.DOC_STRING -> reader.readString() // skip docstring
                 }
             }
             return ValueInfoProto(name = name, type = type)
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        NAME(1),
+        TYPE(2),
+        DOC_STRING(3);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

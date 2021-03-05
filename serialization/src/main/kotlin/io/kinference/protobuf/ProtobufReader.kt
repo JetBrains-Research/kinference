@@ -26,7 +26,7 @@ class ProtobufReader(private val reader: ProtoReader) {
 
     internal fun nextTag() = reader.nextTag()
 
-    internal fun forEachTag(handler: (Int) -> Any?): ByteString {
+    internal fun forEachTag(handler: (Int) -> Unit): ByteString {
         val token = reader.beginMessage()
         while (true) {
             moveNext()

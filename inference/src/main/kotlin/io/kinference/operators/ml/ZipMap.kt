@@ -33,11 +33,6 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun <T : Any> HashMap<T, ONNXData>.writeLabeledValue(labelIdx: Int, labels: Labels<T>, value: Float) {
-            val tensor = FloatNDArray.scalar(value).asTensor()
-            this[labels[labelIdx]] = tensor
-        }
-
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
             val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
             val mapValueInfo = ValueInfo(mapInfo)
@@ -49,7 +44,8 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
                 val map = HashMap<T, ONNXData>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
-                    map.writeLabeledValue(it, labels, value)
+                    val tensor = FloatNDArray.scalar(value).asTensor()
+                    map[labels[it]] = tensor
                 }
                 ONNXMap(map as Map<Any, ONNXData>, mapValueInfo)
             }
@@ -59,11 +55,11 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
     sealed class Labels<T> {
         abstract operator fun get(i: Int): T
 
-        class StringLabels(val labels: List<String>): Labels<String>() {
+        class StringLabels(private val labels: List<String>): Labels<String>() {
             override fun get(i: Int): String = labels[i]
         }
 
-        class LongLabels(val labels: LongArray): Labels<Long>() {
+        class LongLabels(private val labels: LongArray): Labels<Long>() {
             override fun get(i: Int): Long = labels[i]
         }
     }

@@ -16,20 +16,35 @@ class GraphProto(
         fun decode(reader: ProtobufReader): GraphProto {
             val proto = GraphProto()
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> proto.node.add(NodeProto.decode(reader))
-                    2 -> proto.name = reader.readString()
-                    5 -> proto.initializer.add(TensorProto.decode(reader))
-                    10 -> reader.readString() // skip docstring
-                    11 -> proto.input.add(ValueInfoProto.decode(reader))
-                    12 -> proto.output.add(ValueInfoProto.decode(reader))
-                    13 -> proto.valueInfo.add(ValueInfoProto.decode(reader))
-                    14 -> proto.quantizationAnnotation.add(TensorAnnotation.decode(reader))
-                    15 -> proto.sparseInitializer.add(SparseTensorProto.decode(reader))
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.NODE -> proto.node.add(NodeProto.decode(reader))
+                    ReaderTag.NAME -> proto.name = reader.readString()
+                    ReaderTag.INITIALIZER -> proto.initializer.add(TensorProto.decode(reader))
+                    ReaderTag.DOC_STRING -> reader.readString() // skip docstring
+                    ReaderTag.INPUT -> proto.input.add(ValueInfoProto.decode(reader))
+                    ReaderTag.OUTPUT -> proto.output.add(ValueInfoProto.decode(reader))
+                    ReaderTag.VALUE_INFO -> proto.valueInfo.add(ValueInfoProto.decode(reader))
+                    ReaderTag.QUANTIZATION_ANNOTATION -> proto.quantizationAnnotation.add(TensorAnnotation.decode(reader))
+                    ReaderTag.SPARSE_INITIALIZER -> proto.sparseInitializer.add(SparseTensorProto.decode(reader))
                 }
             }
             return proto
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        NODE(1),
+        NAME(2),
+        INITIALIZER(5),
+        DOC_STRING(10),
+        INPUT(11),
+        OUTPUT(12),
+        VALUE_INFO(13),
+        QUANTIZATION_ANNOTATION(14),
+        SPARSE_INITIALIZER(15);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

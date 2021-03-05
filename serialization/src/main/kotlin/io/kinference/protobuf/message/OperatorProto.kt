@@ -13,19 +13,29 @@ class OperatorProto(
         fun decode(reader: ProtobufReader): OperatorProto {
             val proto = OperatorProto()
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> proto.opType = reader.readString()
-                    2 -> proto.sinceVersion = reader.readLong()
-                    3 -> try {
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.OP_TYPE -> proto.opType = reader.readString()
+                    ReaderTag.SINCE_VERSION -> proto.sinceVersion = reader.readLong()
+                    ReaderTag.STATUS -> try {
                         proto.status = reader.readValue(OperatorStatus.ADAPTER)
                     } catch (e: ProtoAdapter.EnumConstantNotFoundException) {
                         reader.addUnknownField(tag, FieldEncoding.VARINT, e.value.toLong())
                     }
-                    10 -> reader.readString() // skip docstring
-                    else -> reader.readUnknownField(tag)
+                    ReaderTag.DOC_STRING -> reader.readString() // skip docstring
                 }
             }
             return proto
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        OP_TYPE(1),
+        SINCE_VERSION(2),
+        STATUS(3),
+        DOC_STRING(10);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

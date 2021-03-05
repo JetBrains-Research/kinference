@@ -8,13 +8,13 @@ enum class OperatorStatus(override val value: Int) : WireEnum {
 
     companion object {
         val ADAPTER: ProtoAdapter<OperatorStatus> = object : EnumAdapter<OperatorStatus>(OperatorStatus::class) {
-            override fun fromValue(value: Int): OperatorStatus? = OperatorStatus.fromValue(value)
+            override fun fromValue(value: Int): OperatorStatus = OperatorStatus.fromValue(value)
         }
 
-        fun fromValue(value: Int): OperatorStatus? = when (value) {
+        fun fromValue(value: Int): OperatorStatus = when (value) {
             0 -> EXPERIMENTAL
             1 -> STABLE
-            else -> null
+            else -> error("Cannot convert from value $value")
         }
     }
 }

@@ -11,13 +11,21 @@ class StringStringEntryProto(
             var key: String? = null
             var value: String? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> key = reader.readString()
-                    2 -> value = reader.readString()
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.KEY -> key = reader.readString()
+                    ReaderTag.VALUE -> value = reader.readString()
                 }
             }
-            return StringStringEntryProto(key = key, value = value)
+            return StringStringEntryProto(key, value)
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        KEY(1),
+        VALUE(2);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

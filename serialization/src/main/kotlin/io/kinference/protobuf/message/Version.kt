@@ -26,7 +26,7 @@ enum class Version(override val value: Int) : WireEnum {
             5 -> IR_VERSION_2019_3_18
             6 -> IR_VERSION_2019_9_19
             7 -> IR_VERSION
-            else -> null
+            else -> error("Cannot convert from value $value")
         }
     }
 }

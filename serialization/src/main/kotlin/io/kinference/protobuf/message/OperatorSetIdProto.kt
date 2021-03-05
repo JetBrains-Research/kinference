@@ -11,13 +11,21 @@ class OperatorSetIdProto(
             var domain: String? = null
             var version: Long? = null
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> domain = reader.readString()
-                    2 -> version = reader.readLong()
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.DOMAIN -> domain = reader.readString()
+                    ReaderTag.VERSION -> version = reader.readLong()
                 }
             }
-            return OperatorSetIdProto(domain = domain, version = version)
+            return OperatorSetIdProto(domain, version)
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        DOMAIN(1),
+        VERSION(2);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

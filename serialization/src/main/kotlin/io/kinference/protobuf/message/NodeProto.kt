@@ -14,18 +14,31 @@ class NodeProto(
         fun decode(reader: ProtobufReader): NodeProto {
             val proto = NodeProto()
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> proto.input.add(reader.readString())
-                    2 -> proto.output.add(reader.readString())
-                    3 -> proto.name = reader.readString()
-                    4 -> proto.opType = reader.readString()
-                    5 -> proto.attribute.add(AttributeProto.decode(reader))
-                    6 -> reader.readString() // skip docstring
-                    7 -> proto.domain = reader.readString()
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.INPUT -> proto.input.add(reader.readString())
+                    ReaderTag.OUTPUT -> proto.output.add(reader.readString())
+                    ReaderTag.NAME -> proto.name = reader.readString()
+                    ReaderTag.OP_TYPE -> proto.opType = reader.readString()
+                    ReaderTag.ATTRIBUTE -> proto.attribute.add(AttributeProto.decode(reader))
+                    ReaderTag.DOC_STRING -> reader.readString() // skip docstring
+                    ReaderTag.DOMAIN -> proto.domain = reader.readString()
                 }
             }
             return proto
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        INPUT(1),
+        OUTPUT(2),
+        NAME(3),
+        OP_TYPE(4),
+        ATTRIBUTE(5),
+        DOC_STRING(6),
+        DOMAIN(7);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }

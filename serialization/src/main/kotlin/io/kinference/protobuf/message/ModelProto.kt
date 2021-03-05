@@ -17,21 +17,37 @@ class ModelProto(
         fun decode(reader: ProtobufReader): ModelProto {
             val proto = ModelProto()
             reader.forEachTag { tag ->
-                when (tag) {
-                    1 -> proto.irVersion = reader.readLong()
-                    2 -> proto.producerName = reader.readString()
-                    3 -> proto.producerVersion = reader.readString()
-                    4 -> proto.domain = reader.readString()
-                    5 -> proto.modelVersion = reader.readLong()
-                    6 -> reader.readString() //skip docstring
-                    7 -> proto.graph = GraphProto.decode(reader)
-                    8 -> proto.opSetImport.add(OperatorSetIdProto.decode(reader))
-                    14 -> proto.metadataProps.add(StringStringEntryProto.decode(reader))
-                    20 -> proto.trainingInfo.add(TrainingInfoProto.decode(reader))
-                    else -> reader.readUnknownField(tag)
+                when (ReaderTag.fromInt(tag)) {
+                    ReaderTag.IR_VERSION -> proto.irVersion = reader.readLong()
+                    ReaderTag.PRODUCER_NAME -> proto.producerName = reader.readString()
+                    ReaderTag.PRODUCER_VERSION -> proto.producerVersion = reader.readString()
+                    ReaderTag.DOMAIN -> proto.domain = reader.readString()
+                    ReaderTag.MODEL_VERSION -> proto.modelVersion = reader.readLong()
+                    ReaderTag.DOC_STRING -> reader.readString() //skip docstring
+                    ReaderTag.GRAPH -> proto.graph = GraphProto.decode(reader)
+                    ReaderTag.OP_SET_IMPORT -> proto.opSetImport.add(OperatorSetIdProto.decode(reader))
+                    ReaderTag.METADATA_PROPS -> proto.metadataProps.add(StringStringEntryProto.decode(reader))
+                    ReaderTag.TRAINING_INFO -> proto.trainingInfo.add(TrainingInfoProto.decode(reader))
                 }
             }
             return proto
+        }
+    }
+
+    private enum class ReaderTag(val tag: Int) {
+        IR_VERSION(1),
+        PRODUCER_NAME(2),
+        PRODUCER_VERSION(3),
+        DOMAIN(4),
+        MODEL_VERSION(5),
+        DOC_STRING(6),
+        GRAPH(7),
+        OP_SET_IMPORT(8),
+        METADATA_PROPS(14),
+        TRAINING_INFO(20);
+
+        companion object {
+            fun fromInt(tag: Int) = values().first { it.tag == tag }
         }
     }
 }
