@@ -2,10 +2,9 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
-import io.kinference.onnx.*
 import io.kinference.operators.*
+import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
-import io.kinference.types.ValueTypeInfo
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -19,7 +18,7 @@ class Graph(proto: GraphProto) {
     val operators: List<Operator<ONNXData, ONNXData>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
-    val info = proto.value_info.map { ValueInfo.create(it) }
+    val info = proto.valueInfo.map { ValueInfo.create(it) }
     private val valueOrderInfo = GraphValueOrderInfo()
 
     val initializers: List<Tensor>
@@ -36,10 +35,10 @@ class Graph(proto: GraphProto) {
                 if (attr.type == AttributeProto.AttributeType.GRAPH) {
                     val subGraphInputs: HashSet<String> = attr.g!!.input.mapTo(HashSet()) { it.name!! }
 
-                    val subGraphLocalInputs = attr.g.node.flatMapTo(HashSet()) { it.collectRequiredInputs() }
-                    subGraphInputs.addAll(attr.g.output.map { it.name!! })
+                    val subGraphLocalInputs = attr.g!!.node.flatMapTo(HashSet()) { it.collectRequiredInputs() }
+                    subGraphInputs.addAll(attr.g!!.output.map { it.name!! })
 
-                    val subGraphLocalOutputs = attr.g.node.flatMapTo(HashSet()) { it.output }
+                    val subGraphLocalOutputs = attr.g!!.node.flatMapTo(HashSet()) { it.output }
 
                     addAll((subGraphLocalInputs - subGraphLocalOutputs) - subGraphInputs)
                 }
@@ -101,7 +100,7 @@ class Graph(proto: GraphProto) {
             for (operator in operators) {
                 //TODO: Make normal divider init
                 if (operator.info.name == "Attention" || operator.info.name == "QAttention") {
-                    val numHeads = (operator.attributes["num_heads"]!!.value as Long).toInt()
+                    val numHeads = operator.getAttribute<Long>("num_heads").toInt()
                     for (input in operator.info.inputs) {
                         if (input.index in operator.inputs.indices) {
                             val name = operator.inputs[input.index]
@@ -137,24 +136,10 @@ class Graph(proto: GraphProto) {
     val availableInputs: List<String>
         get() = inputs.map { it.name }
 
-    fun prepareInput(name: String, value: List<Any>): Tensor {
-        val inputInfo = inputs.find { it.name == name }
-        requireNotNull(inputInfo) { "Input with name $name is not found" }
-        require(inputInfo.typeInfo is ValueTypeInfo.TensorTypeInfo) { "Only tensor inputs are supported" }
-
-        return Tensor(value, inputInfo.typeInfo.type)
-    }
-
     fun prepareInput(proto: TensorProto): Tensor {
         val divider = dividerByName[proto.name] ?: 1
 
         return Tensor.create(proto, divider)
-    }
-
-    fun prepareInput(value: List<Any>): Tensor {
-        require(inputs.size == 1) { "Multiple input nodes found. Specify input name explicitly" }
-        val name = inputs.single().name
-        return prepareInput(name, value)
     }
 
     private fun Context.cleanupUntilOrder(order: Int) {

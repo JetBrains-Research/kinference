@@ -5,11 +5,10 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
 
-class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<ONNXSequence, Tensor>(INFO, attributes, inputs, outputs) {
+class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<ONNXSequence, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

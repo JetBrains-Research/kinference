@@ -6,12 +6,11 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.TensorProto
 
-class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
+class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

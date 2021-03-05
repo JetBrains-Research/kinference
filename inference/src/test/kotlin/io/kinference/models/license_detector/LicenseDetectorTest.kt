@@ -6,7 +6,7 @@ import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.asTensor
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.runners.TestRunner
 import io.kinference.types.*
 import io.kinference.utils.DataLoader
@@ -40,10 +40,10 @@ class LicenseDetectorTest {
                 val outputLabels = File("$path/$it").walk().find { file -> "output_labels.pb" == file.name }!!
                 val outputScores = File("$path/$it").walk().find { file -> "output_scores.json" == file.name }!!
 
-                val inputTensors = inputFiles.map { model.graph.prepareInput(TensorProto.ADAPTER.decode(it.readBytes())) }.toList()
+                val inputTensors = inputFiles.map { model.graph.prepareInput(TensorProto.decode(it.readBytes())) }.toList()
                 val expectedLabels = DataLoader.getTensor(outputLabels)
                 val expectedScores = loadJsonONNXSequence(outputScores)
-                val actual = model.predict(inputTensors)
+                val actual = model.predict(inputTensors.toList())
 
                 TestRunner.ONNXTestData(actual, listOf(expectedLabels, expectedScores))
             }

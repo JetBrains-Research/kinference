@@ -12,6 +12,14 @@ fun Collection<Number>.toIntArray(): IntArray {
     return array
 }
 
+fun LongArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
+fun IntArray.toByteArray() = ByteArray(this.size) { this[it].toByte() }
+fun IntArray.toUByteArray() = UByteArray(this.size) { this[it].toUByte() }
+fun IntArray.toBooleanArray() = BooleanArray(this.size) { this[it] != 0 }
+
+fun IntArray?.isNullOrEmpty() = this == null || this.isEmpty()
+fun LongArray?.isNullOrEmpty() = this == null || this.isEmpty()
+
 fun Collection<Number>.toFloatArray(): FloatArray {
     val array = FloatArray(this.size)
     for ((i, element) in this.withIndex()) {

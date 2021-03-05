@@ -7,13 +7,12 @@ import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 
-class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
+class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -437,7 +436,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
 
     private fun castULong(array: ULongNDArray, to: TensorProto.DataType): NDArray {
-        return  when (to) {
+        return when (to) {
             TensorProto.DataType.FLOAT -> {
                 val output = FloatNDArray(FloatTiledArray(array.shape), array.strides)
                 array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toFloat() }
@@ -666,7 +665,6 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             else -> throw IllegalStateException("Unsupported type")
         }
     }
-
 
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {

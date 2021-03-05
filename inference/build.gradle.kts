@@ -6,16 +6,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("com.squareup.wire") version "3.2.2" apply true
     kotlin("kapt") apply true
-}
-
-wire {
-    protoPath("src/main/proto")
-
-    kotlin {
-        out = "src/main/kotlin-gen"
-    }
 }
 
 tasks.test {
@@ -34,22 +25,11 @@ tasks.test {
 useHeavyTests()
 useBenchmarkTests()
 
-sourceSets {
-    main {
-        allJava.srcDir(file("src/main/kotlin-gen"))
-    }
-}
-
-idea {
-    module.generatedSourceDirs.plusAssign(files("src/main/kotlin-gen"))
-}
-
 dependencies {
     api(project(":ndarray"))
+    implementation(project(":serialization"))
 
     api("ch.qos.logback", "logback-classic", "1.2.3")
-
-    api("com.squareup.wire", "wire-runtime", "3.2.2")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
 

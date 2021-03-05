@@ -5,14 +5,13 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
+import io.kinference.ndarray.extensions.rows
 import io.kinference.operators.*
-import io.kinference.operators.ml.TreeEnsembleOperator.Companion.toFloatNDArray
 import io.kinference.operators.ml.trees.TreeEnsembleBuilder
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 
-class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
+class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TreeEnsembleOperator(INFO, attributes, inputs, outputs) {
     companion object {
         private val OUTPUTS_INFO = listOf(
             IOInfo(0, setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING), "Y", optional = false),
@@ -39,7 +38,7 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
             AttributeInfo("post_transform", setOf(AttributeType.STRING), required = false, default = "NONE"),
         )
 
-        private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, TreeEnsembleOperator.INPUTS_INFO, OUTPUTS_INFO)
+        private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         fun FloatNDArray.maxIdx(): Int {
             var max = Float.MIN_VALUE
@@ -70,11 +69,11 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
 
     @Suppress("PropertyName")
     class ClassifierInfo(map: Map<String, Any?>) : TreeEnsembleOperator.BaseEnsembleInfo(map) {
-        val class_ids: List<Number> by map
-        val class_nodeids: List<Number> by map
-        val class_treeids: List<Number> by map
-        val class_weights: List<Number> by map
-        val classlabels_int64s: List<Number>? by map
+        val class_ids: LongArray by map
+        val class_nodeids: LongArray by map
+        val class_treeids: LongArray by map
+        val class_weights: FloatArray by map
+        val classlabels_int64s: LongArray? by map
         val classlabels_strings: List<String>? by map
     }
 

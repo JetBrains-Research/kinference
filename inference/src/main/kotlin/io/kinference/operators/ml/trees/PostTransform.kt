@@ -19,7 +19,7 @@ sealed class PostTransform {
     }
 
     companion object {
-        operator fun get(name: String) = when(name) {
+        operator fun get(name: String) = when (name) {
             "NONE" -> None
             "SOFTMAX" -> SoftmaxTransform
             else -> error("Unsupported post-transformation: $name")

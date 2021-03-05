@@ -1,7 +1,7 @@
 package io.kinference.operators.ml.trees
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 
 class TreeEnsemble(
     private val aggregator: Aggregator,

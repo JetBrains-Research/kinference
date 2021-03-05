@@ -4,15 +4,15 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
-import io.kinference.data.tensors.*
+import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.FloatPointer
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.*
-import kotlin.collections.HashMap
 
 class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, ONNXSequence>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -33,7 +33,7 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: List<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
+        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): ONNXSequence {
             val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
             val mapValueInfo = ValueInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
@@ -41,25 +41,38 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
             val inputPointer = FloatPointer(array)
             return ONNXSequence(seqInfo, rows) {
-                val map = HashMap<T, Tensor>(columns)
+                val map = HashMap<T, ONNXData>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
-                    map[labels[it]] = FloatNDArray.scalar(value).asTensor()
+                    val tensor = FloatNDArray.scalar(value).asTensor()
+                    map[labels[it]] = tensor
                 }
-                ONNXMap(map as HashMap<Any, ONNXData>, mapValueInfo)
+                ONNXMap(map as Map<Any, ONNXData>, mapValueInfo)
             }
         }
     }
 
-    private val classLabelsLong: List<Long>? by attributeOrNull("classlabels_int64s")
-    private val classLabelsString: List<String>? by attributeOrNull("classlabels_strings")
+    sealed class Labels<T> {
+        abstract operator fun get(i: Int): T
+
+        class StringLabels(private val labels: List<String>): Labels<String>() {
+            override fun get(i: Int): String = labels[i]
+        }
+
+        class LongLabels(private val labels: LongArray): Labels<Long>() {
+            override fun get(i: Int): Long = labels[i]
+        }
+    }
+
+    private val classLabelsLong: Labels.LongLabels? by attributeOrNull("classlabels_int64s") { labels: LongArray? -> Labels.LongLabels(labels!!) }
+    private val classLabelsString: Labels.StringLabels? by attributeOrNull("classlabels_strings") { labels: List<String>? -> Labels.StringLabels(labels!!) }
 
     private val outputMapInfo: ValueTypeInfo.MapTypeInfo
         get() {
             val mapKeyType = if (classLabelsLong != null) TensorProto.DataType.INT64 else TensorProto.DataType.STRING
             val mapValueInfo = ValueTypeInfo.TensorTypeInfo(TensorShape.empty(), TensorProto.DataType.FLOAT)
             return ValueTypeInfo.MapTypeInfo(mapKeyType, mapValueInfo)
-    }
+        }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<ONNXSequence?> {
         val labels = classLabelsLong ?: classLabelsString
@@ -67,7 +80,6 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         val input = inputs[0]!!.data as FloatNDArray
         assert(input.rank == 2)
-        assert(labels.size == input.shape.last())
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))
     }

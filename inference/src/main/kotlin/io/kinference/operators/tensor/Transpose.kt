@@ -5,8 +5,9 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.transpose
-import io.kinference.onnx.AttributeProto
+import io.kinference.ndarray.toIntArray
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
 
 class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +24,7 @@ class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("Transpose", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    private val perm: List<Number>? by attributeOrNull()
+    private val perm: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
 
     override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
         return listOf(inputs.first()!!.data.toMutable().transpose(perm).asTensor())

@@ -1,11 +1,13 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.data.tensors.*
+import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.activations.Activation
+import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.resolveLocalDataType
 
 
 open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
@@ -51,8 +53,10 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
     }
 
-    private fun NDArray.processGate(lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
-                                    recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null) {
+    private fun NDArray.processGate(
+        lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
+        recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null
+    ) {
         this as NumberNDArray; lstmWeight as MutableNumberNDArray; lstmGate as MutableNumberNDArray
         this.dot(lstmWeight, lstmGate)
         if (!lastState.isOutputZero) (lastState.output as NumberNDArray).dot(recurrent as NumberNDArray, lstmGate)
@@ -62,19 +66,44 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         lstmGate.mapMutable(activation)
     }
 
-    private fun step(lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
-                     lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction
+    private fun step(
+        lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
+        lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction
     ) {
         gatesData.cleanup()
-        input.processGate(lastState, lstmData.weights.input, gatesData.input, f, lstmData.recurrentWeights.input, lstmData.bias?.input, lstmData.peepholes?.input)
-        input.processGate(lastState, lstmData.weights.forget, gatesData.forget, f, lstmData.recurrentWeights.forget, lstmData.bias?.forget, lstmData.peepholes?.forget)
+        input.processGate(
+            lastState,
+            lstmData.weights.input,
+            gatesData.input,
+            f,
+            lstmData.recurrentWeights.input,
+            lstmData.bias?.input,
+            lstmData.peepholes?.input
+        )
+        input.processGate(
+            lastState,
+            lstmData.weights.forget,
+            gatesData.forget,
+            f,
+            lstmData.recurrentWeights.forget,
+            lstmData.bias?.forget,
+            lstmData.peepholes?.forget
+        )
         input.processGate(lastState, lstmData.weights.cellGate, gatesData.cellGate, g, lstmData.recurrentWeights.cellGate, lstmData.bias?.cellGate)
 
         if (!lastState.isCellStateZero) (lastState.cellState as MutableNumberNDArray).timesAssign(gatesData.forget)
         (gatesData.input as MutableNumberNDArray).timesAssign(gatesData.cellGate)
         (lastState.cellState as MutableNumberNDArray).plusAssign(gatesData.input)
 
-        input.processGate(lastState, lstmData.weights.output, gatesData.output, f, lstmData.recurrentWeights.output, lstmData.bias?.output, lstmData.peepholes?.output)
+        input.processGate(
+            lastState,
+            lstmData.weights.output,
+            gatesData.output,
+            f,
+            lstmData.recurrentWeights.output,
+            lstmData.bias?.output,
+            lstmData.peepholes?.output
+        )
 
         lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
 
@@ -84,7 +113,14 @@ open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: Stri
         lastState.isCellStateZero = false
     }
 
-    override fun parseTempInputs(weights: Tensor, recurrentWeights: Tensor, bias: Tensor?, initialOutput: Tensor?, initialCellState: Tensor?, peepholes: Tensor?) {
+    override fun parseTempInputs(
+        weights: Tensor,
+        recurrentWeights: Tensor,
+        bias: Tensor?,
+        initialOutput: Tensor?,
+        initialCellState: Tensor?,
+        peepholes: Tensor?
+    ) {
         if (lstmData == null) {
             val parsedWeights = GatesData.createWeights(weights.data.toMutable())
             val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data.toMutable())

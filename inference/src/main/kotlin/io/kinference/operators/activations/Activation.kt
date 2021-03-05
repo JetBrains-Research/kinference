@@ -9,8 +9,8 @@ import io.kinference.operators.Operator
 import io.kinference.operators.OperatorInfo
 import io.kinference.primitives.types.DataType
 
-abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
+abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
 
     open fun activate(input: Tensor): Tensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray): NDArray

@@ -8,18 +8,17 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.ndarray.extensions.*
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operators.*
 import io.kinference.operators.activations.Softmax
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import kotlinx.coroutines.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
+class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
@@ -126,8 +125,10 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
 
         //create present state block from past + current states
-        private fun MutableNDArray.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
-                                               pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableNDArray, Int> {
+        private fun MutableNDArray.updateState(
+            past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
+            pastOffset: Int, presentOffset: Int, currentOffset: Int
+        ): Pair<MutableNDArray, Int> {
             //present state block offset
             val presentStart = i * presentBlockSize + presentOffset
 

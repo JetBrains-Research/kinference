@@ -2,10 +2,10 @@ package io.kinference.operators.activations
 
 import io.kinference.attributes.Attribute
 import io.kinference.ndarray.arrays.*
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import io.kinference.operators.math.tanh
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
 import kotlin.math.exp
 import kotlin.math.max
 
@@ -13,7 +13,8 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
-        private val INFO = OperatorInfo("Identity", emptyMap(),
+        private val INFO = OperatorInfo(
+            "Identity", emptyMap(),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
@@ -27,7 +28,8 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val INFO = OperatorInfo("Relu", emptyMap(),
+        private val INFO = OperatorInfo(
+            "Relu", emptyMap(),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
@@ -48,11 +50,13 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     }
 }
 
-class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
+    Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val INFO = OperatorInfo("LeakyRelu",
+        private val INFO = OperatorInfo(
+            "LeakyRelu",
             listOf(AttributeInfo("alpha", setOf(AttributeProto.AttributeType.FLOAT), default = 0.01f)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
@@ -77,11 +81,13 @@ class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Li
 }
 
 
-class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
+    Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val INFO = OperatorInfo("Sigmoid", emptyMap(),
+        private val INFO = OperatorInfo(
+            "Sigmoid", emptyMap(),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
@@ -107,7 +113,8 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val INFO = OperatorInfo("Tanh", emptyMap(),
+        private val INFO = OperatorInfo(
+            "Tanh", emptyMap(),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )
@@ -132,7 +139,8 @@ class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<Str
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val INFO = OperatorInfo("Erf", emptyMap(),
+        private val INFO = OperatorInfo(
+            "Erf", emptyMap(),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
             listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
         )

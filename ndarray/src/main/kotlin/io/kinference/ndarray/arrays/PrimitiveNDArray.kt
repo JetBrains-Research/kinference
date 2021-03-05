@@ -13,15 +13,24 @@ import kotlinx.coroutines.*
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
-open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArray {
+open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides, divider: Int? = null) : NumberNDArray {
     constructor(shape: IntArray, divider: Int = 1) : this(PrimitiveTiledArray(shape, divider), Strides(shape))
     constructor(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, divider, init), Strides(shape))
 
     constructor(strides: Strides, divider: Int = 1) : this(PrimitiveTiledArray(strides, divider), strides)
     constructor(strides: Strides, divider: Int = 1, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, divider, init), strides)
 
-    var array: PrimitiveTiledArray = array
+    var array: PrimitiveTiledArray
         protected set
+
+    init {
+        if (divider != null && PrimitiveTiledArray.blockSizeByStrides(strides, divider) != array.blockSize) {
+            val pointer = PrimitivePointer(array)
+            this.array = PrimitiveTiledArray(strides, divider) { pointer.getAndIncrement() }
+        } else {
+            this.array = array
+        }
+    }
 
     protected val blocksInRow: Int
         get() = when {
