@@ -28,6 +28,7 @@ class ModelProto(
                     ReaderTag.OP_SET_IMPORT -> proto.opSetImport.add(OperatorSetIdProto.decode(reader))
                     ReaderTag.METADATA_PROPS -> proto.metadataProps.add(StringStringEntryProto.decode(reader))
                     ReaderTag.TRAINING_INFO -> proto.trainingInfo.add(TrainingInfoProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -47,7 +48,7 @@ class ModelProto(
         TRAINING_INFO(20);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

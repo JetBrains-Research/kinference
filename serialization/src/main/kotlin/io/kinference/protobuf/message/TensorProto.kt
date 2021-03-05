@@ -59,6 +59,7 @@ class TensorProto(
                     } catch (e: ProtoAdapter.EnumConstantNotFoundException) {
                         reader.addUnknownField(tag, FieldEncoding.VARINT, e.value.toLong())
                     }
+                    null -> reader.readUnknownField(tag)
                 }
             }
             if (rawData != null || !proto.hasData()) parseRaw(rawData, proto)
@@ -143,7 +144,7 @@ class TensorProto(
         LOCATION(14);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 
@@ -203,6 +204,7 @@ class TensorProto(
                     when (ReaderTag.fromInt(tag)) {
                         ReaderTag.BEGIN -> begin = reader.readLong()
                         ReaderTag.END -> end = reader.readLong()
+                        null -> reader.readUnknownField(tag)
                     }
                 }
                 return Segment(begin = begin, end = end)
@@ -214,7 +216,7 @@ class TensorProto(
             END(2);
 
             companion object {
-                fun fromInt(tag: Int) = values().first { it.tag == tag }
+                fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
             }
         }
     }

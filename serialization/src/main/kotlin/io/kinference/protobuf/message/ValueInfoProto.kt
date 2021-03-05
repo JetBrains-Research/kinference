@@ -15,6 +15,7 @@ class ValueInfoProto(
                     ReaderTag.NAME -> name = reader.readString()
                     ReaderTag.TYPE -> type = TypeProto.decode(reader)
                     ReaderTag.DOC_STRING -> reader.readString() // skip docstring
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return ValueInfoProto(name = name, type = type)
@@ -27,7 +28,7 @@ class ValueInfoProto(
         DOC_STRING(3);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

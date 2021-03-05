@@ -14,6 +14,7 @@ class OperatorSetIdProto(
                 when (ReaderTag.fromInt(tag)) {
                     ReaderTag.DOMAIN -> domain = reader.readString()
                     ReaderTag.VERSION -> version = reader.readLong()
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return OperatorSetIdProto(domain, version)
@@ -25,7 +26,7 @@ class OperatorSetIdProto(
         VERSION(2);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

@@ -20,6 +20,7 @@ class TypeProto(
                     ReaderTag.SEQ_TYPE -> sequenceType = Sequence.decode(reader)
                     ReaderTag.MAP_TYPE -> mapType = Map.decode(reader)
                     ReaderTag.DENOTATION -> denotation = reader.readString()
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return TypeProto(denotation, tensorType, sequenceType, mapType)
@@ -33,7 +34,7 @@ class TypeProto(
         DENOTATION(6);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 
@@ -46,7 +47,7 @@ class TypeProto(
                     when (ReaderTag.fromInt(tag)) {
                         ReaderTag.ELEMENT_TYPE -> elemType = reader.readInt()
                         ReaderTag.SHAPE -> shape = TensorShapeProto.decode(reader)
-                        else -> reader.readUnknownField(tag)
+                        null -> reader.readUnknownField(tag)
                     }
                 }
                 return Tensor(elemType, shape)
@@ -58,7 +59,7 @@ class TypeProto(
             SHAPE(2);
 
             companion object {
-                fun fromInt(tag: Int) = values().first { it.tag == tag }
+                fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
             }
         }
     }
@@ -68,8 +69,10 @@ class TypeProto(
             fun decode(reader: ProtobufReader): Sequence {
                 var elemType: TypeProto? = null
                 reader.forEachTag { tag ->
-                    if (tag != 1) error("Unexpected tag $tag")
-                    elemType = TypeProto.decode(reader)
+                    if (tag == 1)
+                        elemType = TypeProto.decode(reader)
+                    else
+                        reader.readUnknownField(tag)
                 }
                 return Sequence(elemType)
             }
@@ -85,6 +88,7 @@ class TypeProto(
                     when (ReaderTag.fromInt(tag)) {
                         ReaderTag.KEY_TYPE -> keyType = reader.readInt()
                         ReaderTag.VALUE_TYPE -> valueType = TypeProto.decode(reader)
+                        null -> reader.readUnknownField(tag)
                     }
                 }
                 return Map(keyType, valueType)
@@ -96,7 +100,7 @@ class TypeProto(
             VALUE_TYPE(2);
 
             companion object {
-                fun fromInt(tag: Int) = values().first { it.tag == tag }
+                fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
             }
         }
     }

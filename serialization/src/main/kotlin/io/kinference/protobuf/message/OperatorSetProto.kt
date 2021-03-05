@@ -26,6 +26,7 @@ class OperatorSetProto(
                     ReaderTag.IR_BUILD_METADATA -> proto.irBuildMetadata = reader.readString()
                     ReaderTag.OPERATOR -> proto.operator.add(OperatorProto.decode(reader))
                     ReaderTag.FUNCTIONS -> proto.functions.add(FunctionProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -44,7 +45,7 @@ class OperatorSetProto(
         FUNCTIONS(9);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

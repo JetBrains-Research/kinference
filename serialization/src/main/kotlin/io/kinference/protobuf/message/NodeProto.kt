@@ -22,6 +22,7 @@ class NodeProto(
                     ReaderTag.ATTRIBUTE -> proto.attribute.add(AttributeProto.decode(reader))
                     ReaderTag.DOC_STRING -> reader.readString() // skip docstring
                     ReaderTag.DOMAIN -> proto.domain = reader.readString()
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -38,7 +39,7 @@ class NodeProto(
         DOMAIN(7);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

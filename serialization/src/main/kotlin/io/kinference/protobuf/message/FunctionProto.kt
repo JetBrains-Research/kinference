@@ -32,6 +32,7 @@ class FunctionProto(
                     ReaderTag.NODE -> proto.node.add(NodeProto.decode(reader))
                     ReaderTag.DOC_STRING -> reader.readString() // skip docstring
                     ReaderTag.OP_SET_IMPORT -> proto.opSetImport.add(OperatorSetIdProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -50,7 +51,7 @@ class FunctionProto(
         OP_SET_IMPORT(9);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

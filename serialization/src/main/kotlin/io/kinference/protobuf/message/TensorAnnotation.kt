@@ -13,6 +13,7 @@ class TensorAnnotation(
                 when (ReaderTag.fromInt(tag)) {
                     ReaderTag.TENSOR_NAME -> proto.tensorName = reader.readString()
                     ReaderTag.QUANT_PARAMS_TENSOR_NAMES -> proto.quantParameterTensorNames.add(StringStringEntryProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -24,7 +25,7 @@ class TensorAnnotation(
         QUANT_PARAMS_TENSOR_NAMES(2);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

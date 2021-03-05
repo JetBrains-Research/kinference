@@ -18,6 +18,7 @@ class SparseTensorProto(
                     ReaderTag.VALUES -> values = TensorProto.decode(reader)
                     ReaderTag.INDICES -> indices = TensorProto.decode(reader)
                     ReaderTag.DIMS -> dims = LongArraySerializer.decode(reader, tag)
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return SparseTensorProto(values = values, indices = indices, dims = dims)
@@ -30,7 +31,7 @@ class SparseTensorProto(
         DIMS(3);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

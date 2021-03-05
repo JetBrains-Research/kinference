@@ -22,6 +22,7 @@ class OperatorProto(
                         reader.addUnknownField(tag, FieldEncoding.VARINT, e.value.toLong())
                     }
                     ReaderTag.DOC_STRING -> reader.readString() // skip docstring
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -35,7 +36,7 @@ class OperatorProto(
         DOC_STRING(10);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

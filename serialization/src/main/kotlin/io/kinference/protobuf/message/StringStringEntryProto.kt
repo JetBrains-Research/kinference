@@ -14,6 +14,7 @@ class StringStringEntryProto(
                 when (ReaderTag.fromInt(tag)) {
                     ReaderTag.KEY -> key = reader.readString()
                     ReaderTag.VALUE -> value = reader.readString()
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return StringStringEntryProto(key, value)
@@ -25,7 +26,7 @@ class StringStringEntryProto(
         VALUE(2);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

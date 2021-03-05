@@ -46,6 +46,7 @@ class AttributeProto(
                     ReaderTag.TENSORS_DATA -> proto.tensors.add(TensorProto.decode(reader))
                     ReaderTag.GRAPHS_DATA -> proto.graphs.add(GraphProto.decode(reader))
                     ReaderTag.SPARSE_TENSORS -> proto.sparseTensors.add(SparseTensorProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -73,7 +74,7 @@ class AttributeProto(
         SPARSE_TENSORS(23);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 

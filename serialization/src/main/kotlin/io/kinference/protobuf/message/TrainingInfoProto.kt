@@ -17,6 +17,7 @@ class TrainingInfoProto(
                     ReaderTag.ALGORITHM -> proto.algorithm = GraphProto.decode(reader)
                     ReaderTag.INIT_BINDING -> proto.initializationBinding.add(StringStringEntryProto.decode(reader))
                     ReaderTag.UPDATE_BINDING -> proto.updateBinding.add(StringStringEntryProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -30,7 +31,7 @@ class TrainingInfoProto(
         UPDATE_BINDING(4);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }

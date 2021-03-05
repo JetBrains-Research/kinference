@@ -7,8 +7,10 @@ class TensorShapeProto(val dim: List<Dimension> = emptyList()) {
         fun decode(reader: ProtobufReader): TensorShapeProto {
             val dim = mutableListOf<Dimension>()
             reader.forEachTag { tag ->
-                if (tag != 1) error("Unexpected tag $tag")
-                dim.add(Dimension.decode(reader))
+                if (tag == 1)
+                    dim.add(Dimension.decode(reader))
+                else
+                    reader.readUnknownField(tag)
             }
             return TensorShapeProto(dim)
         }
@@ -29,6 +31,7 @@ class TensorShapeProto(val dim: List<Dimension> = emptyList()) {
                         ReaderTag.DIM_VALUE -> dimValue = reader.readLong()
                         ReaderTag.DIM_PARAM -> dimParam = reader.readString()
                         ReaderTag.DENOTATION -> denotation = reader.readString()
+                        null -> reader.readUnknownField(tag)
                     }
                 }
                 return Dimension(denotation, dimValue, dimParam)
@@ -41,7 +44,7 @@ class TensorShapeProto(val dim: List<Dimension> = emptyList()) {
             DENOTATION(3);
 
             companion object {
-                fun fromInt(tag: Int) = values().first { it.tag == tag }
+                fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
             }
         }
     }

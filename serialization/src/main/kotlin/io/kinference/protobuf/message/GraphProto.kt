@@ -26,6 +26,7 @@ class GraphProto(
                     ReaderTag.VALUE_INFO -> proto.valueInfo.add(ValueInfoProto.decode(reader))
                     ReaderTag.QUANTIZATION_ANNOTATION -> proto.quantizationAnnotation.add(TensorAnnotation.decode(reader))
                     ReaderTag.SPARSE_INITIALIZER -> proto.sparseInitializer.add(SparseTensorProto.decode(reader))
+                    null -> reader.readUnknownField(tag)
                 }
             }
             return proto
@@ -44,7 +45,7 @@ class GraphProto(
         SPARSE_INITIALIZER(15);
 
         companion object {
-            fun fromInt(tag: Int) = values().first { it.tag == tag }
+            fun fromInt(tag: Int) = values().firstOrNull { it.tag == tag }
         }
     }
 }
