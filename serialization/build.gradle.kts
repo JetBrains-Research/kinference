@@ -3,10 +3,6 @@ import tanvd.kosogor.proxy.publishJar
 group = rootProject.group
 version = rootProject.version
 
-plugins {
-    kotlin("plugin.serialization") version "1.4.21"
-}
-
 dependencies {
     api(kotlin("stdlib"))
     api(project(":ndarray"))
