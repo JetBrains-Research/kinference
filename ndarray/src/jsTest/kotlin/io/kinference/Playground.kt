@@ -23,7 +23,7 @@ class Playground {
         val m = 1024
         val t = 1024
 
-        val count = 1
+        val count = 3
 
         println("Start matrix multiplication test M: $m, N: $n, T: $t:")
 
@@ -42,46 +42,57 @@ class Playground {
 
         val gpu = object : DrawConfig<MMUniforms, MMAttributes, MMProps, Any, DefaultContext> {
             init {
+                // language=glsl
                 vert = """
-                    precision mediump float;
+                    precision highp float;
                     attribute vec2 position;
-                    varying vec2 vUv;
     
                     void main () {
-                        vUv = 0.5 * (position + 1.0);
                         gl_Position = vec4(position, 0, 1);
                     }
                 """.trimIndent()
 
+                // language=glsl
                 frag = """
-                    precision mediump float;
+                    precision highp float;
                     
                     uniform sampler2D leftMatrix;
                     uniform sampler2D rightMatrix;
                     
-                    varying vec2 vUv;
+                    #define N ($n.0)
+                    #define M ($m.0)
+                    #define T ($t.0)
                     
-                    #define destDim vec2($n,$m)
-                    #define leftDim vec2($n,$t)
-                    #define rightDim vec2($t,$m)
-                    
-                    #define leftDimInt ivec2($n,$t)
-                    
-                    void main () {
-                        vec2 uv = vUv;
+                    void main () {                         
+                        const int isize = int(T) / 4;
+                        const float size = float(isize);
+                        const float step = 1.0 / size;
+                                               
+                        float x = (gl_FragCoord.x - 0.5) * 4.;
+                        float y = (gl_FragCoord.y - 0.5);
                         
-                        float x = uv.x * destDim.x;
-                        float y = uv.y * destDim.y;
-                        float sum = 0.0;
+                        float ind = 0.0;
+                        float lind = y / N;
+                        float rstep = 1.0 / M;
                         
-                        for (int i = 0; i < leftDimInt.x; i++) {
-                            float left = texture2D(leftMatrix, vec2(float(i) / leftDim.x, y / leftDim.y)).x;
-                            float right = texture2D(rightMatrix, vec2(x / rightDim.x, float(i) / rightDim.y)).x;
+                        float x1 = x / M;
+                        float x2 = x1 + rstep;
+                        float x3 = x2 + rstep;
+                        float x4 = x3 + rstep;
+                        
+                        vec4 acc = vec4(0.);
+                        for (int i = 0; i < isize; i++) {
+                            vec4 left = texture2D(leftMatrix, vec2(ind, lind));
                             
-                            sum += left * right;
+                            acc.x += dot(left, texture2D(rightMatrix, vec2(ind, x1)));
+                            acc.y += dot(left, texture2D(rightMatrix, vec2(ind, x2)));
+                            acc.z += dot(left, texture2D(rightMatrix, vec2(ind, x3)));
+                            acc.w += dot(left, texture2D(rightMatrix, vec2(ind, x4)));
+                            
+                            ind += step;
                         }
                         
-                        gl_FragColor = vec4(sum);
+                        gl_FragColor = acc;
                     }
                 """.trimIndent()
 
@@ -94,15 +105,17 @@ class Playground {
 
                 attributes = object : MMAttributes {
                     init {
-                        _position = arrayOf(-4, -4, 4, -4, 0, 4)
+                        _position = arrayOf(-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1)
                     }
                 }
 
-                this.count = 3
+                this.count = 6
             }
         }
 
         val exec = regl(gpu)
+
+
 
         val destTexture = createTexture(n, m)
         val fbo = regl.framebuffer(object : FramebufferOptions {
@@ -118,7 +131,7 @@ class Playground {
                 }
             })
 
-            val result = FloatArray(n * m)
+            var result: FloatArray? = null
             fbo.use<DefaultContext, Any> { _, _, _ ->
                 exec(object : MMProps {
                     init {
@@ -127,19 +140,14 @@ class Playground {
                     }
                 })
 
-                val array = regl.read<FloatArray>()
-
-                var count = 0
-                for (i in array.indices step 4) {
-                    result[count++] = array[i]
-                }
+                result = regl.read<FloatArray>()
             }
 
-            return result
+            return result!!
         }
 
         val leftTexture = createTextureFromArray(n, t, left)
-        val rightTexture = createTextureFromArray(t, m, right)
+        val rightTexture = createTextureFromArray(t, m, right, true)
         var destBaselineGPU = FloatArray(0)
 
         val baselineGPUTime = measureTime {
@@ -150,7 +158,9 @@ class Playground {
 
         println("Baseline GPU: ${baselineGPUTime / count}")
 
-        assertTrue(destBaseline.contentEquals(destBaselineGPU))
+//        println(destBaseline.toString())
+//        println(destBaselineGPU.toString())
+//        assertTrue(destBaseline.contentEquals(destBaselineGPU))
     }
 
     interface MMUniforms {
@@ -180,9 +190,11 @@ class Playground {
     }
 
     private fun createTexture(width: Int, height: Int): Texture2D {
+        require(width % 4 == 0) { "Width must be multiple of 4" }
+
         return regl.texture(object : Texture2DOptions {
             init {
-                this.width = width
+                this.width = width / 4
                 this.height = height
                 format = "rgba"
                 type = "float"
@@ -192,20 +204,22 @@ class Playground {
         })
     }
 
-    private fun createTextureFromArray(width: Int, height: Int, array: FloatArray): Texture2D {
-        val data = FloatArray(width * height * 4) { 0f }
+    private fun createTextureFromArray(width: Int, height: Int, array: FloatArray, transpose: Boolean = false): Texture2D {
+        require(width % 4 == 0) { "Width must be multiple of 4" }
 
-        repeat(width * height) {
-            data[it * 4] = array[it]
-            data[it * 4 + 1] = array[it]
-            data[it * 4 + 2] = array[it]
-            data[it * 4 + 3] = array[it]
+        val data = if (transpose) {
+            FloatArray(width * height) { array[(it % height) * width + it / height] }
+        } else {
+            array
         }
+
+        val w = if (transpose) height else width
+        val h = if (transpose) width else height
 
         return regl.texture(object : Texture2DOptions {
             init {
-                this.width = width
-                this.height = height
+                this.width = w / 4
+                this.height = h
                 this.data = data
                 format = "rgba"
                 type = "float"
