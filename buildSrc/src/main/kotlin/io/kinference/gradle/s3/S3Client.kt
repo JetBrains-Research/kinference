@@ -43,7 +43,9 @@ class S3Client(val config: Config) {
         }
 
         File(toFolder, "descriptor.txt").writeText(
-            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") { it.absolutePath.drop(toFolder.absolutePath.length + 1) }
+            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") {
+                it.absolutePath.drop(toFolder.absolutePath.length + 1).replace('\\', '/')
+            }
         )
 
         val toDownload = objects.zip(files).filter { (obj, file) ->
