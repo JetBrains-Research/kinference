@@ -4,10 +4,13 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.MutableBooleanNDArray
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +24,7 @@ class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val data = inputs[0]!!.data.toMutable() as MutableBooleanNDArray
         return listOf(data.not().asTensor("output"))
     }

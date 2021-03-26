@@ -11,8 +11,10 @@ import io.kinference.primitives.types.DataType
 import kotlinx.coroutines.*
 import kotlin.math.exp
 import kotlin.math.min
+import kotlin.time.ExperimentalTime
 
 //only for float and double types
+@ExperimentalTime
 class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

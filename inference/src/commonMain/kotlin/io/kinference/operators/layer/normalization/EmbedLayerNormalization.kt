@@ -4,13 +4,16 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.onnx.AttributeProto.AttributeType
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import kotlin.math.sqrt
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 
@@ -122,7 +125,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs[1]?.data as IntNDArray?
         val wordEmbed = inputs[2]!!.data as FloatNDArray

@@ -4,12 +4,14 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
-
+@ExperimentalTime
 class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
 
@@ -46,7 +48,7 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val weights = inputs[1]!!.data as NumberNDArray
 

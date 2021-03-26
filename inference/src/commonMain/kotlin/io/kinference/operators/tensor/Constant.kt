@@ -3,10 +3,13 @@ package io.kinference.operators.tensor
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -31,7 +34,7 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         //only one of all attributes is not null
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeOrNull<Any?>(it.name) }.single { it.second != null }
 

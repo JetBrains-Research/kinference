@@ -6,12 +6,15 @@ import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo.SequenceTypeInfo
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, ONNXSequence>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -37,7 +40,7 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<ONNXSequence?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<ONNXSequence?> {
         val parts = inputs.elementAtOrNull(1)
 
         val input = inputs[0]!!

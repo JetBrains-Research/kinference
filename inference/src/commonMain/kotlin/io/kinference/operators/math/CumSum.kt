@@ -4,11 +4,14 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
     Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -34,7 +37,7 @@ class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<
     private val exclusive by attribute { ex: Number -> ex.toInt() != 0 }
     private val reverse by attribute { r: Number -> r.toInt() != 0 }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val axis = (inputs[1]!!.data.singleValue() as Number).toInt()
         return listOf(input.cumulativeSum(axis, exclusive, reverse).asTensor("y"))

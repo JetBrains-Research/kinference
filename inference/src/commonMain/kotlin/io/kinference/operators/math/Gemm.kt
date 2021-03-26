@@ -4,6 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.broadcasting.unsqueezeFirst
@@ -13,7 +14,9 @@ import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val alpha: Double by attribute { it: Number -> it.toDouble() }
     private val beta: Double by attribute { it: Number -> it.toDouble() }
@@ -72,7 +75,7 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         }
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val a = inputs[0]!!.data as NumberNDArray
         val b = inputs[1]!!.data as NumberNDArray
 

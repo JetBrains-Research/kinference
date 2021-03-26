@@ -4,12 +4,15 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.gather
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Gather(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -31,7 +34,7 @@ class Gather(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val (data, indices) = inputs
         val axis = data!!.data.indexAxis(axis)
         return listOf(data.data.gather(indices!!.data, axis).asTensor())

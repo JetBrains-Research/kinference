@@ -4,6 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.DoubleNDArray
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.acceptTriple
@@ -16,7 +17,9 @@ import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val epsilon: Float by attribute()
@@ -50,7 +53,7 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data
         val scale = inputs[1]!!.data
         val bias = inputs[2]!!.data

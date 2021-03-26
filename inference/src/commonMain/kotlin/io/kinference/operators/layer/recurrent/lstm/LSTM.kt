@@ -3,10 +3,13 @@ package io.kinference.operators.layer.recurrent.lstm
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     // TODO: Support activation alpha and beta
     private val activations: List<String> by attribute()
@@ -60,7 +63,7 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         return layer.apply(inputs)
     }
 }

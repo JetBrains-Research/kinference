@@ -4,7 +4,9 @@ import io.kinference.runners.PerformanceRunner
 import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class GPTGrazieTest {
     @Test
     fun heavy_test_gpt_grazie_model() = TestRunner.runTest {

@@ -4,13 +4,16 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -29,7 +32,7 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
         private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val condition = inputs[0]!!.data
         val left = inputs[1]!!.data
         val right = inputs[2]!!.data

@@ -4,10 +4,13 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.transpose
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -25,7 +28,7 @@ class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
     private val perm: List<Number>? by attributeOrNull()
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         return listOf(inputs.first()!!.data.toMutable().transpose(perm).asTensor())
     }
 }

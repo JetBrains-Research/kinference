@@ -4,9 +4,12 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.concatenate
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -25,7 +28,7 @@ class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         return listOf(inputs.requireNoNulls().concatenate(axis))
     }
 }

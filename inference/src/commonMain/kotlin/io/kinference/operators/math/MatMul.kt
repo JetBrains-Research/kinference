@@ -3,9 +3,12 @@ package io.kinference.operators.math
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -29,7 +32,7 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private val INFO = OperatorInfo("MatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         return listOf((inputs[0]!! matmul inputs[1]!!))
     }
 }

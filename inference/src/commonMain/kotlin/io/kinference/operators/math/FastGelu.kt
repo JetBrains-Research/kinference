@@ -4,12 +4,15 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptRecursive
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
     Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -28,7 +31,7 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)
 

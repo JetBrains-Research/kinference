@@ -4,10 +4,13 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.toIntArray
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -28,7 +31,7 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     private val split: Any? by attributeOrNull()
 
     @Suppress("UNCHECKED_CAST")
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!
         return when (split) {
             null -> input.splitWithAxis(outputs.size, axis)

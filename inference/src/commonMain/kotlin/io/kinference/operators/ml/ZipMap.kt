@@ -6,6 +6,7 @@ import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.FloatPointer
 import io.kinference.onnx.AttributeProto
@@ -13,7 +14,9 @@ import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.types.*
 import kotlin.collections.HashMap
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, ONNXSequence>(INFO, attributes, inputs, outputs) {
     companion object {
         private val OUT_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING, TensorProto.DataType.FLOAT)
@@ -61,7 +64,7 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
             return ValueTypeInfo.MapTypeInfo(mapKeyType, mapValueInfo)
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<ONNXSequence?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<ONNXSequence?> {
         val labels = classLabelsLong ?: classLabelsString
         requireNotNull(labels) { "Class labels should be specified" }
 

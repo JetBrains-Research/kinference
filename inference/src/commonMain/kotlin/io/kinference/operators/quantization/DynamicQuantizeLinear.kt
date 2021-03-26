@@ -4,6 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableUByteNDArray
 import io.kinference.ndarray.extensions.allocateNDArray
@@ -12,7 +13,9 @@ import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()
@@ -40,7 +43,7 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
     private fun Float.toUByte() = this.toUInt().toUByte()
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!.data as FloatNDArray
 
         val inputMin = min(0f, input.min())

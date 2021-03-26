@@ -5,11 +5,13 @@ import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto.DataType
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+import kotlin.time.ExperimentalTime
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) {
     init {
@@ -45,6 +47,7 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
     }
 }
 
+@ExperimentalTime
 @Suppress("UNCHECKED_CAST")
 abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInfo, val attributes: Map<String, Attribute<Any>> = emptyMap(), val inputs: List<String>, val outputs: List<String>) {
     init {
@@ -104,9 +107,9 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         }
     }
 
-    fun applyWithCheck(context: Context, inputs: List<T?>): List<U?> {
+    fun applyWithCheck(context: Context, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = apply(context, inputs)
+        val outputs = apply(context, inputs, profilingContext)
         require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
@@ -155,8 +158,8 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
-    abstract fun apply(context: Context, inputs: List<T?>): List<U?>
-    open fun apply(context: Context, vararg inputs: T?): Collection<U?> = apply(context, inputs.toList())
+    abstract fun apply(context: Context, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
+    open fun apply(context: Context, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> = apply(context, inputs.toList(), profilingContext)
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED

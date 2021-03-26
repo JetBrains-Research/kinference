@@ -4,6 +4,7 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
@@ -11,7 +12,9 @@ import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import kotlin.math.sqrt
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
@@ -84,7 +87,7 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val output = input.allocateNDArray(input.strides) as MutableFloatNDArray
         input.normalize(

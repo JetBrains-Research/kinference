@@ -6,7 +6,9 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 abstract class TreeEnsembleOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<Tensor, Tensor>(info, attributes, inputs, outputs) {
     companion object {

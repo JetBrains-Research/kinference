@@ -5,9 +5,12 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<ONNXSequence, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
@@ -28,7 +31,7 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<S
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val newAxis: Boolean by attribute("new_axis") { it: Number -> it.toInt() == 1 }
 
-    override fun apply(context: Context, inputs: List<ONNXSequence?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<ONNXSequence?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val srcTensors = inputs.first()!!.data as List<Tensor>
         val tensor = if (newAxis) srcTensors.stack(axis) else srcTensors.concatenate(axis)
         return listOf(tensor)

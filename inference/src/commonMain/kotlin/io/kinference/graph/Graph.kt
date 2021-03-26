@@ -8,9 +8,11 @@ import io.kinference.onnx.*
 import io.kinference.operators.*
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
+import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
+@ExperimentalTime
 class Graph(proto: GraphProto) {
     companion object {
         private val logger = logger(Graph::class.simpleName ?: "")
@@ -161,7 +163,8 @@ class Graph(proto: GraphProto) {
         return this.removeValues { valueOrderInfo.getOrder(it) <= order }
     }
 
-    fun execute(inputs: List<ONNXData>, root: Context? = null): List<ONNXData> {
+    @ExperimentalTime
+    fun execute(inputs: List<ONNXData>, root: Context? = null, profilingContext: ProfilingContext? = null): List<ONNXData> {
         //TODO: check that all inputs were set and not null
 
         val context = Context(root)
@@ -176,22 +179,19 @@ class Graph(proto: GraphProto) {
             context.putValue(input.info.name, input)
         }
 
-        //println("\nExec model:")
         for ((i, operator) in operators.withIndex()) {
-//            lateinit var outputs: List<ONNXData?>
-//            val time = measureNanoTime {
-//                outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
-//            }
-//
-//            println("${operator.info.name} - ${time / 1000000f} ms")
+            lateinit var outputs: List<ONNXData?>
+            profilingContext.profile(operator.info.name) { profilingContext ->
+                outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)
+            }
 
-            val outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) })
-
-            context.cleanupUntilOrder(i)
-            outputs.zip(operator.outputs) { output, variable ->
-                if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
-                if (variable.isNotEmpty()) {
-                    context.putValue(variable, output!!.rename(name = variable))
+            profilingContext.profile("${operator.info.name}:cleanup") {
+                context.cleanupUntilOrder(i)
+                outputs.zip(operator.outputs) { output, variable ->
+                    if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
+                    if (variable.isNotEmpty()) {
+                        context.putValue(variable, output!!.rename(name = variable))
+                    }
                 }
             }
         }

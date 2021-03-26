@@ -6,7 +6,9 @@ import io.kinference.onnx.TensorProto
 import io.kinference.utils.*
 import kotlin.math.pow
 import kotlin.test.assertEquals
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 object AccuracyRunner {
     private val delta = (10.0).pow(-3)
 

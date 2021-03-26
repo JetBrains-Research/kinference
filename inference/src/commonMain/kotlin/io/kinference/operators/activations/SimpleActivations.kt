@@ -8,7 +8,9 @@ import io.kinference.operators.math.tanh
 import io.kinference.primitives.types.DataType
 import kotlin.math.exp
 import kotlin.math.max
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -22,7 +24,7 @@ class Identity(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     override fun activate(input: NDArray): NDArray = input
 }
 
-
+@ExperimentalTime
 class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -48,6 +50,7 @@ class Relu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     }
 }
 
+@ExperimentalTime
 class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -76,7 +79,7 @@ class LeakyRelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Li
     }
 }
 
-
+@ExperimentalTime
 class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -102,7 +105,7 @@ class Sigmoid(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List
     }
 }
 
-
+@ExperimentalTime
 class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -128,6 +131,7 @@ class Tanh(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
     }
 }
 
+@ExperimentalTime
 class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

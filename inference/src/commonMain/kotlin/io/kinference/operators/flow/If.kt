@@ -5,10 +5,13 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.graph.Graph
+import io.kinference.graph.ProfilingContext
 import io.kinference.onnx.AttributeProto
 import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class If(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -63,9 +66,9 @@ class If(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
         return (outputs[0] as Tensor).data.singleValue() as Boolean
     }
 
-    override fun apply(context: Context, inputs: List<Tensor?>): List<Tensor?> {
+    override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val condition = inputs[0]!!.data.singleValue() as Boolean
-        val outputs = if (condition) thenBranch.execute(emptyList(), context) else elseBranch.execute(emptyList(), context)
+        val outputs = if (condition) thenBranch.execute(emptyList(), context, profilingContext) else elseBranch.execute(emptyList(), context, profilingContext)
 
         return outputs as List<Tensor>
     }
