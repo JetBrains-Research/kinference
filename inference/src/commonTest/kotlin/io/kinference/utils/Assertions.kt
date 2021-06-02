@@ -107,7 +107,7 @@ object Assertions {
                 logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
                 logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
-                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
+                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.INT32 -> {
                 val expectedArray = (expected.data as IntNDArray).array.toArray().toTypedArray()
@@ -135,7 +135,7 @@ object Assertions {
                 logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
                 logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
-                Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
+                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.BOOL -> {
                 val expectedArray = (expected.data as BooleanNDArray).array.toArray().toTypedArray()
@@ -168,13 +168,13 @@ object Assertions {
                 logger.info { "Percentile 99 '${actual.info.name}' = $percentile99" }
                 logger.info { "Percentile 99.9 '${actual.info.name}' = $percentile999\n" }
 
-                Assertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
+                assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l.toInt() - r.toInt()).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             else -> assertEquals(expected, actual, "Tensor ${expected.info.name} does not match")
         }
     }
 
-    fun <T : Number> assertArrayEquals(left: Array<T>, right: Array<T>, diff: (T, T) -> Double, delta: Double, message: String) {
+    fun <T : Comparable<T>> assertArrayEquals(left: Array<T>, right: Array<T>, diff: (T, T) -> Double, delta: Double, message: String) {
         assertEquals(left.size, right.size, message)
         for ((l, r) in left.zip(right)) {
             assertTrue(diff(l, r) <= delta, message)

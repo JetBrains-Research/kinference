@@ -11,6 +11,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 object AccuracyRunner {
     private val delta = (10.0).pow(-3)
+    val quantDelta = 3.0
 
     data class ONNXTestData(val actual: List<ONNXData>, val expected: List<ONNXData>)
 

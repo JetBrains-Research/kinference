@@ -9,16 +9,16 @@ class TestDynamicQuantizeLinear {
 
     @Test
     fun test_dynamic_quantize_linear_default()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear"))
+        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear"), delta = AccuracyRunner.quantDelta)
     }
 
     @Test
     fun test_dynamic_quantize_linear_max_adjusted()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear_max_adjusted"))
+        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear_max_adjusted"), delta = AccuracyRunner.quantDelta)
     }
 
     @Test
     fun test_dynamic_quantize_linear_min_adjusted()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear_min_adjusted"))
+        AccuracyRunner.runFromResources(getTargetPath("test_dynamicquantizelinear_min_adjusted"), delta = AccuracyRunner.quantDelta)
     }
 }
