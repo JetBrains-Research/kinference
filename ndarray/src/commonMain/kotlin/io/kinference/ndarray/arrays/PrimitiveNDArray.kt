@@ -23,7 +23,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     var array: PrimitiveTiledArray = array
         protected set
 
-    protected val blocksInRow: Int
+    internal val blocksInRow: Int
         get() = when {
             strides.linearSize == 0 -> 0
             strides.shape.isEmpty() -> 1
@@ -758,6 +758,47 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun copyIfNotMutable(): MutableNDArray {
         return MutablePrimitiveNDArray(array.copyOf(), strides)
+    }
+
+    @FilterPrimitives(exclude = [DataType.DOUBLE, DataType.FLOAT, DataType.BOOLEAN, DataType.BOOLEAN, DataType.INT, DataType.LONG, DataType.SHORT,
+        DataType.UINT, DataType.ULONG, DataType.USHORT])
+    @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
+    fun quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f): MutableFloatNDArray {
+        val M = this.shape[0]
+
+        fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
+            for (rdBlockNum in 0 until destination.blocksInRow) {
+                body {
+                    for (i in 0 until M) {
+                        val dBlockOffset = i * destination.blocksInRow
+                        val lBlockOffset = i * this.blocksInRow
+
+                        var k = 0
+                        for (lBlockNum in 0 until this.blocksInRow) {
+                            val lBlock = this.array.blocks[lBlockOffset + lBlockNum]
+                            for (lInd in lBlock.indices) {
+                                val temp = lBlock[lInd].toInt() - zeroPointA
+                                val rBlockOffset = k * other.blocksInRow
+                                val rBlock = other.array.blocks[rBlockOffset + rdBlockNum]
+                                val dBlock = destination.array.blocks[dBlockOffset + rdBlockNum]
+                                for (idx in rBlock.indices) {
+                                    dBlock[idx] += (temp * (rBlock[idx].toInt() - zeroPointB)) * scale
+                                }
+                                k++
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (other.blocksInRow > 1) {
+            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+        } else {
+            wrapper()
+        }
+
+        return destination
     }
 
     override fun equals(other: Any?): Boolean {
