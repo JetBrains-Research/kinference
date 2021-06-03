@@ -2,8 +2,7 @@ package io.kinference.benchmark.operators
 
 import io.kinference.benchmark.BenchmarkUtils.KIState
 import io.kinference.benchmark.BenchmarkUtils.OrtState
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.runner.Runner
@@ -132,6 +131,7 @@ open class OperatorsBenchmark {
         blackhole.consume(outputs)
     }
 
+    @Disabled
     @Test
     fun benchmark_operators_performance() {
         val opts = OptionsBuilder()

@@ -2,8 +2,7 @@ package io.kinference.benchmark.models
 
 import io.kinference.benchmark.BenchmarkUtils.KIState
 import io.kinference.benchmark.BenchmarkUtils.OrtState
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.runner.Runner
@@ -58,6 +57,7 @@ open class PosTaggerBenchmarkORT {
     }
 }
 
+@Disabled
 class PosTaggerBenchmark {
     @Test
     fun benchmark_pos_tagger_performance() {

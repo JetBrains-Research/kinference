@@ -14,7 +14,7 @@ class BERTTest {
     }
 
     @Test
-    fun heavy_test_vanilla_bert_performance() = TestRunner.runTest {
+    fun benchmark_test_vanilla_bert_performance() = TestRunner.runTest {
         PerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
     }
 }

@@ -14,7 +14,7 @@ class GPTGrazieTest {
     }
 
     @Test
-    fun heavy_test_gpt_grazie_performance() = TestRunner.runTest {
+    fun benchmark_test_gpt_grazie_performance() = TestRunner.runTest {
         PerformanceRunner.runFromS3("gpt2:grazie:distilled:quantized:v6")
     }
 }

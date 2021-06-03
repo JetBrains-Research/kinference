@@ -4,7 +4,9 @@ import io.kinference.runners.AccuracyRunner
 import io.kinference.runners.PerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class GPTRTest {
     @Test
     fun heavy_test_gpt_model() = TestRunner.runTest {
@@ -12,7 +14,7 @@ class GPTRTest {
     }
 
     @Test
-    fun heavy_test_gpt_performance() = TestRunner.runTest {
+    fun benchmark_test_gpt_performance() = TestRunner.runTest {
         PerformanceRunner.runFromS3("gpt2:r-completion:standard:v1")
     }
 
@@ -23,7 +25,7 @@ class GPTRTest {
     }
 
     @Test
-    fun heavy_test_gpt_quantized_performance() = TestRunner.runTest {
+    fun benchmark_test_gpt_quantized_performance() = TestRunner.runTest {
         PerformanceRunner.runFromS3("gpt2:r-completion:quantized:v1")
     }
 }

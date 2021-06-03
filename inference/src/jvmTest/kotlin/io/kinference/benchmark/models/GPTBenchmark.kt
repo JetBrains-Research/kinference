@@ -1,8 +1,7 @@
 package io.kinference.benchmark.models
 
 import io.kinference.benchmark.BenchmarkUtils
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.runner.Runner
@@ -53,6 +52,7 @@ open class GPTBenchmarkORT {
     }
 }
 
+@Disabled
 class GPTBenchmark {
     @Test
     fun benchmark_gpt_performance() {
