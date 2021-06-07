@@ -6,6 +6,7 @@ import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.logger
 import io.kinference.onnx.TensorProto
 import io.kinference.types.ValueTypeInfo
@@ -26,12 +27,11 @@ object Assertions {
         val typeInfo = expected.info.typeInfo as ValueTypeInfo.TensorTypeInfo
         when (typeInfo.type) {
             TensorProto.DataType.FLOAT -> {
-                val expectedArray = (expected.data as FloatNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as FloatNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as FloatNDArray).array
+                val actualArray = (actual.data as FloatNDArray).array
 
-                val errorsArray = ArrayList<Float>(expectedArray.size)
-                for (i in expectedArray.indices) {
-                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                val errorsArray = FloatArray(expectedArray.size) { i ->
+                    abs(expectedArray[i] - actualArray[i])
                 }
 
                 val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0f
@@ -54,12 +54,11 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.DOUBLE -> {
-                val expectedArray = (expected.data as DoubleNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as DoubleNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as DoubleNDArray).array
+                val actualArray = (actual.data as DoubleNDArray).array
 
-                val errorsArray = ArrayList<Double>(expectedArray.size)
-                for (i in expectedArray.indices) {
-                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                val errorsArray = DoubleArray(expectedArray.size) { i ->
+                    abs(expectedArray[i] - actualArray[i])
                 }
 
                 val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0.0
@@ -82,12 +81,11 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r) }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.INT64 -> {
-                val expectedArray = (expected.data as LongNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as LongNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as LongNDArray).array
+                val actualArray = (actual.data as LongNDArray).array
 
-                val errorsArray = ArrayList<Long>(expectedArray.size)
-                for (i in expectedArray.indices) {
-                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                val errorsArray = LongArray(expectedArray.size) { i ->
+                    abs(expectedArray[i] - actualArray[i])
                 }
 
                 val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
@@ -110,12 +108,11 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.INT32 -> {
-                val expectedArray = (expected.data as IntNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as IntNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as IntNDArray).array
+                val actualArray = (actual.data as IntNDArray).array
 
-                val errorsArray = ArrayList<Int>(expectedArray.size)
-                for (i in expectedArray.indices) {
-                    errorsArray.add(abs(actualArray[i] - expectedArray[i]))
+                val errorsArray = IntArray(expectedArray.size) { i ->
+                    abs(expectedArray[i] - actualArray[i])
                 }
 
                 val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
@@ -143,12 +140,11 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.info.name} does not match")
             }
             TensorProto.DataType.UINT8 -> {
-                val expectedArray = (expected.data as UByteNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as UByteNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as UByteNDArray).array
+                val actualArray = (actual.data as UByteNDArray).array
 
-                val errorsArray = ArrayList<Int>(expectedArray.size)
-                for (i in expectedArray.indices) {
-                    errorsArray.add(abs(actualArray[i].toInt() - expectedArray[i].toInt()))
+                val errorsArray = IntArray(expectedArray.size) { i ->
+                    abs(expectedArray[i].toInt() - actualArray[i].toInt())
                 }
 
                 val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0
@@ -171,6 +167,56 @@ object Assertions {
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l.toInt() - r.toInt()).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             else -> assertEquals(expected, actual, "Tensor ${expected.info.name} does not match")
+        }
+    }
+
+    fun assertArrayEquals(left: FloatTiledArray, right: FloatTiledArray, diff: (Float, Float) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in 0 until left.size) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
+        }
+    }
+
+    fun assertArrayEquals(left: DoubleTiledArray, right: DoubleTiledArray, diff: (Double, Double) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in 0 until left.size) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
+        }
+    }
+
+    fun assertArrayEquals(left: LongTiledArray, right: LongTiledArray, diff: (Long, Long) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in 0 until left.size) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
+        }
+    }
+
+    fun assertArrayEquals(left: IntTiledArray, right: IntTiledArray, diff: (Int, Int) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in 0 until left.size) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
+        }
+    }
+
+    fun assertArrayEquals(left: UByteTiledArray, right: UByteTiledArray, diff: (UByte, UByte) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in 0 until left.size) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
         }
     }
 

@@ -2,6 +2,7 @@ package io.kinference.runners
 
 import io.kinference.data.ONNXData
 import io.kinference.model.Model
+import io.kinference.ndarray.logger
 import io.kinference.onnx.TensorProto
 import io.kinference.utils.*
 import kotlin.math.pow
@@ -10,10 +11,12 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 object AccuracyRunner {
+    val logger = logger("Runner")
+
     private val delta = (10.0).pow(-3)
     val quantDelta = 3.0
 
-    data class ONNXTestData(val actual: List<ONNXData>, val expected: List<ONNXData>)
+    data class ONNXTestData(val name: String, val actual: List<ONNXData>, val expected: List<ONNXData>)
 
     private suspend fun runTestsFromS3(name: String): List<ONNXTestData> {
         val toFolder = name.replace(":", "/")
@@ -36,8 +39,9 @@ object AccuracyRunner {
             val outputFiles =  files.filter { file -> "output" in file }
             val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
 
+            logger.info { "Start predicting: $group" }
             val actualOutputTensors = model.predict(inputTensors)
-            ONNXTestData(expectedOutputTensors, actualOutputTensors)
+            ONNXTestData(group, expectedOutputTensors, actualOutputTensors)
         }
     }
 
@@ -51,7 +55,9 @@ object AccuracyRunner {
 
     private fun check(datasets: List<ONNXTestData>, delta: Double = AccuracyRunner.delta) {
         for (dataSet in datasets) {
-            val (expectedOutputTensors, actualOutputTensors) = dataSet
+            logger.info { "Dataset: ${dataSet.name}\n" }
+
+            val (_, expectedOutputTensors, actualOutputTensors) = dataSet
 
             val mappedActualOutputTensors = actualOutputTensors.associateBy { it.info.name }
 
