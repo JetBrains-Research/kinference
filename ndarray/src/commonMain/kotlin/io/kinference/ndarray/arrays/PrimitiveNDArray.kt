@@ -823,6 +823,17 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
+
+        operator fun invoke(array: PrimitiveTiledArray, strides: Strides, divider: Int): PrimitiveNDArray {
+            val blockSize = PrimitiveTiledArray.blockSizeByStrides(strides, divider)
+            return if (blockSize == array.blockSize) {
+                PrimitiveNDArray(array, strides)
+            }
+            else {
+                val pointer = PrimitivePointer(array)
+                PrimitiveNDArray(strides, divider) { pointer.getAndIncrement() }
+            }
+        }
     }
 }
 

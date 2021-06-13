@@ -6,10 +6,10 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto.DataType
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto.DataType
 
 @ExperimentalTime
 class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :

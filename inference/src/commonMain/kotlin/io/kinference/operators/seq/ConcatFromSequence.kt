@@ -6,9 +6,9 @@ import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.*
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
 
 @ExperimentalTime
 class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

@@ -8,10 +8,10 @@ import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 
 @ExperimentalTime
 class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
@@ -37,7 +37,7 @@ class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()
-        val shape =  IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }
+        val shape = IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }
         val result = value.data.allocateNDArray(Strides(shape)).apply { fill(value.data.singleValue()) }
         return listOf(result.asTensor("output"))
     }

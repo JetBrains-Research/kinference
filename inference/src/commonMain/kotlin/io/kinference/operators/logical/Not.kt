@@ -6,9 +6,9 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.MutableBooleanNDArray
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.TensorProto
 
 @ExperimentalTime
 class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

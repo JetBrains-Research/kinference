@@ -1,8 +1,10 @@
 package io.kinference.operators.ml.trees
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class TreeEnsemble(
     private val aggregator: Aggregator,
     private val transform: PostTransform,

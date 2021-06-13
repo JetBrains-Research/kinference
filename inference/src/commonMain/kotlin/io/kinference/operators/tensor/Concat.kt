@@ -5,9 +5,9 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.concatenate
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
 
 @ExperimentalTime
 class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)

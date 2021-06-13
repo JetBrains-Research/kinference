@@ -7,18 +7,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("com.squareup.wire") version "3.6.0" apply true
     kotlin("kapt") apply true
-}
-
-wire {
-    sourcePath {
-        srcDir("src/commonMain/proto")
-    }
-
-    kotlin {
-        out = "src/commonMain/kotlin-gen"
-    }
 }
 
 kotlin {
@@ -91,6 +80,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 implementation("io.github.microutils:kotlin-logging:2.0.4")
                 api(project(":ndarray"))
+                implementation(project(":serialization"))
             }
         }
 

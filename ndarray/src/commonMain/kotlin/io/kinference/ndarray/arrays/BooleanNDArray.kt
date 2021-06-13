@@ -152,6 +152,17 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         fun scalar(value: Boolean): BooleanNDArray {
             return BooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
         }
+
+        operator fun invoke(array: BooleanTiledArray, strides: Strides, divider: Int): BooleanNDArray {
+            val blockSize = BooleanTiledArray.blockSizeByStrides(strides, divider)
+            return if (blockSize == array.blockSize) {
+                BooleanNDArray(array, strides)
+            }
+            else {
+                val pointer = BooleanPointer(array)
+                BooleanNDArray(strides, divider) { pointer.getAndIncrement() }
+            }
+        }
     }
 }
 

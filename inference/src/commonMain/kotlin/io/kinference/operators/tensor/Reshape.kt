@@ -6,8 +6,8 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.reshape
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime

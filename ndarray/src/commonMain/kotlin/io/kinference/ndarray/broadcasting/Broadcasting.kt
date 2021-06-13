@@ -46,11 +46,7 @@ object Broadcasting {
 
         val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
 
-        broadcast(
-            wrappedInputs,
-            destination,
-            op
-        )
+        broadcast(wrappedInputs, destination, op)
         return destination
     }
 
@@ -60,11 +56,7 @@ object Broadcasting {
 
         val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
 
-        broadcast(
-            wrappedInputs,
-            destination,
-            op
-        )
+        broadcast(wrappedInputs, destination, op)
         return destination
     }
 
@@ -128,5 +120,4 @@ object Broadcasting {
             recurrentBack(mergedViewedInputs, viewedDestination)
         }
     }
-
 }

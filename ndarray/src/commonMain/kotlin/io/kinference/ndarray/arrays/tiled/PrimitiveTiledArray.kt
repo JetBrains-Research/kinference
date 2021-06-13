@@ -20,7 +20,7 @@ class PrimitiveTiledArray {
     companion object {
         const val MIN_BLOCK_SIZE = 512
 
-        private fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
+        internal fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
             return when {
                 strides.linearSize == 0 -> 0
                 strides.shape.isEmpty() -> 1

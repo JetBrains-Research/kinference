@@ -1,4 +1,4 @@
-package io.kinference.utils
+package io.kinference.protobuf
 
 import okio.Buffer
 import java.lang.Double.*
@@ -15,5 +15,3 @@ actual fun Buffer.writeFloatLe(value: Float): Buffer = writeIntLe(floatToIntBits
 
 actual fun Buffer.readFloat(): Float = intBitsToFloat(readInt())
 actual fun Buffer.readFloatLe(): Float = intBitsToFloat(readIntLe())
-
-

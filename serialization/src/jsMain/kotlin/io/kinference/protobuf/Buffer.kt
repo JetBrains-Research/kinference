@@ -1,4 +1,4 @@
-package io.kinference.utils
+package io.kinference.protobuf
 
 import okio.Buffer
 import org.khronos.webgl.*

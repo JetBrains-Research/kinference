@@ -1,8 +1,6 @@
-package io.kinference.utils
+package io.kinference.protobuf
 
 import okio.Buffer
-
-
 
 expect fun Buffer.writeDouble(value: Double): Buffer
 expect fun Buffer.writeDoubleLe(value: Double): Buffer

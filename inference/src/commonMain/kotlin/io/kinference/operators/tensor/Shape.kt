@@ -7,9 +7,9 @@ import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime

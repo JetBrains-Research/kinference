@@ -2,7 +2,7 @@ package io.kinference.data.map
 
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 

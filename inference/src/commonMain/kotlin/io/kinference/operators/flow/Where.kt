@@ -8,10 +8,10 @@ import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.TensorProto
 
 @ExperimentalTime
 class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :

@@ -8,7 +8,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class GECTest {
-    @Test
+    //@Test
     fun heavy_test_gec_model() = TestRunner.runTest {
         AccuracyRunner.runFromS3("bert:gec:en:standard:v2")
     }

@@ -8,7 +8,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.logger
-import io.kinference.onnx.TensorProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueTypeInfo
 import kotlin.math.abs
 import kotlin.math.pow

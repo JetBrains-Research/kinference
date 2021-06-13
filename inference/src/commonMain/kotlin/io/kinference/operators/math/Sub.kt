@@ -4,8 +4,8 @@ import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime

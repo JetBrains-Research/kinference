@@ -5,9 +5,9 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.runBlocking
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
 import kotlinx.coroutines.*
 import kotlin.math.exp
 import kotlin.math.min

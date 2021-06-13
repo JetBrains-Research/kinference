@@ -12,11 +12,13 @@ import kotlin.random.Random
 
 
 @State(Scope.Benchmark)
-@Fork(value = 1, warmups = 0, jvmArgsAppend = [
+@Fork(
+    value = 1, warmups = 0, jvmArgsAppend = [
 //    "-XX:CompileThreshold=100",
 //    "-XX:+UnlockDiagnosticVMOptions"
 //    "-XX:CompileCommand=print,\"io.kinference/benchmark/DotBenchmark.baseline\""
-])
+    ]
+)
 @Warmup(iterations = 3)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)

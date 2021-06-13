@@ -2,13 +2,13 @@ package io.kinference.model
 
 import io.kinference.data.ONNXData
 import io.kinference.graph.*
-import io.kinference.onnx.ModelProto
+import io.kinference.protobuf.message.ModelProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class Model(proto: ModelProto) {
     val graph = Graph(proto.graph!!)
-    val name: String = "${proto.domain}:${proto.model_version}"
+    val name: String = "${proto.domain}:${proto.modelVersion}"
 
     private val profiles: MutableList<ProfilingContext> = ArrayList()
     fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -21,7 +21,7 @@ class Model(proto: ModelProto) {
 
     companion object {
         fun load(bytes: ByteArray): Model {
-            val modelScheme = ModelProto.ADAPTER.decode(bytes)
+            val modelScheme = ModelProto.decode(bytes)
             return Model(modelScheme)
         }
     }

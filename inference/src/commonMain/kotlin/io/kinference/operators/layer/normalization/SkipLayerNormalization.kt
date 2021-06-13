@@ -8,9 +8,9 @@ import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
@@ -47,7 +47,14 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
 
-        private fun FloatNDArray.normalize(skip: FloatNDArray, gamma: FloatNDArray, beta: FloatNDArray, bias: FloatNDArray?, epsilon: Float, dst: MutableFloatNDArray) {
+        private fun FloatNDArray.normalize(
+            skip: FloatNDArray,
+            gamma: FloatNDArray,
+            beta: FloatNDArray,
+            bias: FloatNDArray?,
+            epsilon: Float,
+            dst: MutableFloatNDArray
+        ) {
             val (batchSize, seqLen, hiddenSize) = this.shape
             val steps = batchSize * seqLen
 

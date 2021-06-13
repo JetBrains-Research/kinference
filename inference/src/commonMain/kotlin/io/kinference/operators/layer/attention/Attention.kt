@@ -11,11 +11,11 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
 import io.kinference.operators.activations.Softmax
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import kotlinx.coroutines.*
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -183,7 +183,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                             (queryMatrix as NumberNDArray).dotTransposedWithAlpha(alpha, presentMatrix as NumberNDArray, scoresMatrix as MutableNumberNDArray)
 //                    gemm(seqLen, allSeqLen, headSize, alpha, queryMatrix as NumberNDArray, presentMatrix as NumberNDArray, 1.0, scoresMatrix, transposeB = true)
                             if (maskVector != null)
-                                (scoresMatrix as MutableNumberNDArray).plusAssign(maskVector)
+                                scoresMatrix.plusAssign(maskVector)
                         }
                     }
                 }

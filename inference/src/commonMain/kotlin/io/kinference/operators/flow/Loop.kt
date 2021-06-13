@@ -2,14 +2,15 @@ package io.kinference.operators.flow
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.data.tensors.Tensor
-import io.kinference.data.tensors.stack
+import io.kinference.data.tensors.*
 import io.kinference.graph.Context
 import io.kinference.graph.Graph
+import io.kinference.ndarray.arrays.BooleanNDArray
+import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.graph.ProfilingContext
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -36,8 +37,8 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
     private fun inner(context: Context, profilingContext: ProfilingContext?, body: Graph, counter: Long, condition: Boolean, modified: MutableList<Tensor>, scans: List<MutableList<Tensor>>): Boolean {
         val inputs = ArrayList<ONNXData>().apply {
-            add(Tensor(counter, TensorProto.DataType.INT64, name = body.inputs[0].name))
-            add(Tensor(condition, TensorProto.DataType.BOOL, name = body.inputs[1].name))
+            add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
+            add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
             body.inputs.drop(2).zip(modified) { input, value ->
                 add(value.rename(input.name))
             }

@@ -7,9 +7,9 @@ import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.unsqueeze
 import io.kinference.ndarray.toIntArray
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
 
 @ExperimentalTime
 class Unsqueeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -27,10 +27,10 @@ class Unsqueeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("Unsqueeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
     }
 
-    private val axes: List<Number> by attribute()
+    private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
 
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
-        val result = inputs.first()!!.data.toMutable().unsqueeze(*axes.toIntArray())
+        val result = inputs.first()!!.data.toMutable().unsqueeze(*axes)
         return listOf(result.asTensor())
     }
 }

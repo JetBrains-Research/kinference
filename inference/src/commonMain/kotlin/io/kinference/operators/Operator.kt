@@ -7,8 +7,8 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.extensions.isScalar
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto.DataType
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto.DataType
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.time.ExperimentalTime
@@ -29,10 +29,12 @@ open class IOInfo(
     }
 }
 
-class VariadicIOInfo(startIndex: Int, types: Set<DataType>, name: String,
-                     val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
-                     scalar: Boolean = false, differentiable: Boolean? = null,
-                     val heterogeneous: Boolean = true) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
+class VariadicIOInfo(
+    startIndex: Int, types: Set<DataType>, name: String,
+    val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
+    scalar: Boolean = false, differentiable: Boolean? = null,
+    val heterogeneous: Boolean = true
+) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
 
 data class OperatorInfo(val name: String, val attributes: Map<String, AttributeInfo>, val inputs: List<IOInfo>, val outputs: List<IOInfo>) {
     constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>)
@@ -49,7 +51,12 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 
 @ExperimentalTime
 @Suppress("UNCHECKED_CAST")
-abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInfo, val attributes: Map<String, Attribute<Any>> = emptyMap(), val inputs: List<String>, val outputs: List<String>) {
+abstract class Operator<in T : ONNXData, out U : ONNXData>(
+    val info: OperatorInfo,
+    val attributes: Map<String, Attribute<Any>> = emptyMap(),
+    val inputs: List<String>,
+    val outputs: List<String>
+) {
     init {
         for (info in info.attributes.values) {
             if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${this.info.name} operator" }
@@ -115,8 +122,10 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
         return outputs
     }
 
-    class AttributeValueDelegate<Input, Output>(val name: String?, val transform: (Input) -> Output,
-                                                val getValue: Operator<*, *>.(String) -> Any?) : ReadOnlyProperty<Operator<*, *>, Output> {
+    class AttributeValueDelegate<Input, Output>(
+        val name: String?, val transform: (Input) -> Output,
+        val getValue: Operator<*, *>.(String) -> Any?
+    ) : ReadOnlyProperty<Operator<*, *>, Output> {
         private var initialized: Boolean = false
         private var value: Output? = null
 
@@ -163,8 +172,10 @@ abstract class Operator<in T : ONNXData, out U : ONNXData>(val info: OperatorInf
 
     companion object {
         val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED
-        val PRIMITIVE_DATA_TYPES = setOf(DataType.BOOL, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE, DataType.INT32,
-            DataType.INT16, DataType.INT8, DataType.INT64, DataType.UINT16, DataType.UINT8, DataType.UINT32, DataType.UINT64)
+        val PRIMITIVE_DATA_TYPES = setOf(
+            DataType.BOOL, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE, DataType.INT32,
+            DataType.INT16, DataType.INT8, DataType.INT64, DataType.UINT16, DataType.UINT8, DataType.UINT32, DataType.UINT64
+        )
         val FLOAT_DATA_TYPES = setOf(DataType.BFLOAT16, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE)
     }
 }

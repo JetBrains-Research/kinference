@@ -6,13 +6,14 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
 
-class LSTMData(val type: DataType,
-               val weights: GatesData,
-               val recurrentWeights: GatesData,
-               val bias: GatesData? = null,
-               val initialOutput: List<NDArray>? = null,
-               val initialCellState: List<NDArray>? = null,
-               val peepholes: GatesData? = null
+class LSTMData(
+    val type: DataType,
+    val weights: GatesData,
+    val recurrentWeights: GatesData,
+    val bias: GatesData? = null,
+    val initialOutput: List<NDArray>? = null,
+    val initialCellState: List<NDArray>? = null,
+    val peepholes: GatesData? = null
 ) {
 
     fun updateWeights(weights: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
@@ -24,10 +25,11 @@ class LSTMData(val type: DataType,
 }
 
 
-data class GatesData(val input: MutableNDArray,
-                     val output: MutableNDArray,
-                     val forget: MutableNDArray,
-                     val cellGate: MutableNDArray
+data class GatesData(
+    val input: MutableNDArray,
+    val output: MutableNDArray,
+    val forget: MutableNDArray,
+    val cellGate: MutableNDArray
 ) {
     fun cleanup() {
         input.clean()
@@ -43,8 +45,10 @@ data class GatesData(val input: MutableNDArray,
             val matrix = weights.squeeze(0)
 
             val weightsList = matrix.splitWithAxis(4)
-            return GatesData(weightsList[0].transpose2D(), weightsList[1].transpose2D(),
-                weightsList[2].transpose2D(), weightsList[3].transpose2D())
+            return GatesData(
+                weightsList[0].transpose2D(), weightsList[1].transpose2D(),
+                weightsList[2].transpose2D(), weightsList[3].transpose2D()
+            )
         }
 
         fun createBias(bias: MutableNDArray): GatesData {

@@ -3,8 +3,10 @@ package io.kinference.operators.ml.trees
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.operators.activations.Softmax
+import kotlin.time.ExperimentalTime
 
 //TODO: SOFTMAX, SOFTMAX_ZERO, LOGISTIC, PROBIT
+@ExperimentalTime
 sealed class PostTransform {
     abstract fun apply(array: MutableFloatNDArray): FloatNDArray
 
@@ -19,7 +21,7 @@ sealed class PostTransform {
     }
 
     companion object {
-        operator fun get(name: String) = when(name) {
+        operator fun get(name: String) = when (name) {
             "NONE" -> None
             "SOFTMAX" -> SoftmaxTransform
             else -> error("Unsupported post-transformation: $name")

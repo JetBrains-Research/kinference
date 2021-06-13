@@ -6,9 +6,9 @@ import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.toIntArray
-import io.kinference.onnx.AttributeProto
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
 
 @ExperimentalTime
 class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -28,16 +28,15 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
-    private val split: Any? by attributeOrNull()
+    private val split: LongArray? by attributeOrNull()
 
     @Suppress("UNCHECKED_CAST")
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!
-        return when (split) {
-            null -> input.splitWithAxis(outputs.size, axis)
-            is Number -> input.splitWithAxis((split as Number).toInt(), axis)
-            is List<*> -> input.splitWithAxis((split as List<Number>).toIntArray(), axis)
-            else -> error("Unsupported value type")
+        return if (split == null) {
+            input.splitWithAxis(outputs.size, axis)
+        } else {
+            input.splitWithAxis((split as LongArray).toIntArray(), axis)
         }
     }
 }

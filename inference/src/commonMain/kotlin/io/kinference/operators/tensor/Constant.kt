@@ -2,12 +2,13 @@ package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
 import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
-import io.kinference.onnx.AttributeProto
-import io.kinference.onnx.TensorProto.DataType
+import io.kinference.ndarray.arrays.*
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
+import io.kinference.protobuf.message.AttributeProto
 
 @ExperimentalTime
 class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
@@ -41,12 +42,21 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         @Suppress("UNCHECKED_CAST")
         val result = when (name) {
             "value" -> value
-            "value_float" -> Tensor(value!!, DataType.FLOAT)
-            "value_floats" -> Tensor(value!! as List<Any>, DataType.FLOAT)
-            "value_int" -> Tensor(value!!, DataType.INT64)
-            "value_ints" -> Tensor(value!! as List<Any>, DataType.INT64)
-            "value_string" -> Tensor(value!!, DataType.STRING)
-            "value_strings" -> Tensor(value!! as List<Any>, DataType.STRING)
+            "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
+            "value_floats" -> {
+                value as FloatArray
+                FloatNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+            }
+            "value_int" -> LongNDArray.scalar(value as Long).asTensor()
+            "value_ints" -> {
+                value as LongArray
+                LongNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+            }
+            "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
+            "value_strings" -> {
+                value as List<String>
+                StringNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+            }
             else -> error("Unsupported data type")
         } as Tensor
         return listOf(result)

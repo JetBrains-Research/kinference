@@ -1,9 +1,9 @@
 package io.kinference.types
 
 import io.kinference.graph.Context
-import io.kinference.onnx.TensorProto.DataType
-import io.kinference.onnx.TensorShapeProto
-import io.kinference.onnx.TypeProto
+import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.message.TensorShapeProto
+import io.kinference.protobuf.message.TypeProto
 
 class TensorShape(private val dims: List<Dimension>) {
     constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })
@@ -34,8 +34,8 @@ class TensorShape(private val dims: List<Dimension>) {
         operator fun invoke(proto: TensorShapeProto): TensorShape {
             return TensorShape(proto.dim.map {
                 when {
-                    it.dim_value != null -> StaticDimension(it.dim_value.toInt())
-                    it.dim_param != null -> DynamicDimension(it.dim_param)
+                    it.dimValue != null -> StaticDimension(it.dimValue!!.toInt())
+                    it.dimParam != null -> DynamicDimension(it.dimParam!!)
                     else -> UnknownDimension
                 }
             })
@@ -46,9 +46,9 @@ class TensorShape(private val dims: List<Dimension>) {
 sealed class ValueTypeInfo {
     companion object {
         fun create(proto: TypeProto) = when {
-            proto.tensor_type != null -> TensorTypeInfo(proto.tensor_type)
-            proto.sequence_type != null -> SequenceTypeInfo(proto.sequence_type)
-            proto.map_type != null -> MapTypeInfo(proto.map_type)
+            proto.tensorType != null -> TensorTypeInfo(proto.tensorType!!)
+            proto.sequenceType != null -> SequenceTypeInfo(proto.sequenceType!!)
+            proto.mapType != null -> MapTypeInfo(proto.mapType!!)
             else -> error("One should be present")
         }
     }

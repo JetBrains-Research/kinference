@@ -1,12 +1,15 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.data.tensors.*
+import io.kinference.data.tensors.Tensor
+import io.kinference.data.tensors.asTensor
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.MutableNDArray
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.*
+import io.kinference.protobuf.resolveProtoDataType
+import kotlin.time.ExperimentalTime
 
-
+@ExperimentalTime
 class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
     init {
         require(direction == "bidirectional")
@@ -36,12 +39,19 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>, direction: String)
         return newArray
     }
 
-    override fun parseTempInputs(weights: Tensor, recurrentWeights: Tensor, bias: Tensor?, initialOutput: Tensor?, initialCellState: Tensor?, peepholes: Tensor?) {
+    override fun parseTempInputs(
+        weights: Tensor,
+        recurrentWeights: Tensor,
+        bias: Tensor?,
+        initialOutput: Tensor?,
+        initialCellState: Tensor?,
+        peepholes: Tensor?
+    ) {
         if (forwardLstmData == null || reverseLstmData == null) {
             val (forwardParsedWeights, reverseParsedWeights) = weights.data.splitWithAxis(2).map { GatesData.createWeights(it) }
             val (forwardParsedRecWeights, reverseParsedRecWeights) = recurrentWeights.data.splitWithAxis(2).map { GatesData.createWeights(it) }
             forwardLstmData = LSTMData(type!!, forwardParsedWeights, forwardParsedRecWeights)
-            reverseLstmData = LSTMData( type!!, reverseParsedWeights, reverseParsedRecWeights)
+            reverseLstmData = LSTMData(type!!, reverseParsedWeights, reverseParsedRecWeights)
 
             this.weights = weights.data
             this.recurrentWeights = recurrentWeights.data

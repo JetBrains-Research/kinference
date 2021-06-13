@@ -7,9 +7,9 @@ import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.onnx.AttributeProto.AttributeType
-import io.kinference.onnx.TensorProto
 import io.kinference.operators.*
+import io.kinference.protobuf.message.AttributeProto.AttributeType
+import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
@@ -116,7 +116,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
                     val gammaPointer = gamma.array.pointer()
                     val betaPointer = beta.array.pointer()
 
-                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b ->  out / eps * g + b }
+                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b -> out / eps * g + b }
                 }
             }
 
