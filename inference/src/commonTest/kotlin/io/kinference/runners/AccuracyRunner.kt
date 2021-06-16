@@ -1,0 +1,74 @@
+package io.kinference.runners
+
+import io.kinference.data.ONNXData
+import io.kinference.model.Model
+import io.kinference.ndarray.logger
+import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.*
+import kotlin.math.pow
+import kotlin.test.assertEquals
+import kotlin.time.ExperimentalTime
+
+@ExperimentalTime
+object AccuracyRunner {
+    val logger = logger("Runner")
+
+    private val delta = (10.0).pow(-3)
+    val quantDelta = 3.0
+
+    data class ONNXTestData(val name: String, val actual: List<ONNXData>, val expected: List<ONNXData>)
+
+    private suspend fun runTestsFromS3(name: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+        val toFolder = name.replace(":", "/")
+        return runTestsFromFolder(S3TestDataLoader, toFolder, disableTests)
+    }
+
+    private suspend fun runTestsFromResources(testPath: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+        val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/test/${testPath}"
+        return runTestsFromFolder(ResourcesTestDataLoader, path, disableTests)
+    }
+
+    private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+        val model = Model.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+        val files = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines()
+        return files.filter { "test" in it }.groupBy { file -> file.takeWhile { it != '/' } }.map { (group, files) ->
+            if (group in disableTests) {
+                null
+            } else {
+                val inputFiles = files.filter { file -> "input" in file }
+                val inputTensorProtos = inputFiles.map { TensorProto.decode(loader.bytes(TestDataLoader.Path(path, it))) }
+                val inputTensors = inputTensorProtos.map{ model.graph.prepareInput(it) }
+
+                val outputFiles =  files.filter { file -> "output" in file }
+                val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
+
+                logger.info { "Start predicting: $group" }
+                val actualOutputTensors = model.predict(inputTensors)
+                ONNXTestData(group, expectedOutputTensors, actualOutputTensors)
+            }
+        }.filterNotNull()
+    }
+
+    suspend fun runFromS3(name: String, delta: Double = AccuracyRunner.delta, disableTests: List<String> = emptyList()) {
+        check(runTestsFromS3(name, disableTests), delta)
+    }
+
+    suspend fun runFromResources(path: String, delta: Double = AccuracyRunner.delta, disableTests: List<String> = emptyList()) {
+        check(runTestsFromResources(path, disableTests), delta)
+    }
+
+    private fun check(datasets: List<ONNXTestData>, delta: Double = AccuracyRunner.delta) {
+        for (dataSet in datasets) {
+            logger.info { "Dataset: ${dataSet.name}\n" }
+
+            val (_, expectedOutputTensors, actualOutputTensors) = dataSet
+
+            val mappedActualOutputTensors = actualOutputTensors.associateBy { it.info.name }
+
+            for (expectedOutputTensor in expectedOutputTensors) {
+                val actualOutputTensor = mappedActualOutputTensors[expectedOutputTensor.info.name] ?: error("Required tensor not found")
+                Assertions.assertEquals(expectedOutputTensor, actualOutputTensor, delta)
+            }
+        }
+    }
+}

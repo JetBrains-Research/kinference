@@ -1,23 +1,26 @@
-import tanvd.kosogor.proxy.publishJar
-
 group = rootProject.group
 version = rootProject.version
 
-dependencies {
-    api(kotlin("stdlib"))
-    api(project(":ndarray"))
-    api("com.squareup.wire", "wire-runtime", "3.6.0")
-}
+kotlin {
+    js{
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
+    }
 
-publishJar {
-    bintray {
-        username = "tanvd"
-        repository = "io.kinference"
-        info {
-            description = "KInference model serializer module"
-            vcsUrl = "https://github.com/JetBrains-Research/kinference"
-            githubRepo = "https://github.com/JetBrains-Research/kinference"
-            labels.addAll(listOf("kotlin", "inference", "ml", "serialization"))
+    jvm{}
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                api(kotlin("stdlib"))
+                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
+                api(project(":ndarray"))
+            }
         }
     }
 }

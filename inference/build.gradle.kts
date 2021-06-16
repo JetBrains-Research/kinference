@@ -1,6 +1,7 @@
-import io.kinference.gradle.useBenchmarkTests
-import io.kinference.gradle.useHeavyTests
-import tanvd.kosogor.proxy.publishJar
+import io.kinference.gradle.configureBenchmarkTests
+import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.configureTests
+import io.kinference.gradle.s3.S3Dependency
 
 group = rootProject.group
 version = rootProject.version
@@ -9,52 +10,118 @@ plugins {
     kotlin("kapt") apply true
 }
 
-tasks.test {
-    useJUnitPlatform {
-        excludeTags("heavy")
-        excludeTags("benchmark")
+kotlin {
+    js {
+        testRuns["test"].configureAllExecutions {
+            filter {
+                excludeTestsMatching("*.heavy_*")
+                excludeTestsMatching("*.benchmark_*")
+            }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
+        }
+
+        testRuns.create("heavy").configureAllExecutions {
+            filter {
+                includeTestsMatching("*.heavy_*")
+            }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
+            executionTask.get().doFirst {
+                S3Dependency.withDefaultS3Dependencies(this)
+            }
+        }
+
+        testRuns.create("benchmark").configureAllExecutions {
+            filter {
+                includeTestsMatching("*.benchmark_*")
+            }
+
+            executionTask.get().enabled = !project.hasProperty("disable-tests")
+            executionTask.get().doFirst {
+                S3Dependency.withDefaultS3Dependencies(this)
+            }
+        }
+
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
     }
-    maxHeapSize = "20m"
 
-    testLogging {
-        events("passed", "skipped", "failed")
+    jvm {
+        testRuns["test"].executionTask {
+            configureTests()
+
+            enabled = !project.hasProperty("disable-tests")
+        }
+
+        testRuns.create("heavy").executionTask {
+            configureHeavyTests()
+
+            enabled = !project.hasProperty("disable-tests")
+        }
+
+        testRuns.create("benchmark").executionTask {
+            configureBenchmarkTests()
+
+            enabled = !project.hasProperty("disable-tests")
+        }
     }
-}
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                api(kotlin("stdlib"))
+                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("io.github.microutils:kotlin-logging:2.0.4")
+                api(project(":ndarray"))
+                implementation(project(":serialization"))
+            }
+        }
 
 
-useHeavyTests()
-useBenchmarkTests()
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+            }
+        }
 
-dependencies {
-    api(project(":ndarray"))
-    implementation(project(":serialization"))
+        val jvmMain by getting {
+            dependencies {
+                api("ch.qos.logback:logback-classic:1.2.3")
+            }
+        }
 
-    api("ch.qos.logback", "logback-classic", "1.2.3")
+        val jvmTest by getting {
+            dependencies {
+                implementation("org.openjdk.jmh:jmh-core:1.25.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+                implementation(kotlin("test-junit5"))
 
-    testImplementation("org.openjdk.jmh", "jmh-core", "1.25.1")
-    testImplementation("org.openjdk.jmh", "jmh-generator-annprocess", "1.25.1")
-    kaptTest("org.openjdk.jmh", "jmh-generator-annprocess", "1.25.1")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 
-    testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.2")
-    testImplementation("com.microsoft.onnxruntime", "onnxruntime", "1.4.0")
-    testImplementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.0.1")
+                implementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
-    testImplementation(project(":loaders"))
-}
+                configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
+            }
+        }
 
-
-publishJar {
-    bintray {
-        username = "tanvd"
-        repository = "io.kinference"
-        info {
-            description = "KInference inference module"
-            vcsUrl = "https://github.com/JetBrains-Research/kinference"
-            githubRepo = "https://github.com/JetBrains-Research/kinference"
-            labels.addAll(listOf("kotlin", "inference", "ml"))
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.4.2")
+            }
         }
     }
 }
 
+idea {
+    module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
+}

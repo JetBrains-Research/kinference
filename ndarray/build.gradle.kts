@@ -1,32 +1,74 @@
-import tanvd.kosogor.proxy.publishJar
-
 group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.7" apply true
+    id("io.kinference.primitives") version "0.1.12" apply true
 }
 
-dependencies {
-    api(kotlin("stdlib"))
+kotlin {
+    jvm {
 
-    api("org.slf4j", "slf4j-api", "1.7.30")
+    }
 
-    api("io.kinference.primitives", "primitives-annotations", "0.1.7")
+    js {
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
 
-    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
-}
+        useCommonJs()
+    }
 
+    sourceSets {
+        val commonMain by getting {
+            repositories {
+                mavenCentral()
+                maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
+            }
 
-publishJar {
-    bintray {
-        username = "tanvd"
-        repository = "io.kinference"
-        info {
-            description = "KInference NDArray module"
-            vcsUrl = "https://github.com/JetBrains-Research/kinference"
-            githubRepo = "https://github.com/JetBrains-Research/kinference"
-            labels.addAll(listOf("kotlin", "inference", "ml", "array"))
+            dependencies {
+                api(kotlin("stdlib"))
+                api("io.kinference.primitives:primitives-annotations:0.1.12")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("io.github.microutils:kotlin-logging:2.0.4")
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+            }
+        }
+
+        val jvmMain by getting {
+            dependencies {
+                api("ch.qos.logback:logback-classic:1.2.3")
+            }
+        }
+
+        val jvmTest by getting {
+            dependsOn(commonTest)
+            dependencies {
+                implementation(kotlin("test-junit"))
+            }
+        }
+
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("regl", "2.0.1"))
+            }
+        }
+
+        val jsTest by getting {
+            dependsOn(commonTest)
+            dependencies {
+                implementation(kotlin("test-js"))
+            }
         }
     }
 }
+
