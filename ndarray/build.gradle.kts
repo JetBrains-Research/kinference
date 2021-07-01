@@ -2,7 +2,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.13" apply true
+    id("io.kinference.primitives") version "0.1.14" apply true
 }
 
 kotlin {
@@ -31,7 +31,7 @@ kotlin {
 
             dependencies {
                 api(kotlin("stdlib"))
-                api("io.kinference.primitives:primitives-annotations:0.1.13")
+                api("io.kinference.primitives:primitives-annotations:0.1.14")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 implementation("io.github.microutils:kotlin-logging:2.0.4")
             }
