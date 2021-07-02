@@ -39,7 +39,7 @@ class TensorProto(
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {
                     ReaderTag.DIMS -> proto.dims = reader.readLongArray(tag).toIntArray()
-                    ReaderTag.DATATYPE -> proto.dataType = DataType.fromValue(reader.readInt())
+                    ReaderTag.DATATYPE -> proto.dataType = reader.readValue(DataType.ADAPTER)
                     ReaderTag.SEGMENT -> proto.segment = Segment.decode(reader)
                     ReaderTag.FLOAT -> reader.readFloatTiledArray(tag, proto.dims, proto._tiledData)
                     ReaderTag.INT32 -> reader.readIntTiledArray(tag, proto.dims, proto._tiledData)
