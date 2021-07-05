@@ -1,6 +1,7 @@
 package io.kinference.runners
 
 import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.model.Model
 import io.kinference.ndarray.logger
 import io.kinference.protobuf.message.TensorProto
@@ -14,9 +15,22 @@ object AccuracyRunner {
     val logger = logger("Runner")
 
     private val delta = (10.0).pow(-3)
-    val quantDelta = 3.0
+
+    const val QUANT_DELTA = 3.0
 
     data class ONNXTestData(val name: String, val actual: List<ONNXData>, val expected: List<ONNXData>)
+    data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
+        companion object {
+            private const val DEFAULT_DATATYPE = "ONNX_TENSOR"
+            private const val DESC_TYPE_DELIMITER = ":ONNX_TYPE:"
+
+            fun fromString(str: String): ONNXTestDataInfo {
+                val split = str.split(DESC_TYPE_DELIMITER)
+                val strType = split.getOrElse(1) { DEFAULT_DATATYPE }
+                return ONNXTestDataInfo(path = split[0], type = ONNXDataType.fromString(strType))
+            }
+        }
+    }
 
     private suspend fun runTestsFromS3(name: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val toFolder = name.replace(":", "/")
@@ -30,21 +44,21 @@ object AccuracyRunner {
 
     private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val model = Model.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
-        val files = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines()
-        return files.filter { "test" in it }.groupBy { file -> file.takeWhile { it != '/' } }.map { (group, files) ->
+        val filesInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { ONNXTestDataInfo.fromString(it) }
+        return filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             if (group in disableTests) {
                 null
             } else {
-                val inputFiles = files.filter { file -> "input" in file }
-                val inputTensorProtos = inputFiles.map { TensorProto.decode(loader.bytes(TestDataLoader.Path(path, it))) }
-                val inputTensors = inputTensorProtos.map{ model.graph.prepareInput(it) }
+                val inputFiles = files.filter { file -> "input" in file.path }
+                val inputProtos = inputFiles.map { TensorProto.decode(loader.bytes(TestDataLoader.Path(path, it.path))) }
+                val inputs = inputProtos.map{ model.graph.prepareInput(it) }
 
-                val outputFiles =  files.filter { file -> "output" in file }
-                val expectedOutputTensors = outputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
+                val outputFiles =  files.filter { file -> "output" in file.path }
+                val expectedOutputs = outputFiles.map { DataLoader.getData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
 
                 logger.info { "Start predicting: $group" }
-                val actualOutputTensors = model.predict(inputTensors)
-                ONNXTestData(group, expectedOutputTensors, actualOutputTensors)
+                val actualOutputs = model.predict(inputs)
+                ONNXTestData(group, expectedOutputs, actualOutputs)
             }
         }.filterNotNull()
     }

@@ -1,6 +1,6 @@
 package io.kinference.runners
 
-import io.kinference.data.tensors.Tensor
+import io.kinference.data.ONNXData
 import io.kinference.model.Model
 import io.kinference.ndarray.logger
 import io.kinference.utils.*
@@ -22,16 +22,16 @@ object PerformanceRunner {
         return runPerformanceFromFolder(ResourcesTestDataLoader, path, count, withProfiling)
     }
 
-    data class TensorDataWithName(val tensors: List<Tensor>, val test: String)
+    data class ONNXDataWithName(val data: List<ONNXData>, val test: String)
 
     @OptIn(ExperimentalTime::class)
     private suspend fun runPerformanceFromFolder(loader: TestDataLoader, path: String, count: Int = 10, withProfiling: Boolean = false): List<PerformanceResults> {
         val model = Model.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
-        val files = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines()
-        val datasets = files.filter { "test" in it }.groupBy { file -> file.takeWhile { it != '/' } }.map { (group, files) ->
-            val inputFiles = files.filter { file -> "input" in file }
-            val inputTensors = inputFiles.map { DataLoader.getTensor(loader.bytes(TestDataLoader.Path(path, it))) }.toList()
-            TensorDataWithName(inputTensors, group)
+        val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
+        val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
+            val inputFiles = files.filter { file -> "input" in file.path }
+            val inputs = inputFiles.map { DataLoader.getData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
+            ONNXDataWithName(inputs, group)
         }
 
         val results = ArrayList<PerformanceResults>()
@@ -40,7 +40,7 @@ object PerformanceRunner {
             val times = LongArray(count)
             for (i in (0 until count)) {
                 val time = measureTime {
-                    model.predict(dataset.tensors, withProfiling)
+                    model.predict(dataset.data, withProfiling)
                 }.inMilliseconds.toLong()
                 times[i] = time
             }
