@@ -671,6 +671,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun splitHorizontalByBlocks(parts: Int): Array<NDArray> {
         require(rank <= 2) { "" }
+        if (blocksInRow % parts != 0) {
+            logger.info { "Split works ineffectively" }
+            return splitWithAxis(parts, axis = -1).toTypedArray()
+        }
         require(blocksInRow % parts == 0) { "" }
 
         val blocksInRow = this.blocksInRow
@@ -829,6 +833,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     companion object {
+        val logger = logger("NDArray")
+
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
