@@ -75,9 +75,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
         function as BooleanMap
-        val destination = allocateNDArray(strides) as MutableBooleanNDArray
+        destination as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
             destination.array[index] = function.apply(this.array[index])
         }

@@ -77,9 +77,9 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun toMutable(newStrides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(array.copyOf(), newStrides)
 
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray {
         function as PrimitiveMap
-        val destination = allocateNDArray(strides) as MutablePrimitiveNDArray
+        destination as MutablePrimitiveNDArray
 
         for (blockNum in 0 until array.blocksNum) {
             val thisBlock = this.array.blocks[blockNum]
@@ -463,6 +463,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     private fun resortBlocks(blocks: Array<PrimitiveArray>, colSize: Int, blocksInRow: Int): Array<PrimitiveArray> {
+        if (blocks.size == 1) return blocks
         val result = blocks.copyOf()
 
         for (i in 0 until blocksInRow) {
@@ -476,20 +477,23 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
-        require(shape.size == 2 && other.shape.size == 2)
-        require(shape[1] == other.shape[0])
+        require(shape.size in 1..2 && other.shape.size in 1..2)
+        val actualThis = (if (this.shape.size == 1) this.reshapeView(intArrayOf(1, shape[0])) else this) as PrimitiveNDArray
+        val actualOther = (if (other.shape.size == 1) other.reshapeView(intArrayOf(1, other.shape[0])) else other) as PrimitiveNDArray
 
-        val n = this.shape[0]
-        val t = this.shape[1]
+        require(actualThis.shape[1] == actualOther.shape[0])
 
-        val resortedLeft = resortBlocks(this.array.blocks, this.shape[0], this.blocksInRow)
-        val resortedRight = resortBlocks(other.array.blocks, other.shape[0], other.blocksInRow)
+        val n = actualThis.shape[0]
+        val t = actualThis.shape[1]
+
+        val resortedLeft = resortBlocks(actualThis.array.blocks, actualThis.shape[0], actualThis.blocksInRow)
+        val resortedRight = resortBlocks(actualOther.array.blocks, actualOther.shape[0], actualOther.blocksInRow)
         val resortedDest = resortBlocks(destination.array.blocks, destination.shape[0], destination.blocksInRow)
 
-        val lBlockSize = this.array.blockSize
+        val lBlockSize = actualThis.array.blockSize
         val rdBlockSize = destination.array.blockSize
 
-        val lBlockInRow = this.blocksInRow
+        val lBlockInRow = actualThis.blocksInRow
         val rBlockInRow = other.blocksInRow
 
         fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
