@@ -5,9 +5,9 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.logger
 import io.kinference.operators.*
+import io.kinference.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
-import io.kinference.types.ValueTypeInfo
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
@@ -27,6 +27,7 @@ class Graph(proto: GraphProto) {
     val initializers: List<Tensor>
     private val initNames = proto.initializer.map { it.name }
     private val dividerByName: Map<String, Int>
+    private val preparedTensorsContext = Context()
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -129,6 +130,12 @@ class Graph(proto: GraphProto) {
 
             Tensor.create(it, divider)
         }
+
+        for (operator in operators) {
+            when(operator.info.name) {
+                "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
+            }
+        }
     }
 
     private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
@@ -154,6 +161,7 @@ class Graph(proto: GraphProto) {
         //TODO: check that all inputs were set and not null
 
         val context = Context(root)
+        context.mergeContext(preparedTensorsContext)
         for (tensor in initializers) {
             context.putValue(tensor.info.name, tensor)
         }

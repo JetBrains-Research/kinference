@@ -8,11 +8,11 @@ class Context(private val base: Context? = null) {
     private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
-        return values.contains(name)
+        return values.contains(name) && (base?.hasValue(name) ?: true)
     }
 
     fun hasShape(name: String): Boolean {
-        return shapes.contains(name)
+        return shapes.contains(name) && (base?.hasShape(name) ?: true)
     }
 
     fun putValue(name: String, value: ONNXData) {
@@ -22,6 +22,10 @@ class Context(private val base: Context? = null) {
 
     fun getValue(name: String): ONNXData {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
+    }
+
+    fun getOrNullValue(name: String): ONNXData? {
+        return values[name] ?: base?.getOrNullValue(name)
     }
 
     fun removeValues(predicate: (String) -> Boolean) {
@@ -40,5 +44,10 @@ class Context(private val base: Context? = null) {
     fun clear() {
         values.clear()
         shapes.clear()
+    }
+
+    fun mergeContext(context: Context) {
+        values.putAll(context.values)
+        shapes.putAll(context.shapes)
     }
 }
