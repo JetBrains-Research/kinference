@@ -124,8 +124,8 @@ class GRUHiddenState(initHiddenState: NumberNDArray?, private val dataType: Data
         stateLocal.timesAssign(gates.update.getVector(batchNum))
 
         when (dataType) {
-            DataType.DOUBLE -> gates.update.getVector(batchNum).map(doubleResetMap, tempLocal)
-            DataType.FLOAT -> gates.update.getVector(batchNum).map(floatResetMap, tempLocal)
+            DataType.DOUBLE -> gates.update.getVector(batchNum).map(DoubleResetMap, tempLocal)
+            DataType.FLOAT -> gates.update.getVector(batchNum).map(FloatResetMap, tempLocal)
             else -> error("Unsupported type: $dataType")
         }
         tempLocal.timesAssign(gates.hidden.getVector(batchNum))
@@ -133,17 +133,20 @@ class GRUHiddenState(initHiddenState: NumberNDArray?, private val dataType: Data
         stateLocal.plusAssign(tempLocal)
     }
 
-    private val floatResetMap = object : FloatMap {
-        override fun apply(value: Float): Float {
-            return 1f - value
+    companion object {
+        private object FloatResetMap : FloatMap {
+            override fun apply(value: Float): Float {
+                return 1f - value
+            }
+        }
+
+        private object DoubleResetMap : DoubleMap {
+            override fun apply(value: Double): Double {
+                return 1.0 - value
+            }
         }
     }
 
-    private val doubleResetMap = object : DoubleMap {
-        override fun apply(value: Double): Double {
-            return 1.0 - value
-        }
-    }
 
     fun getVector(numDirection: Int, batchNum: Int) = stateData.view(numDirection, batchNum)
 }
