@@ -2,11 +2,8 @@ package io.kinference.operators.layer.recurrent.lstm
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.runBlocking
 import io.kinference.operators.activations.Activation
 import io.kinference.primitives.types.DataType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -51,16 +48,16 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
             batchSize, hiddenSize, dataType
         )
 
-        val LSTMStates = LSTMStates(
+        val lstmStates = LSTMStates(
             LSTMCellState(initialCellState, dataType, 2, batchSize, hiddenSize),
             LSTMHiddenState(initialHiddenState, dataType, 2, batchSize, hiddenSize, listOf(forwardH, reverseH))
         )
 
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArray
 
-        forwardLayer.apply(input, outputArray, LSTMStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType)
-        reverseLayer.apply(input, outputArray, LSTMStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType)
+        forwardLayer.apply(input, outputArray, lstmStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType)
+        reverseLayer.apply(input, outputArray, lstmStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType)
 
-        return Triple(outputArray, LSTMStates.hiddenState.data, LSTMStates.cellState.data)
+        return Triple(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
 }

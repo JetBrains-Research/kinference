@@ -4,15 +4,16 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
+import io.kinference.graph.ContextPrepare
 import io.kinference.ndarray.logger
 import io.kinference.operators.Operator
 import kotlin.time.ExperimentalTime
 
-internal object LSTMContext {
+internal object LSTMContext: ContextPrepare() {
     private val logger = logger("LSTM Initializer")
 
     @OptIn(ExperimentalTime::class)
-    fun appendContext(context: Context, initializers: List<Tensor>, operator: Operator<ONNXData, ONNXData>) {
+    override fun appendContext(context: Context, initializers: List<Tensor>, operator: Operator<ONNXData, ONNXData>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)
@@ -23,15 +24,6 @@ internal object LSTMContext {
         appendBias(biasInit, context)
         appendPeepholes(peepholesInit, context)
     }
-
-    @OptIn(ExperimentalTime::class)
-    private fun initTensorByDefaultName(defaultName: String, operator: Operator<ONNXData, ONNXData>, initializers: List<Tensor>): Tensor? {
-        val index = operator.info.inputs.find { it.name == defaultName }?.index ?: return null
-        val tensorName = operator.inputs.getOrNull(index)
-
-        return initializers.find { it.info.name == tensorName }
-    }
-
 
     internal fun prepareWeights(tensor: Tensor): Tensor {
         val shape = tensor.data.shape
