@@ -7,6 +7,7 @@ import io.kinference.operators.flow.*
 import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.attention.QAttention
 import io.kinference.operators.layer.normalization.*
+import io.kinference.operators.layer.recurrent.gru.GRU
 import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.*
 import io.kinference.operators.math.*
@@ -43,6 +44,7 @@ object OperatorFactory {
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
         "Greater" -> Greater(attributes, inputs, outputs)
+        "GRU" -> GRU(attributes, inputs, outputs)
         "Identity" -> Identity(attributes, inputs, outputs)
         "If" -> If(attributes, inputs, outputs)
         "LSTM" -> LSTM(attributes, inputs, outputs)
