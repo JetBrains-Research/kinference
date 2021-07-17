@@ -66,8 +66,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
         val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
 
-        fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
-            for (seqNum in seqRange) {
+        fun wrapper(seqNum: Int, body: (inner: () -> Unit) -> Unit = { it() }) {
                 for (batchNum in 0 until batchSize) {
                     if (seqNum >= seqLens[batchNum]) continue
                     body {
@@ -83,14 +82,15 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
                         output.viewMutable(seqNum, numDirection, batchNum).copyFrom(0, outputVector)
                     }
                 }
-            }
         }
 
         //TODO: research optimal batchSize for run with coroutines
-        if (batchSize > 1) {
-            runBlocking(Dispatchers.Default) { wrapper { launch { it() } }  }
-        } else {
-            wrapper()
+        for (seqNum in seqRange) {
+            if (batchSize > 1) {
+                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } }  }
+            } else {
+                wrapper(seqNum)
+            }
         }
     }
 }
