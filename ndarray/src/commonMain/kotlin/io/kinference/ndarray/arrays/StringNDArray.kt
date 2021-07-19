@@ -50,10 +50,6 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         TODO("Not yet implemented")
     }
 
-    override fun splitHorizontalByBlocks(parts: Int): Array<NDArray> {
-        TODO("Not yet implemented")
-    }
-
     companion object {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)

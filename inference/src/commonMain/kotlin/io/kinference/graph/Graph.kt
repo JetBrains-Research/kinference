@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.logger
 import io.kinference.operators.*
+import io.kinference.operators.layer.attention.AttentionContext
 import io.kinference.operators.layer.recurrent.gru.GRUContext
 import io.kinference.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
@@ -27,7 +28,6 @@ class Graph(proto: GraphProto) {
 
     val initializers: List<Tensor>
     private val initNames = proto.initializer.map { it.name }
-    private val dividerByName: Map<String, Int>
     private val preparedTensorsContext = Context()
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
@@ -101,41 +101,13 @@ class Graph(proto: GraphProto) {
 
         require(operators.size == proto.node.size)
 
-        dividerByName = HashMap<String, Int>().apply {
-            for (operator in operators) {
-                //TODO: Make normal divider init
-                if (operator.info.name == "Attention" || operator.info.name == "QAttention") {
-                    val numHeads = operator.getAttribute<Long>("num_heads").toInt()
-                    for (input in operator.info.inputs) {
-                        if (input.index in operator.inputs.indices) {
-                            val name = operator.inputs[input.index]
-                            if (input.name == "weight" || input.name == "bias")
-                                put(name, input.divider * numHeads)
-                            else
-                                put(name, input.divider)
-                        }
-                    }
-                } else {
-                    for (input in operator.info.inputs) {
-                        if (input.index in operator.inputs.indices) {
-                            val name = operator.inputs[input.index]
-                            put(name, input.divider)
-                        }
-                    }
-                }
-            }
-        }
-
-        initializers = proto.initializer.map {
-            val divider = dividerByName[it.name] ?: 1
-
-            Tensor.create(it, divider)
-        }
+        initializers = proto.initializer.map { Tensor.create(it) }
 
         for (operator in operators) {
             when(operator.info.name) {
                 "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
                 "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
+                "Attention", "QAttention" -> AttentionContext.appendContext(preparedTensorsContext, initializers, operator)
             }
         }
     }
@@ -148,11 +120,7 @@ class Graph(proto: GraphProto) {
     val availableInputs: List<String>
         get() = inputs.map { it.name }
 
-    fun prepareInput(proto: TensorProto): Tensor {
-        val divider = dividerByName[proto.name] ?: 1
-
-        return Tensor.create(proto, divider)
-    }
+    fun prepareInput(proto: TensorProto) = Tensor.create(proto)
 
     private fun Context.cleanupUntilOrder(order: Int) {
         return this.removeValues { valueOrderInfo.getOrder(it) <= order }

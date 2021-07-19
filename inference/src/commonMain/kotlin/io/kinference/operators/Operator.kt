@@ -22,7 +22,7 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
 open class IOInfo(
     val index: Int, val types: Set<DataType>, val name: String,
     val optional: Boolean = false, val onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
-    val scalar: Boolean = false, val differentiable: Boolean? = null, val divider: Int = 1 /* null == undefined, TODO */
+    val scalar: Boolean = false, val differentiable: Boolean? = null /* null == undefined, TODO */
 ) {
     init {
         require(types.isNotEmpty()) { "Input info must have at least one type constraint!" }

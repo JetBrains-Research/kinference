@@ -20,21 +20,17 @@ class PrimitiveTiledArray {
     companion object {
         const val MIN_BLOCK_SIZE = 512
 
-        internal fun blockSizeByStrides(strides: Strides, divider: Int = 1): Int {
+        internal fun blockSizeByStrides(strides: Strides): Int {
             return when {
                 strides.linearSize == 0 -> 0
                 strides.shape.isEmpty() -> 1
                 else -> {
                     val rowSize = strides.shape.last()
 
-                    require(rowSize % divider == 0)
-
-                    val dividedRowSize = rowSize / divider
-
-                    val blockSize = if (dividedRowSize < MIN_BLOCK_SIZE) dividedRowSize else {
-                        var num = dividedRowSize / MIN_BLOCK_SIZE
-                        while (dividedRowSize % num != 0) num--
-                        dividedRowSize / num
+                    val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
+                        var num = rowSize / MIN_BLOCK_SIZE
+                        while (rowSize % num != 0) num--
+                        rowSize / num
                     }
 
                     blockSize
@@ -42,19 +38,19 @@ class PrimitiveTiledArray {
             }
         }
 
-        operator fun invoke(strides: Strides, divider: Int = 1): PrimitiveTiledArray {
-            val blockSize = blockSizeByStrides(strides, divider)
+        operator fun invoke(strides: Strides): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides)
             return PrimitiveTiledArray(strides.linearSize, blockSize)
         }
 
-        operator fun invoke(strides: Strides, divider: Int = 1, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
-            val blockSize = blockSizeByStrides(strides, divider)
+        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides)
             return PrimitiveTiledArray(strides.linearSize, blockSize, init)
         }
 
-        operator fun invoke(shape: IntArray, divider: Int = 1) = invoke(Strides(shape), divider)
+        operator fun invoke(shape: IntArray) = invoke(Strides(shape))
 
-        operator fun invoke(shape: IntArray, divider: Int = 1, init: (Int) -> PrimitiveType) = invoke(Strides(shape), divider, init)
+        operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
     }
 
     constructor(size: Int, blockSize: Int) {
