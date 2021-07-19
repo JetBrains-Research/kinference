@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.logger
 import io.kinference.operators.*
+import io.kinference.operators.layer.recurrent.gru.GRUContext
 import io.kinference.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
@@ -134,6 +135,7 @@ class Graph(proto: GraphProto) {
         for (operator in operators) {
             when(operator.info.name) {
                 "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
+                "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
             }
         }
     }
