@@ -38,7 +38,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return MutableStringNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
         TODO("Not yet implemented")
     }
 

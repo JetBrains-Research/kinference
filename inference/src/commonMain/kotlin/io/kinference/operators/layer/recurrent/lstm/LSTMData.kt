@@ -1,120 +1,100 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
+class LSTMGate(private val weights: NumberNDArray,
+               private val recurrentWeights: NumberNDArray,
+               private val bias: NumberNDArray?,
+               private val peephole: NumberNDArray?,
+               batchSize: Int, hiddenSize: Int, dataType: DataType) {
+    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
 
-class LSTMData(
-    val type: DataType,
-    val weights: GatesData,
-    val recurrentWeights: GatesData,
-    val bias: GatesData? = null,
-    val initialOutput: List<NDArray>? = null,
-    val initialCellState: List<NDArray>? = null,
-    val peepholes: GatesData? = null
-) {
+    fun compute(input: NumberNDArray, lstmStates: LSTMStates, activationFunction: PrimitiveToPrimitiveFunction, numDirection: Int, batchNum: Int) {
+        val gateLocal = gateData.viewMutable(batchNum)
+        gateLocal.clean()
 
-    fun updateWeights(weights: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
-    fun updateRecurrentWeights(recurrentWeights: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
-    fun updateBias(bias: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
-    fun updateInitialOutput(initialOutput: List<NDArray>) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
-    fun updateInitialCellGate(initialCellSate: List<NDArray>) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellSate, peepholes)
-    fun updatePeepholes(peepholes: GatesData) = LSTMData(type, weights, recurrentWeights, bias, initialOutput, initialCellState, peepholes)
-}
-
-
-data class GatesData(
-    val input: MutableNDArray,
-    val output: MutableNDArray,
-    val forget: MutableNDArray,
-    val cellGate: MutableNDArray
-) {
-    fun cleanup() {
-        input.clean()
-        output.clean()
-        forget.clean()
-        cellGate.clean()
+        input.dot(weights, gateLocal)
+        lstmStates.hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal)
+        if (bias != null) gateLocal.plusAssign(bias)
+        if (peephole != null) gateLocal.plusAssign(peephole.times(lstmStates.cellState.getVector(numDirection, batchNum)))
+        gateLocal.mapMutable(activationFunction)
     }
 
+    fun getVector(batchNum: Int) = gateData.view(batchNum)
+}
+
+data class LSTMGates(val input: LSTMGate, val output: LSTMGate, val forget: LSTMGate, val cell: LSTMGate) {
     companion object {
-        fun createWeights(weights: MutableNDArray): GatesData {
-            require(weights.shape[0] == 1)
-
-            val matrix = weights.squeeze(0)
-
-            val weightsList = matrix.splitWithAxis(4)
-            return GatesData(
-                weightsList[0].transpose2D(), weightsList[1].transpose2D(),
-                weightsList[2].transpose2D(), weightsList[3].transpose2D()
+        fun create(weights: NumberNDArray, recurrentWeights: NumberNDArray, bias: NumberNDArray?, peepholes: NumberNDArray?,
+                   batchSize: Int, hiddenSize: Int, dataType: DataType): LSTMGates {
+            val inputGate = LSTMGate(
+                weights.view(0),
+                recurrentWeights.view(0),
+                bias?.view(0)?.plus(bias.view(4)),
+                peepholes?.view(0),
+                batchSize, hiddenSize, dataType
             )
-        }
-
-        fun createBias(bias: MutableNDArray): GatesData {
-            require(bias.shape[0] == 1)
-
-            val linear = bias.squeeze(0)
-
-            val biasList = linear.splitWithAxis(8)
-
-            return GatesData(
-                (biasList[0] as MutableNumberNDArray).apply { plusAssign(biasList[4]) }.wrapOneDim(),
-                (biasList[1] as MutableNumberNDArray).apply { plusAssign(biasList[5]) }.wrapOneDim(),
-                (biasList[2] as MutableNumberNDArray).apply { plusAssign(biasList[6]) }.wrapOneDim(),
-                (biasList[3] as MutableNumberNDArray).apply { plusAssign(biasList[7]) }.wrapOneDim()
+            val outputGate = LSTMGate(
+                weights.view(1),
+                recurrentWeights.view(1),
+                bias?.view(1)?.plus(bias.view(5)),
+                peepholes?.view(1), batchSize, hiddenSize, dataType
             )
-        }
+            val forgetGate = LSTMGate(
+                weights.view(2),
+                recurrentWeights.view(2),
+                bias?.view(2)?.plus(bias.view(6)),
+                peepholes?.view(2), batchSize, hiddenSize, dataType
+            )
+            val cellGate = LSTMGate(
+                weights.view(3),
+                recurrentWeights.view(3),
+                bias?.view(3)?.plus(bias.view(7)),
+                null,
+                batchSize, hiddenSize, dataType
+            )
 
-        fun createPeepholes(peepholes: MutableNDArray): GatesData {
-            require(peepholes.shape[0] == 1)
-
-            val linear = peepholes.squeeze(0)
-
-            val peepholesList = linear.splitWithAxis(3)
-            return GatesData(peepholesList[0], peepholesList[1], peepholesList[2], allocateNDArray(DataType.SHORT, Strides(intArrayOf(1))))
-        }
-
-        fun allocateGates(hiddenSize: Int, type: DataType): GatesData {
-            val newStrides = Strides(intArrayOf(1, hiddenSize))
-
-            val allocArrays = Array(4) { allocateNDArray(type, newStrides) }
-            return GatesData(allocArrays[0], allocArrays[1], allocArrays[2], allocArrays[3])
+            return LSTMGates(inputGate, outputGate, forgetGate, cellGate)
         }
     }
 }
 
+class LSTMCellState(initCellState: NumberNDArray?, dataType: DataType, numDirections: Int, batchSize: Int, hiddenSize: Int) {
+    private val stateData = initCellState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArray
+    private val tempData = allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArray
 
-data class State(var output: MutableNDArray, val cellState: MutableNDArray, var isOutputZero: Boolean, var isCellStateZero: Boolean) {
-    companion object {
-        fun allocateState(batchSize: Int, hiddenSize: Int, type: DataType): Array<State> {
-            val newStrides = Strides(intArrayOf(1, hiddenSize))
+    val data: NumberNDArray
+        get() = stateData
 
-            return Array(batchSize) {
-                val out = allocateNDArray(type, newStrides)
-                val cell = allocateNDArray(type, newStrides)
-                State(out, cell, true, true)
-            }
-        }
+    fun compute(lstmGates: LSTMGates, numDirection: Int, batchNum: Int) {
+        val stateLocal = stateData.viewMutable(numDirection, batchNum)
+        val tempLocal = tempData.viewMutable(numDirection, batchNum)
 
-        fun create(initialOutput: List<NDArray>?, initialCellState: List<NDArray>?, batchSize: Int, hiddenSize: Int, type: DataType): Array<State> {
-            val allocatedStates = allocateState(batchSize, hiddenSize, type)
-
-            if (initialOutput != null) {
-                for (i in allocatedStates.indices) {
-                    allocatedStates[i].output.copyFrom(0, initialOutput[i])
-                    allocatedStates[i].isOutputZero = false
-                }
-            }
-
-            if (initialCellState != null) {
-                for (i in allocatedStates.indices) {
-                    allocatedStates[i].cellState.copyFrom(0, initialCellState[i])
-                    allocatedStates[i].isCellStateZero = false
-                }
-            }
-
-            return allocatedStates
-        }
+        stateLocal.timesAssign(lstmGates.forget.getVector(batchNum))
+        lstmGates.input.getVector(batchNum).times(lstmGates.cell.getVector(batchNum), tempLocal)
+        stateLocal.plusAssign(tempLocal)
     }
+
+    fun getVector(numDirection: Int, batchNum: Int) = stateData.view(numDirection, batchNum)
 }
+
+class LSTMHiddenState(initHiddenState: NumberNDArray?, dataType: DataType, numDirection: Int, batchSize: Int, hiddenSize: Int,
+                      private val activationFunctions: List<PrimitiveToPrimitiveFunction>) {
+    private val stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArray
+    val data: NumberNDArray
+        get() = stateData
+
+    fun compute(lstmGates: LSTMGates, cellState: LSTMCellState, numDirection: Int, batchNum: Int) {
+        val stateLocal = stateData.viewMutable(numDirection, batchNum)
+        stateLocal.copyFrom(0, cellState.getVector(numDirection, batchNum))
+        stateLocal.mapMutable(activationFunctions[numDirection])
+        stateLocal.timesAssign(lstmGates.output.getVector(batchNum))
+    }
+
+    fun getVector(numDirection: Int, batchNum: Int): NumberNDArray = stateData.view(numDirection, batchNum)
+
+}
+
+data class LSTMStates(val cellState: LSTMCellState, val hiddenState: LSTMHiddenState)

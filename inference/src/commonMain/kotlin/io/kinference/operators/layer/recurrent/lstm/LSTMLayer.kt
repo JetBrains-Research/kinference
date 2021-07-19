@@ -1,189 +1,96 @@
 package io.kinference.operators.layer.recurrent.lstm
 
-import io.kinference.data.tensors.Tensor
-import io.kinference.data.tensors.asTensor
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.runBlocking
 import io.kinference.operators.activations.Activation
-import io.kinference.protobuf.message.TensorProto.DataType
-import io.kinference.protobuf.resolveLocalDataType
+import io.kinference.primitives.types.DataType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-open class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMBase(hiddenSize, activations, direction) {
-
-    private var lstmData: LSTMData? = null
-
+@OptIn(ExperimentalTime::class)
+class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMLayerBase(hiddenSize, activations, direction) {
     init {
-        require(direction == "forward" || direction == "reverse")
-        require(activations.size >= 3)
+        require(activations.size == 3)
     }
 
-    override fun apply(inputs: List<NDArray>, sequenceLens: IntArray, outputArray: MutableNDArray, startOffset: Int): List<Tensor> {
-        val batchSize = batchSize!!
-        val seqLength = seqLength!!
-        val type = type!!
-        val lstmData = lstmData!!
+    override fun apply(
+        input: NumberNDArray,
+        weights: NumberNDArray,
+        recurrentWeights: NumberNDArray,
+        bias: NumberNDArray?,
+        sequenceLens: IntNDArray?,
+        initialHiddenState: NumberNDArray?,
+        initialCellState: NumberNDArray?,
+        peepholes: NumberNDArray?,
+        dataType: DataType,
+    ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
+        val h = Activation.create(activations[2], dataType)
 
-        val (f, g, h) = activations.map { Activation.create(it, type) }
+        val seqLength = input.shape[0]
+        val batchSize = input.shape[1]
+        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArray
 
-        var currentOffset = if (direction == "forward") startOffset else outputArray.linearSize - startOffset
-        val stepOffset = outputArray.strides.strides[0]
+        val lstmStates = LSTMStates(
+            LSTMCellState(initialCellState, dataType, 1, batchSize, hiddenSize),
+            LSTMHiddenState(initialHiddenState, dataType, 1, batchSize, hiddenSize, listOf(h))
+        )
 
-        val gatesData = GatesData.allocateGates(hiddenSize, type)
-        val lastStates = State.create(lstmData.initialOutput, lstmData.initialCellState, batchSize, hiddenSize, type)
+        val lstmGates = LSTMGates.create(
+            weights.view(0),
+            recurrentWeights.view(0),
+            bias?.view(0),
+            peepholes?.view(0),
+            batchSize, hiddenSize, dataType
+        )
 
-        var batchNum = if (direction == "forward") 0 else seqLength - 1
-        for (i in 0 until seqLength) {
-            val temp = batchNum * batchSize
-            for (inputNum in 0 until batchSize) {
-                if (batchNum >= sequenceLens[inputNum]) continue
-                step(lstmData, inputs[temp + inputNum], outputArray, currentOffset + hiddenSize * inputNum, gatesData, lastStates[inputNum], f, g, h)
-            }
-            if (direction == "forward") {
-                currentOffset += stepOffset
-                batchNum++
+        apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType)
+
+        return Triple(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
+    }
+
+    fun apply(
+        input: NumberNDArray,
+        output: MutableNumberNDArray,
+        lstmStates: LSTMStates,
+        lstmGates: LSTMGates,
+        sequenceLens: IntNDArray?,
+        numDirection: Int,
+        seqLength: Int,
+        batchSize: Int,
+        dataType: DataType
+    ) {
+        val (f, g) = activations.map { Activation.create(it, dataType) }
+
+        val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
+        val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
+
+        fun wrapper(seqNum: Int, body: (inner: () -> Unit) -> Unit = { it() }) {
+                for (batchNum in 0 until batchSize) {
+                    if (seqNum >= seqLens[batchNum]) continue
+                    body {
+                        val localInput = input.view(seqNum, batchNum)
+                        lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum)
+                        lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum)
+                        lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum)
+                        lstmStates.cellState.compute(lstmGates, numDirection, batchNum)
+                        lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum)
+                        lstmStates.hiddenState.compute(lstmGates, lstmStates.cellState, numDirection, batchNum)
+                        val outputVector = lstmStates.hiddenState.getVector(numDirection, batchNum)
+
+                        output.viewMutable(seqNum, numDirection, batchNum).copyFrom(0, outputVector)
+                    }
+                }
+        }
+
+        //TODO: research optimal batchSize for run with coroutines
+        for (seqNum in seqRange) {
+            if (batchSize > 1) {
+                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } }  }
             } else {
-                currentOffset -= stepOffset
-                batchNum--
+                wrapper(seqNum)
             }
-        }
-        val lastState = lastStates.toOutput()
-
-        return listOf(outputArray.asTensor(), lastState.output.asTensor(), lastState.cellState.asTensor())
-    }
-
-    private fun NDArray.processGate(
-        lastState: State, lstmWeight: MutableNDArray, lstmGate: MutableNDArray, activation: PrimitiveToPrimitiveFunction,
-        recurrent: NDArray, bias: NDArray?, peepholes: NDArray? = null
-    ) {
-        this as NumberNDArray; lstmWeight as MutableNumberNDArray; lstmGate as MutableNumberNDArray
-        this.dot(lstmWeight, lstmGate)
-        if (!lastState.isOutputZero) (lastState.output as NumberNDArray).dot(recurrent as NumberNDArray, lstmGate)
-        if (!lastState.isCellStateZero && peepholes != null)
-            lstmGate.plusAssign(peepholes as NumberNDArray * lastState.cellState as NumberNDArray)
-        if (bias != null) lstmGate.plusAssign(bias)
-        lstmGate.mapMutable(activation)
-    }
-
-    private fun step(
-        lstmData: LSTMData, input: NDArray, output: MutableNDArray, outputOffset: Int, gatesData: GatesData,
-        lastState: State, f: PrimitiveToPrimitiveFunction, g: PrimitiveToPrimitiveFunction, h: PrimitiveToPrimitiveFunction
-    ) {
-        gatesData.cleanup()
-        input.processGate(
-            lastState,
-            lstmData.weights.input,
-            gatesData.input,
-            f,
-            lstmData.recurrentWeights.input,
-            lstmData.bias?.input,
-            lstmData.peepholes?.input
-        )
-        input.processGate(
-            lastState,
-            lstmData.weights.forget,
-            gatesData.forget,
-            f,
-            lstmData.recurrentWeights.forget,
-            lstmData.bias?.forget,
-            lstmData.peepholes?.forget
-        )
-        input.processGate(lastState, lstmData.weights.cellGate, gatesData.cellGate, g, lstmData.recurrentWeights.cellGate, lstmData.bias?.cellGate)
-
-        if (!lastState.isCellStateZero) (lastState.cellState as MutableNumberNDArray).timesAssign(gatesData.forget)
-        (gatesData.input as MutableNumberNDArray).timesAssign(gatesData.cellGate)
-        (lastState.cellState as MutableNumberNDArray).plusAssign(gatesData.input)
-
-        input.processGate(
-            lastState,
-            lstmData.weights.output,
-            gatesData.output,
-            f,
-            lstmData.recurrentWeights.output,
-            lstmData.bias?.output,
-            lstmData.peepholes?.output
-        )
-
-        lastState.output = lastState.cellState.map(h).apply { timesAssign(gatesData.output) }
-
-        output.copyFrom(outputOffset, lastState.output)
-
-        lastState.isOutputZero = false
-        lastState.isCellStateZero = false
-    }
-
-    override fun parseTempInputs(
-        weights: Tensor,
-        recurrentWeights: Tensor,
-        bias: Tensor?,
-        initialOutput: Tensor?,
-        initialCellState: Tensor?,
-        peepholes: Tensor?
-    ) {
-        if (lstmData == null) {
-            val parsedWeights = GatesData.createWeights(weights.data.toMutable())
-            val parsedRecurrentWeights = GatesData.createWeights(recurrentWeights.data.toMutable())
-            lstmData = LSTMData(type!!, parsedWeights, parsedRecurrentWeights)
-
-            this.weights = weights.data
-            this.recurrentWeights = recurrentWeights.data
-            this.bias = null
-            this.initialOutput = null
-            this.initialCellState = null
-            this.peepholes = null
-        }
-        if (weights.data !== this.weights) {
-            lstmData = lstmData!!.updateWeights(GatesData.createWeights(weights.data.toMutable()))
-            this.weights = weights.data
-        }
-        if (recurrentWeights.data !== this.recurrentWeights) {
-            lstmData = lstmData!!.updateRecurrentWeights(GatesData.createWeights(recurrentWeights.data.toMutable()))
-            this.recurrentWeights = recurrentWeights.data
-        }
-        if (bias != null && bias.data !== this.bias) {
-            lstmData = lstmData!!.updateBias(GatesData.createBias(bias.data.toMutable()))
-            this.bias = bias.data
-        }
-        if (initialOutput != null && initialOutput.data !== this.initialOutput) {
-            lstmData = lstmData!!.updateInitialOutput(initialOutput.data.toMutable().squeeze(0).splitWithAxis(batchSize!!))
-            this.initialOutput = initialOutput.data
-        }
-        if (initialCellState != null && initialCellState.data !== this.initialCellState) {
-            lstmData = lstmData!!.updateInitialCellGate(initialCellState.data.toMutable().squeeze(0).splitWithAxis(batchSize!!))
-            this.initialCellState = initialCellState.data
-        }
-        if (peepholes != null && peepholes.data !== this.peepholes) {
-            lstmData = lstmData!!.updatePeepholes(GatesData.createPeepholes(peepholes.data.toMutable()))
-            this.peepholes = peepholes.data
-        }
-    }
-
-    protected fun Array<State>.toOutput(): State {
-        val strides = Strides(intArrayOf(1, batchSize!!, hiddenSize))
-        val outputArray = allocateNDArray(type!!, strides)
-        val cellStateArray = allocateNDArray(type!!, strides)
-
-        for (i in this.indices) {
-            val offset = i * hiddenSize
-            outputArray.copyFrom(offset, this[i].output)
-            cellStateArray.copyFrom(offset, this[i].cellState)
-        }
-
-        return State(outputArray, cellStateArray, false, false)
-    }
-
-    companion object {
-        fun create(hiddenSize: Int, activations: List<String>, direction: String, lstmData: LSTMData, seqLength: Int, batchSize: Int, type: DataType): LSTMLayer {
-            val lstm = LSTMLayer(hiddenSize, activations, direction)
-            lstm.lstmData = lstmData
-            lstm.seqLength = seqLength
-            lstm.batchSize = batchSize
-            lstm.type = type.resolveLocalDataType()
-            return lstm
         }
     }
 }
-
-

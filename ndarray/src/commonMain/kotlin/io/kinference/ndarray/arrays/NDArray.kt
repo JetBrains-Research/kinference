@@ -28,7 +28,8 @@ interface NDArray {
 
     fun copyIfNotMutable(): MutableNDArray
 
-    fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray
+    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray
+    fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
@@ -60,7 +61,8 @@ interface NumberNDArray : NDArray {
 
     override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray
+    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
 
     override fun row(row: Int): MutableNumberNDArray
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
@@ -92,6 +94,8 @@ interface NumberNDArray : NDArray {
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
 
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): IntNDArray
+
+    override fun view(vararg axes: Int): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
@@ -100,6 +104,7 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun reshape(strides: Strides): MutableNumberNDArray
     override fun reshape(shape: IntArray): MutableNumberNDArray = reshape(Strides(shape))
     override fun transpose(permutations: IntArray): MutableNumberNDArray
+    override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 
     fun erf(): MutableNumberNDArray
 
