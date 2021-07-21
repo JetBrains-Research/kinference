@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "io.kinference"
 version = "0.1.2"
@@ -8,6 +8,7 @@ plugins {
     kotlin("multiplatform") version "1.4.30" apply false
     idea apply true
     id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    `maven-publish`
 }
 
 allprojects {
@@ -20,18 +21,34 @@ allprojects {
 subprojects {
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
+        plugin("maven-publish")
 
         plugin("idea")
 
         plugin("io.gitlab.arturbosch.detekt")
     }
 
+
+    publishing {
+        repositories {
+            maven {
+                name = "SpacePackages"
+                url = uri("https://packages.jetbrains.team/maven/p/ki/maven")
+
+                credentials {
+                    username = System.getenv("JB_SPACE_CLIENT_ID")
+                    password = System.getenv("JB_SPACE_CLIENT_SECRET")
+                }
+            }
+        }
+    }
+
     tasks.withType<KotlinCompile<*>> {
         kotlinOptions {
             freeCompilerArgs = freeCompilerArgs + listOf(
-                    "-Xopt-in=kotlin.RequiresOptIn",
-                    "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
-                    "-Xopt-in=kotlin.time.ExperimentalTime"
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
+                "-Xopt-in=kotlin.time.ExperimentalTime"
             )
         }
     }
