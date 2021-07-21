@@ -33,8 +33,8 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, BYTES, "input", optional = false),
-            IOInfo(1, BYTES, "weight", optional = false, divider = 3),
-            IOInfo(2, FLOATS, "bias", optional = false, divider = 3),
+            IOInfo(1, BYTES, "weight", optional = false),
+            IOInfo(2, FLOATS, "bias", optional = false),
             IOInfo(3, FLOATS, "input_scale", optional = false),
             IOInfo(4, FLOATS, "weight_scale", optional = false),
             IOInfo(5, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
@@ -58,8 +58,6 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
                                   batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int,
                                   inputZeroPoint: Int, weightsZeroPoint: Int, deqScale: Float): Array<MutableNDArray> {
         val headSize = hiddenSize / numHeads
-        val qkvWeights = weights.splitHorizontalByBlocks(3).map { it.splitHorizontalByBlocks(numHeads) }
-        val qkvBias = bias.splitHorizontalByBlocks(3).map { it.splitHorizontalByBlocks(numHeads) }
 
         val qkv = Array(3) { allocateNDArray(DataType.FLOAT, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize))) }
 
@@ -67,15 +65,13 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
             for (qkvIdx in 0 until 3) {
                 launch {
                     val output = qkv[qkvIdx]
-                    val weights = qkvWeights[qkvIdx]
-                    val bias = qkvBias[qkvIdx]
 
                     for (batchNum in 0 until batchSize) {
                         val inputMatrix = input.view(batchNum)
                         for (numHead in 0 until numHeads) {
                             val outputMatrix = output.viewMutable(batchNum, numHead) as MutableFloatNDArray
-                            val weightsMatrix = weights[numHead]
-                            val biasMatrix = bias[numHead] as FloatNDArray
+                            val weightsMatrix = weights.view(qkvIdx, numHead)
+                            val biasMatrix = bias.view(qkvIdx, numHead)
 
                             when {
                                 inputMatrix is ByteNDArray && weightsMatrix is ByteNDArray -> inputMatrix.quantizeDot(weightsMatrix, outputMatrix, inputZeroPoint, weightsZeroPoint, deqScale)
@@ -95,7 +91,8 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data as NumberNDArray
-        val weights = inputs[1]!!.data as NumberNDArray
+        val weights = inputs[1]!!
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.info.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as Tensor
 
         val inputScale = inputs[3]!!.data.singleValue() as Float
         val weightsScale = inputs[4]!!.data.singleValue() as Float
@@ -118,10 +115,11 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
 
         val (batchSize, seqLen, hiddenSize) = input.shape
-        val bias = inputs[2]!!.data as FloatNDArray
+        val bias = inputs[2]!!
+        val preparedBias = (context.getOrNullValue("prepared_${bias.info.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as Tensor
 
 
-        val (queries, keys, values) = initQueryKeyValue(input, weights, bias, batchSize, seqLen, hiddenSize, numHeads, inputZeroPoint, weightsZeroPoint, deqScale)
+        val (queries, keys, values) = initQueryKeyValue(input, preparedWeights.data as NumberNDArray, preparedBias.data as FloatNDArray, batchSize, seqLen, hiddenSize, numHeads, inputZeroPoint, weightsZeroPoint, deqScale)
 
         val maskIndices = inputs.elementAtOrNull(5)?.data as IntNDArray?
         val past = inputs.elementAtOrNull(8)?.data

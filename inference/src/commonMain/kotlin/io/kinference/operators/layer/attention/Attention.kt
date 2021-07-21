@@ -35,8 +35,8 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false, divider = 3),
-            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false, divider = 3),
+            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
+            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
             IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
             IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
         )
@@ -54,8 +54,6 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         ): Array<MutableNDArray> {
             input as NumberNDArray
             val headSize = hiddenSize / numHeads
-            val qkvWeights = weights.splitHorizontalByBlocks(3).map { it.splitHorizontalByBlocks(numHeads) }
-            val qkvBias = bias.splitHorizontalByBlocks(3).map { it.splitHorizontalByBlocks(numHeads) }
 
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize))) }
 
@@ -63,17 +61,15 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 for (qkvIdx in 0 until 3) {
                     launch {
                         val output = qkv[qkvIdx]
-                        val weights = qkvWeights[qkvIdx]
-                        val bias = qkvBias[qkvIdx]
-
                         for (batchNum in 0 until batchSize) {
                             val inputMatrix = input.view(batchNum)
                             for (numHead in 0 until numHeads) {
-                                val outputMatrix = output.viewMutable(batchNum, numHead)
-                                val weightsMatrix = weights[numHead]
-                                val biasMatrix = bias[numHead]
+                                val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArray
+                                val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
 
-                                (inputMatrix as NumberNDArray).dot(weightsMatrix as NumberNDArray, outputMatrix as MutableNumberNDArray)
+                                val outputMatrix = output.viewMutable(batchNum, numHead)
+
+                                inputMatrix.dot(weightsMatrix, outputMatrix as MutableNumberNDArray)
                                 outputMatrix.plusAssign(biasMatrix)
                             }
                         }
@@ -246,15 +242,23 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
-        val input = inputs[0]!!.data
-        val weights = inputs[1]!!.data
-        val bias = inputs[2]!!.data
+        val input = inputs[0]!!
+        val weights = inputs[1]!!
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.info.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as Tensor
+
+        val bias = inputs[2]!!
+        val preparedBias = (context.getOrNullValue("prepared_${bias.info.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as Tensor
+
         val maskIndices = inputs.elementAtOrNull(3)?.data as IntNDArray?
-        val past = inputs.elementAtOrNull(4)?.data
+        val past = inputs.elementAtOrNull(4)?.data as NumberNDArray?
 
-        val (batchSize, seqLen, hiddenSize) = input.shape
+        val (batchSize, seqLen, hiddenSize) = input.data.shape
 
-        val (queries, keys, values) = initQueryKeyValue(input, weights, bias, batchSize, seqLen, hiddenSize, numHeads)
+        val (queries, keys, values) = initQueryKeyValue(
+            input.data,
+            preparedWeights.data,
+            preparedBias.data,
+            batchSize, seqLen, hiddenSize, numHeads)
 
         val (scores, present) = getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())

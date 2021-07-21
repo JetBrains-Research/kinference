@@ -12,11 +12,11 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
 }
 
 open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArray {
-    constructor(shape: IntArray, divider: Int = 1) : this(BooleanTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, divider: Int = 1, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, divider, init), Strides(shape))
+    constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
 
-    constructor(strides: Strides, divider: Int = 1) : this(BooleanTiledArray(strides, divider), strides)
-    constructor(strides: Strides, divider: Int = 1, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, divider, init), strides)
+    constructor(strides: Strides) : this(BooleanTiledArray(strides), strides)
+    constructor(strides: Strides, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
 
     override val type: DataType = DataType.BOOLEAN
 
@@ -133,10 +133,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
     }
 
-    override fun splitHorizontalByBlocks(parts: Int): Array<NDArray> {
-        TODO("Not yet implemented")
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false
@@ -153,21 +149,21 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             return BooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
         }
 
-        operator fun invoke(array: BooleanTiledArray, strides: Strides, divider: Int): BooleanNDArray {
-            val blockSize = BooleanTiledArray.blockSizeByStrides(strides, divider)
+        operator fun invoke(array: BooleanTiledArray, strides: Strides): BooleanNDArray {
+            val blockSize = BooleanTiledArray.blockSizeByStrides(strides)
             return if (blockSize == array.blockSize) {
                 BooleanNDArray(array, strides)
             }
             else {
                 val pointer = BooleanPointer(array)
-                BooleanNDArray(strides, divider) { pointer.getAndIncrement() }
+                BooleanNDArray(strides) { pointer.getAndIncrement() }
             }
         }
     }
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
-    constructor(shape: IntArray, divider: Int = 1) : this(BooleanTiledArray(shape, divider), Strides(shape))
+    constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
 
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
