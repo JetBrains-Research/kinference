@@ -1,7 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.pointers.BooleanPointer
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.applyWithBroadcast
@@ -138,14 +138,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     private fun orScalar(array: BooleanTiledArray, scalar: Boolean, destination: BooleanTiledArray) {
         require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
 
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
+        val arrayPointer = array.pointer()
+        val destPointer = destination.pointer()
 
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = arrayBlock[idx] || scalar
-            }
-        }
+        arrayPointer.mapTo(destPointer, destination.size) { it || scalar }
     }
 
     fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
@@ -156,15 +152,11 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             else -> this.applyWithBroadcast(other, destination) { left, right, dest ->
                 left as BooleanNDArray; right as BooleanNDArray; dest as MutableBooleanNDArray
 
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
+                val leftPointer = left.array.pointer()
+                val rightPointer = right.array.pointer()
+                val destPointer = dest.array.pointer()
 
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = leftBlock[idx] || rightBlock[idx]
-                    }
-                }
+                destPointer.acceptDouble(leftPointer, rightPointer, dest.array.size) { _, a, b -> a || b }
             }
         }
 
