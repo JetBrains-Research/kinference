@@ -19,6 +19,7 @@ class S3Dependency(project: Project, private val path: String) {
                 s3Test("gpt2:r-completion:quantized:v1")
                 s3Test("catboost:ij-completion-ranker:v1")
                 s3Test("catboost:license-detector:v1")
+                s3Test("custom:comment_updater")
             }
             dependencies.resolve()
         }
