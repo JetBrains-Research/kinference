@@ -1,5 +1,6 @@
 package io.kinference.ndarray.broadcasting
 
+import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
@@ -108,6 +109,15 @@ object Broadcasting {
     ) {
         val indexedInputs = inputs.withIndex()
         val (arraysWithOne, arraysWithoutOne) = indexedInputs.partition { it.value.shape[0] == 1 }
+
+        if (destination.shape.size == 1) {
+            val broadcastSize = destination.shape.last()
+            val broadcastArraysWithOne = arraysWithOne.map { it.copy(value = it.value.allocateNDArray(Strides(intArrayOf(broadcastSize)))
+                .apply { fill(it.value.singleValue()) }) }
+            val mergedInputs = broadcastArraysWithOne.plus(arraysWithoutOne).sortedBy { it.index }.map { it.value }
+
+            return recurrentBack(mergedInputs, destination)
+        }
 
         val viewedArraysWithOne = arraysWithOne.map { it.copy(value = it.value.view(0)) }
 
