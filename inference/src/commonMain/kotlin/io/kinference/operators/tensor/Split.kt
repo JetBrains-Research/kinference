@@ -5,6 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.splitWithAxis
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
+import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.ndarray.toIntArray
 import io.kinference.operators.*
 import kotlin.time.ExperimentalTime
@@ -33,10 +34,11 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     @Suppress("UNCHECKED_CAST")
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!
+        val actualAxis = input.data.indexAxis(axis)
         return if (split == null) {
-            input.splitWithAxis(outputs.size, axis)
+            input.splitWithAxis(outputs.size, actualAxis)
         } else {
-            input.splitWithAxis((split as LongArray).toIntArray(), axis)
+            input.splitWithAxis((split as LongArray).toIntArray(), actualAxis)
         }
     }
 }

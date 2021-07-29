@@ -12,7 +12,8 @@ abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, 
         fun create(hiddenSize: Int, activations: List<String>, direction: String) =
             when(direction) {
                 "forward", "reverse" -> GRULayer(hiddenSize, activations, direction)
-                else -> TODO()
+                "bidirectional" -> BiGRULayer(hiddenSize, activations)
+                else -> error("Bad direction attribute")
             }
     }
 }

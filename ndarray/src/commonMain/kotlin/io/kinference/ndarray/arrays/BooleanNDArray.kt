@@ -1,8 +1,10 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.pointers.BooleanPointer
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
+import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
@@ -132,6 +134,36 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             }
         }
     }
+
+    private fun orScalar(array: BooleanTiledArray, scalar: Boolean, destination: BooleanTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        val arrayPointer = array.pointer()
+        val destPointer = destination.pointer()
+
+        arrayPointer.mapTo(destPointer, destination.size) { it || scalar }
+    }
+
+    fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = this.array.blocks[0][0] or other.array.blocks[0][0]
+            this.isScalar() -> orScalar(other.array, this.array.blocks[0][0], destination.array)
+            other.isScalar() -> orScalar(this.array, other.array.blocks[0][0], destination.array)
+            else -> this.applyWithBroadcast(other, destination) { left, right, dest ->
+                left as BooleanNDArray; right as BooleanNDArray; dest as MutableBooleanNDArray
+
+                val leftPointer = left.array.pointer()
+                val rightPointer = right.array.pointer()
+                val destPointer = dest.array.pointer()
+
+                destPointer.acceptDouble(leftPointer, rightPointer, dest.array.size) { _, a, b -> a || b }
+            }
+        }
+
+        return destination
+    }
+
+    infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(Broadcasting.broadcastShape(listOf(this.shape, other.shape))))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

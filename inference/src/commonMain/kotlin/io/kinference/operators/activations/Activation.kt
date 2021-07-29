@@ -29,6 +29,7 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
             "Sigmoid" -> Sigmoid.activateFloat
             "Tanh" -> Tanh.activateFloat
             "Relu" -> Relu.activateFloat
+            "Log" -> Log.activateFloat
             else -> throw UnsupportedOperationException()
         }
 
@@ -36,6 +37,7 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
             "Sigmoid" -> Sigmoid.activateDouble
             "Tanh" -> Tanh.activateDouble
             "Relu" -> Relu.activateDouble
+            "Log" -> Log.activateDouble
             else -> throw UnsupportedOperationException()
         }
 

@@ -6,8 +6,7 @@ import io.kinference.operators.*
 import io.kinference.operators.math.tanh
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
-import kotlin.math.exp
-import kotlin.math.max
+import kotlin.math.*
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -143,4 +142,30 @@ class Erf(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<Str
     }
 
     override fun activate(input: NDArray): NDArray = (input.toMutable() as MutableNumberNDArray).erf()
+}
+
+@ExperimentalTime
+class Log(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
+
+        private val INFO = OperatorInfo("Log", emptyMap(),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false, differentiable = true)),
+            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false, differentiable = true))
+        )
+
+        val activateFloat = object : FloatMap {
+            override fun apply(value: Float): Float = ln(value)
+        }
+
+        val activateDouble = object : DoubleMap {
+            override fun apply(value: Double): Double = ln(value)
+        }
+    }
+
+    override fun activate(input: NDArray): NDArray = when (input.type) {
+        DataType.FLOAT -> input.map(activateFloat)
+        DataType.DOUBLE -> input.map(activateDouble)
+        else -> error("Unsupported operation")
+    }
 }
