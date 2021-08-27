@@ -64,42 +64,8 @@ fun MutableNDArray.transpose(permutations: IntArray? = null): MutableNDArray {
     return this.transpose(actualPerm!!)
 }
 
-//if axis not 0
-fun NDArray.mergeOnAxis(other: NDArray, axis: Int): MutableNDArray {
-    val rows = this.rows.zip(other.rows) { fst, snd -> fst.concatenate(snd, axis - 1) }.toTypedArray()
-    var result = rows[0]
-
-    val dim = this.shape[0]
-    if (dim > 1) {
-        result = rows.apply { set(0, rows[0].wrapOneDim()) }.reduce { acc, tensor -> acc.concatenate(tensor.wrapOneDim()) }
-    }
-    if (dim == 1 && axis > 0) result = result.wrapOneDim()
-
-    return result
-}
-
-fun NDArray.concatenate(other: NDArray, axis: Int = 0): MutableNDArray {
-    val actualAxis = this.indexAxis(axis)
-    if (actualAxis != 0) return this.mergeOnAxis(other, actualAxis)
-
-    val fstDim: IntArray = this.shape
-    var sndDim: IntArray = other.shape
-    if (fstDim.size > 1 && sndDim.size == 1) sndDim = intArrayOf(1, sndDim[0])
-
-    val newShape: IntArray = if (fstDim.size == 1) {
-        intArrayOf(fstDim[0] + sndDim[0])
-    } else {
-        fstDim.copyOf(fstDim.size).apply { set(0, fstDim[0] + sndDim[0]) }
-    }
-
-    return allocateNDArray(Strides(newShape)).apply {
-        copyFrom(0, this@concatenate)
-        copyFrom(this@concatenate.linearSize, other)
-    }
-}
-
 fun Collection<NDArray>.concatenate(axis: Int): NDArray {
-    return this.reduce { acc, tensor -> acc.concatenate(tensor, axis) }
+    return this.first().concatenate(this.drop(1), axis)
 }
 
 fun Array<NDArray>.stack(axis: Int): NDArray {

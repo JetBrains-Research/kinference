@@ -50,6 +50,10 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         TODO("Not yet implemented")
     }
 
+    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)

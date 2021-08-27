@@ -779,6 +779,30 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
+    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+        val actualAxis = indexAxis(axis)
+
+        val inputs = others.toMutableList().also { it.add(0, this) }
+        val resultShape = shape.copyOf()
+        resultShape[actualAxis] = inputs.sumBy { it.shape[actualAxis] }
+
+        val result = MutablePrimitiveNDArray(Strides(resultShape))
+        val resultPointer = result.array.pointer()
+
+        val numIterations = resultShape.take(actualAxis).fold(1, Int::times)
+        val pointersToSteps = inputs.map {
+            require(it is PrimitiveNDArray)
+            it.array.pointer() to it.shape.drop(actualAxis).fold(1, Int::times)
+        }
+
+        repeat(numIterations) {
+            pointersToSteps.forEach { (pointer, numSteps) ->
+                resultPointer.accept(pointer, numSteps) { _, src -> src }
+            }
+        }
+        return result
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false
