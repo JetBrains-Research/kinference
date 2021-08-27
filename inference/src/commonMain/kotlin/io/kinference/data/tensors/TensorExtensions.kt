@@ -21,11 +21,7 @@ fun Collection<Tensor>.stack(axis: Int): Tensor {
 }
 
 fun List<Tensor>.concatenate(axis: Int): Tensor {
-    var acc = this[0].data
-    for (i in 1 until this.size) {
-        acc = acc.concatenate(this[i].data, axis)
-    }
-    return acc.asTensor()
+    return this.map { it.data }.concatenate(axis).asTensor()
 }
 
 fun Tensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<Tensor> {

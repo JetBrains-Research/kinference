@@ -4,8 +4,7 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.ndarray.extensions.applyWithBroadcast
-import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
 
@@ -164,6 +163,33 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(Broadcasting.broadcastShape(listOf(this.shape, other.shape))))
+
+    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+        val actualAxis = indexAxis(axis)
+
+        val inputs = others.toMutableList().also { it.add(0, this) }
+        val resultShape = shape.copyOf()
+        resultShape[actualAxis] = inputs.sumBy { it.shape[actualAxis] }
+
+        val result = MutableBooleanNDArray(resultShape)
+        val resultPointer = result.array.pointer()
+
+        val numSteps = resultShape.take(actualAxis).fold(1, Int::times)
+        val pointersToSteps = inputs.map {
+            require(it is BooleanNDArray)
+            it.array.pointer() to it.shape.drop(actualAxis).fold(1, Int::times)
+        }
+
+        repeat(numSteps) {
+            pointersToSteps.forEach { (pointer, numValues) ->
+                repeat(numValues) {
+                    resultPointer.set(pointer.getAndIncrement())
+                    resultPointer.increment()
+                }
+            }
+        }
+        return result
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
