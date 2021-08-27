@@ -33,6 +33,8 @@ interface NDArray {
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
+
+    fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
 }
 
 interface MutableNDArray : NDArray {
