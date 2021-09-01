@@ -771,7 +771,9 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             repeat(countIterations) { iteration ->
                 repeat(countDims) {
                     outputPointer.linearIndex = iteration * countElements
-                    outputPointer.accept(inputPointer, countElements) { dst, src -> (dst + src).toPrimitive() }
+                    outputPointer.accept(inputPointer, countElements) { dst: PrimitiveType, src: PrimitiveType ->
+                        (dst + src).toPrimitive()
+                    }
                 }
             }
         }
