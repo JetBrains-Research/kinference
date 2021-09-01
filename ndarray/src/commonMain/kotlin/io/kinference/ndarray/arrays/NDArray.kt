@@ -92,6 +92,8 @@ interface NumberNDArray : NDArray {
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
 
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): IntNDArray
+    fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
+    fun reduceSum(axis: Int, keepDims: Boolean): NDArray
 
     override fun view(vararg axes: Int): NumberNDArray
 }

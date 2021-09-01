@@ -65,7 +65,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return array.blocks[0][0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+    override fun allocateNDArray(strides: Strides): MutablePrimitiveNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
     override fun reshapeView(newShape: IntArray): NDArray {
         val newStrides = Strides(newShape)
@@ -666,25 +666,25 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
         val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
-        val rightKek = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
-        val count = shape[axis]
+        val countElements = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[axis]
 
         val outputShape = if (keepDims) shape.copyOf().apply { set(axis, 1) } else shape.sliceArray(shape.indices.minus(axis))
         val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
-        val tempMaxValues = if (axis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(rightKek, outputArray.array.blockSize)
+        val tempMaxValues = if (axis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(countElements, outputArray.array.blockSize)
 
         val inputPointer = this.array.pointer()
 
         for (i in 0 until countIterations) {
             var maxValuesPointer = tempMaxValues.pointer()
 
-            maxValuesPointer.accept(inputPointer, rightKek) { _, src -> src }
+            maxValuesPointer.accept(inputPointer, countElements) { _, src -> src }
 
-            for (j in 1 until count) {
-                val outputPointer = outputArray.array.pointer(i * rightKek)
+            for (j in 1 until countDims) {
+                val outputPointer = outputArray.array.pointer(i * countElements)
                 maxValuesPointer = tempMaxValues.pointer()
 
-                var end = rightKek
+                var end = countElements
 
                 if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(maxValuesPointer)) {
                     while (end > 0) {
@@ -727,6 +727,51 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
                         outputPointer.increment()
                         end--
                     }
+                }
+            }
+        }
+
+        return outputArray
+    }
+
+    override fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
+        val actualAxes = axes.map { indexAxis(it) }.toSet().sorted()
+        require(actualAxes.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
+
+        return actualAxes.foldIndexed(this) { index: Int, acc: PrimitiveNDArray, axis: Int ->
+            if (keepDims) {
+                acc.reduceSum(axis, keepDims)
+            } else {
+                acc.reduceSum(axis - index, keepDims)
+            }
+        }
+    }
+
+    override fun reduceSum(axis: Int, keepDims: Boolean): PrimitiveNDArray {
+        val actualAxis = indexAxis(axis)
+
+        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
+        val outputArray = allocateNDArray(Strides(outputShape))
+
+        val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
+        val countElements = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[axis]
+
+        val inputPointer = this.array.pointer()
+        val outputPointer = outputArray.array.pointer()
+
+        if (axis == shape.lastIndex) {
+            repeat(countIterations) {
+                var sumAlongLastDim = (0).toPrimitive()
+                inputPointer.forEach(countDims) { sumAlongLastDim = (sumAlongLastDim + it).toPrimitive() }
+                outputPointer.set(sumAlongLastDim)
+                outputPointer.increment()
+            }
+        } else {
+            repeat(countIterations) { iteration ->
+                repeat(countDims) {
+                    outputPointer.linearIndex = iteration * countElements
+                    outputPointer.accept(inputPointer, countElements) { dst, src -> (dst + src).toPrimitive() }
                 }
             }
         }
