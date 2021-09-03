@@ -11,3 +11,5 @@ inline fun IntPointer.accept(src: PrimitivePointer, count: Int, action: (dst: In
 }
 
 inline fun PrimitivePointer.isCompatibleWith(other: IntPointer): Boolean = throw UnsupportedOperationException()
+
+inline fun PrimitivePointer.isCompatibleWith(other: LongPointer): Boolean = throw UnsupportedOperationException()

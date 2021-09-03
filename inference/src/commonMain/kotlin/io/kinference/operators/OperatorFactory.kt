@@ -78,6 +78,7 @@ object OperatorFactory {
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         "Where" -> Where(attributes, inputs, outputs)
         "ZipMap" -> ZipMap(attributes, inputs, outputs)
+        "TopK" -> TopK(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

@@ -94,6 +94,7 @@ interface NumberNDArray : NDArray {
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): IntNDArray
     fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
     fun reduceSum(axis: Int, keepDims: Boolean): NDArray
+    fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, LongNDArray>
 
     override fun view(vararg axes: Int): NumberNDArray
 }

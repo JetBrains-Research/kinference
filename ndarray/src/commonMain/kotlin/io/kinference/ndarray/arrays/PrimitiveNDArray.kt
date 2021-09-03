@@ -665,13 +665,15 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
-        val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
-        val countElements = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
-        val countDims = shape[axis]
+        val actualAxis = indexAxis(axis)
 
-        val outputShape = if (keepDims) shape.copyOf().apply { set(axis, 1) } else shape.sliceArray(shape.indices.minus(axis))
+        val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
+        val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[actualAxis]
+
+        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
         val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
-        val tempMaxValues = if (axis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(countElements, outputArray.array.blockSize)
+        val tempMaxValues = if (actualAxis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(countElements, outputArray.array.blockSize)
 
         val inputPointer = this.array.pointer()
 
@@ -779,6 +781,287 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         return outputArray
+    }
+
+    override fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
+
+        val actualAxis = indexAxis(axis)
+
+        val outputStrides = Strides(shape.copyOf().apply { set(actualAxis, k) })
+
+
+        val outputArray = allocateNDArray(outputStrides)
+        val indicesArray = allocateNDArray(DataType.LONG, outputStrides) as MutableLongNDArray
+
+        val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
+        val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[actualAxis]
+
+
+        val inputPointer = this.array.pointer()
+        val outputPointer = outputArray.array.pointer()
+        val outputIndicesPointer = indicesArray.array.pointer()
+
+        when {
+            k == 1 && actualAxis == shape.lastIndex -> {
+                if (largest) {
+                    repeat(countIterations) {
+                        var maximum = inputPointer.getAndIncrement()
+                        var maximumIndex = 0
+
+                        inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
+                            if (value > maximum)  {
+                                maximum = value
+                                maximumIndex = index
+                            }
+                        }
+
+                        outputPointer.set(maximum)
+                        outputPointer.increment()
+
+                        outputIndicesPointer.set(maximumIndex.toLong())
+                        outputIndicesPointer.increment()
+                    }
+                } else {
+                    repeat(countIterations) {
+                        var minimum = inputPointer.getAndIncrement()
+                        var minimumIndex = 0
+
+                        inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
+                            if (value < minimum)  {
+                                minimum = value
+                                minimumIndex = index
+                            }
+                        }
+
+                        outputPointer.set(minimum)
+                        outputPointer.increment()
+
+                        outputIndicesPointer.set(minimumIndex.toLong())
+                        outputIndicesPointer.increment()
+                    }
+                }
+            }
+
+            k == 1 -> {
+                if (largest) {
+                    repeat(countIterations) { iteration ->
+                        outputPointer.linearIndex = iteration * countElements
+                        outputPointer.accept(inputPointer, countElements) { _: PrimitiveType, src: PrimitiveType -> src }
+                        for (dim in 1 until countDims) {
+                            outputPointer.linearIndex = iteration * countElements
+                            outputIndicesPointer.linearIndex = iteration * countElements
+
+                            var end = countElements
+
+                            if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(outputIndicesPointer)) {
+                                while (end > 0) {
+                                    val outputBlock = outputPointer.currentBlock
+                                    val offset = outputPointer.indexInBlock
+                                    outputPointer.blockIncrement()
+
+                                    val inputBlock = inputPointer.currentBlock
+                                    inputPointer.blockIncrement()
+
+                                    val outputIndicesBlock = outputIndicesPointer.currentBlock
+                                    outputIndicesPointer.blockIncrement()
+
+                                    for (index in offset until min(outputBlock.size, offset + end)) {
+                                        val inputValue = inputBlock[index]
+                                        val outputValue = outputBlock[index]
+
+                                        if (inputValue > outputValue) {
+                                            outputBlock[index] = inputValue
+                                            outputIndicesBlock[index] = dim.toLong()
+                                        }
+                                    }
+
+                                    end -= outputBlock.size - offset
+                                }
+                            } else {
+                                while (end > 0) {
+                                    val inputValue = inputPointer.getAndIncrement()
+                                    val outputValue = outputPointer.get()
+
+                                    if (inputValue > outputValue) {
+                                        outputPointer.set(inputValue)
+                                        outputIndicesPointer.set(dim.toLong())
+                                    }
+
+                                    outputPointer.increment()
+                                    outputIndicesPointer.increment()
+                                    end--
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    repeat(countIterations) { iteration ->
+                        outputPointer.linearIndex = iteration * countElements
+                        outputPointer.accept(inputPointer, countElements) { _: PrimitiveType, src: PrimitiveType -> src }
+                        for (dim in 1 until countDims) {
+                            outputPointer.linearIndex = iteration * countElements
+                            outputIndicesPointer.linearIndex = iteration * countElements
+
+                            var end = countElements
+
+                            if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(outputIndicesPointer)) {
+                                while (end > 0) {
+                                    val outputBlock = outputPointer.currentBlock
+                                    val offset = outputPointer.indexInBlock
+                                    outputPointer.blockIncrement()
+
+                                    val inputBlock = inputPointer.currentBlock
+                                    inputPointer.blockIncrement()
+
+                                    val outputIndicesBlock = outputIndicesPointer.currentBlock
+                                    outputIndicesPointer.blockIncrement()
+
+                                    for (index in offset until min(outputBlock.size, offset + end)) {
+                                        val inputValue = inputBlock[index]
+                                        val outputValue = outputBlock[index]
+
+                                        if (inputValue < outputValue) {
+                                            outputBlock[index] = inputValue
+                                            outputIndicesBlock[index] = dim.toLong()
+                                        }
+                                    }
+
+                                    end -= outputBlock.size - offset
+                                }
+                            } else {
+                                while (end > 0) {
+                                    val inputValue = inputPointer.getAndIncrement()
+                                    val outputValue = outputPointer.get()
+
+                                    if (inputValue < outputValue) {
+                                        outputPointer.set(inputValue)
+                                        outputIndicesPointer.set(dim.toLong())
+                                    }
+
+                                    outputPointer.increment()
+                                    outputIndicesPointer.increment()
+                                    end--
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            actualAxis == shape.lastIndex -> {
+                if (largest) {
+                    val maxHeap = PrimitiveMaxHeap(k)
+                    repeat(countIterations) {
+                        inputPointer.forEachIndexed(k) { index: Int, value: PrimitiveType -> maxHeap.insert(value, index) }
+
+                        inputPointer.forEachIndexed(countDims - k, k) { index: Int, value: PrimitiveType ->
+                            if (value > maxHeap.minValue) {
+                                maxHeap.removeMin()
+                                maxHeap.insert(value, index)
+                            }
+                        }
+
+                        val (values, indices) = if (sorted) maxHeap.sorted() else maxHeap.data to maxHeap.indices
+
+                        var outputIndex = 0
+                        outputPointer.map(k) { values[outputIndex++] }
+
+                        outputIndex = 0
+                        outputIndicesPointer.map(k) { indices[outputIndex++].toLong() }
+
+                        maxHeap.clear()
+                    }
+                } else {
+                    val minHeap = PrimitiveMinHeap(k)
+                    repeat(countIterations) {
+                        inputPointer.forEachIndexed(k) { index: Int, value: PrimitiveType -> minHeap.insert(value, index) }
+
+                        inputPointer.forEachIndexed(countDims - k, k) { index: Int, value: PrimitiveType ->
+                            if (value < minHeap.maxValue) {
+                                minHeap.removeMax()
+                                minHeap.insert(value, index)
+                            }
+                        }
+
+                        val (values, indices) = if (sorted) minHeap.sorted() else minHeap.data to minHeap.indices
+
+                        var outputIndex = 0
+                        outputPointer.map(k) { values[outputIndex++] }
+
+                        outputIndex = 0
+                        outputIndicesPointer.map(k) { indices[outputIndex++].toLong() }
+
+                        minHeap.clear()
+                    }
+                }
+            }
+
+            else -> {
+                if (largest) {
+                    val maxHeaps = Array(countElements) { PrimitiveMaxHeap(k) }
+
+                    repeat(countIterations) {
+                        repeat(k) { dim ->
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType -> maxHeaps[index].insert(value, dim) }
+                        }
+
+                        for (dim in k until countDims) {
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType ->
+                                val maxHeap = maxHeaps[index]
+                                if (value > maxHeap.minValue) {
+                                    maxHeap.removeMin()
+                                    maxHeap.insert(value, dim)
+                                }
+                            }
+                        }
+
+                        val valuesAndIndicesArray = if (sorted) maxHeaps.map { it.sorted() } else maxHeaps.map { it.data to it.indices }
+
+                        for (dim in 0 until k) {
+                            var outputIndex = 0
+                            outputPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].first[dim] }
+
+                            outputIndex = 0
+                            outputIndicesPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].second[dim].toLong() }
+                        }
+
+                        maxHeaps.forEach { it.clear() }
+                    }
+                } else {
+                    val minHeaps = Array(countElements) { PrimitiveMinHeap(k) }
+                    repeat(countIterations) {
+                        repeat(k) { dim ->
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType -> minHeaps[index].insert(value, dim) }
+                        }
+
+                        for (dim in k until countDims) {
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType ->
+                                val minHeap = minHeaps[index]
+                                if (value < minHeap.maxValue) {
+                                    minHeap.removeMax()
+                                    minHeap.insert(value, dim)
+                                }
+                            }
+                        }
+
+                        val valuesAndIndicesArray = if (sorted) minHeaps.map { it.sorted() } else minHeaps.map { it.data to it.indices }
+
+                        for (dim in 0 until k) {
+                            var outputIndex = 0
+                            outputPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].first[dim] }
+
+                            outputIndex = 0
+                            outputIndicesPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].second[dim].toLong() }
+                        }
+
+                        minHeaps.forEach { it.clear() }
+                    }
+                }
+            }
+        }
+
+        return outputArray to indicesArray
     }
 
     override fun copyIfNotMutable(): MutableNDArray {

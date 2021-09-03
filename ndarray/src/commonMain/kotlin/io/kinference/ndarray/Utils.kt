@@ -75,3 +75,9 @@ val ERF_COEF = doubleArrayOf(
     -1.453152027,
     1.061405429
 )
+
+internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
+    val temp = get(leftIdx)
+    this[leftIdx] = this[rightIdx]
+    this[rightIdx] = temp
+}
