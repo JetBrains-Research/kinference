@@ -42,6 +42,7 @@ object OperatorFactory {
         "ReduceSum" -> ReduceSum(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Flatten" -> Flatten(attributes, inputs, outputs)
+        "FusedMatMul" -> FusedMatMul(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
