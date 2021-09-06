@@ -57,6 +57,7 @@ object OperatorFactory {
         "LogSoftmax" -> LogSoftmax(attributes, inputs, outputs)
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
+        "MatMulIntegerToFloat" -> MatMulIntegerToFloat(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
         "Not" -> Not(attributes, inputs, outputs)
         "Or" -> Or(attributes, inputs, outputs)
