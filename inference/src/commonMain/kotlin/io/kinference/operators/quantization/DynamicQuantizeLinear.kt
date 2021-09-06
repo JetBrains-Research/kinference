@@ -5,8 +5,7 @@ import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.MutableUByteNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.operators.*
@@ -31,35 +30,45 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
         )
 
         private val INFO = OperatorInfo("DynamicQuantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+
+        private fun clip(x: Float, min: Float, max: Float) = when {
+            x < min -> min
+            x > max -> max
+            else -> x
+        }
+
+
+        private fun Float.toUByte() = this.toUInt().toUByte()
+
+        internal fun FloatNDArray.dynamicQuantize(): Triple<UByteNDArray, FloatNDArray, UByteNDArray> {
+            val inputMin = min(0f, this.min())
+            val inputMax = max(0f, this.max())
+
+            val outputScale = (inputMax - inputMin) / 255f
+            val outputScaleScalar = createScalarNDArray(DataType.FLOAT, outputScale)
+
+            val outputZeroPoint = clip(round((-inputMin) / outputScale), 0f, 255f)
+            val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
+
+            val output = allocateNDArray(DataType.UBYTE, this.strides) as MutableUByteNDArray
+
+            for (i in 0 until this.linearSize) {
+                output.array[i] = clip((round(this.array[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
+            }
+
+            return Triple(
+                output as UByteNDArray,
+                outputScaleScalar as FloatNDArray,
+                outputZeroPointScalar as UByteNDArray
+            )
+        }
     }
-
-    private fun clip(x: Float, min: Float, max: Float) = when {
-        x < min -> min
-        x > max -> max
-        else -> x
-    }
-
-
-    private fun Float.toUByte() = this.toUInt().toUByte()
 
 
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs.first()!!.data as FloatNDArray
 
-        val inputMin = min(0f, input.min())
-        val inputMax = max(0f, input.max())
-
-        val outputScale = (inputMax - inputMin) / 255f
-        val outputScaleScalar = createScalarNDArray(DataType.FLOAT, outputScale)
-
-        val outputZeroPoint = clip(round((-inputMin) / outputScale), 0f, 255f)
-        val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
-
-        val output = allocateNDArray(DataType.UBYTE, input.strides) as MutableUByteNDArray
-
-        for (i in 0 until input.linearSize) {
-            output.array[i] = clip((round(input.array[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
-        }
+        val (output, outputScaleScalar, outputZeroPointScalar) = input.dynamicQuantize()
 
         return listOf(
             output.asTensor("y"),
