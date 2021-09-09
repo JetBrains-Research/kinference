@@ -66,6 +66,7 @@ object OperatorFactory {
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(attributes, inputs, outputs)
+        "ScatterND" -> ScatterND(attributes, inputs, outputs)
         "Shape" -> Shape(attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(attributes, inputs, outputs)
@@ -75,13 +76,13 @@ object OperatorFactory {
         "SplitToSequence" -> SplitToSequence(attributes, inputs, outputs)
         "Squeeze" -> Squeeze(attributes, inputs, outputs)
         "Tanh" -> Tanh(attributes, inputs, outputs)
+        "TopK" -> TopK(attributes, inputs, outputs)
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         "Where" -> Where(attributes, inputs, outputs)
         "ZipMap" -> ZipMap(attributes, inputs, outputs)
-        "TopK" -> TopK(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
     } as Operator<ONNXData, ONNXData>
 

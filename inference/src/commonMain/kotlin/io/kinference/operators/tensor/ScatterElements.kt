@@ -56,7 +56,7 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
         operator fun get(i: Int): Int = dimStepCounter[i]
 
-        fun inc() {
+        fun update() {
             for (j in numDims - 1 downTo 0) {
                 dimStepCounter[j] += 1
                 require(dimStepCounter[j] <= targetArrayShape[j]) { "Cannot update more elements than $j-th dimension of the input array has. Max = ${targetArrayShape[j]}" }
@@ -92,7 +92,7 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
                 acc + stride * (if (index == actualAxis) targetIndex else counter[index])
             }
             input.copyFrom(dstOffset, updates, i, i + 1)
-            counter.inc()
+            counter.update()
         }
         return listOf(input.asTensor("output"))
     }
