@@ -32,6 +32,11 @@ class Tensor(val data: NDArray, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_TE
         return (this.data * other.data).asTensor()
     }
 
+    operator fun div(other: Tensor): Tensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data / other.data).asTensor()
+    }
+
     infix fun matmul(other: Tensor): Tensor {
         require(this.data is NumberNDArray && other.data is NumberNDArray)
         return (this.data matmul other.data).asTensor()

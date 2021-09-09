@@ -35,6 +35,7 @@ object OperatorFactory {
         "ConstantOfShape" -> ConstantOfShape(attributes, inputs, outputs)
         "CumSum" -> CumSum(attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
+        "Div" -> Div(attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
