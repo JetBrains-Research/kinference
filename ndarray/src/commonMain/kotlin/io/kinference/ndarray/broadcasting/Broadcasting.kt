@@ -41,11 +41,7 @@ object Broadcasting {
     }
 
     fun applyWithBroadcast(inputs: List<NDArray>, destination: MutableNDArray, op: (List<NDArray>, MutableNDArray) -> Unit): MutableNDArray {
-        val newShape = broadcastShape(inputs.map { it.shape })
-
-        require(destination.shape.contentEquals(newShape))
-
-        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
+        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, destination.shape.size)) }
 
         broadcast(wrappedInputs, destination, op)
         return destination
@@ -80,7 +76,7 @@ object Broadcasting {
         destination: MutableNDArray,
         op: (List<NDArray>, MutableNDArray) -> Unit
     ) {
-        if (inputs.slice(1..inputs.lastIndex).all { it.shape.contentEquals(inputs.first().shape) }) {
+        if (inputs.all { it.shape.contentEquals(destination.shape) }) { // check all shapes (inputs and destination) equals
             op(inputs, destination)
         } else {
             innerBroadcast(inputs, destination) { inputs, dest -> broadcast(inputs, dest, op) }

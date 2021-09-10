@@ -40,6 +40,7 @@ object OperatorFactory {
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
+        "Expand" -> Expand(attributes, inputs, outputs)
         "ReduceSum" -> ReduceSum(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "Flatten" -> Flatten(attributes, inputs, outputs)

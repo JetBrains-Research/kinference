@@ -6,6 +6,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
@@ -1107,6 +1108,18 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         return destination
+    }
+
+    override fun expand(shape: IntArray): MutablePrimitiveNDArray {
+        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val output = allocateNDArray(Strides(outputShape))
+        Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
+            destination as MutablePrimitiveNDArray
+            val input = inputs[0] as PrimitiveNDArray
+            destination.copyFrom(0, input)
+        }
+
+        return output
     }
 
     override fun equals(other: Any?): Boolean {

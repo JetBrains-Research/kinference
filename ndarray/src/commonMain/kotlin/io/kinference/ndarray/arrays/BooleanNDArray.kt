@@ -165,6 +165,18 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(Broadcasting.broadcastShape(listOf(this.shape, other.shape))))
 
+    override fun expand(shape: IntArray): MutableNDArray {
+        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val output = allocateNDArray(Strides(outputShape))
+        Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
+            destination as MutableBooleanNDArray
+            val input = inputs[0] as BooleanNDArray
+            destination.copyFrom(0, input)
+        }
+
+        return output
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false
