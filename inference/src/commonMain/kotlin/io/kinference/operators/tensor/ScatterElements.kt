@@ -6,8 +6,6 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.IntPointer
-import io.kinference.ndarray.arrays.pointers.LongPointer
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
@@ -33,7 +31,7 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         private val INFO = OperatorInfo("ScatterElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         private fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
-            if (indices !is IntNDArray && indices !is LongNDArray) error("")
+            if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
 
             fun checkIndex(index: Int, axisLimit: Int): Int = if (index >= 0) index else index + axisLimit
 
@@ -43,7 +41,7 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
                 }) as IntNDArray
             } else {
                 indices as LongNDArray
-                val pointer = LongPointer(indices.array)
+                val pointer = indices.array.pointer()
                 IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
             }
         }
@@ -85,7 +83,7 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         val inputStrides = input.strides.strides
 
         val counter = DimensionStepCounter(updates.shape, input.rank)
-        val indicesPointer = IntPointer(indices.array)
+        val indicesPointer = indices.array.pointer()
         for (i in 0 until indices.linearSize) {
             val targetIndex = indicesPointer.getAndIncrement()
             val dstOffset = inputStrides.foldIndexed(0) { index, acc, stride ->

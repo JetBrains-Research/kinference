@@ -6,8 +6,6 @@ import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.graph.ProfilingContext
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.IntPointer
-import io.kinference.ndarray.arrays.pointers.LongPointer
 import io.kinference.ndarray.extensions.computeBlockSize
 import io.kinference.operators.*
 import io.kinference.protobuf.message.TensorProto
@@ -27,14 +25,14 @@ class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO)
 
         private fun LongNDArray.toIntNDArray(): IntNDArray {
-            val indicesPointer = LongPointer(this.array)
+            val indicesPointer = this.array.pointer()
             return IntNDArray(this.shape) { indicesPointer.getAndIncrement().toInt() }
         }
 
         private fun getActualIndices(input: NDArray, indices: IntNDArray, kDim: Int): IntArray {
             val inputStrides = input.strides.strides
             val numBlocks = indices.linearSize / kDim
-            val indicesPointer = IntPointer(indices.array)
+            val indicesPointer = indices.array.pointer()
             return IntArray(numBlocks) {
                 var acc = 0
                 for (i in 0 until kDim) acc += indicesPointer.getAndIncrement() * inputStrides[i]
