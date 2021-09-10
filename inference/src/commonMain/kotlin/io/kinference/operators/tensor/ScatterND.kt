@@ -24,18 +24,13 @@ class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun LongNDArray.toIntNDArray(): IntNDArray {
-            val indicesPointer = this.array.pointer()
-            return IntNDArray(this.shape) { indicesPointer.getAndIncrement().toInt() }
-        }
-
-        private fun getActualIndices(input: NDArray, indices: IntNDArray, kDim: Int): IntArray {
+        private fun getActualIndices(input: NDArray, indices: LongNDArray, kDim: Int): IntArray {
             val inputStrides = input.strides.strides
             val numBlocks = indices.linearSize / kDim
             val indicesPointer = indices.array.pointer()
             return IntArray(numBlocks) {
                 var acc = 0
-                for (i in 0 until kDim) acc += indicesPointer.getAndIncrement() * inputStrides[i]
+                for (i in 0 until kDim) acc += indicesPointer.getAndIncrement().toInt() * inputStrides[i]
                 acc
             }
         }
@@ -43,7 +38,7 @@ class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
     override fun apply(context: Context, inputs: List<Tensor?>, profilingContext: ProfilingContext?): List<Tensor?> {
         val input = inputs[0]!!.data.toMutable()
-        val indices = (inputs[1]!!.data as LongNDArray).toIntNDArray()
+        val indices = inputs[1]!!.data as LongNDArray
         val updates = inputs[2]!!.data
 
         val kDim = indices.shape.last()
