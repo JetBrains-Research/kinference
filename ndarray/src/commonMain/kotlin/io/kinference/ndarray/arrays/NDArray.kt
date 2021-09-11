@@ -34,6 +34,7 @@ interface NDArray {
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
     fun expand(shape: IntArray): MutableNDArray
+    fun nonZero(): LongNDArray
 }
 
 interface MutableNDArray : NDArray {

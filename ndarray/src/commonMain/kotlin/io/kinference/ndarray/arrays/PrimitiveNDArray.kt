@@ -1122,6 +1122,35 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return output
     }
 
+    override fun nonZero(): LongNDArray {
+        if (isScalar()) {
+            val value = singleValue()
+            return if (value != (0).toPrimitive())
+                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
+            else
+                LongNDArray(Strides(intArrayOf(1, 1))) { 0L }
+        }
+        val ndIndexSize = shape.size
+        var totalElements = 0
+        val inputPointer = array.pointer()
+        val indicesArray = LongArray(linearSize * ndIndexSize)
+        this.ndIndexed { ndIndex ->
+            if (inputPointer.getAndIncrement() != (0).toPrimitive()) {
+                ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
+                totalElements++
+            }
+        }
+        val nonZeroStrides = Strides(intArrayOf(ndIndexSize, totalElements))
+        val indicesByDim = LongTiledArray(nonZeroStrides)
+        val resultPointer = indicesByDim.pointer()
+        for (i in 0 until ndIndexSize)
+            for (j in 0 until totalElements) {
+                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.increment()
+            }
+        return LongNDArray(indicesByDim, nonZeroStrides)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false

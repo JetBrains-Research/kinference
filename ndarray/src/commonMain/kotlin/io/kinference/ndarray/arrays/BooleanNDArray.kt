@@ -3,9 +3,11 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
+import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
 
@@ -175,6 +177,35 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
         return output
+    }
+
+    override fun nonZero(): LongNDArray {
+        if (isScalar()) {
+            val value = singleValue()
+            return if (value)
+                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
+            else
+                LongNDArray(Strides(intArrayOf(1, 1))) { 0L }
+        }
+        val ndIndexSize = shape.size
+        var totalElements = 0
+        val inputPointer = array.pointer()
+        val indicesArray = LongArray(linearSize * ndIndexSize)
+        this.ndIndexed { ndIndex ->
+            if (inputPointer.getAndIncrement()) {
+                ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
+                totalElements++
+            }
+        }
+        val nonZeroStrides = Strides(intArrayOf(ndIndexSize, totalElements))
+        val indicesByDim = LongTiledArray(nonZeroStrides)
+        val resultPointer = indicesByDim.pointer()
+        for (i in 0 until ndIndexSize)
+            for (j in 0 until totalElements) {
+                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.increment()
+            }
+        return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
     override fun equals(other: Any?): Boolean {

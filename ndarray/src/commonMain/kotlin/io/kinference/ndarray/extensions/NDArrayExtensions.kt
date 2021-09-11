@@ -185,3 +185,31 @@ fun NDArray.applyWithBroadcast(
 
     return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
 }
+
+
+
+private class NDIndexIterator(array: NDArray) : Iterator<LongArray> {
+    private val shape = array.shape.toLongArray()
+    private val indexSize = shape.size
+    private val maxElements = array.linearSize
+    private var elementsCounter = 0
+    private var currentIndex = LongArray(indexSize).apply { this[lastIndex] = -1L }
+
+    override fun hasNext(): Boolean = elementsCounter < maxElements
+
+    override fun next(): LongArray {
+        for (idx in indexSize - 1 downTo 0) {
+            if (currentIndex[idx] != shape[idx] - 1L) {
+                currentIndex[idx]++
+                break
+            }
+            currentIndex[idx] = 0
+        }
+        elementsCounter++
+        return currentIndex
+    }
+}
+
+fun NDArray.ndIndexed(func: (LongArray) -> Unit) {
+    return NDIndexIterator(this).forEach(func)
+}

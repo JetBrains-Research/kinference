@@ -62,6 +62,7 @@ object OperatorFactory {
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         "MatMulIntegerToFloat" -> MatMulIntegerToFloat(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
+        "NonZero" -> NonZero(attributes, inputs, outputs)
         "Not" -> Not(attributes, inputs, outputs)
         "Or" -> Or(attributes, inputs, outputs)
         "QAttention" -> QAttention(attributes, inputs, outputs)
