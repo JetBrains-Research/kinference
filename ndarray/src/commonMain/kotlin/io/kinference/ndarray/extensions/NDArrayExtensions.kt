@@ -186,8 +186,6 @@ fun NDArray.applyWithBroadcast(
     return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
 }
 
-
-
 private class NDIndexIterator(array: NDArray) : Iterator<LongArray> {
     private val shape = array.shape.toLongArray()
     private val indexSize = shape.size
