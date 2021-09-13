@@ -7,7 +7,7 @@ include(":ndarray")
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
     }
 

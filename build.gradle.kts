@@ -7,7 +7,7 @@ version = "0.1.4"
 plugins {
     kotlin("multiplatform") version "1.4.30" apply false
     idea apply true
-    id("io.gitlab.arturbosch.detekt") version ("1.11.0") apply true
+    id("io.gitlab.arturbosch.detekt") version ("1.18.1") apply true
     `maven-publish`
 }
 
