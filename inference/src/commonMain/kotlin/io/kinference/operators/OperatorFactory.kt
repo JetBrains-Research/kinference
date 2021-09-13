@@ -83,6 +83,7 @@ object OperatorFactory {
         "Transpose" -> Transpose(attributes, inputs, outputs)
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(attributes, inputs, outputs)
+        "Pad" -> Pad(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         "Where" -> Where(attributes, inputs, outputs)
         "ZipMap" -> ZipMap(attributes, inputs, outputs)

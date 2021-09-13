@@ -168,7 +168,7 @@ class PrimitiveTiledArray {
             val offset = pointer.indexInBlock
             pointer.blockIncrement()
 
-            block.fill(value, offset, min(blockSize, count))
+            block.fill(value, offset, min(blockSize, count + offset))
 
             count -= blockSize
         }

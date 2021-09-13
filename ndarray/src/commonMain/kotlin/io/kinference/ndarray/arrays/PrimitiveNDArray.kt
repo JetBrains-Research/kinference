@@ -1151,6 +1151,158 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): PrimitiveNDArray {
+        require(pads.size == rank)
+        val outputShape = shape.copyOf()
+        for ((axis, pad) in pads.withIndex()) {
+            outputShape[axis] += pad.first + pad.second
+        }
+
+        val outputArray = allocateNDArray(Strides(outputShape))
+        val constant = (constantValue?.singleValue() ?: (0).toPrimitive()) as PrimitiveType
+
+        fun recurrentCopyInput(axis: Int, input: PrimitiveNDArray, output: MutablePrimitiveNDArray) {
+            val leftPad = pads[axis].first
+            val inputDims = input.shape[0]
+
+            if (axis == this.rank - 1) {
+                output.copyFrom(leftPad, input)
+                return
+            }
+
+            for (dim in 0 until inputDims) {
+                recurrentCopyInput(axis + 1, input.view(dim), output.viewMutable(dim + leftPad))
+            }
+        }
+
+        fun recurrentFillConstant(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                output.fill(constant, from = 0, to = leftPad)
+                output.fill(constant, from = outputDims - rightPad, to = outputDims)
+                return
+            }
+
+            for (dim in 0 until leftPad) {
+                output.viewMutable(dim).fill(constant)
+            }
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillConstant(axis + 1, output.viewMutable(dim))
+            }
+            for (dim in outputDims - rightPad until outputDims) {
+                output.viewMutable(dim).fill(constant)
+            }
+        }
+
+        fun recurrentFillEdge(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                val leftPadValue = output.array[leftPad]
+                val rightPadValue = output.array[outputDims - rightPad - 1]
+                output.fill(leftPadValue, from = 0, to = leftPad)
+                output.fill(rightPadValue, from = outputDims - rightPad, to = outputDims)
+                return
+            }
+
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillEdge(axis + 1, output.viewMutable(dim))
+            }
+
+            val leftPadArray = output.view(leftPad)
+            for (dim in 0 until leftPad) {
+                output.viewMutable(dim).copyFrom(offset = 0, leftPadArray)
+            }
+
+            val rightPadArray = output.view(outputDims - rightPad - 1)
+            for (dim in outputDims - rightPad until outputDims) {
+                output.viewMutable(dim).copyFrom(offset = 0, rightPadArray)
+            }
+        }
+
+        fun recurrentFillReflect(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                val leftPadInputPointer = output.array.pointer(leftPad + 1)
+                val leftPadOutputPointer = output.array.pointer(leftPad - 1)
+
+                repeat(leftPad) {
+                    if (leftPadInputPointer.linearIndex == outputDims - rightPad) {
+                        leftPadInputPointer.linearIndex = leftPad
+                    }
+                    leftPadOutputPointer.set(leftPadInputPointer.getAndIncrement())
+                    leftPadOutputPointer.decrement()
+                }
+
+                val rightPadInputPointer = output.array.pointer(outputDims - rightPad - 2)
+                val rightPadOutputPointer = output.array.pointer(outputDims - rightPad)
+
+                repeat(rightPad) {
+                    if (rightPadInputPointer.linearIndex == leftPad - 1) {
+                        rightPadInputPointer.linearIndex = outputDims - rightPad - 1
+                    }
+                    rightPadOutputPointer.set(rightPadInputPointer.get())
+                    rightPadInputPointer.decrement()
+                    rightPadOutputPointer.increment()
+                }
+
+                return
+            }
+
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillReflect(axis + 1, output.viewMutable(dim))
+            }
+
+            var leftPadInputAxis = leftPad + 1
+            var leftPadOutputAxis = leftPad - 1
+            repeat(leftPad) {
+                if (leftPadInputAxis == outputDims - rightPad) {
+                    leftPadInputAxis = leftPad
+                }
+                output.viewMutable(leftPadOutputAxis).copyFrom(offset = 0, output.view(leftPadInputAxis))
+                leftPadInputAxis++
+                leftPadOutputAxis--
+            }
+
+            var rightPadInputAxis = outputDims - rightPad - 2
+            var rightPadOutputAxis = outputDims - rightPad
+
+            repeat(rightPad) {
+                if (rightPadInputAxis == leftPad - 1) {
+                    rightPadInputAxis = outputDims - rightPad - 1
+                }
+
+                output.viewMutable(rightPadOutputAxis).copyFrom(offset = 0, output.view(rightPadInputAxis))
+                rightPadInputAxis--
+                rightPadOutputAxis++
+            }
+        }
+
+        recurrentCopyInput(0, this, outputArray)
+
+        when(mode) {
+            "constant" -> {
+                if (constant != (0).toPrimitive()) {
+                    recurrentFillConstant(0, outputArray)
+                }
+            }
+            "edge" -> {
+                recurrentFillEdge(0, outputArray)
+            }
+            "reflect" -> {
+                recurrentFillReflect(0, outputArray)
+            }
+            else -> error("Unsupported mode")
+        }
+
+        return outputArray
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false

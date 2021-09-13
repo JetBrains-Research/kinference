@@ -54,6 +54,10 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         TODO("Not yet implemented")
     }
 
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+        TODO("Not yet implemented")
+    }
+
     override fun nonZero(): LongNDArray {
         TODO("Not yet implemented")
     }

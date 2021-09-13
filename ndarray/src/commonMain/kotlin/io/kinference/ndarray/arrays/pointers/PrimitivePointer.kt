@@ -68,6 +68,24 @@ class PrimitivePointer {
         }
     }
 
+    fun blockDecrement() {
+        when {
+            blockNum > 0 -> {
+                blockNum--
+                indexInBlock = array.blockSize - 1
+                currentBlock = array.blocks[blockNum]
+            }
+            else -> indexInBlock = -1
+        }
+    }
+
+    fun decrement() {
+        when {
+            indexInBlock > 0 -> indexInBlock--
+            else -> blockDecrement()
+        }
+    }
+
     fun incrementAndGet(): PrimitiveType {
         increment()
         return currentBlock[indexInBlock]
@@ -79,7 +97,7 @@ class PrimitivePointer {
         return value
     }
 
-    fun isValid(): Boolean = indexInBlock < array.blockSize
+    fun isValid(): Boolean = indexInBlock < array.blockSize && indexInBlock > -1
 }
 
 @BindPrimitives(type1 = [DataType.ALL])

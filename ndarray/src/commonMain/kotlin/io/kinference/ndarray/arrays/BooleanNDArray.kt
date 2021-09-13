@@ -208,6 +208,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+        TODO("Not yet implemented")
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false
