@@ -30,8 +30,12 @@ object Broadcasting {
     }
 
     fun broadcastShapeForMatmul(leftShape: IntArray, rightShape: IntArray): IntArray {
-        val outputMatrixShape = intArrayOf(leftShape[leftShape.lastIndex - 1], rightShape.last())
-        val broadcastShape = broadcastShape(listOf(leftShape.copyOfRange(0, leftShape.size - 2), rightShape.copyOfRange(0, rightShape.size - 2)))
+        val actualLeftShape = if (leftShape.size == 1) intArrayOf(1, leftShape[0]) else leftShape
+        val actualRightShape = if (rightShape.size == 1) intArrayOf(1, rightShape[1]) else rightShape
+
+        val outputMatrixShape = intArrayOf(actualLeftShape[actualLeftShape.lastIndex - 1], actualRightShape.last())
+        val broadcastShape = broadcastShape(listOf(actualLeftShape.copyOfRange(0, actualLeftShape.size - 2),
+                                                   actualRightShape.copyOfRange(0, actualRightShape.size - 2)))
 
         val outputShape = IntArray(broadcastShape.size + 2)
         broadcastShape.copyInto(outputShape)

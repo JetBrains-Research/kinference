@@ -8,6 +8,7 @@ import io.kinference.operators.*
 import io.kinference.operators.layer.attention.AttentionContext
 import io.kinference.operators.layer.recurrent.gru.GRUContext
 import io.kinference.operators.layer.recurrent.lstm.LSTMContext
+import io.kinference.operators.quantization.lstm.DynamicQuantizeLSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
 import kotlin.time.ExperimentalTime
@@ -106,6 +107,7 @@ class Graph(proto: GraphProto) {
         for (operator in operators) {
             when(operator.info.name) {
                 "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
+                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers, operator)
                 "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
                 "Attention", "QAttention" -> AttentionContext.appendContext(preparedTensorsContext, initializers, operator)
             }

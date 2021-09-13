@@ -16,9 +16,9 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
     private val reverseLayer = LSTMLayer(hiddenSize, activations.subList(3, 6), "reverse")
 
     override fun apply(
-        input: NumberNDArray,
-        weights: NumberNDArray,
-        recurrentWeights: NumberNDArray,
+        input: AbstractLSTMInput,
+        weights: AbstractLSTMWeights,
+        recurrentWeights: AbstractLSTMWeights,
         bias: NumberNDArray?,
         sequenceLens: IntNDArray?,
         initialHiddenState: NumberNDArray?,
@@ -26,8 +26,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
         peepholes: NumberNDArray?,
         dataType: DataType
     ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
-        val seqLength = input.shape[0]
-        val batchSize = input.shape[1]
+        val seqLength = input.data.shape[0]
+        val batchSize = input.data.shape[1]
 
         val forwardH = Activation.create(activations[2], dataType)
         val reverseH = Activation.create(activations[5], dataType)
@@ -48,9 +48,12 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
             batchSize, hiddenSize, dataType
         )
 
+        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(2, batchSize, hiddenSize))) as MutableNumberNDArray
+        val initHiddenStateAsLSTMInput = arrayOf(input.recreate(initHiddenState.view(0)), input.recreate(initHiddenState.view(1)))
+
         val lstmStates = LSTMStates(
             LSTMCellState(initialCellState, dataType, 2, batchSize, hiddenSize),
-            LSTMHiddenState(initialHiddenState, dataType, 2, batchSize, hiddenSize, listOf(forwardH, reverseH))
+            LSTMHiddenState(initHiddenState, initHiddenStateAsLSTMInput, listOf(forwardH, reverseH))
         )
 
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArray

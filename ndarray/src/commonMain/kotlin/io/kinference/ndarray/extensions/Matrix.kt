@@ -39,6 +39,11 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
                    leftScale: FloatNDArray, rightScale: FloatNDArray): MutableFloatNDArray {
     val outputShape = Broadcasting.broadcastShapeForMatmul(left.shape, right.shape)
     val outputArray = allocateNDArray(DataType.FLOAT, outputShape) as MutableFloatNDArray
+    return quantizeMatMul(left, right, leftZeroPoint, rightZeroPoint, leftScale, rightScale, outputArray)
+}
+
+fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: NumberNDArray?, rightZeroPoint: NumberNDArray?,
+                   leftScale: FloatNDArray, rightScale: FloatNDArray, dest: MutableFloatNDArray): MutableFloatNDArray {
 
     if (canDequantizePerTensor(leftZeroPoint, leftScale) && canDequantizePerTensor(rightZeroPoint, rightScale)) {
         val leftScaleValue = leftScale.singleValue()
@@ -50,7 +55,7 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
             left.type == DataType.BYTE && right.type == DataType.BYTE -> {
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
-                left.matmul(right, outputArray) { other, dest ->
+                left.matmul(right, dest) { other, dest ->
                     (this as ByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
@@ -58,7 +63,7 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
             left.type == DataType.BYTE && right.type == DataType.UBYTE -> {
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
-                left.matmul(right, outputArray) { other, dest ->
+                left.matmul(right, dest) { other, dest ->
                     (this as ByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
 
                 }
@@ -67,7 +72,7 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
             left.type == DataType.UBYTE && right.type == DataType.BYTE -> {
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
-                left.matmul(right, outputArray) { other, dest ->
+                left.matmul(right, dest) { other, dest ->
                     (this as UByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
@@ -75,7 +80,7 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
             left.type == DataType.UBYTE && right.type == DataType.UBYTE -> {
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
-                left.matmul(right, outputArray) { other, dest ->
+                left.matmul(right, dest) { other, dest ->
                     (this as UByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
@@ -84,8 +89,8 @@ fun quantizeMatMul(left: NumberNDArray, right: NumberNDArray, leftZeroPoint: Num
         val leftDequantized = left.dequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
         val rightDequantized = right.dequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
 
-        leftDequantized.matmul(rightDequantized, outputArray) { other, dest -> this.dot(other, dest) }
+        leftDequantized.matmul(rightDequantized, dest) { other, dest -> this.dot(other, dest) }
     }
 
-    return outputArray
+    return dest
 }
