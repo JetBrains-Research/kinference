@@ -12,8 +12,7 @@ import io.kinference.operators.layer.recurrent.lstm.LSTM
 import io.kinference.operators.logical.*
 import io.kinference.operators.math.*
 import io.kinference.operators.ml.*
-import io.kinference.operators.quantization.DequantizeLinear
-import io.kinference.operators.quantization.DynamicQuantizeLinear
+import io.kinference.operators.quantization.*
 import io.kinference.operators.seq.ConcatFromSequence
 import io.kinference.operators.seq.SplitToSequence
 import io.kinference.operators.tensor.*
@@ -37,6 +36,7 @@ object OperatorFactory {
         "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
         "Div" -> Div(attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
+        "DynamicQuantizeMatMul" -> DynamicQuantizeMatMul(attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(attributes, inputs, outputs)
         "Equal" -> Equal(attributes, inputs, outputs)
         "Erf" -> Erf(attributes, inputs, outputs)
