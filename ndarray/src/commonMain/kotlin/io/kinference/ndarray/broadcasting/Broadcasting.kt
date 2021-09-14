@@ -23,7 +23,7 @@ object Broadcasting {
             val dims = shapes.map { it.getOrNull(it.size - i - 1) ?: 1 }
             val maxDim = dims.find { it != 1 } ?: 1
 
-            if (dims.all { it != 1 && it != maxDim }) error("Cannot broadcast shapes")
+            if (dims.any { it != 1 && it != maxDim }) error("Cannot broadcast shapes")
 
             maxDim
         }.reversedArray()
