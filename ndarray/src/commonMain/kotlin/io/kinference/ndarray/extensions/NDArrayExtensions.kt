@@ -46,8 +46,12 @@ fun MutableNDArray.squeeze(vararg axes: Int): MutableNDArray {
     return reshape(newShape)
 }
 
+private fun indexAxisForUnsqueeze(axis: Int, shapeSize: Int): Int {
+    return if (axis < 0) shapeSize + axis else axis
+}
+
 fun MutableNDArray.unsqueeze(vararg axes: Int): MutableNDArray {
-    val actualAxes = axes.map { indexAxis(it) }.sorted()
+    val actualAxes = axes.map { indexAxisForUnsqueeze(it, this.rank + axes.size) }.sorted()
     val newShape = shape.toMutableList()
     for (axis in actualAxes) {
         newShape.add(axis, 1)
