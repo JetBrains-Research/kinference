@@ -2,8 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.isScalar
@@ -288,6 +287,13 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
     }
 
     override fun reshape(strides: Strides): MutableNDArray {
+        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
+            val newArray = BooleanTiledArray(strides)
+
+            this.array.copyInto(newArray)
+            this.array = newArray
+        }
+
         this.strides = strides
         return this
     }
