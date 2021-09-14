@@ -19,7 +19,6 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, 0L)
         )
 
-
         private val INPUTS_INFO = listOf(
             IOInfo(0, ALL_DATA_TYPES, "data", optional = false, differentiable = true),
             IOInfo(1, setOf(TensorProto.DataType.INT32, TensorProto.DataType.INT64), "indices", optional = false, differentiable = false),
