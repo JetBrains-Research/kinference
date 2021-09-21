@@ -2,14 +2,15 @@ package io.kinference.protobuf
 
 import okio.Buffer
 
-expect fun Buffer.writeDouble(value: Double): Buffer
-expect fun Buffer.writeDoubleLe(value: Double): Buffer
+fun Buffer.writeDouble(value: Double): Buffer = writeLong(value.toRawBits())
+fun Buffer.writeDoubleLe(value: Double): Buffer = writeLongLe(value.toRawBits())
 
-expect fun Buffer.readDouble(): Double
-expect fun Buffer.readDoubleLe(): Double
+fun Buffer.readDouble(): Double = Double.fromBits(readLong())
+fun Buffer.readDoubleLe(): Double = Double.fromBits(readLongLe())
 
-expect fun Buffer.writeFloat(value: Float): Buffer
-expect fun Buffer.writeFloatLe(value: Float): Buffer
 
-expect fun Buffer.readFloat(): Float
-expect fun Buffer.readFloatLe(): Float
+fun Buffer.writeFloat(value: Float): Buffer = writeInt(value.toRawBits())
+fun Buffer.writeFloatLe(value: Float): Buffer = writeIntLe(value.toRawBits())
+
+fun Buffer.readFloat(): Float = Float.fromBits(readInt())
+fun Buffer.readFloatLe(): Float = Float.fromBits(readIntLe())
