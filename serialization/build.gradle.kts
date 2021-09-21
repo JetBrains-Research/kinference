@@ -18,7 +18,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib"))
-                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
+                api("com.squareup.wire:wire-runtime-multiplatform:4.0.0-alpha.7")
                 api(project(":ndarray"))
             }
         }
