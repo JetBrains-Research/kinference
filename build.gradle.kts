@@ -5,7 +5,7 @@ group = "io.kinference"
 version = "0.1.4"
 
 plugins {
-    kotlin("multiplatform") version "1.5.30" apply false
+    kotlin("multiplatform") version "1.5.31" apply false
     idea apply true
     id("io.gitlab.arturbosch.detekt") version ("1.18.1") apply true
     `maven-publish`
