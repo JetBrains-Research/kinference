@@ -100,7 +100,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
         val sum = t * (ERF_COEF[0] + t * (ERF_COEF[1] + t * (ERF_COEF[2] + t * (ERF_COEF[3] + t * ERF_COEF[4]))))
 
-        return (sign * (1.0 - sum * exp(-doubleValue * doubleValue))).toPrimitive()
+        return (sign * (1.0 - sum * exp(-doubleValue * doubleValue))).toInt().toPrimitive()
     }
 
     override fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
@@ -534,7 +534,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
 
-        @Suppress("NAME_SHADOWING") val alpha = alpha.toPrimitive()
+        @Suppress("NAME_SHADOWING") val alpha = alpha.toInt().toPrimitive()
         val dRowsNum = destination.shape[0]
 
         val dBlocksInRow = destination.blocksInRow
@@ -587,8 +587,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutableNDArray {
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
-        val betaPrimitive = beta.toPrimitive()
-        val alphaPrimitive = alpha.toPrimitive()
+        val betaPrimitive = beta.toInt().toPrimitive()
+        val alphaPrimitive = alpha.toInt().toPrimitive()
         val aPointer = array.pointer()
         val bPointer = b.array.pointer()
         val cPointer = c.array.pointer()

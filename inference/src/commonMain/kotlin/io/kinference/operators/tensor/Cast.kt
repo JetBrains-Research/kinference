@@ -507,7 +507,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             }
             TensorProto.DataType.INT8 -> {
                 val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
-                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt().toByte() }
                 output
             }
             TensorProto.DataType.UINT16 -> {
@@ -517,7 +517,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             }
             TensorProto.DataType.INT16 -> {
                 val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
-                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt().toShort() }
                 output
             }
             TensorProto.DataType.INT32 -> {
@@ -569,7 +569,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             }
             TensorProto.DataType.INT8 -> {
                 val output = ByteNDArray(ByteTiledArray(array.shape), array.strides)
-                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toByte() }
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt().toByte() }
                 output
             }
             TensorProto.DataType.UINT16 -> {
@@ -579,7 +579,7 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             }
             TensorProto.DataType.INT16 -> {
                 val output = ShortNDArray(ShortTiledArray(array.shape), array.strides)
-                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toShort() }
+                array.array.pointer().mapTo(output.array.pointer(), array.linearSize) { it.toInt().toShort() }
                 output
             }
             TensorProto.DataType.INT32 -> {
