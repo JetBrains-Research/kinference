@@ -25,6 +25,10 @@ external fun tensor(values: Int32Array, shape: Array<Int>, dtype: String): Tenso
 external fun tensor(values: Uint8Array, shape: Array<Int>, dtype: String): TensorTFJS
 
 external fun tensor(values: Array<Int>, shape: Array<Int>, dtype: String): TensorTFJS
+external fun tensor(values: Array<Float>, shape: Array<Int>, dtype: String): TensorTFJS
+external fun tensor(values: Array<Double>, shape: Array<Int>, dtype: String): TensorTFJS
+external fun tensor(values: Array<Byte>, shape: Array<Int>, dtype: String): TensorTFJS
+external fun tensor(values: Array<UByte>, shape: Array<Int>, dtype: String): TensorTFJS
 
 external fun range(start: Number, stop: Number, step: Number?, dtype: String?): TensorTFJS
 

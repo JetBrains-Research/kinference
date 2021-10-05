@@ -45,7 +45,8 @@ class Tensor(val data: TensorTFJS, info: ValueInfo) : ONNXData(ONNXDataType.ONNX
             return when (type) {
                 DataType.FLOAT -> tensor((value as FloatTiledArray).toArray(), typedDims, "float32").asTensor(nameNotNull)
                 DataType.INT32 -> tensor((value as IntTiledArray).toArray(), typedDims, "int32").asTensor(nameNotNull)
-                DataType.UINT8 -> tensor((value as UByteTiledArray).toArray(), typedDims, "int32").asTensor(nameNotNull)
+                DataType.UINT8 -> tensor((value as UByteTiledArray).toArray().toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
+                DataType.INT8  -> tensor((value as ByteTiledArray).toArray().toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
                 DataType.INT64 -> {
                     value as LongTiledArray
                     val outputIntArray = IntArray(value.size)

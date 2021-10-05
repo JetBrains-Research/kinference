@@ -37,7 +37,7 @@ class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         val outputs = tidy {
             val shape = inputs[0]!!.data.dataInt().toTypedArray()
             if (shape.contains(0)) {
-                return@tidy arrayOf(tensor(emptyArray(), shape, value.data.dtype))
+                return@tidy arrayOf(tensor(emptyArray<Int>(), shape, value.data.dtype))
             }
 
             val output = value.data.broadcastTo(shape)

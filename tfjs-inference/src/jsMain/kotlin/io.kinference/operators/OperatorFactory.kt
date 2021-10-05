@@ -6,6 +6,7 @@ import io.kinference.operators.layer.attention.Attention
 import io.kinference.operators.layer.normalization.EmbedLayerNormalization
 import io.kinference.operators.layer.normalization.SkipLayerNormalization
 import io.kinference.operators.math.*
+import io.kinference.operators.quantization.DequantizeLinear
 import io.kinference.operators.tensor.*
 import io.kinference.protobuf.message.NodeProto
 import kotlin.time.ExperimentalTime
@@ -23,6 +24,7 @@ object OperatorFactory {
         "MatMul" -> MatMul(attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(attributes, inputs, outputs)
+        "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<ONNXData, ONNXData>
 

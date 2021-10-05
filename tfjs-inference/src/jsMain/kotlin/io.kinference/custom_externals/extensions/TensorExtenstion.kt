@@ -66,3 +66,9 @@ fun TensorTFJS.erf() = erf(this)
 fun TensorTFJS.flatten() = reshape(this, arrayOf(this.size))
 
 fun TensorTFJS.isScalar() = shape.isEmpty()
+
+fun TensorTFJS.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
+}
+
+fun TensorTFJS.indexAxis(axis: Int) = if (axis < 0) rank + axis else axis
