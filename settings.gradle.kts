@@ -3,6 +3,7 @@ rootProject.name = "kinference"
 include(":serialization")
 include(":inference")
 include(":ndarray")
+include(":tfjs-inference")
 
 pluginManagement {
     repositories {
