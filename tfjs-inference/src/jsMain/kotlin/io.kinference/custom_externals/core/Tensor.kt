@@ -7,22 +7,14 @@ import kotlin.js.Promise
 
 @JsName("Tensor")
 open external class TensorTFJS {
-    open var id: Number
-    open var dataId: Any
-    open var shape: Array<Int>
-    open var size: Int
-    open var dtype: String /* "float32" | "int32" | "bool" | "complex64" | "string" */
-    open var strides: Array<Number>
-    open var rank: Int
-//    open fun <D : String> buffer(): Promise<TensorBuffer<R, D>>
-//    open fun <D : String> bufferSync(): TensorBuffer<R, D>
-//    open fun array(): Promise<Any>
-//    open fun arraySync(): Any
-    open fun data(): Promise<Any>
-    open fun dataSync(): dynamic
-    open fun bytes(): Promise<dynamic /* Array<Uint8Array> | Uint8Array */>
-    open fun print(verbose: Boolean = definedExternally)
-    open fun dispose()
+    val shape: Array<Int>
+    val size: Int
+    val dtype: String /* "float32" | "int32" | "bool" | "complex64" | "string" */
+    val rank: Int
+    internal fun data(): Promise<Any>
+    internal fun dataSync(): dynamic
+    fun print(verbose: Boolean = definedExternally)
+    fun dispose()
 }
 
 
