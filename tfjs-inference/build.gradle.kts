@@ -60,9 +60,9 @@ kotlin {
             dependencies {
                 implementation("io.github.microutils:kotlin-logging:2.0.4")
                 implementation(project(":serialization"))
-                implementation(npm("@tensorflow/tfjs-core", "3.7.0"))
-                implementation(npm("@tensorflow/tfjs-backend-cpu", "3.7.0"))
-                implementation(npm("@tensorflow/tfjs-backend-webgl", "3.7.0"))
+                implementation(npm("@tensorflow/tfjs-core", "3.9.0"))
+                implementation(npm("@tensorflow/tfjs-backend-cpu", "3.9.0"))
+                implementation(npm("@tensorflow/tfjs-backend-webgl", "3.9.0"))
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
