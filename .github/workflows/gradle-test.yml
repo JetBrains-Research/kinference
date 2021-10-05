@@ -15,12 +15,13 @@ jobs:
           java-version: 11
           server-id: github
           settings-path: ${{ github.workspace }}
-
+      - name: Setup xvfb
+        run: sudo apt-get install xvfb
       - name: Run tests with Gradle
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: ./gradlew --no-daemon jvmTest jsTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest jsTest --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2
