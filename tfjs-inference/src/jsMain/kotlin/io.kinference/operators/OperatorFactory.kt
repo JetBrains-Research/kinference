@@ -30,6 +30,7 @@ object OperatorFactory {
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
         "QAttention" -> QAttention(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
+        "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<ONNXData, ONNXData>
 
