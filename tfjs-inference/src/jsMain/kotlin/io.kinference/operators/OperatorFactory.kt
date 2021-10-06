@@ -32,6 +32,7 @@ object OperatorFactory {
         "Gather" -> Gather(attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(attributes, inputs, outputs)
         "Concat" -> Concat(attributes, inputs, outputs)
+        "Reshape" -> Reshape(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<ONNXData, ONNXData>
 
