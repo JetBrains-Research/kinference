@@ -5,7 +5,6 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.map.ONNXMap
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.tensors.Tensor
-import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.logger
 import org.khronos.webgl.*
 import kotlin.math.abs

@@ -1,8 +1,7 @@
 package io.kinference.model
 
 import io.kinference.data.ONNXData
-import io.kinference.data.tensors.Tensor
-import io.kinference.graph.*
+import io.kinference.graph.Graph
 import io.kinference.protobuf.message.ModelProto
 import io.kinference.utils.setDefaultBackend
 import kotlin.time.ExperimentalTime

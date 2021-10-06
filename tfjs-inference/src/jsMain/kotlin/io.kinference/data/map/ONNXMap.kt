@@ -4,7 +4,8 @@ import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.data.seq.ONNXSequence
 import io.kinference.data.seq.ONNXSequence.Companion.extractTypeInfo
-import io.kinference.protobuf.message.*
+import io.kinference.protobuf.message.MapProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 

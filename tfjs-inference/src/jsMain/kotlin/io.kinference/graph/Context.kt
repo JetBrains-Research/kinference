@@ -2,7 +2,6 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
-import io.kinference.utils.removeIf
 
 class Context(private val base: Context? = null) {
     private val values = HashMap<String, ONNXData>()

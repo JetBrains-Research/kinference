@@ -1,19 +1,12 @@
 package io.kinference.operators.layer.normalization
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.*
-import io.kinference.custom_externals.core.add
-import io.kinference.custom_externals.core.broadcastTo
-import io.kinference.custom_externals.core.div
-import io.kinference.custom_externals.core.gather
-import io.kinference.custom_externals.core.reshape
-import io.kinference.custom_externals.core.sqrt
-import io.kinference.custom_externals.core.sum
+import io.kinference.custom_externals.core.fill
+import io.kinference.custom_externals.core.range
 import io.kinference.custom_externals.extensions.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.logger
 import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -93,7 +86,7 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
             val variance = momentsOutput.variance
 
             val epsilonTensor = tensor(floatArrayOf(epsilon), arrayOf(1), "float32")
-            val output = (embedding - mean) / ((variance + epsilonTensor).sqrt()) * gamma + beta
+            val output = (embedding - mean) / (sqrt(variance + epsilonTensor)) * gamma + beta
 
             val maskOutput = mask?.sum(1, false) ?: fill(arrayOf(batchSize), 0, "int32")
             return@tidy arrayOf(output, maskOutput)

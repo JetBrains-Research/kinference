@@ -1,8 +1,8 @@
 package io.kinference.operators.math
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.add
-import io.kinference.custom_externals.extensions.*
+import io.kinference.custom_externals.extensions.plus
+import io.kinference.custom_externals.extensions.tidy
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context

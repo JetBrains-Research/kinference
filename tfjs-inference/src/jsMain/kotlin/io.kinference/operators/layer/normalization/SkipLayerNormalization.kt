@@ -1,20 +1,14 @@
 package io.kinference.operators.layer.normalization
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.*
+import io.kinference.custom_externals.core.scalar
 import io.kinference.custom_externals.extensions.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.MutableFloatNDArray
-import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.logger
 import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.math.log
-import kotlin.math.sqrt
 
 class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<Tensor, Tensor>(INFO, attributes, inputs, outputs) {
@@ -68,7 +62,7 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
             val variance = momentsOutput.variance
 
             val epsilonTensor = scalar(epsilon, "float32")
-            val output = (skippedInput - mean) / ((variance + epsilonTensor).sqrt()) * gamma + beta
+            val output = (skippedInput - mean) / (sqrt(variance + epsilonTensor)) * gamma + beta
             return@tidy arrayOf(output)
         }
 

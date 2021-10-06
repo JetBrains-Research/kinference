@@ -1,7 +1,6 @@
 package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.cast
 import io.kinference.custom_externals.extensions.cast
 import io.kinference.custom_externals.extensions.tidy
 import io.kinference.data.tensors.Tensor

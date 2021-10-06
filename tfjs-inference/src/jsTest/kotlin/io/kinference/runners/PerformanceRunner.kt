@@ -1,13 +1,10 @@
 package io.kinference.runners
 
-import io.kinference.custom_externals.core.memory
-import io.kinference.custom_externals.core.time
 import io.kinference.data.ONNXData
 import io.kinference.data.tensors.Tensor
 import io.kinference.model.Model
 import io.kinference.ndarray.logger
 import io.kinference.utils.*
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 object PerformanceRunner {

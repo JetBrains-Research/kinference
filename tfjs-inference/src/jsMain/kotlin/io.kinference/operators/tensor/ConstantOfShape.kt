@@ -1,16 +1,14 @@
 package io.kinference.operators.tensor
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.broadcastTo
+import io.kinference.custom_externals.core.tensor
+import io.kinference.custom_externals.extensions.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
+import io.kinference.graph.Context
 import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import org.khronos.webgl.Int32Array
-import io.kinference.custom_externals.core.tensor
-import io.kinference.custom_externals.extensions.*
-import io.kinference.graph.Context
 
 
 class ConstantOfShape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :

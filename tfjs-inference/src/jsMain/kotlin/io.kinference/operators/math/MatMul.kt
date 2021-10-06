@@ -1,13 +1,13 @@
 package io.kinference.operators.math
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.*
+import io.kinference.custom_externals.core.TensorTFJS
+import io.kinference.custom_externals.core.reshape
 import io.kinference.custom_externals.extensions.matMul
 import io.kinference.custom_externals.extensions.tidy
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.logger
 import io.kinference.operators.*
 import io.kinference.protobuf.message.TensorProto
 

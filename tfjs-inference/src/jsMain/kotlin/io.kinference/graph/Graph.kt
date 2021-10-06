@@ -1,12 +1,12 @@
 package io.kinference.graph
 
 import io.kinference.data.ONNXData
-import io.kinference.utils.Stack
 import io.kinference.data.tensors.Tensor
 import io.kinference.ndarray.logger
 import io.kinference.operators.*
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
+import io.kinference.utils.Stack
 
 class Graph(proto: GraphProto) {
     companion object {

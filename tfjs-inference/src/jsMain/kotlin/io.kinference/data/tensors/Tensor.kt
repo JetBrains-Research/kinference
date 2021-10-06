@@ -1,6 +1,7 @@
 package io.kinference.data.tensors
 
-import io.kinference.custom_externals.core.*
+import io.kinference.custom_externals.core.TensorTFJS
+import io.kinference.custom_externals.core.tensor
 import io.kinference.custom_externals.extensions.tensor
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType

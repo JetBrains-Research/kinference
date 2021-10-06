@@ -8,7 +8,6 @@ import io.kinference.ndarray.logger
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.*
 import kotlin.math.pow
-import kotlin.test.assertEquals
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime

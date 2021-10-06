@@ -2,9 +2,7 @@ package io.kinference.operators.layer.attention
 
 import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.TestRunner
-import kotlinx.coroutines.delay
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
 class AttentionTest {
     private fun getTargetPath(dirName: String) = "/attention/$dirName/"

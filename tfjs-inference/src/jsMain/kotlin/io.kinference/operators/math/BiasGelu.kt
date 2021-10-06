@@ -1,13 +1,12 @@
 package io.kinference.operators.math
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.*
+import io.kinference.custom_externals.core.scalar
 import io.kinference.custom_externals.extensions.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
 import io.kinference.operators.*
-import io.kinference.operators.Operator.Companion.FLOAT_DATA_TYPES
 import kotlin.math.sqrt
 
 class BiasGelu(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :

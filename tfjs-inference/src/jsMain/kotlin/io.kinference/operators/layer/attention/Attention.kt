@@ -1,12 +1,12 @@
 package io.kinference.operators.layer.attention
 
 import io.kinference.attributes.Attribute
-import io.kinference.custom_externals.core.*
+import io.kinference.custom_externals.core.TensorTFJS
+import io.kinference.custom_externals.core.scalar
 import io.kinference.custom_externals.extensions.*
 import io.kinference.data.tensors.Tensor
 import io.kinference.data.tensors.asTensor
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.*
 import io.kinference.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto

@@ -39,7 +39,7 @@ fun TensorTFJS.sum(axes: Array<Int>, keepDims: Boolean = false) = sum(this, axes
 
 fun TensorTFJS.sum(keepDims: Boolean = false) = sum(this, null, keepDims)
 
-fun TensorTFJS.sqrt() = sqrt(this)
+fun TensorTFJS.sqrt() = io.kinference.custom_externals.core.sqrt(this)
 
 fun Array<TensorTFJS>.sum() = addN(this)
 
@@ -96,3 +96,5 @@ operator fun TensorTFJS.unaryMinus() = neg(this)
 fun min(a: TensorTFJS, b: TensorTFJS) = minimum(a, b)
 
 fun max(a: TensorTFJS, b: TensorTFJS) = maximum(a, b)
+
+fun sqrt(value: TensorTFJS) = value.sqrt()
