@@ -3,8 +3,7 @@ package io.kinference.operators
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.operators.layer.attention.Attention
-import io.kinference.operators.layer.normalization.EmbedLayerNormalization
-import io.kinference.operators.layer.normalization.SkipLayerNormalization
+import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.math.*
 import io.kinference.operators.quantization.DequantizeLinear
 import io.kinference.operators.quantization.DynamicQuantizeLinear
@@ -27,6 +26,7 @@ object OperatorFactory {
         "BiasGelu" -> BiasGelu(attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
+        "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<ONNXData, ONNXData>
 
