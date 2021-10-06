@@ -39,10 +39,10 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
-        internal fun initQueryKeyValue(input: TensorTFJS, weights: TensorTFJS, bias: TensorTFJS, hiddenSize: Int, numHeads: Int ): Array<TensorTFJS> {
+        internal fun initQueryKeyValue(input: TensorTFJS, weights: TensorTFJS, bias: TensorTFJS, numHeads: Int): Array<TensorTFJS> {
             return tidy {
-                val headSize = hiddenSize / numHeads
                 val (batchSize, seqLen, inputHidden) = input.shape
+                val headSize = inputHidden / numHeads
                 val weightsPrepared = weights
                     .reshape(arrayOf(inputHidden, 1, 3, numHeads, headSize))
                     .transpose(arrayOf(2, 1, 3, 0, 4))
@@ -170,7 +170,6 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 input,
                 weights,
                 bias,
-                hiddenSize,
                 numHeads
             )
 

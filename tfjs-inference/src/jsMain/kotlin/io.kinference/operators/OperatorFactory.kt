@@ -3,6 +3,7 @@ package io.kinference.operators
 import io.kinference.attributes.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.operators.layer.attention.Attention
+import io.kinference.operators.layer.attention.QAttention
 import io.kinference.operators.layer.normalization.*
 import io.kinference.operators.math.*
 import io.kinference.operators.quantization.DequantizeLinear
@@ -27,6 +28,7 @@ object OperatorFactory {
         "DequantizeLinear" -> DequantizeLinear(attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(attributes, inputs, outputs)
+        "QAttention" -> QAttention(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<ONNXData, ONNXData>
 
