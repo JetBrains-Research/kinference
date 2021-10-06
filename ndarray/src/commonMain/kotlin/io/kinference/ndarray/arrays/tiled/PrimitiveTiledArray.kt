@@ -51,6 +51,17 @@ class PrimitiveTiledArray {
         operator fun invoke(shape: IntArray) = invoke(Strides(shape))
 
         operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
+
+        operator fun invoke(strides: Strides, array: PrimitiveArray): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides)
+            val countBlocks = array.size / blockSize
+            val blocksArray = Array(countBlocks) { PrimitiveArray(blockSize) }
+            repeat(countBlocks) { blockNum ->
+                array.copyInto(blocksArray[blockNum], startIndex = blockNum * blockSize, endIndex = (blockNum + 1) * blockSize)
+            }
+
+            return PrimitiveTiledArray(blocksArray)
+        }
     }
 
     constructor(size: Int, blockSize: Int) {

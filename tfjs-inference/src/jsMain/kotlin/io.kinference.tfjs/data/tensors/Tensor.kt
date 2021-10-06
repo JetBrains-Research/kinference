@@ -1,8 +1,8 @@
 package io.kinference.tfjs.data.tensors
 
+import io.kinference.ndarray.Strides
 import io.kinference.tfjs.custom_externals.core.TensorTFJS
 import io.kinference.tfjs.custom_externals.core.tensor
-import io.kinference.tfjs.custom_externals.extensions.tensor
 import io.kinference.tfjs.data.ONNXData
 import io.kinference.tfjs.data.ONNXDataType
 import io.kinference.ndarray.arrays.*
@@ -11,12 +11,31 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.resolveProtoDataType
+import io.kinference.tfjs.custom_externals.extensions.*
 import io.kinference.tfjs.types.ValueInfo
 
 class Tensor(val data: TensorTFJS, info: ValueInfo) : ONNXData(ONNXDataType.ONNX_TENSOR, info) {
 
     override fun rename(name: String): Tensor {
         return Tensor(data, ValueInfo(info.typeInfo, name))
+    }
+
+    fun toNDArray(): NDArray {
+        val shapeIntArray = data.shape.toIntArray()
+        val strides = Strides(shapeIntArray)
+        return  when(data.dtype) {
+            "float32" -> {
+                val array = FloatTiledArray(strides, data.dataFloat())
+                FloatNDArray(array, Strides(shapeIntArray))
+            }
+
+            "int32" -> {
+                val array = IntTiledArray(strides, data.dataInt())
+                IntNDArray(array, strides)
+            }
+
+            else -> error("Unsupported type")
+        }
     }
 
     companion object {
