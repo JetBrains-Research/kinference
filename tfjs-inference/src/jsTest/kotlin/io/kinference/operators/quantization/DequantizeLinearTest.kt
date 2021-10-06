@@ -4,7 +4,7 @@ import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
-class TestDequantizeLinear {
+class DequantizeLinearTest {
     private fun getTargetPath(dirName: String) = "/dequantize_linear/$dirName/"
 
     @Test

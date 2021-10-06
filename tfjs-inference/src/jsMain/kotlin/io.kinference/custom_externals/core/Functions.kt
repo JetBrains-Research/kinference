@@ -14,7 +14,7 @@ internal external val gather: (x: TensorTFJS, indices: TensorTFJS, axis: Int, ba
 
 internal external val moments: (x: TensorTFJS, axis: Array<Int>, keepDims: Boolean) -> MomentsOutput
 
-internal external val sum: (x: TensorTFJS, axis: Array<Int>, keepDims: Boolean) -> TensorTFJS
+internal external val sum: (x: TensorTFJS, axis: Array<Int>?, keepDims: Boolean) -> TensorTFJS
 
 internal external val batchNorm: (x: TensorTFJS, mean: TensorTFJS, variance:  TensorTFJS, offset: TensorTFJS, scale: TensorTFJS, epsilon: Float) -> TensorTFJS
 
@@ -43,3 +43,17 @@ internal external val matMul: (a: TensorTFJS, b: TensorTFJS, transposeA: Boolean
 internal external val softmax: (logits: TensorTFJS, dim: Int) -> TensorTFJS
 
 internal external val erf: (x: TensorTFJS) -> TensorTFJS
+
+internal external val min: (x: TensorTFJS, axis: Array<Int>?, keepDims: Boolean) -> TensorTFJS
+
+internal external val max: (x: TensorTFJS, axis: Array<Int>?, keepDims: Boolean) -> TensorTFJS
+
+internal external val round: (x: TensorTFJS) -> TensorTFJS
+
+internal external val clipByValue: (x: TensorTFJS, clipValueMin: Number, clipValueMax: Number) -> TensorTFJS
+
+internal external val neg: (x: TensorTFJS) -> TensorTFJS
+
+internal external val minimum: (a: TensorTFJS, b: TensorTFJS) -> TensorTFJS
+
+internal external val maximum: (a: TensorTFJS, b: TensorTFJS) -> TensorTFJS

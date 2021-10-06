@@ -37,6 +37,8 @@ fun TensorTFJS.sum(axis: Int, keepDims: Boolean = false) = sum(this, arrayOf(axi
 
 fun TensorTFJS.sum(axes: Array<Int>, keepDims: Boolean = false) = sum(this, axes, keepDims)
 
+fun TensorTFJS.sum(keepDims: Boolean = false) = sum(this, null, keepDims)
+
 fun TensorTFJS.sqrt() = sqrt(this)
 
 fun Array<TensorTFJS>.sum() = addN(this)
@@ -72,3 +74,25 @@ fun TensorTFJS.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size):
 }
 
 fun TensorTFJS.indexAxis(axis: Int) = if (axis < 0) rank + axis else axis
+
+fun TensorTFJS.min(axis: Int = 0, keepDims: Boolean = false) = min(this, arrayOf(axis), keepDims)
+
+fun TensorTFJS.min(axes: Array<Int>, keepDims: Boolean = false) = min(this, axes, keepDims)
+
+fun TensorTFJS.min(keepDims: Boolean = false) = min(this, null, keepDims)
+
+fun TensorTFJS.max(axis: Int, keepDims: Boolean = false) = max(this, arrayOf(axis), keepDims)
+
+fun TensorTFJS.max(axes: Array<Int>, keepDims: Boolean = false) = max(this, axes, keepDims)
+
+fun TensorTFJS.max(keepDims: Boolean = false) = max(this, null, keepDims)
+
+fun TensorTFJS.round() = round(this)
+
+fun TensorTFJS.clip(minValue: Number, maxValue: Number) = clipByValue(this, minValue, maxValue)
+
+operator fun TensorTFJS.unaryMinus() = neg(this)
+
+fun min(a: TensorTFJS, b: TensorTFJS) = minimum(a, b)
+
+fun max(a: TensorTFJS, b: TensorTFJS) = maximum(a, b)
