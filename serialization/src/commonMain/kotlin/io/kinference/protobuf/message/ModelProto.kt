@@ -34,11 +34,6 @@ class ModelProto(
             }
             return proto
         }
-
-        fun decode(byteArray: ByteArray): ModelProto {
-            val buffer = Buffer().write(byteArray)
-            return decode(ProtobufReader(buffer))
-        }
     }
 
     private enum class ReaderTag(val tag: Int) {

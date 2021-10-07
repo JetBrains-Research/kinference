@@ -1,11 +1,15 @@
 package io.kinference.protobuf
 
 import com.squareup.wire.*
+import io.kinference.protobuf.arrays.ArrayFormat
 import okio.BufferedSource
 import okio.ByteString
 
-class ProtobufReader(private val reader: ProtoReader) {
-    constructor(source: BufferedSource) : this(ProtoReader(source))
+class ProtobufReader(private val reader: ProtoReader, val config: ReaderConfig) {
+
+    data class ReaderConfig(val tensorFormat: ArrayFormat = ArrayFormat.TILED)
+
+    constructor(source: BufferedSource, config: ReaderConfig) : this(ProtoReader(source), config)
 
     private data class ReaderState(var tag: Int = -1, var move: Boolean = true)
 

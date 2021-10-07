@@ -51,8 +51,6 @@ class AttributeProto(
             }
             return proto
         }
-
-        fun decode(bytes: ByteArray) = decode(ProtobufReader(Buffer().write(bytes)))
     }
 
     private enum class ReaderTag(val tag: Int) {
