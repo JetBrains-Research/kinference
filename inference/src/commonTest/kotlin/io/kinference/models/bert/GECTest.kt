@@ -1,6 +1,6 @@
 package io.kinference.models.bert
 
-import io.kinference.runners.AccuracyRunner
+import io.kinference.runners.KITestEngine.KIAccuracyRunner
 import io.kinference.runners.PerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
@@ -10,14 +10,16 @@ import kotlin.time.ExperimentalTime
 class GECTest {
     @Test
     fun heavy_test_gec_model() = TestRunner.runTest {
-        AccuracyRunner.runFromS3("bert:gec:en:standard:v2", disableTests = listOf(
-            "test_data_set_batch_32_seqLen_32",
-            "test_data_set_batch_32_seqLen_64",
-            "test_data_set_batch_32_seqLen_92",
-            "test_data_set_batch_32_seqLen_128",
-            "test_data_set_batch_32_seqLen_256",
-            "test_data_set_batch_32_seqLen_512",
-        ))
+        KIAccuracyRunner.runFromS3(
+            "bert:gec:en:standard:v2", disableTests = listOf(
+                "test_data_set_batch_32_seqLen_32",
+                "test_data_set_batch_32_seqLen_64",
+                "test_data_set_batch_32_seqLen_92",
+                "test_data_set_batch_32_seqLen_128",
+                "test_data_set_batch_32_seqLen_256",
+                "test_data_set_batch_32_seqLen_512",
+            )
+        )
     }
 
     @Test
