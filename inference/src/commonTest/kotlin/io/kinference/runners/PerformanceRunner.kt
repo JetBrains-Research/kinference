@@ -1,7 +1,8 @@
 package io.kinference.runners
 
+import io.kinference.core.KIEngine
+import io.kinference.core.model.KIModel
 import io.kinference.data.ONNXData
-import io.kinference.model.Model
 import io.kinference.ndarray.logger
 import io.kinference.utils.*
 import kotlin.time.ExperimentalTime
@@ -22,15 +23,20 @@ object PerformanceRunner {
         return runPerformanceFromFolder(ResourcesTestDataLoader, path, count, withProfiling)
     }
 
-    data class ONNXDataWithName(val data: List<ONNXData>, val test: String)
+    data class ONNXDataWithName(val data: List<ONNXData<*>>, val test: String)
 
     @OptIn(ExperimentalTime::class)
-    private suspend fun runPerformanceFromFolder(loader: TestDataLoader, path: String, count: Int = 10, withProfiling: Boolean = false): List<PerformanceResults> {
-        val model = Model.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+    private suspend fun runPerformanceFromFolder(
+        loader: TestDataLoader,
+        path: String,
+        count: Int = 10,
+        withProfiling: Boolean = false
+    ): List<PerformanceResults> {
+        val model = KIEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx"))) as KIModel
         val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
         val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file.path }
-            val inputs = inputFiles.map { DataLoader.getData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
+            val inputs = inputFiles.map { KIEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
             ONNXDataWithName(inputs, group)
         }
 
@@ -49,7 +55,7 @@ object PerformanceRunner {
             if (withProfiling) {
                 logger.info {
                     "Results for ${dataset.test}:" +
-                    model.analyzeProfilingResults().getInfo()
+                        model.analyzeProfilingResults().getInfo()
                 }
 
                 model.resetProfiles()

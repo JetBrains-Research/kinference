@@ -1,11 +1,12 @@
 package io.kinference.benchmark
 
 import ai.onnxruntime.*
-import io.kinference.data.tensors.Tensor
+import io.kinference.core.KIEngine
+import io.kinference.core.data.tensors.KITensor
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.DataLoader
+import io.kinference.protobuf.message.TensorProto
 import java.io.File
 import java.nio.*
 
@@ -19,7 +20,7 @@ object BenchmarkUtils {
             this.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
         }
 
-    fun Tensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
+    fun KITensor.toOnnxTensor(env: OrtEnvironment) = when (this.data.type) {
         DataType.FLOAT -> OnnxTensor.createTensor(env, FloatBuffer.wrap((data as FloatNDArray).array.toArray()), data.shape.toLongArray())
         DataType.DOUBLE -> OnnxTensor.createTensor(env, DoubleBuffer.wrap((data as DoubleNDArray).array.toArray()), data.shape.toLongArray())
         DataType.INT -> OnnxTensor.createTensor(env, IntBuffer.wrap((data as IntNDArray).array.toArray()), data.shape.toLongArray())
@@ -29,14 +30,14 @@ object BenchmarkUtils {
 
     private fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
 
-    fun modelWithInputs(path: String): Pair<ByteArray, List<Tensor>> {
+    fun modelWithInputs(path: String): Pair<ByteArray, List<KITensor>> {
         val (mainPath, testName, dataSet) = path.split('.')
 
         val testDir = javaClass.getResource("/$mainPath/test_$testName").path
 
         val modelBytes = File("$testDir/model.onnx").readBytes()
         val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
-        val inputs = inputFiles.map { DataLoader.getTensor(it.readBytes()) }
+        val inputs = inputFiles.map { KITensor.create(TensorProto.decode(it.readBytes())) }
 
         return modelBytes to inputs
     }
@@ -55,11 +56,11 @@ object BenchmarkUtils {
         }
     }
 
-    data class KIState(val model: Model, val inputs: List<Tensor>) {
+    data class KIState(val model: Model, val inputs: List<KITensor>) {
         companion object {
             fun create(path: String): KIState {
                 val (modelBytes, inputs) = modelWithInputs(path)
-                val model = Model.load(modelBytes)
+                val model = KIEngine.loadModel(modelBytes)
                 return KIState(model, inputs)
             }
         }

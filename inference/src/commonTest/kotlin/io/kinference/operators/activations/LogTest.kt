@@ -1,6 +1,6 @@
 package io.kinference.operators.activations
 
-import io.kinference.runners.AccuracyRunner
+import io.kinference.runners.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
@@ -10,12 +10,12 @@ class LogTest {
     private fun getTargetPath(dirName: String) = "/log/$dirName/"
 
     @Test
-    fun test_log()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_log"))
+    fun test_log() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_log"))
     }
 
     @Test
-    fun test_log_example()  = TestRunner.runTest {
-        AccuracyRunner.runFromResources(getTargetPath("test_log_example"))
+    fun test_log_example() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_log_example"))
     }
 }

@@ -80,6 +80,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 implementation("io.github.microutils:kotlin-logging:2.0.4")
                 api(project(":ndarray"))
+                api(project(":inference-api"))
                 implementation(project(":serialization"))
             }
         }
@@ -89,6 +90,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
+                implementation(project(":test-runner"))
             }
         }
 
@@ -106,7 +108,7 @@ kotlin {
 
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 
-                implementation("com.microsoft.onnxruntime:onnxruntime:1.4.0")
+                implementation("com.microsoft.onnxruntime:onnxruntime:1.9.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
                 configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
