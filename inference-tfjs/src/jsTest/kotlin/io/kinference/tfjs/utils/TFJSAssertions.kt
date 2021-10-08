@@ -6,6 +6,8 @@ import io.kinference.tfjs.data.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.externals.extensions.dataFloat
+import io.kinference.tfjs.externals.extensions.dataInt
 import org.khronos.webgl.*
 import kotlin.math.abs
 import kotlin.test.assertEquals
@@ -22,13 +24,13 @@ object TFJSAssertions {
 
         when(expected.data.dtype) {
             "float32" -> {
-                val expectedArray = expected.data.dataSync() as Float32Array
-                val actualArray = actual.data.dataSync() as Float32Array
+                val expectedArray = expected.data.dataFloat()
+                val actualArray = actual.data.dataFloat()
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
             "int32" -> {
-                val expectedArray = expected.data.dataSync() as Int32Array
-                val actualArray = actual.data.dataSync() as Int32Array
+                val expectedArray = expected.data.dataInt()
+                val actualArray = actual.data.dataInt()
 
                 assertArrayEquals(expectedArray, actualArray, { l, r -> abs(l - r).toDouble() }, delta, "Tensor ${expected.info.name} does not match")
             }
@@ -42,9 +44,9 @@ object TFJSAssertions {
         }
     }
 
-    fun assertArrayEquals(left: Float32Array, right: Float32Array, diff: (Float, Float) -> Double, delta: Double, message: String) {
-        assertEquals(left.length, right.length, message)
-        for (i in 0 until left.length) {
+    fun assertArrayEquals(left: FloatArray, right: FloatArray, diff: (Float, Float) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in left.indices) {
             val l = left[i]
             val r = right[i]
 
@@ -52,9 +54,9 @@ object TFJSAssertions {
         }
     }
 
-    fun assertArrayEquals(left: Int32Array, right: Int32Array, diff: (Int, Int) -> Double, delta: Double, message: String) {
-        assertEquals(left.length, right.length, message)
-        for (i in 0 until left.length) {
+    fun assertArrayEquals(left: IntArray, right: IntArray, diff: (Int, Int) -> Double, delta: Double, message: String) {
+        assertEquals(left.size, right.size, message)
+        for (i in left.indices) {
             val l = left[i]
             val r = right[i]
 

@@ -9,9 +9,9 @@ fun tensor(values: IntArray, shape: Array<Int>, dtype: String): NDArrayTFJS = te
 
 fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): NDArrayTFJS = tensor(values.unsafeCast<Uint8Array>(), shape, dtype)
 
-fun NDArrayTFJS.dataInt() = (dataSync() as Int32Array).unsafeCast<IntArray>()
+fun NDArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntArray>()
 
-fun NDArrayTFJS.dataFloat() = (dataSync() as Float32Array).unsafeCast<FloatArray>()
+fun NDArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()
 
 operator fun NDArrayTFJS.plus(other: NDArrayTFJS) = io.kinference.tfjs.externals.core.add(this, other)
 
@@ -102,3 +102,13 @@ fun sqrt(value: NDArrayTFJS) = value.sqrt()
 fun NDArrayTFJS.tanh() = io.kinference.tfjs.externals.core.tanh(this)
 
 fun tanh(x: NDArrayTFJS) = x.tanh()
+
+fun NDArrayTFJS.slice(begin: Array<Int>, end: Array<Int>) = slice(this, begin, end)
+
+fun NDArrayTFJS.slice(begin: Array<Int>) = slice(this, begin, null)
+
+fun NDArrayTFJS.reverse(axes: Array<Int>) = reverse(this, axes)
+
+fun NDArrayTFJS.reverse() = reverse(this, null)
+
+fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = stridedSlice(this, start, end, step, 0, 0, 0, 0, 0)
