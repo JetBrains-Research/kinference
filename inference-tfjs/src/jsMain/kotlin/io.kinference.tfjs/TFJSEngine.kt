@@ -13,8 +13,8 @@ import io.kinference.tfjs.model.TFJSModel
 import okio.Buffer
 
 object TFJSEngine : InferenceEngine {
-    private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
-    private fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
+    private val TFJS_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
+    private fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), TFJS_READER_CONFIG)
 
     override fun loadModel(bytes: ByteArray): TFJSModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
