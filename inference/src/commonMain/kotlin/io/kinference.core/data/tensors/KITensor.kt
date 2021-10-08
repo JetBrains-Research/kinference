@@ -8,6 +8,7 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.core.types.ValueInfo
+import io.kinference.ndarray.extensions.createArray
 
 //TODO: support segments
 //TODO: support external data
@@ -48,8 +49,9 @@ class KITensor(data: NDArray, info: ValueInfo) : KIONNXData<NDArray>(ONNXDataTyp
         }
 
         private fun parseArray(proto: TensorProto) = when {
-            proto.isTiled() -> proto.tiledData
+            proto.isTiled() -> proto.arrayData
             proto.isString() -> proto.stringData
+            proto.isPrimitive() -> createArray(proto.dims, proto.arrayData!!)
             else -> error("Unsupported data type ${proto.dataType}")
         }
     }

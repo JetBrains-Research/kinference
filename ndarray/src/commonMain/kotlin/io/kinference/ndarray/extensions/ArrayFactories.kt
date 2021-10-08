@@ -19,6 +19,21 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline ini
     }
 }
 
+inline fun <reified T> createPrimitiveArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
+    val linearSize = shape.fold(1, Int::times)
+    return when (type) {
+        DataType.DOUBLE -> DoubleArray(linearSize) { init(it) as Double }
+        DataType.FLOAT -> FloatArray(linearSize) { init(it) as Float }
+        DataType.LONG -> LongArray(linearSize) { init(it) as Long }
+        DataType.INT -> IntArray(linearSize) { init(it) as Int }
+        DataType.SHORT -> ShortArray(linearSize) { init(it) as Short }
+        DataType.USHORT -> UShortArray(linearSize) { init(it) as UShort }
+        DataType.BOOLEAN -> BooleanArray(linearSize) { init(it) as Boolean }
+        DataType.BYTE -> ByteArray(linearSize) { init(it) as Byte }
+        DataType.UBYTE -> UByteArray(linearSize) { init(it) as UByte }
+        else -> error("Unsupported data type: $type")
+    }
+}
 
 fun createArray(shape: IntArray, array: Any): Any {
     return when (array) {
@@ -30,6 +45,20 @@ fun createArray(shape: IntArray, array: Any): Any {
         is BooleanArray -> BooleanTiledArray(shape) { array[it] }
         is ByteArray -> ByteTiledArray(shape) { array[it] }
         is UByteArray -> UByteTiledArray(shape) { array[it] }
+        else -> error("Unsupported data type")
+    }
+}
+
+fun primitiveFromTiledArray(array: Any): Any {
+    return when (array) {
+        is DoubleTiledArray -> array.toArray()
+        is FloatTiledArray -> array.toArray()
+        is LongTiledArray -> array.toArray()
+        is IntTiledArray -> array.toArray()
+        is ShortTiledArray -> array.toArray()
+        is BooleanTiledArray -> array.toArray()
+        is ByteTiledArray -> array.toArray()
+        is UByteTiledArray -> array.toArray()
         else -> error("Unsupported data type")
     }
 }

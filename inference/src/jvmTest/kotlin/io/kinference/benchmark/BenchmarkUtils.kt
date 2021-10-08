@@ -3,6 +3,7 @@ package io.kinference.benchmark
 import ai.onnxruntime.*
 import io.kinference.core.KIEngine
 import io.kinference.core.data.tensors.KITensor
+import io.kinference.data.ONNXDataType
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
@@ -37,7 +38,7 @@ object BenchmarkUtils {
 
         val modelBytes = File("$testDir/model.onnx").readBytes()
         val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
-        val inputs = inputFiles.map { KITensor.create(TensorProto.decode(it.readBytes())) }
+        val inputs = inputFiles.map { KIEngine.loadData(it.readBytes(), ONNXDataType.ONNX_TENSOR) as KITensor }
 
         return modelBytes to inputs
     }

@@ -27,11 +27,6 @@ class SequenceProto(
     }
 
     companion object {
-        fun decode(byteArray: ByteArray): SequenceProto {
-            val buffer = Buffer().write(byteArray)
-            return decode(ProtobufReader(buffer))
-        }
-
         fun decode(reader: ProtobufReader): SequenceProto {
             val proto = SequenceProto()
             reader.forEachTag { tag ->
