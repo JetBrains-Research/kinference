@@ -20,7 +20,7 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline ini
 }
 
 inline fun <reified T> createPrimitiveArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
-    val linearSize = shape.reduce(Int::times)
+    val linearSize = shape.fold(1, Int::times)
     return when (type) {
         DataType.DOUBLE -> DoubleArray(linearSize) { init(it) as Double }
         DataType.FLOAT -> FloatArray(linearSize) { init(it) as Float }
