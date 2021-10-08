@@ -1,11 +1,11 @@
 package io.kinference.tfjs.runners
 
 import io.kinference.data.ONNXData
+import io.kinference.model.Model
 import io.kinference.ndarray.logger
 import io.kinference.runners.AccuracyRunner
 import io.kinference.tfjs.TFJSEngine
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.model.TFJSModel
 import io.kinference.utils.*
 import kotlin.time.measureTime
 
@@ -27,7 +27,11 @@ object PerformanceRunner {
     data class ONNXDataWithName(val data: List<ONNXData<*>>, val test: String)
 
     private suspend fun runPerformanceFromFolder(loader: TestDataLoader, path: String, count: Int = 10, withProfiling: Boolean = false): List<PerformanceResults> {
-        val model = TFJSModel.load(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+        lateinit var model: Model
+        val modelLoadTime = measureTime {
+            model = TFJSTestEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+        }
+        logger.info { "Model load time: $modelLoadTime" }
         val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
         val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file.path }

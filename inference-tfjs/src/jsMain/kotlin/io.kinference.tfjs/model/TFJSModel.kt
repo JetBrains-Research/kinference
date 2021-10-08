@@ -17,12 +17,12 @@ class TFJSModel(proto: ModelProto) : Model {
     val graph = Graph(proto.graph!!)
     val name: String = "${proto.domain}:${proto.modelVersion}"
 
-    companion object {
+   /* companion object {
         fun load(bytes: ByteArray): TFJSModel {
             val modelScheme = ModelProto.decode(bytes)
             return TFJSModel(modelScheme)
         }
-    }
+    }*/
 
     override fun predict(input: List<ONNXData<*>>, profile: Boolean): List<TFJSData<*>> {
         return graph.execute(input as List<TFJSData<*>>)

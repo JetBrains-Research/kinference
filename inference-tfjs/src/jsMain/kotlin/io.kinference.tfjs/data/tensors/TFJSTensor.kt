@@ -5,6 +5,7 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.resolveProtoDataType
@@ -52,10 +53,10 @@ class TFJSTensor(data: NDArrayTFJS, info: ValueInfo) : TFJSData<NDArrayTFJS>(dat
 
         operator fun invoke(value: NDArray, name: String? = ""): TFJSTensor {
             return when (val resolvedType = value.type.resolveProtoDataType()) {
-                DataType.FLOAT -> invoke((value as FloatNDArray).array, resolvedType, value.shape, name)
-                DataType.INT32 -> invoke((value as IntNDArray).array, resolvedType, value.shape, name)
-                DataType.UINT8 -> invoke((value as UByteNDArray).array, resolvedType, value.shape, name)
-                DataType.INT64 -> invoke((value as LongNDArray).array, resolvedType, value.shape, name)
+                DataType.FLOAT -> invoke((value as FloatNDArray).array.toArray(), resolvedType, value.shape, name)
+                DataType.INT32 -> invoke((value as IntNDArray).array.toArray(), resolvedType, value.shape, name)
+                DataType.UINT8 -> invoke((value as UByteNDArray).array.toArray(), resolvedType, value.shape, name)
+                DataType.INT64 -> invoke((value as LongNDArray).array.toArray(), resolvedType, value.shape, name)
                 else -> error("Unsupported type")
             }
         }
@@ -64,25 +65,18 @@ class TFJSTensor(data: NDArrayTFJS, info: ValueInfo) : TFJSData<NDArrayTFJS>(dat
             val nameNotNull = name.orEmpty()
             val typedDims = dims.toTypedArray()
             return when (type) {
-                DataType.FLOAT -> tensor((value as FloatTiledArray).toArray(), typedDims, "float32").asTensor(nameNotNull)
-                DataType.INT32 -> tensor((value as IntTiledArray).toArray(), typedDims, "int32").asTensor(nameNotNull)
-                DataType.UINT8 -> tensor((value as UByteTiledArray).toArray().toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
-                DataType.INT8  -> tensor((value as ByteTiledArray).toArray().toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
-                DataType.INT64 -> {
-                    value as LongTiledArray
-                    val outputIntArray = IntArray(value.size)
-                    var count = 0
-                    value.pointer().forEach(value.size) {
-                        outputIntArray[count++] = it.toInt()
-                    }
-                    tensor(outputIntArray, typedDims, dtype = "int32").asTensor(nameNotNull)
-                }
+                DataType.FLOAT -> tensor(value as FloatArray, typedDims, "float32").asTensor(nameNotNull)
+                DataType.INT32 -> tensor(value as IntArray, typedDims, "int32").asTensor(nameNotNull)
+                DataType.UINT8 -> tensor((value as UByteArray).toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
+                DataType.INT8  -> tensor((value as ByteArray).toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
+                DataType.INT64 -> tensor((value as LongArray).toIntArray(), typedDims, "int32").asTensor(nameNotNull)
                 else -> error("Unsupported type")
             }
         }
 
         private fun parseArray(proto: TensorProto) = when {
-            proto.isTiled() -> proto.tiledData
+            proto.isPrimitive() -> proto.arrayData
+//            proto.isTiled() -> proto.arrayData
             proto.isString() -> proto.stringData
             else -> error("Unsupported data type ${proto.dataType}")
         }
