@@ -6,7 +6,7 @@ include(":inference-api")
 include(":inference")
 include(":inference-ort")
 include("test-runner")
-include(":tfjs-inference")
+include(":inference-tfjs")
 
 pluginManagement {
     repositories {
