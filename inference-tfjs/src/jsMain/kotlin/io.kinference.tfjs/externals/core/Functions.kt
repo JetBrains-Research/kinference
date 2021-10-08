@@ -59,3 +59,10 @@ internal external val minimum: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 internal external val maximum: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val tanh: (x: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val slice: (x: NDArrayTFJS, begin: Array<Int>, size: Array<Int>?) -> NDArrayTFJS
+
+internal external val reverse: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
+
+internal external val stridedSlice: (x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
+                                     endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int) -> NDArrayTFJS
