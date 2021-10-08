@@ -98,3 +98,7 @@ fun min(a: NDArrayTFJS, b: NDArrayTFJS) = minimum(a, b)
 fun max(a: NDArrayTFJS, b: NDArrayTFJS) = maximum(a, b)
 
 fun sqrt(value: NDArrayTFJS) = value.sqrt()
+
+fun NDArrayTFJS.tanh() = io.kinference.tfjs.externals.core.tanh(this)
+
+fun tanh(x: NDArrayTFJS) = x.tanh()

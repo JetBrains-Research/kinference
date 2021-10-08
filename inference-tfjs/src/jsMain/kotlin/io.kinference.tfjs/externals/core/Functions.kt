@@ -57,3 +57,5 @@ internal external val neg: (x: NDArrayTFJS) -> NDArrayTFJS
 internal external val minimum: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val maximum: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val tanh: (x: NDArrayTFJS) -> NDArrayTFJS
