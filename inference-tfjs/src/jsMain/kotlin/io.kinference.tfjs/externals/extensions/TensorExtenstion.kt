@@ -112,3 +112,5 @@ fun NDArrayTFJS.reverse(axes: Array<Int>) = reverse(this, axes)
 fun NDArrayTFJS.reverse() = reverse(this, null)
 
 fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = stridedSlice(this, start, end, step, 0, 0, 0, 0, 0)
+
+fun NDArrayTFJS.squeeze(axes: Array<Int>? = null) = squeeze(this, axes)

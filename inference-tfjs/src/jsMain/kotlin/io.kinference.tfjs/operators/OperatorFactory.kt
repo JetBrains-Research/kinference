@@ -35,6 +35,7 @@ object OperatorFactory {
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         "Slice" -> Slice(attributes, inputs, outputs)
+        "Squeeze" -> Squeeze(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 

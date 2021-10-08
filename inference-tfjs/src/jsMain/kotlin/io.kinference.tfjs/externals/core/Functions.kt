@@ -66,3 +66,5 @@ internal external val reverse: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJ
 
 internal external val stridedSlice: (x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
                                      endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int) -> NDArrayTFJS
+
+internal external val squeeze: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
