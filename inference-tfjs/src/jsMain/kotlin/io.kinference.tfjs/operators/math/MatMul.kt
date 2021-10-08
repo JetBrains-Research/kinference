@@ -35,7 +35,7 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val INFO = OperatorInfo("MatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
 
-        private fun expandTensors(left: NDArrayTFJS, right: NDArrayTFJS): Pair<NDArrayTFJS, NDArrayTFJS> {
+        internal fun expandTensors(left: NDArrayTFJS, right: NDArrayTFJS): Pair<NDArrayTFJS, NDArrayTFJS> {
             return when {
                 left.rank == right.rank -> left to right
                 left.rank > right.rank -> {

@@ -33,6 +33,7 @@ object OperatorFactory {
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "Mul" -> Mul(attributes, inputs, outputs)
         "FastGelu" -> FastGelu(attributes, inputs, outputs)
+        "MatMulInteger" -> MatMulInteger(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 
