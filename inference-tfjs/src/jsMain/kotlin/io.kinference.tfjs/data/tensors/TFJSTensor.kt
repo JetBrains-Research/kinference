@@ -3,7 +3,6 @@ package io.kinference.tfjs.data.tensors
 import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.TensorProto
@@ -76,7 +75,6 @@ class TFJSTensor(data: NDArrayTFJS, info: ValueInfo) : TFJSData<NDArrayTFJS>(dat
 
         private fun parseArray(proto: TensorProto) = when {
             proto.isPrimitive() -> proto.arrayData
-//            proto.isTiled() -> proto.arrayData
             proto.isString() -> proto.stringData
             else -> error("Unsupported data type ${proto.dataType}")
         }

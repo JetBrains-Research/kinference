@@ -25,11 +25,11 @@ class Squeeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
     }
 
     private val axes: LongArray? by attributeOrNull()
+    private val axesPrepared = axes?.toIntArray()?.toTypedArray()
 
     override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
-        val squeezeAxes = axes?.toIntArray()?.toTypedArray()
-        return listOf(input.squeeze(squeezeAxes).asTensor("squeezed"))
+        return listOf(input.squeeze(axesPrepared).asTensor("squeezed"))
     }
 }
 
