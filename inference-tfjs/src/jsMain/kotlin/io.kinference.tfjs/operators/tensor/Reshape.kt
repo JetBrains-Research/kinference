@@ -28,7 +28,7 @@ class Reshape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val input = inputs[0]!!.data
             val shape = inputs[1]!!.data
 
-            val shapeData = shape.dataInt()
+            val shapeData = shape.dataInt().copyOf()
 
             for ((i, axisShape) in shapeData.withIndex()) {
                 if (axisShape == 0) shapeData[i] = input.shape[i]

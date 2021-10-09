@@ -38,7 +38,7 @@ class Gather(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
             val actualAxis = data.indexAxis(axis)
             val dim = data.shape[actualAxis]
 
-            val indicesData = indices.dataInt()
+            val indicesData = indices.dataInt().copyOf()
             for (idx in indicesData.indices) {
                 val value = indicesData[idx]
                 if (value < 0) indicesData[idx] = value + dim
