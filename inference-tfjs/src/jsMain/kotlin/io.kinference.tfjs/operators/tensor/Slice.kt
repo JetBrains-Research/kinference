@@ -33,7 +33,7 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
     override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
-            val axes = inputs.getOrNull(3)?.data?.dataInt()?.apply {
+            val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
                 for ((idx, axis) in this.withIndex()) {
                     set(idx, input.indexAxis(axis))
                 }
@@ -59,20 +59,36 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
                     ends[axis] = input.shape[axis]
                     steps[axis] = 1
                 } else {
+                    val step = incompleteSteps[index]
+                    steps[axis] = step
                     val start = incompleteStarts[index]
                     val end = incompleteEnds[index]
-                    if (start <= end && start >= input.shape[axis]) {
-                        starts[axis] = 0
-                        ends[axis] = 0
+                    val dim = input.shape[axis]
+
+                    if (step > 0) {
+                        if (start >= dim) {
+                            starts[axis] = 0
+                            ends[axis] = 0
+                            continue
+                        }
+
+                        val actualStart = if (start < 0) {
+                            start + dim
+                        } else start
+
+                        val actualEnd = if (end < 0) {
+                            end + dim
+                        } else end
+                        starts[axis] = actualStart
+                        ends[axis] = actualEnd
                     } else {
                         starts[axis] = start
-                        ends[axis] = incompleteEnds[index]
+                        ends[axis] = end
                     }
-                    steps[axis] = incompleteSteps[index]
                 }
             }
-
-            return@tidy arrayOf(input.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray()))
+            val output = input.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
+            return@tidy arrayOf(output)
         }
 
 
