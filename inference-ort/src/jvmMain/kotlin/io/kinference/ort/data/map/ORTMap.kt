@@ -2,9 +2,9 @@ package io.kinference.ort.data.map
 
 import ai.onnxruntime.OnnxMap
 import io.kinference.data.ONNXDataType
-import io.kinference.ort.data.ORTData
+import io.kinference.data.ONNXMap
 
-class ORTMap(override val data: OnnxMap, name: String?) : ORTData(data, name) {
+class ORTMap(name: String?, override val data: OnnxMap) : ONNXMap<OnnxMap>(name, data) {
     override val type: ONNXDataType = ONNXDataType.ONNX_MAP
-    override fun rename(name: String): ORTData = ORTMap(data, name)
+    override fun rename(name: String): ORTMap = ORTMap(name, data)
 }

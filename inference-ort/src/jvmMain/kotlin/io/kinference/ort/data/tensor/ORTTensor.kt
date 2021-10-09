@@ -3,14 +3,14 @@ package io.kinference.ort.data.tensor
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import io.kinference.data.ONNXDataType
+import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.extensions.primitiveFromTiledArray
-import io.kinference.ort.data.ORTData
 import io.kinference.protobuf.message.TensorProto
 import java.nio.*
 
-class ORTTensor(override val data: OnnxTensor, name: String?) : ORTData(data, name) {
+class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor>(name, data) {
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-    override fun rename(name: String): ORTData = ORTTensor(data, name)
+    override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
     companion object {
         fun create(proto: TensorProto): ORTTensor {
@@ -60,7 +60,7 @@ class ORTTensor(override val data: OnnxTensor, name: String?) : ORTData(data, na
                 }
                 else -> error("Unsupported data type $type")
             }
-            return ORTTensor(onnxTensor, name ?: "")
+            return ORTTensor(name ?: "", onnxTensor)
         }
     }
 }

@@ -1,30 +1,30 @@
 package io.kinference.core.data.seq
 
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.types.*
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.protobuf.message.SequenceProto
 
-class KIONNXSequence(data: List<KIONNXData<*>>, info: ValueInfo) : KIONNXData<List<KIONNXData<*>>>(ONNXDataType.ONNX_SEQUENCE, data, info) {
-    constructor(info: ValueInfo, size: Int, init: (Int) -> KIONNXData<*>) : this(List(size, init), info)
+class KIONNXSequence(name: String?, data: List<ONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<ONNXData<*>>>(name, data) {
+    constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> ONNXData<*>) : this(name, List(size, init), info)
+    constructor(data: List<ONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
 
-    override fun rename(name: String): KIONNXSequence = KIONNXSequence(data, ValueInfo(info.typeInfo, name))
+    override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
     val length: Int = data.size
 
     companion object {
         fun create(proto: SequenceProto): KIONNXSequence {
-            val elementTypeInfo = proto.extractTypeInfo()
-            val info = ValueInfo(name = proto.name!!, typeInfo = elementTypeInfo)
+            val elementTypeInfo = proto.extractTypeInfo() as ValueTypeInfo.SequenceTypeInfo
+            val name = proto.name!!
             val data = when (proto.elementType) {
                 SequenceProto.DataType.TENSOR -> proto.tensorValues.map { KITensor.create(it) }
                 SequenceProto.DataType.SEQUENCE -> proto.sequenceValues.map { create(it) }
                 SequenceProto.DataType.MAP -> proto.mapValues.map { KIONNXMap.create(it) }
                 else -> error("")
             }
-            return KIONNXSequence(data, info)
+            return KIONNXSequence(name, data, elementTypeInfo)
         }
 
         internal fun SequenceProto.extractTypeInfo(): ValueTypeInfo = when (this.elementType) {

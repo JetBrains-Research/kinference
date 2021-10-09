@@ -50,6 +50,6 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
             input.splitWithAxis(parts, axis)
         }
 
-        return listOf(KIONNXSequence(tensors, ValueInfo(SequenceTypeInfo(tensors[0].info.typeInfo), "output_sequence")))
+        return listOf(KIONNXSequence("output_sequence", tensors, SequenceTypeInfo(tensors[0].info)))
     }
 }

@@ -7,7 +7,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.core.types.*
 
-fun NDArray.asTensor(name: String? = null) = KITensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()), name ?: ""))
+fun NDArray.asTensor(name: String? = null) = KITensor(name, this, ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()))
 
 fun Collection<KITensor>.stack(axis: Int): KITensor {
     val fstShape = this.first().data.shape

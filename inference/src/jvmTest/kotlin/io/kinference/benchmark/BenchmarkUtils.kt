@@ -2,8 +2,8 @@ package io.kinference.benchmark
 
 import ai.onnxruntime.*
 import io.kinference.core.KIEngine
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.tensor.KITensor
+import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.loadModel
 import io.kinference.model.Model
@@ -51,14 +51,14 @@ object BenchmarkUtils {
 
                 val env = OrtEnvironment.getEnvironment()
                 val session = env.createSession(modelBytes, ortOptions)
-                val ortInputs = inputs.map { it.info.name to it.toOnnxTensor(env) }.toMap()
+                val ortInputs = inputs.associate { it.name!! to it.toOnnxTensor(env) }
 
                 return OrtState(session, ortInputs)
             }
         }
     }
 
-    data class KIState(val model: Model<KIONNXData<*>>, val inputs: List<KITensor>) {
+    data class KIState(val model: Model<ONNXData<*>>, val inputs: List<KITensor>) {
         companion object {
             fun create(path: String): KIState {
                 val (modelBytes, inputs) = modelWithInputs(path)

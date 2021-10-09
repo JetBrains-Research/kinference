@@ -244,10 +244,10 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.info.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as KITensor
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as KITensor
 
         val bias = inputs[2]!!
-        val preparedBias = (context.getOrNullValue("prepared_${bias.info.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
+        val preparedBias = (context.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.elementAtOrNull(3)?.data as IntNDArray?
         val past = inputs.elementAtOrNull(4)?.data as NumberNDArray?

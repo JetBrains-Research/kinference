@@ -1,7 +1,6 @@
 package io.kinference.core.graph
 
 import io.kinference.core.utils.Stack
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.ndarray.logger
 import io.kinference.core.operators.*
@@ -10,6 +9,7 @@ import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.core.types.ValueInfo
+import io.kinference.data.ONNXData
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
@@ -20,7 +20,7 @@ class Graph(proto: GraphProto) {
         private val logger = logger(Graph::class.simpleName ?: "")
     }
 
-    val operators: List<Operator<KIONNXData<*>, KIONNXData<*>>>
+    val operators: List<Operator<ONNXData<*>, ONNXData<*>>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
@@ -125,24 +125,24 @@ class Graph(proto: GraphProto) {
     }
 
     @ExperimentalTime
-    fun execute(inputs: List<KIONNXData<*>>, root: Context? = null, profilingContext: ProfilingContext? = null): List<KIONNXData<*>> {
+    fun execute(inputs: List<ONNXData<*>>, root: Context? = null, profilingContext: ProfilingContext? = null): List<ONNXData<*>> {
         //TODO: check that all inputs were set and not null
 
         val context = Context(root)
         context.mergeContext(preparedTensorsContext)
         for (tensor in initializers) {
-            context.putValue(tensor.info.name, tensor)
+            context.putValue(tensor.name!!, tensor)
         }
         for (input in inputs) {
-            if (input.info.name !in availableInputs) {
-                logger.warn { "Input node '${input.info.name}' not found in Graph and probably is excessive" }
+            if (input.name !in availableInputs) {
+                logger.warn { "Input node '${input.name}' not found in Graph and probably is excessive" }
                 continue
             }
-            context.putValue(input.info.name, input)
+            context.putValue(input.name!!, input)
         }
 
         for ((i, operator) in operators.withIndex()) {
-            lateinit var outputs: List<KIONNXData<*>?>
+            lateinit var outputs: List<ONNXData<*>?>
             profilingContext.profile(operator.info.name) { profilingContext ->
                 outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)
             }
@@ -152,7 +152,7 @@ class Graph(proto: GraphProto) {
                 outputs.zip(operator.outputs) { output, variable ->
                     if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                     if (variable.isNotEmpty()) {
-                        context.putValue(variable, output!!.rename(name = variable) as KIONNXData<*>)
+                        context.putValue(variable, output!!.rename(name = variable))
                     }
                 }
             }

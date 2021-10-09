@@ -9,8 +9,8 @@ import kotlin.math.pow
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class AccuracyRunner<TestDataType : ONNXData<*>>(private val testEngine: TestEngine<TestDataType>) {
-    data class ONNXTestData<T : ONNXData<*>>(val name: String, val actual: List<T>, val expected: List<T>)
+class AccuracyRunner(private val testEngine: TestEngine) {
+    data class ONNXTestData(val name: String, val actual: List<ONNXData<*>>, val expected: List<ONNXData<*>>)
     data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
         companion object {
             private const val DEFAULT_DATATYPE = "ONNX_TENSOR"
@@ -24,17 +24,17 @@ class AccuracyRunner<TestDataType : ONNXData<*>>(private val testEngine: TestEng
         }
     }
 
-    private suspend fun runTestsFromS3(name: String, disableTests: List<String> = emptyList()): List<ONNXTestData<TestDataType>> {
+    private suspend fun runTestsFromS3(name: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val toFolder = name.replace(":", "/")
         return runTestsFromFolder(S3TestDataLoader, toFolder, disableTests)
     }
 
-    private suspend fun runTestsFromResources(testPath: String, disableTests: List<String> = emptyList()): List<ONNXTestData<TestDataType>> {
+    private suspend fun runTestsFromResources(testPath: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/test/${testPath}"
         return runTestsFromFolder(ResourcesTestDataLoader, path, disableTests)
     }
 
-    private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData<TestDataType>> {
+    private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val model = testEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
         val filesInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { ONNXTestDataInfo.fromString(it) }
         return filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
@@ -62,7 +62,7 @@ class AccuracyRunner<TestDataType : ONNXData<*>>(private val testEngine: TestEng
         check(runTestsFromResources(path, disableTests), delta)
     }
 
-    private fun check(datasets: List<ONNXTestData<TestDataType>>, delta: Double = DELTA) {
+    private fun check(datasets: List<ONNXTestData>, delta: Double = DELTA) {
         for (dataSet in datasets) {
             logger.info { "Dataset: ${dataSet.name}\n" }
 

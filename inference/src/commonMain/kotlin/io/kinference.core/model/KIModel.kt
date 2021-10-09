@@ -1,14 +1,14 @@
 package io.kinference.core.model
 
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.graph.*
+import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataAdapter
 import io.kinference.model.Model
 import io.kinference.protobuf.message.ModelProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class KIModel<T>(proto: ModelProto, private val adapter: ONNXDataAdapter<T, KIONNXData<*>>) : Model<T> {
+class KIModel<T>(proto: ModelProto, private val adapter: ONNXDataAdapter<T, ONNXData<*>>) : Model<T> {
     val graph = Graph(proto.graph!!)
     val name: String = "${proto.domain}:${proto.modelVersion}"
 

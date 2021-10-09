@@ -1,7 +1,6 @@
 package io.kinference.runners
 
 import io.kinference.core.KIEngine
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.model.KIModel
 import io.kinference.data.ONNXData
 import io.kinference.loadModel
@@ -48,7 +47,7 @@ object PerformanceRunner {
             val times = LongArray(count)
             for (i in (0 until count)) {
                 val time = measureTime {
-                    model.predict(dataset.data as List<KIONNXData<*>>, withProfiling)
+                    model.predict(dataset.data, withProfiling)
                 }.inMilliseconds.toLong()
                 times[i] = time
             }

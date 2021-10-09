@@ -72,14 +72,14 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
         val input = inputs[0]!!
 
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.info.name}") ?: GRUContext.prepareWeights(weights)) as KITensor
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.info.name}")
+        val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: GRUContext.prepareWeights(recurrentWeights)) as KITensor
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.info.name}") ?: GRUContext.prepareBias(it) } as KITensor?
+        val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
 
         val sequenceLens = inputs.getOrNull(4)
         val initialHiddenState = inputs.getOrNull(5)

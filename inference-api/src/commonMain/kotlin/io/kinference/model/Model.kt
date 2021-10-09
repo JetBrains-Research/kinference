@@ -9,7 +9,7 @@ interface Model<T> {
     fun predict(input: List<T>, profile: Boolean = false): List<T>
 
     companion object {
-        fun <T : ONNXData<*>> load(bytes: ByteArray, engine: InferenceEngine<T>) = engine.loadModel(bytes)
-        fun <T, V : ONNXData<*>> load(bytes: ByteArray, engine: InferenceEngine<V>, adapter: ONNXDataAdapter<T, V>) = engine.loadModel(bytes, adapter)
+        fun load(bytes: ByteArray, engine: InferenceEngine) = engine.loadModel(bytes)
+        fun <T> load(bytes: ByteArray, engine: InferenceEngine, adapter: ONNXDataAdapter<T, ONNXData<*>>) = engine.loadModel(bytes, adapter)
     }
 }

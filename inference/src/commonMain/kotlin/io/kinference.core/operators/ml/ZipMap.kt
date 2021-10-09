@@ -1,7 +1,6 @@
 package io.kinference.core.operators.ml
 
 import io.kinference.core.attributes.Attribute
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
@@ -14,6 +13,7 @@ import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.core.types.*
+import io.kinference.data.ONNXData
 import kotlin.collections.HashMap
 import kotlin.time.ExperimentalTime
 
@@ -38,20 +38,19 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
 
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
-            val seqInfo = ValueInfo(ValueTypeInfo.SequenceTypeInfo(mapInfo), name = "Z")
-            val mapValueInfo = ValueInfo(mapInfo)
+            val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
             val columns = shape.last()
 
             val inputPointer = FloatPointer(array)
-            return KIONNXSequence(seqInfo, rows) {
-                val map = HashMap<T, KIONNXData<*>>(columns)
+            return KIONNXSequence("Z", seqInfo, rows) {
+                val map = HashMap<T, ONNXData<*>>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
                     val tensor = FloatNDArray.scalar(value).asTensor()
                     map[labels[it]] = tensor
                 }
-                KIONNXMap(map as Map<Any, KIONNXData<*>>, mapValueInfo)
+                KIONNXMap(null, map as Map<Any, ONNXData<*>>, mapInfo)
             }
         }
     }

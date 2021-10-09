@@ -1,20 +1,22 @@
 package io.kinference.core.data.tensor
 
-import io.kinference.core.data.KIONNXData
-import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.core.types.ValueInfo
+import io.kinference.core.types.ValueTypeInfo
+import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.extensions.createArray
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(data: NDArray, info: ValueInfo) : KIONNXData<NDArray>(ONNXDataType.ONNX_TENSOR, data, info) {
+class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray>(name, data) {
+    constructor(data: NDArray, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
+
     override fun rename(name: String): KITensor {
-        return KITensor(data, ValueInfo(info.typeInfo, name))
+        return KITensor(name, data, info)
     }
 
     companion object {

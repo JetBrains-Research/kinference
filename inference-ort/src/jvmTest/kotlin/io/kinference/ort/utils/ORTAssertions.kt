@@ -1,15 +1,15 @@
 package io.kinference.ort.utils
 
 import ai.onnxruntime.*
+import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.ort.data.ORTData
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
 import kotlin.math.abs
 
 object ORTAssertions {
     @OptIn(ExperimentalUnsignedTypes::class)
-    fun assertEquals(expected: ORTData, actual: ORTData, delta: Double) {
+    fun assertEquals(expected: ONNXData<*>, actual: ONNXData<*>, delta: Double) {
         require(expected.type == ONNXDataType.ONNX_TENSOR && actual.type == ONNXDataType.ONNX_TENSOR)
         assertTensorEquals(expected as ORTTensor, actual as ORTTensor, delta)
     }

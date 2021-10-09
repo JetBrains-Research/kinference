@@ -92,7 +92,7 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.info.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as KITensor
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as KITensor
 
         val inputScale = inputs[3]!!.data.singleValue() as Float
         val weightsScale = inputs[4]!!.data.singleValue() as Float
@@ -116,7 +116,7 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
         val (batchSize, seqLen, hiddenSize) = input.shape
         val bias = inputs[2]!!
-        val preparedBias = (context.getOrNullValue("prepared_${bias.info.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
+        val preparedBias = (context.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
 
         val (queries, keys, values) = initQueryKeyValue(input, preparedWeights.data as NumberNDArray, preparedBias.data as FloatNDArray, batchSize, seqLen, hiddenSize, numHeads, inputZeroPoint, weightsZeroPoint, deqScale)

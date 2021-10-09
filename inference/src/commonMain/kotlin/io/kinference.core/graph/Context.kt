@@ -1,10 +1,10 @@
 package io.kinference.core.graph
 
-import io.kinference.core.data.KIONNXData
 import io.kinference.core.utils.removeIf
+import io.kinference.data.ONNXData
 
 class Context(private val base: Context? = null) {
-    private val values = HashMap<String, KIONNXData<*>>()
+    private val values = HashMap<String, ONNXData<*>>()
     private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
@@ -15,16 +15,16 @@ class Context(private val base: Context? = null) {
         return shapes.contains(name) && (base?.hasShape(name) ?: true)
     }
 
-    fun putValue(name: String, value: KIONNXData<*>) {
+    fun putValue(name: String, value: ONNXData<*>) {
         require(name !in values && base?.hasValue(name)?.not() ?: true) { "'$name' already exists in context values" }
         values[name] = value
     }
 
-    fun getValue(name: String): KIONNXData<*> {
+    fun getValue(name: String): ONNXData<*> {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
     }
 
-    fun getOrNullValue(name: String): KIONNXData<*>? {
+    fun getOrNullValue(name: String): ONNXData<*>? {
         return values[name] ?: base?.getOrNullValue(name)
     }
 
