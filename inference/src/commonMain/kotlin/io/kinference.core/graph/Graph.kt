@@ -2,7 +2,7 @@ package io.kinference.core.graph
 
 import io.kinference.core.utils.Stack
 import io.kinference.core.data.KIONNXData
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.ndarray.logger
 import io.kinference.core.operators.*
 import io.kinference.core.operators.layer.attention.AttentionContext

@@ -1,7 +1,7 @@
 package io.kinference.core.graph
 
 import io.kinference.core.data.KIONNXData
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.Operator
 import kotlin.time.ExperimentalTime
 

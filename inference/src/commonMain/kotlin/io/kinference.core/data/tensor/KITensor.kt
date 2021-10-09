@@ -1,4 +1,4 @@
-package io.kinference.core.data.tensors
+package io.kinference.core.data.tensor
 
 import io.kinference.core.data.KIONNXData
 import io.kinference.data.ONNXDataType

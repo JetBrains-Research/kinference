@@ -1,7 +1,7 @@
 package io.kinference.core.operators.ml
 
 import io.kinference.core.attributes.Attribute
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.core.operators.*

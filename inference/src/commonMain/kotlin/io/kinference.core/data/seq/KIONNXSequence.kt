@@ -2,7 +2,7 @@ package io.kinference.core.data.seq
 
 import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.types.*
 import io.kinference.data.ONNXDataType
 import io.kinference.protobuf.message.SequenceProto

@@ -1,8 +1,8 @@
 package io.kinference.core.operators.tensor
 
 import io.kinference.core.attributes.Attribute
-import io.kinference.core.data.tensors.KITensor
-import io.kinference.core.data.tensors.concatenate
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.data.tensor.concatenate
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ProfilingContext
 import io.kinference.core.operators.*

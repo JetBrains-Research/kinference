@@ -2,12 +2,13 @@ package io.kinference.benchmark
 
 import ai.onnxruntime.*
 import io.kinference.core.KIEngine
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.KIONNXData
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.data.ONNXDataType
+import io.kinference.loadModel
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
-import io.kinference.protobuf.message.TensorProto
 import java.io.File
 import java.nio.*
 
@@ -57,7 +58,7 @@ object BenchmarkUtils {
         }
     }
 
-    data class KIState(val model: Model, val inputs: List<KITensor>) {
+    data class KIState(val model: Model<KIONNXData<*>>, val inputs: List<KITensor>) {
         companion object {
             fun create(path: String): KIState {
                 val (modelBytes, inputs) = modelWithInputs(path)

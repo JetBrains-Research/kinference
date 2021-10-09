@@ -1,11 +1,10 @@
 package io.kinference
 
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.model.Model
 
-abstract class TestEngine(private val engine: InferenceEngine) {
-    abstract fun checkEquals(expected: ONNXData<*>, actual: ONNXData<*>, delta: Double)
-    fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*> = engine.loadData(bytes, type)
-    fun loadModel(bytes: ByteArray): Model = engine.loadModel(bytes)
+abstract class TestEngine<TestDataType : ONNXData<*>>(private val engine: InferenceEngine<TestDataType>) {
+    abstract fun checkEquals(expected: TestDataType, actual: TestDataType, delta: Double)
+    fun loadData(bytes: ByteArray, type: ONNXDataType): TestDataType = engine.loadData(bytes, type)
+    fun loadModel(bytes: ByteArray): Model<TestDataType> = engine.loadModel(bytes, ONNXDataAdapter.idAdapter())
 }

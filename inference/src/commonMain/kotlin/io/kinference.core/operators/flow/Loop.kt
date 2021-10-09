@@ -2,7 +2,7 @@ package io.kinference.core.operators.flow
 
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.KIONNXData
-import io.kinference.core.data.tensors.*
+import io.kinference.core.data.tensor.*
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.Graph
 import io.kinference.ndarray.arrays.BooleanNDArray

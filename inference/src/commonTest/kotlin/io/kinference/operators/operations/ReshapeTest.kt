@@ -9,7 +9,7 @@ class ReshapeTest {
 
     @Test
     fun test_reshape_with_extended_dimensions() = TestRunner.runTest {
-        with(KIAccuracyRunner) { runFromResources(getTargetPath("test_reshape_extended_dims")) }
+        KIAccuracyRunner.runFromResources(getTargetPath("test_reshape_extended_dims"))
     }
 
     @Test

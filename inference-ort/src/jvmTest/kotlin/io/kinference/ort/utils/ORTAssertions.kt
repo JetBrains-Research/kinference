@@ -3,7 +3,7 @@ package io.kinference.ort.utils
 import ai.onnxruntime.*
 import io.kinference.data.ONNXDataType
 import io.kinference.ort.data.ORTData
-import io.kinference.ort.data.ORTTensor
+import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
 import kotlin.math.abs
 

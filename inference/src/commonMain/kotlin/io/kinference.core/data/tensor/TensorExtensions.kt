@@ -1,4 +1,4 @@
-package io.kinference.core.data.tensors
+package io.kinference.core.data.tensor
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.concatenate

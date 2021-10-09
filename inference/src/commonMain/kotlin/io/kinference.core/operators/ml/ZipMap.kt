@@ -4,8 +4,8 @@ import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensors.KITensor
-import io.kinference.core.data.tensors.asTensor
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray

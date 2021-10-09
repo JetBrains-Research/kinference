@@ -1,6 +1,6 @@
 package io.kinference.core.attributes
 
-import io.kinference.core.data.tensors.KITensor
+import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.Graph
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.AttributeProto.AttributeType

@@ -3,8 +3,8 @@ package io.kinference.core.operators.seq
 import io.kinference.core.attributes.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensors.KITensor
-import io.kinference.core.data.tensors.splitWithAxis
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.data.tensor.splitWithAxis
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ProfilingContext
 import io.kinference.core.operators.*
