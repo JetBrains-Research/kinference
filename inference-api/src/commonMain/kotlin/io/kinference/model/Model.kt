@@ -6,7 +6,7 @@ import io.kinference.data.ONNXDataAdapter
 import io.kinference.loadModel
 
 interface Model<T> {
-    fun predict(input: List<T>, profile: Boolean = false): List<T>
+    fun predict(input: Map<String, T>, profile: Boolean = false): Map<String, T>
 
     companion object {
         fun load(bytes: ByteArray, engine: InferenceEngine) = engine.loadModel(bytes)

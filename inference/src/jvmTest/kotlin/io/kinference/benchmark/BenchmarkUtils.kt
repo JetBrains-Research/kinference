@@ -32,7 +32,7 @@ object BenchmarkUtils {
 
     private fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
 
-    fun modelWithInputs(path: String): Pair<ByteArray, List<KITensor>> {
+    fun modelWithInputs(path: String): Pair<ByteArray, Map<String, ONNXData<*>>> {
         val (mainPath, testName, dataSet) = path.split('.')
 
         val testDir = javaClass.getResource("/$mainPath/test_$testName").path
@@ -41,7 +41,7 @@ object BenchmarkUtils {
         val inputFiles = File("$testDir/test_data_set_$dataSet/").listFiles()!!.filter { "input" in it.name }
         val inputs = inputFiles.map { KIEngine.loadData(it.readBytes(), ONNXDataType.ONNX_TENSOR) as KITensor }
 
-        return modelBytes to inputs
+        return modelBytes to inputs.associateBy { it.name!! }
     }
 
     data class OrtState(val session: OrtSession, val inputs: Map<String, OnnxTensor>) {
@@ -51,14 +51,14 @@ object BenchmarkUtils {
 
                 val env = OrtEnvironment.getEnvironment()
                 val session = env.createSession(modelBytes, ortOptions)
-                val ortInputs = inputs.associate { it.name!! to it.toOnnxTensor(env) }
+                val ortInputs = inputs.mapValues { (it.value as KITensor).toOnnxTensor(env) }
 
                 return OrtState(session, ortInputs)
             }
         }
     }
 
-    data class KIState(val model: Model<ONNXData<*>>, val inputs: List<KITensor>) {
+    data class KIState(val model: Model<ONNXData<*>>, val inputs: Map<String, ONNXData<*>>) {
         companion object {
             fun create(path: String): KIState {
                 val (modelBytes, inputs) = modelWithInputs(path)

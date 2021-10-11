@@ -10,7 +10,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class AccuracyRunner(private val testEngine: TestEngine) {
-    data class ONNXTestData(val name: String, val actual: List<ONNXData<*>>, val expected: List<ONNXData<*>>)
+    data class ONNXTestData(val name: String, val actual: Map<String, ONNXData<*>>, val expected: Map<String, ONNXData<*>>)
     data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
         companion object {
             private const val DEFAULT_DATATYPE = "ONNX_TENSOR"
@@ -45,11 +45,11 @@ class AccuracyRunner(private val testEngine: TestEngine) {
                 val inputs = inputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
 
                 val outputFiles =  files.filter { file -> "output" in file.path }
-                val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
+                val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
 
                 logger.info { "Start predicting: $group" }
-                val actualOutputs = model.predict(inputs)
-                ONNXTestData(group, expectedOutputs, actualOutputs)
+                val actualOutputs = model.predict(inputs.associateBy { it.name!! })
+                ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs)
             }
         }.filterNotNull()
     }
@@ -68,11 +68,9 @@ class AccuracyRunner(private val testEngine: TestEngine) {
 
             val (_, expectedOutputs, actualOutputs) = dataSet
 
-            val mappedActualOutputs = actualOutputs.associateBy { it.name }
-
-            for (expectedOutput in expectedOutputs) {
-                val actualOutput = mappedActualOutputs[expectedOutput.name] ?: error("Required tensor not found")
-                testEngine.checkEquals(expectedOutput, actualOutput, delta)
+            for ((outputName, outputData) in expectedOutputs) {
+                val actualOutput = actualOutputs[outputName] ?: error("Required tensor not found")
+                testEngine.checkEquals(outputData, actualOutput, delta)
             }
         }
     }

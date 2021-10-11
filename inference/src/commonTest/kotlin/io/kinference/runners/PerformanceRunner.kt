@@ -24,7 +24,7 @@ object PerformanceRunner {
         return runPerformanceFromFolder(ResourcesTestDataLoader, path, count, withProfiling)
     }
 
-    data class ONNXDataWithName(val data: List<ONNXData<*>>, val test: String)
+    data class ONNXDataWithName(val data: Map<String, ONNXData<*>>, val test: String)
 
     @OptIn(ExperimentalTime::class)
     private suspend fun runPerformanceFromFolder(
@@ -37,8 +37,8 @@ object PerformanceRunner {
         val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
         val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file.path }
-            val inputs = inputFiles.map { KIEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }.toList()
-            ONNXDataWithName(inputs, group)
+            val inputs = inputFiles.map { KIEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
+            ONNXDataWithName(inputs.associateBy { it.name!! }, group)
         }
 
         val results = ArrayList<PerformanceResults>()

@@ -18,9 +18,14 @@ allprojects {
     }
 }
 
-subprojects {
+configure(subprojects - project(":adapters")) {
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
+    }
+}
+
+subprojects {
+    apply {
         plugin("maven-publish")
 
         plugin("idea")

@@ -16,10 +16,10 @@ class KIModel<T>(proto: ModelProto, private val adapter: ONNXDataAdapter<T, ONNX
     fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     fun resetProfiles() = profiles.clear()
 
-    override fun predict(input: List<T>, profile: Boolean): List<T> {
+    override fun predict(input: Map<String, T>, profile: Boolean): Map<String, T> {
         val context = if (profile) ProfilingContext("Model $name").apply { profiles.add(this) } else null
-        val onnxInput = input.map { adapter.toONNXData(it) }
+        val onnxInput = input.map { (name, data) -> adapter.toONNXData(name, data) }
         val execResult = graph.execute(onnxInput, profilingContext = context)
-        return execResult.map { adapter.fromONNXData(it) }
+        return execResult.associate { it.name!! to adapter.fromONNXData(it) }
     }
 }
