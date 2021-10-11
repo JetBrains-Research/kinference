@@ -16,7 +16,7 @@ object ORTEngine : InferenceEngine {
     private val ORT_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), ORT_READER_CONFIG)
 
-    override fun <T> loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T, ONNXData<*>>): Model<T> {
+    override fun <T> loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<T> {
         val session = OrtEnvironment.getEnvironment().createSession(bytes)
         return ORTModel(session, adapter)
     }

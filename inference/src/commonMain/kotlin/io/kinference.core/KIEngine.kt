@@ -18,7 +18,7 @@ object KIEngine : InferenceEngine {
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.TILED)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override fun <T> loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T, ONNXData<*>>): Model<T> {
+    override fun <T> loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<T> {
         val modelScheme = ModelProto.decode(protoReader(bytes))
         return KIModel(modelScheme, adapter)
     }

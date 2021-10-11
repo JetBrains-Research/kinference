@@ -10,6 +10,6 @@ interface Model<T> {
 
     companion object {
         fun load(bytes: ByteArray, engine: InferenceEngine) = engine.loadModel(bytes)
-        fun <T> load(bytes: ByteArray, engine: InferenceEngine, adapter: ONNXDataAdapter<T, ONNXData<*>>) = engine.loadModel(bytes, adapter)
+        fun <T> load(bytes: ByteArray, engine: InferenceEngine, adapter: ONNXDataAdapter<T>) = engine.loadModel(bytes, adapter)
     }
 }
