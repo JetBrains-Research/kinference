@@ -1,7 +1,7 @@
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
-version = rootProject.group
+version = rootProject.version
 
 kotlin {
     jvm {
