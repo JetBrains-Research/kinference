@@ -17,6 +17,7 @@ kotlin {
             dependencies {
                 api(project(":inference-api"))
                 api(project(":serialization"))
+                api(project(":utils"))
             }
         }
 

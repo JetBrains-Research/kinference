@@ -1,16 +1,16 @@
 package io.kinference.runners
 
+import io.kinference.TestLoggerFactory
 import io.kinference.core.KIEngine
 import io.kinference.core.model.KIModel
 import io.kinference.data.ONNXData
 import io.kinference.loadModel
-import io.kinference.ndarray.logger
 import io.kinference.utils.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 object PerformanceRunner {
-    val logger = logger("PerformanceRunner")
+    private val logger = TestLoggerFactory.create("io.kinference.runners.PerformanceRunner")
 
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 

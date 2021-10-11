@@ -6,9 +6,7 @@ plugins {
 }
 
 kotlin {
-    jvm {
-
-    }
+    jvm()
 
     js {
         browser {
@@ -33,7 +31,6 @@ kotlin {
                 api(kotlin("stdlib"))
                 api("io.kinference.primitives:primitives-annotations:0.1.14")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                implementation("io.github.microutils:kotlin-logging:2.0.4")
             }
         }
 
@@ -41,12 +38,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                api("ch.qos.logback:logback-classic:1.2.3")
             }
         }
 

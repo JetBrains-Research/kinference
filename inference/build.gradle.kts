@@ -78,9 +78,9 @@ kotlin {
                 api(kotlin("stdlib"))
                 api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                implementation("io.github.microutils:kotlin-logging:2.0.4")
                 api(project(":ndarray"))
                 api(project(":inference-api"))
+                api(project(":utils"))
                 implementation(project(":serialization"))
             }
         }
@@ -94,16 +94,10 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
-            dependencies {
-                api("ch.qos.logback:logback-classic:1.2.3")
-            }
-        }
-
         val jvmTest by getting {
             dependencies {
                 implementation("org.openjdk.jmh:jmh-core:1.25.1")
-
+                api("org.slf4j:slf4j-simple:1.7.30")
                 implementation(kotlin("test-junit5"))
 
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")

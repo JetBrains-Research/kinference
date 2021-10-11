@@ -4,14 +4,14 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ContextPrepare
-import io.kinference.ndarray.logger
 import io.kinference.core.operators.Operator
 import io.kinference.data.ONNXData
+import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 internal object GRUContext: ContextPrepare() {
-    private val logger = logger("GRU Initializer")
+    private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.gru.GRUContext")
 
     override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<ONNXData<*>, ONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
@@ -37,7 +37,7 @@ internal object GRUContext: ContextPrepare() {
 
     private fun appendWeights(tensor: KITensor?, context: Context) {
         if (tensor == null) {
-            logger.warn { "Make the weights part of the model, otherwise the GRU will be slow" }
+            logger.warning { "Make the weights part of the model, otherwise the GRU will be slow" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             context.putValue(preparedWeights.name!!, preparedWeights)
@@ -46,7 +46,7 @@ internal object GRUContext: ContextPrepare() {
 
     private fun appendBias(tensor: KITensor?, context: Context) {
         if (tensor == null) {
-            logger.warn { "Make the bias part of the model, otherwise the GRU will be slow" }
+            logger.warning { "Make the bias part of the model, otherwise the GRU will be slow" }
         } else {
             val preparedBias = prepareBias(tensor)
             context.putValue(preparedBias.name!!, preparedBias)

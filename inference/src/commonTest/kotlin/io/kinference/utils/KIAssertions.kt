@@ -1,20 +1,19 @@
 package io.kinference.utils
 
+import io.kinference.TestLoggerFactory
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.types.ValueTypeInfo
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.logger
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.ArrayAssertions.assertArrayEquals
 import kotlin.math.*
 import kotlin.test.assertEquals
 
 object KIAssertions {
-    val logger = logger("Errors")
+    private val logger = TestLoggerFactory.create("io.kinference.utils.KIAssertions")
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun assertEquals(expected: KITensor, actual: KITensor, delta: Double) {
@@ -31,7 +30,7 @@ object KIAssertions {
                     abs(expectedArray[i] - actualArray[i])
                 }
 
-                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0f
+                val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0f
                 val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()
@@ -58,7 +57,7 @@ object KIAssertions {
                     abs(expectedArray[i] - actualArray[i])
                 }
 
-                val averageError = if (errorsArray.size != 0) errorsArray.sum() / errorsArray.size else 0.0
+                val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0.0
                 val standardDeviation = errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1)
 
                 val sortedErrorsArray = errorsArray.sorted()

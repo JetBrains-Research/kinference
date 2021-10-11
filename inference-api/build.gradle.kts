@@ -12,7 +12,7 @@ kotlin {
         }
     }
 
-    jvm{}
+    jvm()
 
     sourceSets {
         val commonMain by getting {

@@ -4,13 +4,13 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ContextPrepare
-import io.kinference.ndarray.logger
 import io.kinference.core.operators.Operator
 import io.kinference.data.ONNXData
+import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
 internal object LSTMContext: ContextPrepare() {
-    private val logger = logger("LSTM Initializer")
+    private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.lstm.LSTMContext")
 
     @OptIn(ExperimentalTime::class)
     override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<ONNXData<*>, ONNXData<*>>) {
@@ -46,7 +46,7 @@ internal object LSTMContext: ContextPrepare() {
 
     private fun appendWeights(tensor: KITensor?, context: Context) {
         if (tensor == null) {
-            logger.warn { "Make the weights part of the model, otherwise the LSTM will be slow" }
+            logger.warning { "Make the weights part of the model, otherwise the LSTM will be slow" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             context.putValue(preparedWeights.name!!, preparedWeights)
@@ -55,7 +55,7 @@ internal object LSTMContext: ContextPrepare() {
 
     private fun appendBias(tensor: KITensor?, context: Context) {
         if (tensor == null) {
-            logger.warn { "Make bias part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Make bias part of the model, otherwise LSTM will be slow" }
         } else {
             val preparedBias = prepareBias(tensor)
             context.putValue(preparedBias.name!!, preparedBias)
@@ -64,7 +64,7 @@ internal object LSTMContext: ContextPrepare() {
 
     private fun appendPeepholes(tensor: KITensor?, context: Context) {
         if (tensor == null) {
-            logger.warn { "Make peepholes part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Make peepholes part of the model, otherwise LSTM will be slow" }
         } else {
             val preparedPeepholes = preparePeepholes(tensor)
             context.putValue(preparedPeepholes.name!!, preparedPeepholes)

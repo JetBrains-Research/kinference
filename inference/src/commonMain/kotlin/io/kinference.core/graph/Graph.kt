@@ -2,7 +2,6 @@ package io.kinference.core.graph
 
 import io.kinference.core.utils.Stack
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.ndarray.logger
 import io.kinference.core.operators.*
 import io.kinference.core.operators.layer.attention.AttentionContext
 import io.kinference.core.operators.layer.recurrent.gru.GRUContext
@@ -10,6 +9,7 @@ import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.core.types.ValueInfo
 import io.kinference.data.ONNXData
+import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
@@ -17,7 +17,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 class Graph(proto: GraphProto) {
     companion object {
-        private val logger = logger(Graph::class.simpleName ?: "")
+        private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
 
     val operators: List<Operator<ONNXData<*>, ONNXData<*>>>
@@ -135,7 +135,7 @@ class Graph(proto: GraphProto) {
         }
         for (input in inputs) {
             if (input.name !in availableInputs) {
-                logger.warn { "Input node '${input.name}' not found in Graph and probably is excessive" }
+                logger.warning { "Input node '${input.name}' not found in Graph and probably is excessive" }
                 continue
             }
             context.putValue(input.name!!, input)

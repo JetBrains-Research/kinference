@@ -12,17 +12,17 @@ kotlin {
         }
     }
 
-    jvm {}
+    jvm()
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                implementation("io.github.microutils:kotlin-logging:2.0.4")
                 api(project(":ndarray"))
                 api(project(":inference-api"))
                 api(project(":serialization"))
+                api(project(":utils"))
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
