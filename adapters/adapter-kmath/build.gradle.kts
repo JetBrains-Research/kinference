@@ -3,6 +3,10 @@ import io.kinference.gradle.configureTests
 group = rootProject.group
 version = rootProject.version
 
+repositories {
+    maven("https://repo.kotlin.link")
+}
+
 kotlin {
     jvm {
         testRuns["test"].executionTask {
@@ -18,6 +22,7 @@ kotlin {
                 implementation(project(":inference-api"))
                 implementation(project(":inference"))
                 implementation(project(":ndarray"))
+                implementation("space.kscience:kmath-core:0.3.0-dev-8")
             }
         }
 
@@ -31,8 +36,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:multik-api:0.0.1")
-                implementation("org.jetbrains.kotlinx:multik-default:0.0.1")
+                api("space.kscience:kmath-core-jvm:0.3.0-dev-8")
             }
         }
 

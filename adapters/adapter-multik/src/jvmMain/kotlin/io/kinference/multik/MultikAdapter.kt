@@ -20,7 +20,7 @@ object MultikAdapter : ONNXDataAdapter<MultiArray<Number, Dimension>> {
 
     override fun fromONNXData(data: ONNXData<*>): MultiArray<Number, Dimension> = when (data.type) {
         ONNXDataType.ONNX_TENSOR -> (data.data as NumberNDArray).asMultiArray()
-        else -> error("Conversion from ${data.type} is not supporter by this adapter")
+        else -> error("Conversion from ${data.type} is not supported by this adapter")
     }
 }
 
