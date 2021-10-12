@@ -14,7 +14,7 @@ actual object ResourcesTestDataLoader : TestDataLoader {
 }
 
 actual object S3TestDataLoader : TestDataLoader {
-    private val file = File("../test-data/s3/tests")
+    private val file = File("../../test-data/s3/tests")
 
     actual override suspend fun bytes(path: TestDataLoader.Path): ByteArray = File(file, path.toRelativePath()).readBytes()
 
