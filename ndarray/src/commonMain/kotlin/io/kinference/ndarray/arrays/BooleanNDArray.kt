@@ -3,6 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
+import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
@@ -205,7 +206,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
         operator fun invoke(array: BooleanTiledArray, strides: Strides): BooleanNDArray {
-            val blockSize = BooleanTiledArray.blockSizeByStrides(strides)
+            val blockSize = blockSizeByStrides(strides)
             return if (blockSize == array.blockSize) {
                 BooleanNDArray(array, strides)
             }

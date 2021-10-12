@@ -1,10 +1,9 @@
 package io.kinference.tfjs.data.tensors
 
 import io.kinference.data.ONNXDataType
-import io.kinference.ndarray.Strides
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.resolveProtoDataType
@@ -13,6 +12,8 @@ import io.kinference.tfjs.externals.core.NDArrayTFJS
 import io.kinference.tfjs.externals.core.tensor
 import io.kinference.tfjs.externals.extensions.*
 import io.kinference.tfjs.types.ValueInfo
+import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Int32Array
 
 class TFJSTensor(data: NDArrayTFJS, info: ValueInfo) : TFJSData<NDArrayTFJS>(data, info) {
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
@@ -24,15 +25,29 @@ class TFJSTensor(data: NDArrayTFJS, info: ValueInfo) : TFJSData<NDArrayTFJS>(dat
     fun toNDArray(): NDArray {
         val shapeIntArray = data.shape.toIntArray()
         val strides = Strides(shapeIntArray)
+        val blockSize = blockSizeByStrides(strides)
+        val blocksCount = strides.linearSize / blockSize
+
+
         return when(data.dtype) {
             "float32" -> {
-                val array = FloatTiledArray(strides, data.dataFloat())
-                FloatNDArray(array, Strides(shapeIntArray))
+                val array = data.dataFloat().unsafeCast<Float32Array>()
+                val arrayBuffer = array.buffer
+                val blocks = Array(blocksCount) { blockNum ->
+                    Float32Array(arrayBuffer, blockNum * blockSize * 4, blockSize).unsafeCast<FloatArray>()
+                }
+                val tiledArray = FloatTiledArray(blocks)
+                FloatNDArray(tiledArray, Strides(shapeIntArray))
             }
 
             "int32" -> {
-                val array = IntTiledArray(strides, data.dataInt())
-                IntNDArray(array, strides)
+                val array = data.dataFloat().unsafeCast<Int32Array>()
+                val arrayBuffer = array.buffer
+                val blocks = Array(blocksCount) { blockNum ->
+                    Int32Array(arrayBuffer, blockNum * blockSize * 4, blockSize).unsafeCast<IntArray>()
+                }
+                val tiledArray = IntTiledArray(blocks)
+                IntNDArray(tiledArray, strides)
             }
 
             else -> error("Unsupported type")
