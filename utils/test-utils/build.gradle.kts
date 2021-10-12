@@ -22,9 +22,9 @@ kotlin {
                 api(project(":ndarray"))
                 api(project(":inference-api"))
                 api(project(":serialization"))
-                api(project(":utils"))
+                api(project(":utils:logger"))
+                api(project(":utils:model-profiler"))
                 implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
             }
         }
 

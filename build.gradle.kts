@@ -18,18 +18,16 @@ allprojects {
     }
 }
 
-configure(subprojects - project(":adapters")) {
+subprojects {
+    if (this.subprojects.isNotEmpty()) {
+        return@subprojects
+    }
+
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
-    }
-}
 
-subprojects {
-    apply {
         plugin("maven-publish")
-
         plugin("idea")
-
         plugin("io.gitlab.arturbosch.detekt")
     }
 

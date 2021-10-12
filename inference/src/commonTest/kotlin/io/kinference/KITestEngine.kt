@@ -1,8 +1,9 @@
-package io.kinference.runners
+package io.kinference
 
-import io.kinference.TestEngine
 import io.kinference.core.KIEngine
 import io.kinference.data.ONNXData
+import io.kinference.runners.AccuracyRunner
+import io.kinference.runners.PerformanceRunner
 import io.kinference.utils.KIAssertions
 import kotlin.time.ExperimentalTime
 
@@ -13,4 +14,5 @@ object KITestEngine : TestEngine(KIEngine) {
     }
 
     val KIAccuracyRunner = AccuracyRunner(KITestEngine)
+    val KIPerformanceRunner = PerformanceRunner(KITestEngine)
 }

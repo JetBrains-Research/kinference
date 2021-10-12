@@ -1,7 +1,7 @@
 package io.kinference.models.gpt
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
-import io.kinference.runners.PerformanceRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
@@ -15,6 +15,6 @@ class GPTFLCCTest {
 
     @Test
     fun benchmark_test_gpt_py_performance() = TestRunner.runTest {
-        PerformanceRunner.runFromS3("gpt2:flcc-py-completion:quantized:v2", count = 50)
+        KIPerformanceRunner.runFromS3("gpt2:flcc-py-completion:quantized:v2", count = 50)
     }
 }

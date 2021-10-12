@@ -9,6 +9,8 @@ import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.core.types.ValueInfo
 import io.kinference.data.ONNXData
+import io.kinference.profiler.ProfilingContext
+import io.kinference.profiler.profile
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 

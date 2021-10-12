@@ -19,10 +19,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":inference-api"))
-                implementation(project(":inference"))
-                implementation(project(":ndarray"))
-                implementation("space.kscience:kmath-core:0.3.0-dev-8")
+                api(project(":inference-api"))
+                api(project(":inference"))
+                api(project(":ndarray"))
+                api("space.kscience:kmath-core:0.3.0-dev-8")
             }
         }
 
@@ -30,7 +30,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":test-runner"))
+                implementation(project(":utils:test-utils"))
             }
         }
 

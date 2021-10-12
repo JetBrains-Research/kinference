@@ -1,7 +1,7 @@
 package io.kinference.models.catboost
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
-import io.kinference.runners.PerformanceRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
@@ -15,6 +15,6 @@ class IJCompletionRankerTest {
 
     @Test
     fun benchmark_test_ranker_performance() = TestRunner.runTest {
-        PerformanceRunner.runFromS3("catboost:ij-completion-ranker:v1", count = 5)
+        KIPerformanceRunner.runFromS3("catboost:ij-completion-ranker:v1", count = 5)
     }
 }

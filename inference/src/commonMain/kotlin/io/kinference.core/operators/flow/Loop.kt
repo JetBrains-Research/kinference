@@ -6,7 +6,7 @@ import io.kinference.core.graph.Context
 import io.kinference.core.graph.Graph
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
 import io.kinference.data.ONNXData
 import io.kinference.protobuf.message.AttributeProto

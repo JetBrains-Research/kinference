@@ -1,7 +1,7 @@
 package io.kinference.models.bert
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
-import io.kinference.runners.PerformanceRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
@@ -15,6 +15,6 @@ class BERTTest {
 
     @Test
     fun benchmark_test_vanilla_bert_performance() = TestRunner.runTest {
-        PerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
+        KIPerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
     }
 }

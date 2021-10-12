@@ -80,7 +80,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 api(project(":ndarray"))
                 api(project(":inference-api"))
-                api(project(":utils"))
+                api(project(":utils:logger"))
+                api(project(":utils:model-profiler"))
                 implementation(project(":serialization"))
             }
         }
@@ -90,7 +91,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":test-runner"))
+                implementation(project(":utils:test-utils"))
             }
         }
 

@@ -1,7 +1,7 @@
 package io.kinference.models
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
-import io.kinference.runners.PerformanceRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
@@ -15,6 +15,6 @@ class CommentUpdaterTest {
 
     @Test
     fun benchmark_test_comment_updater() = TestRunner.runTest {
-        PerformanceRunner.runFromS3("custom:comment_updater", count = 100)
+        KIPerformanceRunner.runFromS3("custom:comment_updater", count = 100)
     }
 }

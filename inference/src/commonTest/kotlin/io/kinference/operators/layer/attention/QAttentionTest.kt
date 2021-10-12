@@ -1,7 +1,7 @@
 package io.kinference.operators.layer.attention
 
 import io.kinference.runners.AccuracyRunner
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime

@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.Graph
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.core.operators.*

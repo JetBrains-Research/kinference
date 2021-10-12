@@ -5,7 +5,7 @@ import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.*
 import io.kinference.core.graph.Context
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto

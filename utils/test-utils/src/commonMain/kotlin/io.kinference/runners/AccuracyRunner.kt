@@ -36,6 +36,7 @@ class AccuracyRunner(private val testEngine: TestEngine) {
 
     private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
         val model = testEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+
         logger.info { "Predict: $path" }
         val filesInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { ONNXTestDataInfo.fromString(it) }
         return filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
@@ -77,7 +78,7 @@ class AccuracyRunner(private val testEngine: TestEngine) {
     }
 
     companion object {
-        private val logger = TestLoggerFactory.create("io.kinference.runners.AccuracyRunner")
+        private val logger = TestLoggerFactory.create("AccuracyRunner")
 
         private val DELTA = (10.0).pow(-3)
         const val QUANT_DELTA = 3.0

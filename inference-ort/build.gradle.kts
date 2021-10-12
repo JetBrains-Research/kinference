@@ -1,3 +1,4 @@
+import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 
 group = rootProject.group
@@ -10,6 +11,12 @@ kotlin {
 
             enabled = !project.hasProperty("disable-tests")
         }
+
+        testRuns.create("benchmark").executionTask {
+            configureBenchmarkTests()
+
+            enabled = !project.hasProperty("disable-tests")
+        }
     }
 
     sourceSets {
@@ -17,7 +24,7 @@ kotlin {
             dependencies {
                 api(project(":inference-api"))
                 api(project(":serialization"))
-                api(project(":utils"))
+                api(project(":utils:logger"))
             }
         }
 
@@ -26,7 +33,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":test-runner"))
+                implementation(project(":utils:test-utils"))
             }
         }
 
@@ -39,6 +46,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
+                api("org.slf4j:slf4j-simple:1.7.30")
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
             }
         }

@@ -1,17 +1,13 @@
 package io.kinference.runners
 
-import io.kinference.TestLoggerFactory
-import io.kinference.core.KIEngine
-import io.kinference.core.model.KIModel
+import io.kinference.*
 import io.kinference.data.ONNXData
-import io.kinference.loadModel
+import io.kinference.profiler.Profilable
 import io.kinference.utils.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-object PerformanceRunner {
-    private val logger = TestLoggerFactory.create("io.kinference.runners.PerformanceRunner")
-
+class PerformanceRunner(private val engine: TestEngine) {
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
     private suspend fun runPerformanceFromS3(name: String, count: Int = 10, withProfiling: Boolean = false): List<PerformanceResults> {
@@ -33,11 +29,13 @@ object PerformanceRunner {
         count: Int = 10,
         withProfiling: Boolean = false
     ): List<PerformanceResults> {
-        val model = KIEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx"))) as KIModel
+        val model = engine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+
+        logger.info { "Predict: $path" }
         val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
         val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file.path }
-            val inputs = inputFiles.map { KIEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
+            val inputs = inputFiles.map { engine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
             ONNXDataWithName(inputs.associateBy { it.name!! }, group)
         }
 
@@ -51,9 +49,9 @@ object PerformanceRunner {
                 }.inMilliseconds.toLong()
                 times[i] = time
             }
-            results.add(PerformanceResults(dataset.test, times.average(), times.minOrNull()!!, times.max()!!))
+            results.add(PerformanceResults(dataset.test, times.average(), times.minOrNull()!!, times.maxOrNull()!!))
 
-            if (withProfiling) {
+            if (withProfiling && model is Profilable) {
                 logger.info {
                     "Results for ${dataset.test}:" +
                         model.analyzeProfilingResults().getInfo()
@@ -62,9 +60,6 @@ object PerformanceRunner {
                 model.resetProfiles()
             }
         }
-
-
-
         return results
     }
 
@@ -78,7 +73,11 @@ object PerformanceRunner {
 
     private fun output(results: List<PerformanceResults>) {
         for (result in results.sortedBy { it.name }) {
-            println("Test ${result.name}: avg ${result.avg}, min ${result.min}, max ${result.max}")
+            logger.info { "Test ${result.name}: avg ${result.avg}, min ${result.min}, max ${result.max}" }
         }
+    }
+
+    companion object {
+        private val logger = TestLoggerFactory.create("io.kinference.runners.PerformanceRunner")
     }
 }

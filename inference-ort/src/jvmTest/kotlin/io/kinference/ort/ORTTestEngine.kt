@@ -1,10 +1,10 @@
-package io.kinference.ort.runners
+package io.kinference.ort
 
 import io.kinference.TestEngine
 import io.kinference.data.ONNXData
-import io.kinference.ort.ORTEngine
 import io.kinference.ort.utils.ORTAssertions
 import io.kinference.runners.AccuracyRunner
+import io.kinference.runners.PerformanceRunner
 import kotlin.time.ExperimentalTime
 
 object ORTTestEngine : TestEngine(ORTEngine) {
@@ -14,4 +14,7 @@ object ORTTestEngine : TestEngine(ORTEngine) {
 
     @OptIn(ExperimentalTime::class)
     val ORTAccuracyRunner = AccuracyRunner(ORTTestEngine)
+
+    @OptIn(ExperimentalTime::class)
+    val ORTPerformanceRunner = PerformanceRunner(ORTTestEngine)
 }

@@ -15,9 +15,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":inference-api"))
-                implementation(project(":inference"))
-                implementation(project(":ndarray"))
+                api(project(":inference-api"))
+                api(project(":inference"))
+                api(project(":ndarray"))
             }
         }
 
@@ -25,14 +25,14 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":test-runner"))
+                implementation(project(":utils:test-utils"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:multik-api:0.0.1")
-                implementation("org.jetbrains.kotlinx:multik-default:0.0.1")
+                api("org.jetbrains.kotlinx:multik-api:0.0.1")
+                api("org.jetbrains.kotlinx:multik-default:0.0.1")
             }
         }
 

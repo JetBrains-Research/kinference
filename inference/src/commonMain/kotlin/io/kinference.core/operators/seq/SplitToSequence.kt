@@ -6,7 +6,7 @@ import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.splitWithAxis
 import io.kinference.core.graph.Context
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto

@@ -5,11 +5,14 @@ include(":serialization")
 include(":inference-api")
 include(":inference")
 include(":inference-ort")
-include(":test-runner")
-include(":utils")
+
+include(":utils:test-utils")
+include(":utils:logger")
+include(":utils:model-profiler")
 
 include(":adapters:adapter-multik")
 include(":adapters:adapter-kmath")
+
 
 pluginManagement {
     repositories {

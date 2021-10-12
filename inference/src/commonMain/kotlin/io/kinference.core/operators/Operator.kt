@@ -4,7 +4,7 @@ import io.kinference.core.attributes.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.Context
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.data.ONNXData
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.protobuf.message.AttributeProto

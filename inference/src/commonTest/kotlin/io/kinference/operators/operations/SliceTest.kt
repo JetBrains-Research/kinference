@@ -1,9 +1,8 @@
 package io.kinference.operators.operations
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
 class SliceTest {
     private fun getTargetPath(dirName: String) = "/slice/$dirName/"

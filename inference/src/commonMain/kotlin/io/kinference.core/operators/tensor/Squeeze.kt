@@ -4,7 +4,7 @@ import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
-import io.kinference.core.graph.ProfilingContext
+import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.extensions.squeeze
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.*

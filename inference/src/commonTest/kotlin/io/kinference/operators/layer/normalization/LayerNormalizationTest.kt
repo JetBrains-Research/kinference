@@ -1,6 +1,6 @@
 package io.kinference.operators.layer.normalization
 
-import io.kinference.runners.KITestEngine.KIAccuracyRunner
+import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
