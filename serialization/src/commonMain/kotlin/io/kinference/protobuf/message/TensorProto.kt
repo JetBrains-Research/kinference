@@ -1,54 +1,52 @@
 package io.kinference.protobuf.message
 
 import com.squareup.wire.*
-import io.kinference.ndarray.arrays.pointers.IntPointer
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.createArray
+import io.kinference.ndarray.extensions.createPrimitiveArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.*
-import io.kinference.protobuf.arrays.TiledArrayContainer
+import io.kinference.protobuf.arrays.*
 import okio.*
 
 class TensorProto(
+    val arrayFormat: ArrayFormat,
     var dims: IntArray = IntArray(0),
     var dataType: DataType? = null,
     var segment: Segment? = null,
     val stringData: MutableList<ByteString> = ArrayList(),
     var name: String? = null,
     val externalData: MutableList<StringStringEntryProto> = ArrayList(),
-    var dataLocation: DataLocation? = null,
+    var dataLocation: DataLocation? = null
 ) {
-    private var _tiledData: TiledArrayContainer = TiledArrayContainer()
+    private var _arrayData: ArrayContainer? = arrayFormat.container()
 
-    val tiledData: Any?
-        get() = _tiledData.get(dims)
+    val arrayData: Any?
+        get() = _arrayData!!.get(dims)
 
-    fun isTiled(): Boolean = _tiledData.hasData()
+    fun isTiled(): Boolean = arrayFormat == ArrayFormat.TILED
+    fun isPrimitive(): Boolean = arrayFormat == ArrayFormat.PRIMITIVE
     fun isString(): Boolean = stringData.isNotEmpty()
 
     companion object {
         private val int32AvailableTypes = setOf(DataType.BOOL, DataType.INT8, DataType.UINT8, DataType.INT16, DataType.UINT16)
 
-        fun decode(byteArray: ByteArray): TensorProto {
-            val buffer = Buffer().write(byteArray)
-            return decode(ProtobufReader(buffer))
-        }
-
         fun decode(reader: ProtobufReader): TensorProto {
-            val proto = TensorProto()
+            val proto = TensorProto(reader.config.tensorFormat)
             var rawData: ByteString? = null
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {
                     ReaderTag.DIMS -> proto.dims = reader.readLongArray(tag).toIntArray()
                     ReaderTag.DATATYPE -> proto.dataType = reader.readValue(DataType.ADAPTER)
                     ReaderTag.SEGMENT -> proto.segment = Segment.decode(reader)
-                    ReaderTag.FLOAT -> reader.readFloatTiledArray(tag, proto.dims, proto._tiledData)
-                    ReaderTag.INT32 -> reader.readIntTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.FLOAT -> reader.readFloatArray(tag, proto.dims, proto._arrayData!!)
+                    ReaderTag.INT32 -> reader.readIntArray(tag, proto.dims, proto._arrayData!!)
                     ReaderTag.STRING -> proto.stringData.add(reader.readBytes())
-                    ReaderTag.INT64 -> reader.readLongTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.INT64 -> reader.readLongArray(tag, proto.dims, proto._arrayData!!)
                     ReaderTag.NAME -> proto.name = reader.readString()
                     ReaderTag.RAW -> rawData = reader.readBytes()
-                    ReaderTag.DOUBLE -> reader.readDoubleTiledArray(tag, proto.dims, proto._tiledData)
-                    ReaderTag.UINT64 -> reader.readULongTiledArray(tag, proto.dims, proto._tiledData)
+                    ReaderTag.DOUBLE -> reader.readDoubleArray(tag, proto.dims, proto._arrayData!!)
+                    ReaderTag.UINT64 -> reader.readULongArray(tag, proto.dims, proto._arrayData!!)
                     ReaderTag.DOC_STRING -> reader.readString() // skip docstring
                     ReaderTag.EXTERNAL -> proto.externalData.add(StringStringEntryProto.decode(reader))
                     ReaderTag.LOCATION -> try {
@@ -60,22 +58,32 @@ class TensorProto(
                 }
             }
             if (rawData != null || !proto.hasData()) parseRaw(rawData, proto)
-            proto.checkTiledData()
+            proto.checkArrayData()
             return proto
         }
 
-        private fun TensorProto.hasData() = _tiledData.hasData() || stringData.isNotEmpty() || externalData.isNotEmpty()
+        private fun TensorProto.hasData() = _arrayData.hasData() || stringData.isNotEmpty() || externalData.isNotEmpty()
 
         // convert data stored as int32 to the specified type
-        private fun TensorProto.checkTiledData() {
-            if (this.tiledData !is IntTiledArray || this.dataType == DataType.INT32) return
-            require(dataType in int32AvailableTypes) { "Conversion from int32 to $dataType is not supported" }
+        private fun TensorProto.checkArrayData() {
+            if (this.arrayData !is IntTiledArray && this.arrayData !is IntArray) return
+            if (this.dataType == DataType.INT32) return
 
-            val data = tiledData as IntTiledArray
-            val pointer = IntPointer(data)
+            require(dataType in int32AvailableTypes) { "Conversion from int32 to $dataType is not supported" }
+            val newArray = when (arrayFormat) {
+                ArrayFormat.TILED -> parseInt32TiledData()
+                ArrayFormat.PRIMITIVE -> parseInt32PrimitiveData()
+                ArrayFormat.OTHER -> error("")
+            }
+            _arrayData!!.setData(newArray)
+        }
+
+        private fun TensorProto.parseInt32TiledData(): Any {
+            val data = arrayData as IntTiledArray
+            val pointer = data.pointer()
 
             @Suppress("IMPLICIT_CAST_TO_ANY")
-            val newTiled = when (dataType) {
+            return when (dataType) {
                 DataType.BOOL -> BooleanTiledArray(dims) { pointer.getAndIncrement() != 0 }
                 DataType.INT8 -> ByteTiledArray(dims) { pointer.getAndIncrement().toByte() }
                 DataType.UINT8 -> UByteTiledArray(dims) { pointer.getAndIncrement().toUByte() }
@@ -83,35 +91,45 @@ class TensorProto(
                 DataType.UINT16 -> UShortTiledArray(dims) { pointer.getAndIncrement().toUShort() }
                 else -> error("Conversion from int32 to $dataType is not supported")
             }
-            _tiledData.setTiled(newTiled)
+        }
+
+        private fun TensorProto.parseInt32PrimitiveData(): Any {
+            val data = arrayData as IntArray
+            val size = data.size
+
+            @Suppress("IMPLICIT_CAST_TO_ANY")
+            return when (dataType) {
+                DataType.BOOL -> BooleanArray(size) { data[it] != 0 }
+                DataType.INT8 -> ByteArray(size) { data[it].toByte() }
+                DataType.UINT8 -> UByteArray(size) { data[it].toUByte() }
+                DataType.INT16 -> ShortArray(size) { data[it].toShort() }
+                DataType.UINT16 -> UShortArray(size) { data[it].toUShort() }
+                else -> error("Conversion from int32 to $dataType is not supported")
+            }
+        }
+
+        private fun makeArray(arrayFormat: ArrayFormat, type: DataType, shape: IntArray, init: (Int) -> Any) = when (arrayFormat) {
+            ArrayFormat.TILED -> createArray(type.resolveLocalDataType(), shape, init)
+            ArrayFormat.PRIMITIVE -> createPrimitiveArray(type.resolveLocalDataType(), shape, init)
+            ArrayFormat.OTHER -> error("")
         }
 
         private fun parseRaw(rawData: ByteString?, proto: TensorProto) {
+            require(proto._arrayData != null)
             val raw = rawData ?: ByteString.EMPTY
             val buffer = Buffer().apply { write(raw) }
             val shape = proto.dims
+
             when (proto.dataType) {
-                DataType.DOUBLE -> {
-                    proto._tiledData.setTiled(DoubleTiledArray(shape) { buffer.readDoubleLe() })
-                }
-                DataType.FLOAT -> {
-                    proto._tiledData.setTiled(FloatTiledArray(shape) { buffer.readFloatLe() })
-                }
-                DataType.INT64 -> {
-                    proto._tiledData.setTiled(LongTiledArray(shape) { buffer.readLongLe() })
-                }
-                DataType.INT32 -> {
-                    proto._tiledData.setTiled(IntTiledArray(shape) { buffer.readIntLe() })
-                }
-                DataType.INT16 -> {
-                    proto._tiledData.setTiled(ShortTiledArray(shape) { buffer.readShortLe() })
-                }
-                DataType.UINT16 -> {
-                    proto._tiledData.setTiled(UShortTiledArray(shape) { buffer.readShortLe().toUShort() })
-                }
-                DataType.INT8 -> proto._tiledData.setTiled(ByteTiledArray(shape) { buffer.readByte() })
-                DataType.UINT8 -> proto._tiledData.setTiled(UByteTiledArray(shape) { buffer.readByte().toUByte() })
-                DataType.BOOL -> proto._tiledData.setTiled(BooleanTiledArray(shape) { buffer.readByte() != 0.toByte() })
+                DataType.DOUBLE -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readDoubleLe() })
+                DataType.FLOAT -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readFloatLe() })
+                DataType.INT64 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readLongLe() })
+                DataType.INT32 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readIntLe() })
+                DataType.INT16 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readShortLe() })
+                DataType.UINT16 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readShortLe().toUShort() })
+                DataType.INT8 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readByte() })
+                DataType.UINT8 -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readByte().toUByte() })
+                DataType.BOOL -> proto._arrayData!!.setData(makeArray(proto.arrayFormat, proto.dataType!!, shape) { buffer.readByte() != 0.toByte() })
                 DataType.STRING -> error("String data must not be present in rawData field")
                 else -> error("Unsupported data type ${proto.dataType}")
             }

@@ -24,11 +24,6 @@ class MapProto(
     }
 
     companion object {
-        fun decode(byteArray: ByteArray): MapProto {
-            val buffer = Buffer().write(byteArray)
-            return decode(ProtobufReader(buffer))
-        }
-
         fun decode(reader: ProtobufReader): MapProto {
             val proto = MapProto()
             reader.forEachTag { tag ->

@@ -8,35 +8,11 @@ fun ProtobufReader.readLongArray(tag: Int) = LongArraySerializer.decode(this, ta
 fun ProtobufReader.readULongArray(tag: Int) = ULongArraySerializer.decode(this, tag)
 fun ProtobufReader.readFloatArray(tag: Int) = FloatArraySerializer.decode(this, tag)
 
-internal fun ProtobufReader.readFloatTiledArray(
-    tag: Int,
-    dims: IntArray?,
-    dest: TiledArrayContainer? = null
-) = (dest ?: TiledArrayContainer()).decode(this, tag, TensorProto.DataType.FLOAT, dims)
-
-internal fun ProtobufReader.readDoubleTiledArray(
-    tag: Int,
-    dims: IntArray?,
-    dest: TiledArrayContainer? = null
-) = (dest ?: TiledArrayContainer()).decode(this, tag, TensorProto.DataType.DOUBLE, dims)
-
-internal fun ProtobufReader.readIntTiledArray(
-    tag: Int,
-    dims: IntArray?,
-    dest: TiledArrayContainer? = null
-) = (dest ?: TiledArrayContainer()).decode(this, tag, TensorProto.DataType.INT32, dims)
-
-internal fun ProtobufReader.readLongTiledArray(
-    tag: Int,
-    dims: IntArray?,
-    dest: TiledArrayContainer? = null
-) = (dest ?: TiledArrayContainer()).decode(this, tag, TensorProto.DataType.INT64, dims)
-
-internal fun ProtobufReader.readULongTiledArray(
-    tag: Int,
-    dims: IntArray?,
-    dest: TiledArrayContainer? = null
-) = (dest ?: TiledArrayContainer()).decode(this, tag, TensorProto.DataType.UINT64, dims)
+internal fun ProtobufReader.readFloatArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.FLOAT, dims)
+internal fun ProtobufReader.readDoubleArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.DOUBLE, dims)
+internal fun ProtobufReader.readIntArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT32, dims)
+internal fun ProtobufReader.readLongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT64, dims)
+internal fun ProtobufReader.readULongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.UINT64, dims)
 
 fun TensorProto.DataType.resolveLocalDataType(): DataType {
     return when (this) {

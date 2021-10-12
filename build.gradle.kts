@@ -19,12 +19,15 @@ allprojects {
 }
 
 subprojects {
+    if (this.subprojects.isNotEmpty()) {
+        return@subprojects
+    }
+
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
+
         plugin("maven-publish")
-
         plugin("idea")
-
         plugin("io.gitlab.arturbosch.detekt")
     }
 

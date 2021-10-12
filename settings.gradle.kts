@@ -1,8 +1,18 @@
 rootProject.name = "kinference"
 
-include(":serialization")
-include(":inference")
 include(":ndarray")
+include(":serialization")
+include(":inference:inference-api")
+include(":inference:inference-core")
+include(":inference:inference-ort")
+
+include(":utils:test-utils")
+include(":utils:logger")
+include(":utils:model-profiler")
+
+include(":adapters:adapter-multik")
+include(":adapters:adapter-kmath")
+
 
 pluginManagement {
     repositories {
@@ -19,3 +29,4 @@ pluginManagement {
         }
     }
 }
+include("inference")
