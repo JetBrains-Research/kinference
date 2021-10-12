@@ -19,8 +19,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(":inference-api"))
-                api(project(":inference"))
+                api(project(":inference:inference-api"))
+                api(project(":inference:inference-core"))
                 api(project(":ndarray"))
                 api("space.kscience:kmath-core:0.3.0-dev-8")
             }

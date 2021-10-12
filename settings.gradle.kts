@@ -2,9 +2,9 @@ rootProject.name = "kinference"
 
 include(":ndarray")
 include(":serialization")
-include(":inference-api")
-include(":inference")
-include(":inference-ort")
+include(":inference:inference-api")
+include(":inference:inference-core")
+include(":inference:inference-ort")
 
 include(":utils:test-utils")
 include(":utils:logger")
@@ -29,3 +29,4 @@ pluginManagement {
         }
     }
 }
+include("inference")

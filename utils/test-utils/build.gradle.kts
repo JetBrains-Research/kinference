@@ -20,7 +20,7 @@ kotlin {
                 api(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 api(project(":ndarray"))
-                api(project(":inference-api"))
+                api(project(":inference:inference-api"))
                 api(project(":serialization"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))

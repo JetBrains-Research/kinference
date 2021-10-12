@@ -79,7 +79,7 @@ kotlin {
                 api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 api(project(":ndarray"))
-                api(project(":inference-api"))
+                api(project(":inference:inference-api"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
                 implementation(project(":serialization"))

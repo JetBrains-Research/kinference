@@ -22,7 +22,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(":inference-api"))
+                api(project(":inference:inference-api"))
                 api(project(":serialization"))
                 api(project(":utils:logger"))
             }
