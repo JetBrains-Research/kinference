@@ -8,18 +8,18 @@ import io.kinference.primitives.types.DataType
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
-object KMathStructureNDAdapter : ONNXDataAdapter<StructureND<*>> {
-    override fun toONNXData(name: String, data: StructureND<*>): KITensor {
+object KMathStructureNDAdapter : ONNXDataAdapter<NDStructure<*>> {
+    override fun toONNXData(name: String, data: NDStructure<*>): KITensor {
         return data.toONNXData(name)
     }
 
-    override fun fromONNXData(data: ONNXData<*>): StructureND<*> = when (data.type) {
+    override fun fromONNXData(data: ONNXData<*>): NDStructure<*> = when (data.type) {
         ONNXDataType.ONNX_TENSOR -> (data.data as NDArray).toStructureND()
         else -> error("Conversion from ${data.type} is not supported by this adapter")
     }
 }
 
-fun <T> StructureND<T>.toONNXData(name: String): KITensor {
+fun <T> NDStructure<T>.toONNXData(name: String): KITensor {
     val data = this.elements().map { it.second!! }.iterator()
     return when (val element = this.elements().first().second!!) {
         is Byte -> ByteNDArray(shape) { data.next() as Byte }
@@ -37,7 +37,7 @@ fun <T> StructureND<T>.toONNXData(name: String): KITensor {
     }.asTensor(name)
 }
 
-fun NDArray.toStructureND(): BufferND<*> {
+fun NDArray.toStructureND(): NDBuffer<*> {
     val buffer = when (type) {
         DataType.BYTE -> {
             val pointer = (this as ByteNDArray).array.pointer()
@@ -85,5 +85,5 @@ fun NDArray.toStructureND(): BufferND<*> {
         }
         else -> error("Usupported data type ${this.type}")
     }
-    return BufferND(DefaultStrides(shape), buffer)
+    return NDBuffer(DefaultStrides(shape), buffer)
 }

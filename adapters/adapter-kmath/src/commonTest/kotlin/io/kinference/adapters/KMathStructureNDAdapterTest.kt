@@ -19,7 +19,7 @@ class KMathStructureNDAdapterTest {
     fun test_kmath_adapter_convert_to_onnx_data() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedTensor = KMathStructureNDAdapter.toONNXData("test", kmathArray)
         val expectedTensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor("test")
         assertTensorEquals(expectedTensor, convertedTensor)
@@ -30,9 +30,9 @@ class KMathStructureNDAdapterTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
-        val expectedArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedArray = KMathStructureNDAdapter.fromONNXData(tensor) as StructureND<Int>
-        StructureND.contentEquals(expectedArray, convertedArray)
+        val expectedArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val convertedArray = KMathStructureNDAdapter.fromONNXData(tensor) as NDStructure<Int>
+        NDStructure.contentEquals(expectedArray, convertedArray)
     }
 
     companion object {

@@ -22,7 +22,7 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-core"))
                 api(project(":ndarray"))
-                api("space.kscience:kmath-core:0.3.0-dev-8")
+                api("space.kscience:kmath-core:0.2.1")
             }
         }
 
@@ -36,7 +36,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                api("space.kscience:kmath-core-jvm:0.3.0-dev-8")
+                api("space.kscience:kmath-core-jvm:0.2.1")
             }
         }
 
