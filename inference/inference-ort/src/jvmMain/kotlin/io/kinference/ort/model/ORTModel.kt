@@ -6,7 +6,7 @@ import io.kinference.model.Model
 import io.kinference.ort.data.utils.createORTData
 import io.kinference.utils.LoggerFactory
 
-class ORTModel<T>(private val session: OrtSession, private val adapter: ONNXDataAdapter<T>) : Model<T> {
+class ORTModel<T> internal constructor(private val session: OrtSession, private val adapter: ONNXDataAdapter<T>) : Model<T> {
     override fun predict(input: Map<String, T>, profile: Boolean): Map<String, T> {
         if (profile) logger.warning { "Profiling of models running on OnnxRuntime backend is not supported" }
 
