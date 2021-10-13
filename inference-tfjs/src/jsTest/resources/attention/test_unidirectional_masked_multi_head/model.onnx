@@ -1,47 +1,0 @@
-backend-test:Ú
-{
-input
-weight
-bias
-
-mask_index
-pastoutputpresent"	Attention*
-	num_heads *
-unidirectional :com.microsoft	AttentionZ
-input
-
-
-
-Z
-weight
-
-
-Z
-bias
-
-
-Z
-
-mask_index
-
-
-Z"
-past
-
-
-
-
-
-b
-output
-
-
-
-b%
-present
-
-
-
-
-
-B

@@ -5,6 +5,7 @@ include(":serialization")
 include(":inference:inference-api")
 include(":inference:inference-core")
 include(":inference:inference-ort")
+include(":inference:inference-tfjs")
 
 include(":utils:test-utils")
 include(":utils:logger")
