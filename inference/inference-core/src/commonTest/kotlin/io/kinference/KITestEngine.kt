@@ -13,6 +13,8 @@ object KITestEngine : TestEngine(KIEngine) {
         KIAssertions.assertEquals(expected, actual, delta)
     }
 
+    override fun postprocessData(data: ONNXData<*>) = Unit
+
     val KIAccuracyRunner = AccuracyRunner(KITestEngine)
     val KIPerformanceRunner = PerformanceRunner(KITestEngine)
 }

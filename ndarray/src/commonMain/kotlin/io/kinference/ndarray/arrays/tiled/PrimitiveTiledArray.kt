@@ -6,6 +6,7 @@ package io.kinference.ndarray.arrays.tiled
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.math.min
@@ -18,25 +19,6 @@ class PrimitiveTiledArray {
     val blocks: Array<PrimitiveArray>
 
     companion object {
-        const val MIN_BLOCK_SIZE = 512
-
-        internal fun blockSizeByStrides(strides: Strides): Int {
-            return when {
-                strides.linearSize == 0 -> 0
-                strides.shape.isEmpty() -> 1
-                else -> {
-                    val rowSize = strides.shape.last()
-
-                    val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
-                        var num = rowSize / MIN_BLOCK_SIZE
-                        while (rowSize % num != 0) num--
-                        rowSize / num
-                    }
-
-                    blockSize
-                }
-            }
-        }
 
         operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -51,6 +33,17 @@ class PrimitiveTiledArray {
         operator fun invoke(shape: IntArray) = invoke(Strides(shape))
 
         operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
+
+        operator fun invoke(strides: Strides, array: PrimitiveArray): PrimitiveTiledArray {
+            val blockSize = blockSizeByStrides(strides)
+            val countBlocks = array.size / blockSize
+            val blocksArray = Array(countBlocks) { PrimitiveArray(blockSize) }
+            repeat(countBlocks) { blockNum ->
+                array.copyInto(blocksArray[blockNum], startIndex = blockNum * blockSize, endIndex = (blockNum + 1) * blockSize)
+            }
+
+            return PrimitiveTiledArray(blocksArray)
+        }
     }
 
     constructor(size: Int, blockSize: Int) {

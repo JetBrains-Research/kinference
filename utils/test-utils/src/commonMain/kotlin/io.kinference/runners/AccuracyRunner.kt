@@ -24,56 +24,51 @@ class AccuracyRunner(private val testEngine: TestEngine) {
         }
     }
 
-    private suspend fun runTestsFromS3(name: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+    suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
         val toFolder = name.replace(":", "/")
-        return runTestsFromFolder(S3TestDataLoader, toFolder, disableTests)
+        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta)
     }
 
-    private suspend fun runTestsFromResources(testPath: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+    suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
         val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/main/${testPath}"
-        return runTestsFromFolder(ResourcesTestDataLoader, path, disableTests)
+        runTestsFromFolder(ResourcesTestDataLoader, path, disableTests, delta)
     }
 
-    private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList()): List<ONNXTestData> {
+    private suspend fun runTestsFromFolder(loader: TestDataLoader, path: String, disableTests: List<String> = emptyList(), delta: Double = DELTA) {
         val model = testEngine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
 
         logger.info { "Predict: $path" }
         val filesInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { ONNXTestDataInfo.fromString(it) }
-        return filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
+        val testGroups = filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }
+        for ((group, files) in testGroups) {
             if (group in disableTests) {
-                null
-            } else {
-                val inputFiles = files.filter { file -> "input" in file.path }
-                val inputs = inputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
-
-                val outputFiles =  files.filter { file -> "output" in file.path }
-                val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
-
-                logger.info { "Start predicting: $group" }
-                val actualOutputs = model.predict(inputs.associateBy { it.name!! })
-                ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs)
+                continue
             }
-        }.filterNotNull()
+
+            val inputFiles = files.filter { file -> "input" in file.path }
+            val inputs = inputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
+
+            val outputFiles =  files.filter { file -> "output" in file.path }
+            val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
+
+            logger.info { "Start predicting: $group" }
+            val actualOutputs = model.predict(inputs.associateBy { it.name!! })
+            check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
+
+            inputs.forEach { testEngine.postprocessData(it) }
+            expectedOutputs.forEach { testEngine.postprocessData(it) }
+            actualOutputs.values.forEach { testEngine.postprocessData(it) }
+        }
     }
 
-    suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
-        check(runTestsFromS3(name, disableTests), delta)
-    }
+    private fun check(dataset: ONNXTestData, delta: Double = DELTA) {
+        logger.info { "Dataset: ${dataset.name}\n" }
 
-    suspend fun runFromResources(path: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
-        check(runTestsFromResources(path, disableTests), delta)
-    }
+        val (_, expectedOutputs, actualOutputs) = dataset
 
-    private fun check(datasets: List<ONNXTestData>, delta: Double = DELTA) {
-        for (dataSet in datasets) {
-            logger.info { "Dataset: ${dataSet.name}\n" }
-
-            val (_, expectedOutputs, actualOutputs) = dataSet
-
-            for ((outputName, outputData) in expectedOutputs) {
-                val actualOutput = actualOutputs[outputName] ?: error("Required tensor not found")
-                testEngine.checkEquals(outputData, actualOutput, delta)
-            }
+        for ((outputName, outputData) in expectedOutputs) {
+            val actualOutput = actualOutputs[outputName] ?: error("Required tensor not found")
+            testEngine.checkEquals(outputData, actualOutput, delta)
         }
     }
 

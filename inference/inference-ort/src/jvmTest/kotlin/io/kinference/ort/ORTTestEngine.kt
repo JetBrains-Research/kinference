@@ -12,6 +12,8 @@ object ORTTestEngine : TestEngine(ORTEngine) {
         ORTAssertions.assertEquals(expected, actual, delta)
     }
 
+    override fun postprocessData(data: ONNXData<*>) = Unit
+
     @OptIn(ExperimentalTime::class)
     val ORTAccuracyRunner = AccuracyRunner(ORTTestEngine)
 
