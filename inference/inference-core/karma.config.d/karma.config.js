@@ -12,7 +12,7 @@ function ResourceLoaderMiddleware() {
         } else if (uri.startsWith('/s3')) {
             path = '../../../../test-data/s3/tests' + uri.slice(3)
         } else {
-            path = '../../../../inference/inference-core' + uri
+            path = '../../../../utils/test-utils' + uri
         }
         const content = fs.readFileSync(path);
         response.writeHead(200);

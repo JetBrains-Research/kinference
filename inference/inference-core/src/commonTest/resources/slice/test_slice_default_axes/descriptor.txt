@@ -1,4 +1,0 @@
-test_data_set_0/input_0.pb
-test_data_set_0/input_2.pb
-test_data_set_0/output_0.pb
-test_data_set_0/input_1.pb

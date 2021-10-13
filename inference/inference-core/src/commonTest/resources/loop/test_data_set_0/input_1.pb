@@ -1,2 +1,0 @@
-:	B
-loop_range

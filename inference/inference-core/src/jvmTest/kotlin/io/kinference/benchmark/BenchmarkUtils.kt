@@ -5,7 +5,6 @@ import io.kinference.core.KIEngine
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.loadModel
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType

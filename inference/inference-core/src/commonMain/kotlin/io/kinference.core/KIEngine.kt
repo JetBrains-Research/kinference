@@ -18,9 +18,9 @@ object KIEngine : InferenceEngine {
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.TILED)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override fun <T> loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<T> {
+    override fun loadModel(bytes: ByteArray): Model<ONNXData<*>> {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        return KIModel(modelScheme, adapter)
+        return KIModel(modelScheme, IdAdapter)
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*> = when (type) {
@@ -28,4 +28,10 @@ object KIEngine : InferenceEngine {
         ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_MAP -> KIONNXMap.create(MapProto.decode(protoReader(bytes)))
     }
+}
+
+@OptIn(ExperimentalTime::class)
+fun <T> KIEngine.loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<ONNXData<*>> {
+    val modelScheme = ModelProto.decode(protoReader(bytes))
+    return KIModel(modelScheme, IdAdapter)
 }

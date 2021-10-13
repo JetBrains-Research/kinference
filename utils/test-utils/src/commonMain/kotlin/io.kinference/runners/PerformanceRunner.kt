@@ -16,7 +16,7 @@ class PerformanceRunner(private val engine: TestEngine) {
     }
 
     private suspend fun runPerformanceFromResources(testPath: String, count: Int = 10, withProfiling: Boolean = false): List<PerformanceResults> {
-        val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/test/${testPath}"
+        val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/main/${testPath}"
         return runPerformanceFromFolder(ResourcesTestDataLoader, path, count, withProfiling)
     }
 
