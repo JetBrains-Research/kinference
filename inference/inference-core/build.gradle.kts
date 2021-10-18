@@ -76,12 +76,14 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib"))
-                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                api(project(":ndarray"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+
                 api(project(":inference:inference-api"))
+
+                api(project(":ndarray"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
+
                 implementation(project(":serialization"))
             }
         }
@@ -89,7 +91,7 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
+                implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
                 implementation(project(":utils:test-utils"))
             }
@@ -99,21 +101,11 @@ kotlin {
             dependencies {
                 implementation("org.openjdk.jmh:jmh-core:1.25.1")
                 api("org.slf4j:slf4j-simple:1.7.30")
-                implementation(kotlin("test-junit5"))
-
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 
                 implementation("com.microsoft.onnxruntime:onnxruntime:1.9.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
                 configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
-            }
-        }
-
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.4.2")
             }
         }
     }

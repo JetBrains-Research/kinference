@@ -13,7 +13,8 @@ expect object TestRunner {
     fun runTest(block: suspend CoroutineScope.() -> Unit)
 }
 
-fun <T> TestRunner.forPlatform(jsValue: T, jvmValue: T) = when (TestRunner.platform) {
+fun <T> TestRunner.forPlatform(jsValue: T, jvmValue: T) = when (platform) {
     TestRunner.Platform.JS -> jsValue
     TestRunner.Platform.JVM -> jvmValue
+    else -> error("Unexpected platform")
 }

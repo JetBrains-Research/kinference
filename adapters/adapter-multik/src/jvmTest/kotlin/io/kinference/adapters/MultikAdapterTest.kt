@@ -13,6 +13,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MultikAdapterTest {
     @Test
@@ -32,7 +33,7 @@ class MultikAdapterTest {
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
         val expectedArray = NDArray<Int, D2>(MemoryViewIntArray(array), shape = shape, dtype = MultikDataType.IntDataType, dim = D2)
         val convertedArray = MultikAdapter.fromONNXData(tensor)
-        assertEquals(expectedArray, convertedArray)
+        assertTrue(expectedArray == convertedArray)
     }
 
     companion object {
