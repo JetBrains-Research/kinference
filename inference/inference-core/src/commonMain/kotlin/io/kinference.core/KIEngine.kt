@@ -31,7 +31,7 @@ object KIEngine : InferenceEngine {
 }
 
 @OptIn(ExperimentalTime::class)
-fun <T> KIEngine.loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<ONNXData<*>> {
+fun <T> KIEngine.loadModel(bytes: ByteArray, adapter: ONNXDataAdapter<T>): Model<T> {
     val modelScheme = ModelProto.decode(protoReader(bytes))
-    return KIModel(modelScheme, IdAdapter)
+    return KIModel(modelScheme, adapter)
 }
