@@ -780,48 +780,49 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
-        val actualAxes = axes.map { indexAxis(it) }.toSet().sorted()
-        require(actualAxes.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
+        val axesToReduce = axes.map { indexAxis(it) }.toSet()
+        require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
 
-        return actualAxes.foldIndexed(this) { index: Int, acc: PrimitiveNDArray, axis: Int ->
-            if (keepDims) {
-                acc.reduceSum(axis, keepDims)
-            } else {
-                acc.reduceSum(axis - index, keepDims)
-            }
-        }
-    }
+        val outputShapeWithKeepDims = shape.copyOf().apply { axesToReduce.forEach { set(it, 1) } }
+        val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
 
-    override fun reduceSum(axis: Int, keepDims: Boolean): PrimitiveNDArray {
-        val actualAxis = indexAxis(axis)
-
-        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
+        val outputShape = if (keepDims) outputShapeWithKeepDims else shape.sliceArray(shape.indices.minus(axesToReduce))
         val outputArray = allocateNDArray(Strides(outputShape))
 
-        val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
-        val countElements = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
-        val countDims = shape[axis]
+        val axisToStop = axesToReduce.maxOrNull()!! + 1
+        val blockToApply = computeBlockSize(fromDim = axisToStop)
 
-        val inputPointer = this.array.pointer()
-        val outputPointer = outputArray.array.pointer()
 
-        if (axis == shape.lastIndex) {
-            repeat(countIterations) {
-                var sumAlongLastDim = (0).toPrimitive()
-                inputPointer.forEach(countDims) { sumAlongLastDim = (sumAlongLastDim + it).toPrimitive() }
-                outputPointer.set(sumAlongLastDim)
-                outputPointer.increment()
-            }
-        } else {
-            repeat(countIterations) { iteration ->
-                repeat(countDims) {
-                    outputPointer.linearIndex = iteration * countElements
-                    outputPointer.accept(inputPointer, countElements) { dst: PrimitiveType, src: PrimitiveType ->
-                        (dst + src).toPrimitive()
+        fun reduceSumRecurrent(axis: Int, inputOffset: Int, outputOffset: Int) {
+            when(axis) {
+                axisToStop -> {
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> (dst + src).toPrimitive() }
+                }
+                shape.lastIndex -> {
+                    val dim = this.shape[axis]
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    var accumulator = outputPointer.get()
+                    inputPointer.forEach(dim) { accumulator = (accumulator + it).toPrimitive() }
+                    outputPointer.set(accumulator)
+                }
+                else -> {
+                    val dim = this.shape[axis]
+                    repeat(dim) {
+                        val inputAdditionalOffset = this.strides.strides[axis] * it
+                        val outputAdditionalOffset = if (axis in axesToReduce) 0 else stridesWithKeepDims.strides[axis] * it
+
+                        reduceSumRecurrent(axis + 1, inputOffset + inputAdditionalOffset, outputOffset + outputAdditionalOffset)
                     }
                 }
             }
         }
+
+        reduceSumRecurrent(0, 0, 0)
 
         return outputArray
     }
