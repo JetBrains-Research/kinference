@@ -6,6 +6,7 @@ import io.kinference.core.operators.*
 import io.kinference.core.operators.layer.attention.AttentionContext
 import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
+import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.core.types.ValueInfo
 import io.kinference.data.ONNXData
@@ -108,6 +109,7 @@ class Graph(proto: GraphProto) {
         for (operator in operators) {
             when(operator.info.name) {
                 "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
+                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers, operator)
                 "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
                 "Attention", "QAttention" -> AttentionContext.appendContext(preparedTensorsContext, initializers, operator)
             }

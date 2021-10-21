@@ -16,9 +16,9 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
     }
 
     override fun apply(
-        input: NumberNDArray,
-        weights: NumberNDArray,
-        recurrentWeights: NumberNDArray,
+        input: AbstractLSTMInput,
+        weights: AbstractLSTMWeights,
+        recurrentWeights: AbstractLSTMWeights,
         bias: NumberNDArray?,
         sequenceLens: IntNDArray?,
         initialHiddenState: NumberNDArray?,
@@ -28,13 +28,16 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
     ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
         val h = Activation.create(activations[2], dataType)
 
-        val seqLength = input.shape[0]
-        val batchSize = input.shape[1]
+        val seqLength = input.data.shape[0]
+        val batchSize = input.data.shape[1]
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArray
+
+        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(1, batchSize, hiddenSize))) as MutableNumberNDArray
+        val initHiddenStateAsLSTMInput = arrayOf(input.recreate(initHiddenState.view(0)))
 
         val lstmStates = LSTMStates(
             LSTMCellState(initialCellState, dataType, 1, batchSize, hiddenSize),
-            LSTMHiddenState(initialHiddenState, dataType, 1, batchSize, hiddenSize, listOf(h))
+            LSTMHiddenState(initHiddenState, initHiddenStateAsLSTMInput, listOf(h))
         )
 
         val lstmGates = LSTMGates.create(
@@ -51,7 +54,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
     }
 
     fun apply(
-        input: NumberNDArray,
+        input: AbstractLSTMInput,
         output: MutableNumberNDArray,
         lstmStates: LSTMStates,
         lstmGates: LSTMGates,
@@ -67,30 +70,32 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
 
         fun wrapper(seqNum: Int, body: (inner: () -> Unit) -> Unit = { it() }) {
-                for (batchNum in 0 until batchSize) {
-                    if (seqNum >= seqLens[batchNum]) continue
-                    body {
-                        val localInput = input.view(seqNum, batchNum)
-                        lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum)
-                        lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum)
-                        lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum)
-                        lstmStates.cellState.compute(lstmGates, numDirection, batchNum)
-                        lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum)
-                        lstmStates.hiddenState.compute(lstmGates, lstmStates.cellState, numDirection, batchNum)
-                        val outputVector = lstmStates.hiddenState.getVector(numDirection, batchNum)
+            for (batchNum in 0 until batchSize) {
+                if (seqNum >= seqLens[batchNum]) continue
+                body {
+                    val localInput = input.view(seqNum, batchNum)
+                    lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum)
+                    lstmStates.cellState.compute(lstmGates, numDirection, batchNum)
+                    lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmStates.hiddenState.compute(lstmGates, lstmStates.cellState, numDirection, batchNum)
+                    val outputVector = lstmStates.hiddenState.getVectorRaw(numDirection, batchNum)
 
-                        output.viewMutable(seqNum, numDirection, batchNum).copyFrom(0, outputVector)
-                    }
+                    output.viewMutable(seqNum, numDirection, batchNum).copyFrom(0, outputVector)
                 }
+            }
+
+            lstmStates.hiddenState.update(numDirection)
         }
 
         //TODO: research optimal batchSize for run with coroutines
         for (seqNum in seqRange) {
-            if (batchSize > 1) {
-                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } }  }
-            } else {
+//            if (batchSize > 1) {
+//                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } }  }
+//            } else {
                 wrapper(seqNum)
-            }
+//            }
         }
     }
 }

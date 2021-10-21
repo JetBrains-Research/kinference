@@ -9,11 +9,32 @@ import io.kinference.core.types.ValueInfo
 import io.kinference.core.types.ValueTypeInfo
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.extensions.createArray
+import io.kinference.ndarray.extensions.matmul
 
 //TODO: support segments
 //TODO: support external data
 class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray>(name, data) {
     constructor(data: NDArray, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
+
+    operator fun minus(other: KITensor): KITensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data - other.data).asTensor()
+    }
+
+    operator fun times(other: KITensor): KITensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data * other.data).asTensor()
+    }
+
+    operator fun div(other: KITensor): KITensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data / other.data).asTensor()
+    }
+
+    infix fun matmul(other: KITensor): KITensor {
+        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        return (this.data matmul other.data).asTensor()
+    }
 
     override fun rename(name: String): KITensor {
         return KITensor(name, data, info)

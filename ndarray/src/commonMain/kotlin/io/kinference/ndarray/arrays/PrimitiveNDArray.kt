@@ -6,6 +6,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
@@ -65,7 +66,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return array.blocks[0][0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutableNumberNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+    override fun allocateNDArray(strides: Strides): MutablePrimitiveNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
     override fun reshapeView(newShape: IntArray): NDArray {
         val newStrides = Strides(newShape)
@@ -303,7 +304,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return output
     }
 
-    override fun plus(other: NumberNDArray): MutableNumberNDArray = plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
+    override fun plus(other: NumberNDArray): MutableNumberNDArray {
+        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destStrides = Strides(destShape)
+        return plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+    }
 
     private fun plusScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
         require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
@@ -342,28 +347,45 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun minus(other: NumberNDArray): MutableNumberNDArray = minus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
+    override fun minus(other: NumberNDArray): MutableNumberNDArray {
+        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destStrides = Strides(destShape)
+        return minus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+    }
+
+    private fun minusScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        for (blockNum in 0 until array.blocksNum) {
+            val arrayBlock = array.blocks[blockNum]
+            val destBlock = destination.blocks[blockNum]
+
+            for (idx in arrayBlock.indices) {
+                destBlock[idx] = (arrayBlock[idx] - scalar).toPrimitive()
+            }
+        }
+    }
+
+    private fun minusFromScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        for (blockNum in 0 until array.blocksNum) {
+            val arrayBlock = array.blocks[blockNum]
+            val destBlock = destination.blocks[blockNum]
+
+            for (idx in arrayBlock.indices) {
+                destBlock[idx] = (scalar - arrayBlock[idx]).toPrimitive()
+            }
+        }
+    }
 
     override fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
             this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (this.array.blocks[0][0] - other.array.blocks[0][0]).toPrimitive()
-            other.isScalar() -> {
-                require(shape.contentEquals(destination.shape))
-
-                val scalar = other.array.blocks[0][0]
-
-                for (blockNum in 0 until array.blocksNum) {
-                    val leftBlock = this.array.blocks[blockNum]
-                    val destBlock = destination.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] - scalar).toPrimitive()
-                    }
-                }
-            }
-            this.isScalar() -> error("Subtraction of a matrix from a scalar is prohibited")
+            other.isScalar() -> minusScalar(array, other.array.blocks[0][0], destination.array)
+            this.isScalar() -> minusFromScalar(other.array, array.blocks[0][0], destination.array)
             else -> this.applyWithBroadcast(other, destination, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
@@ -382,7 +404,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun times(other: NumberNDArray): MutableNumberNDArray = times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
+    override fun times(other: NumberNDArray): MutableNumberNDArray {
+        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destStrides = Strides(destShape)
+        return times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+    }
 
     private fun timesScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
         require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
@@ -422,28 +448,45 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun div(other: NumberNDArray): MutableNumberNDArray = div(other, MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides))
+    override fun div(other: NumberNDArray): MutableNumberNDArray {
+        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destStrides = Strides(destShape)
+        return div(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+    }
+
+    private fun divByScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        for (blockNum in 0 until array.blocksNum) {
+            val arrayBlock = array.blocks[blockNum]
+            val destBlock = destination.blocks[blockNum]
+
+            for (idx in arrayBlock.indices) {
+                destBlock[idx] = (arrayBlock[idx] / scalar).toPrimitive()
+            }
+        }
+    }
+
+    private fun divScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        for (blockNum in 0 until array.blocksNum) {
+            val arrayBlock = array.blocks[blockNum]
+            val destBlock = destination.blocks[blockNum]
+
+            for (idx in arrayBlock.indices) {
+                destBlock[idx] = (scalar / arrayBlock[idx]).toPrimitive()
+            }
+        }
+    }
 
     override fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
 
         when {
             this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (this.array.blocks[0][0] / other.array.blocks[0][0]).toPrimitive()
-            other.isScalar() -> {
-                require(shape.contentEquals(destination.shape))
-
-                val scalar = other.array.blocks[0][0]
-
-                for (blockNum in 0 until array.blocksNum) {
-                    val leftBlock = this.array.blocks[blockNum]
-                    val destBlock = destination.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] / scalar).toPrimitive()
-                    }
-                }
-            }
-            this.isScalar() -> error("Division of a scalar into a matrix is prohibited")
+            other.isScalar() -> divByScalar(array, other.array.blocks[0][0], destination.array)
+            this.isScalar() -> divScalar(other.array, array.blocks[0][0], destination.array)
             else -> this.applyWithBroadcast(other, destination, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
@@ -665,26 +708,28 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
-        val countIterations = shape.sliceArray(0 until axis).fold(1) { acc, i -> acc * i }
-        val rightKek = shape.sliceArray((axis + 1) until rank).fold(1) { acc, i -> acc * i }
-        val count = shape[axis]
+        val actualAxis = indexAxis(axis)
 
-        val outputShape = if (keepDims) shape.copyOf().apply { set(axis, 1) } else shape.sliceArray(shape.indices.minus(axis))
+        val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
+        val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[actualAxis]
+
+        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
         val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
-        val tempMaxValues = if (axis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(rightKek, outputArray.array.blockSize)
+        val tempMaxValues = if (actualAxis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(countElements, outputArray.array.blockSize)
 
         val inputPointer = this.array.pointer()
 
         for (i in 0 until countIterations) {
             var maxValuesPointer = tempMaxValues.pointer()
 
-            maxValuesPointer.accept(inputPointer, rightKek) { _, src -> src }
+            maxValuesPointer.accept(inputPointer, countElements) { _, src -> src }
 
-            for (j in 1 until count) {
-                val outputPointer = outputArray.array.pointer(i * rightKek)
+            for (j in 1 until countDims) {
+                val outputPointer = outputArray.array.pointer(i * countElements)
                 maxValuesPointer = tempMaxValues.pointer()
 
-                var end = rightKek
+                var end = countElements
 
                 if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(maxValuesPointer)) {
                     while (end > 0) {
@@ -734,6 +779,335 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return outputArray
     }
 
+    override fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
+        val axesToReduce = axes.map { indexAxis(it) }.toSet()
+        require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
+
+        val outputShapeWithKeepDims = shape.copyOf().apply { axesToReduce.forEach { set(it, 1) } }
+        val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
+
+        val outputShape = if (keepDims) outputShapeWithKeepDims else shape.sliceArray(shape.indices.minus(axesToReduce))
+        val outputArray = allocateNDArray(Strides(outputShape))
+
+        val axisToStop = axesToReduce.maxOrNull()!! + 1
+        val blockToApply = computeBlockSize(fromDim = axisToStop)
+
+
+        fun reduceSumRecurrent(axis: Int, inputOffset: Int, outputOffset: Int) {
+            when(axis) {
+                axisToStop -> {
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> (dst + src).toPrimitive() }
+                }
+                shape.lastIndex -> {
+                    val dim = this.shape[axis]
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    var accumulator = outputPointer.get()
+                    inputPointer.forEach(dim) { accumulator = (accumulator + it).toPrimitive() }
+                    outputPointer.set(accumulator)
+                }
+                else -> {
+                    val dim = this.shape[axis]
+                    repeat(dim) {
+                        val inputAdditionalOffset = this.strides.strides[axis] * it
+                        val outputAdditionalOffset = if (axis in axesToReduce) 0 else stridesWithKeepDims.strides[axis] * it
+
+                        reduceSumRecurrent(axis + 1, inputOffset + inputAdditionalOffset, outputOffset + outputAdditionalOffset)
+                    }
+                }
+            }
+        }
+
+        reduceSumRecurrent(0, 0, 0)
+
+        return outputArray
+    }
+
+    override fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
+
+        val actualAxis = indexAxis(axis)
+
+        val outputStrides = Strides(shape.copyOf().apply { set(actualAxis, k) })
+
+
+        val outputArray = allocateNDArray(outputStrides)
+        val indicesArray = allocateNDArray(DataType.LONG, outputStrides) as MutableLongNDArray
+
+        val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
+        val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countDims = shape[actualAxis]
+
+
+        val inputPointer = this.array.pointer()
+        val outputPointer = outputArray.array.pointer()
+        val outputIndicesPointer = indicesArray.array.pointer()
+
+        when {
+            k == 1 && actualAxis == shape.lastIndex -> {
+                if (largest) {
+                    repeat(countIterations) {
+                        var maximum = inputPointer.getAndIncrement()
+                        var maximumIndex = 0
+
+                        inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
+                            if (value > maximum)  {
+                                maximum = value
+                                maximumIndex = index
+                            }
+                        }
+
+                        outputPointer.set(maximum)
+                        outputPointer.increment()
+
+                        outputIndicesPointer.set(maximumIndex.toLong())
+                        outputIndicesPointer.increment()
+                    }
+                } else {
+                    repeat(countIterations) {
+                        var minimum = inputPointer.getAndIncrement()
+                        var minimumIndex = 0
+
+                        inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
+                            if (value < minimum)  {
+                                minimum = value
+                                minimumIndex = index
+                            }
+                        }
+
+                        outputPointer.set(minimum)
+                        outputPointer.increment()
+
+                        outputIndicesPointer.set(minimumIndex.toLong())
+                        outputIndicesPointer.increment()
+                    }
+                }
+            }
+
+            k == 1 -> {
+                if (largest) {
+                    repeat(countIterations) { iteration ->
+                        outputPointer.linearIndex = iteration * countElements
+                        outputPointer.accept(inputPointer, countElements) { _: PrimitiveType, src: PrimitiveType -> src }
+                        for (dim in 1 until countDims) {
+                            outputPointer.linearIndex = iteration * countElements
+                            outputIndicesPointer.linearIndex = iteration * countElements
+
+                            var end = countElements
+
+                            if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(outputIndicesPointer)) {
+                                while (end > 0) {
+                                    val outputBlock = outputPointer.currentBlock
+                                    val offset = outputPointer.indexInBlock
+                                    outputPointer.blockIncrement()
+
+                                    val inputBlock = inputPointer.currentBlock
+                                    inputPointer.blockIncrement()
+
+                                    val outputIndicesBlock = outputIndicesPointer.currentBlock
+                                    outputIndicesPointer.blockIncrement()
+
+                                    for (index in offset until min(outputBlock.size, offset + end)) {
+                                        val inputValue = inputBlock[index]
+                                        val outputValue = outputBlock[index]
+
+                                        if (inputValue > outputValue) {
+                                            outputBlock[index] = inputValue
+                                            outputIndicesBlock[index] = dim.toLong()
+                                        }
+                                    }
+
+                                    end -= outputBlock.size - offset
+                                }
+                            } else {
+                                while (end > 0) {
+                                    val inputValue = inputPointer.getAndIncrement()
+                                    val outputValue = outputPointer.get()
+
+                                    if (inputValue > outputValue) {
+                                        outputPointer.set(inputValue)
+                                        outputIndicesPointer.set(dim.toLong())
+                                    }
+
+                                    outputPointer.increment()
+                                    outputIndicesPointer.increment()
+                                    end--
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    repeat(countIterations) { iteration ->
+                        outputPointer.linearIndex = iteration * countElements
+                        outputPointer.accept(inputPointer, countElements) { _: PrimitiveType, src: PrimitiveType -> src }
+                        for (dim in 1 until countDims) {
+                            outputPointer.linearIndex = iteration * countElements
+                            outputIndicesPointer.linearIndex = iteration * countElements
+
+                            var end = countElements
+
+                            if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(outputIndicesPointer)) {
+                                while (end > 0) {
+                                    val outputBlock = outputPointer.currentBlock
+                                    val offset = outputPointer.indexInBlock
+                                    outputPointer.blockIncrement()
+
+                                    val inputBlock = inputPointer.currentBlock
+                                    inputPointer.blockIncrement()
+
+                                    val outputIndicesBlock = outputIndicesPointer.currentBlock
+                                    outputIndicesPointer.blockIncrement()
+
+                                    for (index in offset until min(outputBlock.size, offset + end)) {
+                                        val inputValue = inputBlock[index]
+                                        val outputValue = outputBlock[index]
+
+                                        if (inputValue < outputValue) {
+                                            outputBlock[index] = inputValue
+                                            outputIndicesBlock[index] = dim.toLong()
+                                        }
+                                    }
+
+                                    end -= outputBlock.size - offset
+                                }
+                            } else {
+                                while (end > 0) {
+                                    val inputValue = inputPointer.getAndIncrement()
+                                    val outputValue = outputPointer.get()
+
+                                    if (inputValue < outputValue) {
+                                        outputPointer.set(inputValue)
+                                        outputIndicesPointer.set(dim.toLong())
+                                    }
+
+                                    outputPointer.increment()
+                                    outputIndicesPointer.increment()
+                                    end--
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            actualAxis == shape.lastIndex -> {
+                if (largest) {
+                    val maxHeap = PrimitiveMaxHeap(k)
+                    repeat(countIterations) {
+                        inputPointer.forEachIndexed(k) { index: Int, value: PrimitiveType -> maxHeap.insert(value, index) }
+
+                        inputPointer.forEachIndexed(countDims - k, k) { index: Int, value: PrimitiveType ->
+                            if (value > maxHeap.minValue) {
+                                maxHeap.removeMin()
+                                maxHeap.insert(value, index)
+                            }
+                        }
+
+                        val (values, indices) = if (sorted) maxHeap.sorted() else maxHeap.data to maxHeap.indices
+
+                        var outputIndex = 0
+                        outputPointer.map(k) { values[outputIndex++] }
+
+                        outputIndex = 0
+                        outputIndicesPointer.map(k) { indices[outputIndex++].toLong() }
+
+                        maxHeap.clear()
+                    }
+                } else {
+                    val minHeap = PrimitiveMinHeap(k)
+                    repeat(countIterations) {
+                        inputPointer.forEachIndexed(k) { index: Int, value: PrimitiveType -> minHeap.insert(value, index) }
+
+                        inputPointer.forEachIndexed(countDims - k, k) { index: Int, value: PrimitiveType ->
+                            if (value < minHeap.maxValue) {
+                                minHeap.removeMax()
+                                minHeap.insert(value, index)
+                            }
+                        }
+
+                        val (values, indices) = if (sorted) minHeap.sorted() else minHeap.data to minHeap.indices
+
+                        var outputIndex = 0
+                        outputPointer.map(k) { values[outputIndex++] }
+
+                        outputIndex = 0
+                        outputIndicesPointer.map(k) { indices[outputIndex++].toLong() }
+
+                        minHeap.clear()
+                    }
+                }
+            }
+
+            else -> {
+                if (largest) {
+                    val maxHeaps = Array(countElements) { PrimitiveMaxHeap(k) }
+
+                    repeat(countIterations) {
+                        repeat(k) { dim ->
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType -> maxHeaps[index].insert(value, dim) }
+                        }
+
+                        for (dim in k until countDims) {
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType ->
+                                val maxHeap = maxHeaps[index]
+                                if (value > maxHeap.minValue) {
+                                    maxHeap.removeMin()
+                                    maxHeap.insert(value, dim)
+                                }
+                            }
+                        }
+
+                        val valuesAndIndicesArray = if (sorted) maxHeaps.map { it.sorted() } else maxHeaps.map { it.data to it.indices }
+
+                        for (dim in 0 until k) {
+                            var outputIndex = 0
+                            outputPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].first[dim] }
+
+                            outputIndex = 0
+                            outputIndicesPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].second[dim].toLong() }
+                        }
+
+                        maxHeaps.forEach { it.clear() }
+                    }
+                } else {
+                    val minHeaps = Array(countElements) { PrimitiveMinHeap(k) }
+                    repeat(countIterations) {
+                        repeat(k) { dim ->
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType -> minHeaps[index].insert(value, dim) }
+                        }
+
+                        for (dim in k until countDims) {
+                            inputPointer.forEachIndexed(countElements) { index: Int, value: PrimitiveType ->
+                                val minHeap = minHeaps[index]
+                                if (value < minHeap.maxValue) {
+                                    minHeap.removeMax()
+                                    minHeap.insert(value, dim)
+                                }
+                            }
+                        }
+
+                        val valuesAndIndicesArray = if (sorted) minHeaps.map { it.sorted() } else minHeaps.map { it.data to it.indices }
+
+                        for (dim in 0 until k) {
+                            var outputIndex = 0
+                            outputPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].first[dim] }
+
+                            outputIndex = 0
+                            outputIndicesPointer.map(countElements) { valuesAndIndicesArray[outputIndex++].second[dim].toLong() }
+                        }
+
+                        minHeaps.forEach { it.clear() }
+                    }
+                }
+            }
+        }
+
+        return outputArray to indicesArray
+    }
+
     override fun copyIfNotMutable(): MutableNDArray {
         return MutablePrimitiveNDArray(array.copyOf(), strides)
     }
@@ -777,6 +1151,199 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         return destination
+    }
+
+    override fun expand(shape: IntArray): MutablePrimitiveNDArray {
+        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val output = allocateNDArray(Strides(outputShape))
+        Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
+            destination as MutablePrimitiveNDArray
+            val input = inputs[0] as PrimitiveNDArray
+            destination.copyFrom(0, input)
+        }
+
+        return output
+    }
+
+    override fun nonZero(): LongNDArray {
+        if (isScalar()) {
+            val value = singleValue()
+            return if (value != (0).toPrimitive())
+                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
+            else
+                LongNDArray(Strides(intArrayOf(1, 1))) { 0L }
+        }
+        val ndIndexSize = shape.size
+        var totalElements = 0
+        val inputPointer = array.pointer()
+        val indicesArray = LongArray(linearSize * ndIndexSize)
+        this.ndIndexed { ndIndex ->
+            if (inputPointer.getAndIncrement() != (0).toPrimitive()) {
+                ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
+                totalElements++
+            }
+        }
+        val nonZeroStrides = Strides(intArrayOf(ndIndexSize, totalElements))
+        val indicesByDim = LongTiledArray(nonZeroStrides)
+        val resultPointer = indicesByDim.pointer()
+        for (i in 0 until ndIndexSize)
+            for (j in 0 until totalElements) {
+                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.increment()
+            }
+        return LongNDArray(indicesByDim, nonZeroStrides)
+    }
+
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): PrimitiveNDArray {
+        require(pads.size == rank)
+        val outputShape = shape.copyOf()
+        for ((axis, pad) in pads.withIndex()) {
+            outputShape[axis] += pad.first + pad.second
+        }
+
+        val outputArray = allocateNDArray(Strides(outputShape))
+        val constant = (constantValue?.singleValue() ?: (0).toPrimitive()) as PrimitiveType
+
+        fun recurrentCopyInput(axis: Int, input: PrimitiveNDArray, output: MutablePrimitiveNDArray) {
+            val leftPad = pads[axis].first
+            val inputDims = input.shape[0]
+
+            if (axis == this.rank - 1) {
+                output.copyFrom(leftPad, input)
+                return
+            }
+
+            for (dim in 0 until inputDims) {
+                recurrentCopyInput(axis + 1, input.view(dim), output.viewMutable(dim + leftPad))
+            }
+        }
+
+        fun recurrentFillConstant(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                output.fill(constant, from = 0, to = leftPad)
+                output.fill(constant, from = outputDims - rightPad, to = outputDims)
+                return
+            }
+
+            for (dim in 0 until leftPad) {
+                output.viewMutable(dim).fill(constant)
+            }
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillConstant(axis + 1, output.viewMutable(dim))
+            }
+            for (dim in outputDims - rightPad until outputDims) {
+                output.viewMutable(dim).fill(constant)
+            }
+        }
+
+        fun recurrentFillEdge(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                val leftPadValue = output.array[leftPad]
+                val rightPadValue = output.array[outputDims - rightPad - 1]
+                output.fill(leftPadValue, from = 0, to = leftPad)
+                output.fill(rightPadValue, from = outputDims - rightPad, to = outputDims)
+                return
+            }
+
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillEdge(axis + 1, output.viewMutable(dim))
+            }
+
+            val leftPadArray = output.view(leftPad)
+            for (dim in 0 until leftPad) {
+                output.viewMutable(dim).copyFrom(offset = 0, leftPadArray)
+            }
+
+            val rightPadArray = output.view(outputDims - rightPad - 1)
+            for (dim in outputDims - rightPad until outputDims) {
+                output.viewMutable(dim).copyFrom(offset = 0, rightPadArray)
+            }
+        }
+
+        fun recurrentFillReflect(axis: Int, output: MutablePrimitiveNDArray) {
+            val (leftPad, rightPad) = pads[axis]
+            val outputDims = output.shape[0]
+
+            if (axis == this.rank - 1) {
+                val leftPadInputPointer = output.array.pointer(leftPad + 1)
+                val leftPadOutputPointer = output.array.pointer(leftPad - 1)
+
+                repeat(leftPad) {
+                    if (leftPadInputPointer.linearIndex == outputDims - rightPad) {
+                        leftPadInputPointer.linearIndex = leftPad
+                    }
+                    leftPadOutputPointer.set(leftPadInputPointer.getAndIncrement())
+                    leftPadOutputPointer.decrement()
+                }
+
+                val rightPadInputPointer = output.array.pointer(outputDims - rightPad - 2)
+                val rightPadOutputPointer = output.array.pointer(outputDims - rightPad)
+
+                repeat(rightPad) {
+                    if (rightPadInputPointer.linearIndex == leftPad - 1) {
+                        rightPadInputPointer.linearIndex = outputDims - rightPad - 1
+                    }
+                    rightPadOutputPointer.set(rightPadInputPointer.get())
+                    rightPadInputPointer.decrement()
+                    rightPadOutputPointer.increment()
+                }
+
+                return
+            }
+
+            for (dim in leftPad until outputDims - rightPad) {
+                recurrentFillReflect(axis + 1, output.viewMutable(dim))
+            }
+
+            var leftPadInputAxis = leftPad + 1
+            var leftPadOutputAxis = leftPad - 1
+            repeat(leftPad) {
+                if (leftPadInputAxis == outputDims - rightPad) {
+                    leftPadInputAxis = leftPad
+                }
+                output.viewMutable(leftPadOutputAxis).copyFrom(offset = 0, output.view(leftPadInputAxis))
+                leftPadInputAxis++
+                leftPadOutputAxis--
+            }
+
+            var rightPadInputAxis = outputDims - rightPad - 2
+            var rightPadOutputAxis = outputDims - rightPad
+
+            repeat(rightPad) {
+                if (rightPadInputAxis == leftPad - 1) {
+                    rightPadInputAxis = outputDims - rightPad - 1
+                }
+
+                output.viewMutable(rightPadOutputAxis).copyFrom(offset = 0, output.view(rightPadInputAxis))
+                rightPadInputAxis--
+                rightPadOutputAxis++
+            }
+        }
+
+        recurrentCopyInput(0, this, outputArray)
+
+        when(mode) {
+            "constant" -> {
+                if (constant != (0).toPrimitive()) {
+                    recurrentFillConstant(0, outputArray)
+                }
+            }
+            "edge" -> {
+                recurrentFillEdge(0, outputArray)
+            }
+            "reflect" -> {
+                recurrentFillReflect(0, outputArray)
+            }
+            else -> error("Unsupported mode")
+        }
+
+        return outputArray
     }
 
     override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {

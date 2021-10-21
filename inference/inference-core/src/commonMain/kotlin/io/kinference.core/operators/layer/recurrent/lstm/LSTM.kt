@@ -71,13 +71,16 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!
+        val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArray)
 
         val weights = inputs[1]!!
         val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
+        val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArray)
 
         val recurrentWeights = inputs[2]!!
         val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: LSTMContext.prepareWeights(recurrentWeights)) as KITensor
+        val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArray)
 
         val bias = inputs.getOrNull(3)
         val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
@@ -90,9 +93,9 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         val initialCellState = inputs.getOrNull(6)
 
         val (output, lastState, lastCellState) = lstmLayer.apply(
-                                                 input.data as NumberNDArray,
-                                                 preparedWeights.data as NumberNDArray,
-                                                 preparedRecurrentWeights.data as NumberNDArray,
+                                                 inputAsLSTMInput,
+                                                 weightsAsLSTMWeights,
+                                                 recurrentWeightsAsLSTMWeights,
                                                  preparedBias?.data as NumberNDArray?,
                                                  sequenceLens?.data as IntNDArray?,
                                                  initialState?.data as NumberNDArray?,

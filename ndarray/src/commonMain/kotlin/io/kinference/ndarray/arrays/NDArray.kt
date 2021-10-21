@@ -33,6 +33,9 @@ interface NDArray {
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
+    fun expand(shape: IntArray): MutableNDArray
+    fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray
+    fun nonZero(): LongNDArray
 
     fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
 }
@@ -94,6 +97,8 @@ interface NumberNDArray : NDArray {
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
 
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): IntNDArray
+    fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
+    fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, LongNDArray>
 
     override fun view(vararg axes: Int): NumberNDArray
 }

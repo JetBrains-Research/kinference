@@ -46,8 +46,12 @@ fun MutableNDArray.squeeze(vararg axes: Int): MutableNDArray {
     return reshape(newShape)
 }
 
+private fun indexAxisForUnsqueeze(axis: Int, shapeSize: Int): Int {
+    return if (axis < 0) shapeSize + axis else axis
+}
+
 fun MutableNDArray.unsqueeze(vararg axes: Int): MutableNDArray {
-    val actualAxes = axes.map { indexAxis(it) }.sorted()
+    val actualAxes = axes.map { indexAxisForUnsqueeze(it, this.rank + axes.size) }.sorted()
     val newShape = shape.toMutableList()
     for (axis in actualAxes) {
         newShape.add(axis, 1)
@@ -150,4 +154,30 @@ fun NDArray.applyWithBroadcast(
     val opWithNewStructure = { inputs: List<NDArray>, dest: MutableNDArray -> op(inputs[0], inputs[1], dest) }
 
     return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
+}
+
+private class NDIndexIterator(array: NDArray) : Iterator<LongArray> {
+    private val shape = array.shape.toLongArray()
+    private val indexSize = shape.size
+    private val maxElements = array.linearSize
+    private var elementsCounter = 0
+    private var currentIndex = LongArray(indexSize).apply { this[lastIndex] = -1L }
+
+    override fun hasNext(): Boolean = elementsCounter < maxElements
+
+    override fun next(): LongArray {
+        for (idx in indexSize - 1 downTo 0) {
+            if (currentIndex[idx] != shape[idx] - 1L) {
+                currentIndex[idx]++
+                break
+            }
+            currentIndex[idx] = 0
+        }
+        elementsCounter++
+        return currentIndex
+    }
+}
+
+fun NDArray.ndIndexed(func: (LongArray) -> Unit) {
+    return NDIndexIterator(this).forEach(func)
 }

@@ -17,6 +17,7 @@ fun LongArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
 fun IntArray.toByteArray() = ByteArray(this.size) { this[it].toByte() }
 fun IntArray.toUByteArray() = UByteArray(this.size) { this[it].toUByte() }
 fun IntArray.toBooleanArray() = BooleanArray(this.size) { this[it] != 0 }
+fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
 
 fun IntArray?.isNullOrEmpty() = this == null || this.isEmpty()
 fun LongArray?.isNullOrEmpty() = this == null || this.isEmpty()
@@ -97,3 +98,9 @@ val ERF_COEF = doubleArrayOf(
     -1.453152027,
     1.061405429
 )
+
+internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
+    val temp = get(leftIdx)
+    this[leftIdx] = this[rightIdx]
+    this[rightIdx] = temp
+}

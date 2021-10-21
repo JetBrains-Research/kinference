@@ -23,15 +23,19 @@ object Broadcasting {
             val dims = shapes.map { it.getOrNull(it.size - i - 1) ?: 1 }
             val maxDim = dims.find { it != 1 } ?: 1
 
-            if (dims.all { it != 1 && it != maxDim }) error("Cannot broadcast shapes")
+            if (dims.any { it != 1 && it != maxDim }) error("Cannot broadcast shapes")
 
             maxDim
         }.reversedArray()
     }
 
     fun broadcastShapeForMatmul(leftShape: IntArray, rightShape: IntArray): IntArray {
-        val outputMatrixShape = intArrayOf(leftShape[leftShape.lastIndex - 1], rightShape.last())
-        val broadcastShape = broadcastShape(listOf(leftShape.copyOfRange(0, leftShape.size - 2), rightShape.copyOfRange(0, rightShape.size - 2)))
+        val actualLeftShape = if (leftShape.size == 1) intArrayOf(1, leftShape[0]) else leftShape
+        val actualRightShape = if (rightShape.size == 1) intArrayOf(1, rightShape[1]) else rightShape
+
+        val outputMatrixShape = intArrayOf(actualLeftShape[actualLeftShape.lastIndex - 1], actualRightShape.last())
+        val broadcastShape = broadcastShape(listOf(actualLeftShape.copyOfRange(0, actualLeftShape.size - 2),
+                                                   actualRightShape.copyOfRange(0, actualRightShape.size - 2)))
 
         val outputShape = IntArray(broadcastShape.size + 2)
         broadcastShape.copyInto(outputShape)
@@ -41,11 +45,7 @@ object Broadcasting {
     }
 
     fun applyWithBroadcast(inputs: List<NDArray>, destination: MutableNDArray, op: (List<NDArray>, MutableNDArray) -> Unit): MutableNDArray {
-        val newShape = broadcastShape(inputs.map { it.shape })
-
-        require(destination.shape.contentEquals(newShape))
-
-        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
+        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, destination.shape.size)) }
 
         broadcast(wrappedInputs, destination, op)
         return destination
@@ -80,7 +80,7 @@ object Broadcasting {
         destination: MutableNDArray,
         op: (List<NDArray>, MutableNDArray) -> Unit
     ) {
-        if (inputs.slice(1..inputs.lastIndex).all { it.shape.contentEquals(inputs.first().shape) }) {
+        if (inputs.all { it.shape.contentEquals(destination.shape) }) { // check all shapes (inputs and destination) equals
             op(inputs, destination)
         } else {
             innerBroadcast(inputs, destination) { inputs, dest -> broadcast(inputs, dest, op) }

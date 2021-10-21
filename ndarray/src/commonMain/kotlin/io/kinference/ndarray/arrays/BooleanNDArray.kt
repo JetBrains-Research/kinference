@@ -2,9 +2,13 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.extensions.applyWithBroadcast
+import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.abs
@@ -189,6 +193,51 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return result
     }
 
+    override fun expand(shape: IntArray): MutableNDArray {
+        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val output = allocateNDArray(Strides(outputShape))
+        Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
+            destination as MutableBooleanNDArray
+            val input = inputs[0] as BooleanNDArray
+            destination.copyFrom(0, input)
+        }
+
+        return output
+    }
+
+    override fun nonZero(): LongNDArray {
+        if (isScalar()) {
+            val value = singleValue()
+            return if (value)
+                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
+            else
+                LongNDArray(Strides(intArrayOf(1, 1))) { 0L }
+        }
+        val ndIndexSize = shape.size
+        var totalElements = 0
+        val inputPointer = array.pointer()
+        val indicesArray = LongArray(linearSize * ndIndexSize)
+        this.ndIndexed { ndIndex ->
+            if (inputPointer.getAndIncrement()) {
+                ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
+                totalElements++
+            }
+        }
+        val nonZeroStrides = Strides(intArrayOf(ndIndexSize, totalElements))
+        val indicesByDim = LongTiledArray(nonZeroStrides)
+        val resultPointer = indicesByDim.pointer()
+        for (i in 0 until ndIndexSize)
+            for (j in 0 until totalElements) {
+                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.increment()
+            }
+        return LongNDArray(indicesByDim, nonZeroStrides)
+    }
+
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+        TODO("Not yet implemented")
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false
@@ -265,6 +314,13 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
     }
 
     override fun reshape(strides: Strides): MutableNDArray {
+        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
+            val newArray = BooleanTiledArray(strides)
+
+            this.array.copyInto(newArray)
+            this.array = newArray
+        }
+
         this.strides = strides
         return this
     }
