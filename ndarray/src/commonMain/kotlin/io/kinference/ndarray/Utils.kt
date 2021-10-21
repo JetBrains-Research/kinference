@@ -1,5 +1,7 @@
 package io.kinference.ndarray
 
+import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
+
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
 
@@ -66,6 +68,26 @@ fun IntArray.concat(value: Int): IntArray {
     this.copyInto(copy)
     copy[size] = value
     return copy
+}
+
+const val MIN_BLOCK_SIZE = 512
+
+fun blockSizeByStrides(strides: Strides): Int {
+    return when {
+        strides.linearSize == 0 -> 0
+        strides.shape.isEmpty() -> 1
+        else -> {
+            val rowSize = strides.shape.last()
+
+            val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
+                var num = rowSize / MIN_BLOCK_SIZE
+                while (rowSize % num != 0) num--
+                rowSize / num
+            }
+
+            blockSize
+        }
+    }
 }
 
 const val ERF_P_VALUE = 0.3275911

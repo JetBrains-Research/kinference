@@ -1,13 +1,24 @@
 rootProject.name = "kinference"
 
-include(":serialization")
-include(":inference")
 include(":ndarray")
+include(":serialization")
+include(":inference:inference-api")
+include(":inference:inference-core")
+include(":inference:inference-ort")
+include(":inference:inference-tfjs")
+
+include(":utils:test-utils")
+include(":utils:logger")
+include(":utils:model-profiler")
+
+include(":adapters:adapter-multik")
+include(":adapters:adapter-kmath")
+
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
     }
 
@@ -19,3 +30,4 @@ pluginManagement {
         }
     }
 }
+include("inference")

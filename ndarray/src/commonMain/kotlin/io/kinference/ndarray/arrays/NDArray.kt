@@ -36,6 +36,8 @@ interface NDArray {
     fun expand(shape: IntArray): MutableNDArray
     fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray
     fun nonZero(): LongNDArray
+
+    fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
 }
 
 interface MutableNDArray : NDArray {
