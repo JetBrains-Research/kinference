@@ -1,5 +1,6 @@
 package io.kinference.core.data.tensor
 
+import io.kinference.core.CoreBackend
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
@@ -13,7 +14,7 @@ import io.kinference.ndarray.extensions.matmul
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray>(name, data) {
+class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray, CoreBackend>(name, data) {
     constructor(data: NDArray, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     operator fun minus(other: KITensor): KITensor {
@@ -35,6 +36,8 @@ class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeI
         require(this.data is NumberNDArray && other.data is NumberNDArray)
         return (this.data matmul other.data).asTensor()
     }
+
+    override val backend = CoreBackend
 
     override fun rename(name: String): KITensor {
         return KITensor(name, data, info)

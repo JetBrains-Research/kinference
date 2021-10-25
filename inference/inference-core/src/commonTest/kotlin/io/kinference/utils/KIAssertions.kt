@@ -1,10 +1,10 @@
 package io.kinference.utils
 
 import io.kinference.TestLoggerFactory
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.arrays.*
 import io.kinference.protobuf.message.TensorProto
@@ -189,7 +189,7 @@ object KIAssertions {
         }
     }
 
-    fun assertEquals(expected: ONNXData<*>, actual: ONNXData<*>, delta: Double) {
+    fun assertEquals(expected: KIONNXData<*>, actual: KIONNXData<*>, delta: Double) {
         when (expected.type) {
             ONNXDataType.ONNX_TENSOR -> assertEquals(expected as KITensor, actual as KITensor, delta)
             ONNXDataType.ONNX_MAP -> assertEquals(expected as KIONNXMap, actual as KIONNXMap, delta)

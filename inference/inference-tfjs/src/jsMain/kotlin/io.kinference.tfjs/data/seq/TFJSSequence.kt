@@ -2,13 +2,17 @@ package io.kinference.tfjs.data.seq
 
 import io.kinference.data.*
 import io.kinference.protobuf.message.SequenceProto
+import io.kinference.tfjs.TFJSBackend
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.types.*
 
-class TFJSSequence(name: String?, data: List<ONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<ONNXData<*>>>(name, data) {
-    constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> ONNXData<*>) : this(name, List(size, init), info)
-    constructor(data: List<ONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
+class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<TFJSData<*>>, TFJSBackend>(name, data) {
+    constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> TFJSData<*>) : this(name, List(size, init), info)
+    constructor(data: List<TFJSData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
+
+    override val backend = TFJSBackend
 
     override fun rename(name: String) = TFJSSequence(name, data, info)
 

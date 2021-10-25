@@ -1,11 +1,14 @@
 package io.kinference.data
 
-interface ONNXDataAdapter<SourceType> {
-    fun toONNXData(name: String, data: SourceType): ONNXData<*>
-    fun fromONNXData(data: ONNXData<*>): SourceType
-}
+import io.kinference.model.Model
 
-object IdAdapter : ONNXDataAdapter<ONNXData<*>>  {
-    override fun toONNXData(name: String, data: ONNXData<*>): ONNXData<*> = data
-    override fun fromONNXData(data: ONNXData<*>): ONNXData<*> = data
+abstract class ONNXModelAdapter<SourceType, TargetType : ONNXData<*, *>>(private val model: Model<TargetType>) {
+    abstract fun toONNXData(name: String, data: SourceType): TargetType
+    abstract fun fromONNXData(data: TargetType): SourceType
+
+    open fun predict(inputs: Map<String, SourceType>, profile: Boolean = false): Map<String, SourceType> {
+        val onnxInputs = inputs.mapValues { toONNXData(it.key, it.value) }
+        val result = model.predict(onnxInputs, profile)
+        return result.mapValues { fromONNXData(it.value) }
+    }
 }

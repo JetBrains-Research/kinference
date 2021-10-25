@@ -1,11 +1,11 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.operators.Operator
-import io.kinference.data.ONNXData
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 internal object GRUContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.gru.GRUContext")
 
-    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<ONNXData<*>, ONNXData<*>>) {
+    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)

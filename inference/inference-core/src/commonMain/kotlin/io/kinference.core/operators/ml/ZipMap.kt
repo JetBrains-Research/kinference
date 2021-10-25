@@ -1,5 +1,6 @@
 package io.kinference.core.operators.ml
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
@@ -13,7 +14,6 @@ import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.core.types.*
-import io.kinference.data.ONNXData
 import kotlin.collections.HashMap
 import kotlin.time.ExperimentalTime
 
@@ -44,13 +44,13 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
             val inputPointer = FloatPointer(array)
             return KIONNXSequence("Z", seqInfo, rows) {
-                val map = HashMap<T, ONNXData<*>>(columns)
+                val map = HashMap<T, KIONNXData<*>>(columns)
                 repeat(columns) {
                     val value = inputPointer.getAndIncrement()
                     val tensor = FloatNDArray.scalar(value).asTensor()
                     map[labels[it]] = tensor
                 }
-                KIONNXMap(null, map as Map<Any, ONNXData<*>>, mapInfo)
+                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
             }
         }
     }

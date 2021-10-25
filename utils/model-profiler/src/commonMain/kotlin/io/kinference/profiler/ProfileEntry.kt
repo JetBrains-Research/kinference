@@ -2,8 +2,6 @@ package io.kinference.profiler
 
 import kotlin.math.floor
 import kotlin.math.roundToInt
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 data class ProfileEntry(val name: String, val time: Long, val children: List<ProfileEntry>) {
     fun writeToStringBuilder(builder: StringBuilder, indent: Int = 0) {

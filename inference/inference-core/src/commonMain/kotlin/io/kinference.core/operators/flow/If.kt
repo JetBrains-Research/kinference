@@ -1,5 +1,6 @@
 package io.kinference.core.operators.flow
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
@@ -9,7 +10,6 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.core.operators.*
-import io.kinference.data.ONNXData
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -44,7 +44,7 @@ class If(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
         modified: MutableList<KITensor>,
         scans: List<MutableList<KITensor>>
     ): Boolean {
-        val inputs = ArrayList<ONNXData<*>>().apply {
+        val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
             body.inputs.drop(2).zip(modified) { input, value ->

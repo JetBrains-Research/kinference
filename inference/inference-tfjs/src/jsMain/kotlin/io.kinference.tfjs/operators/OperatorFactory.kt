@@ -1,7 +1,7 @@
 package io.kinference.tfjs.operators
 
-import io.kinference.data.ONNXData
 import io.kinference.protobuf.message.NodeProto
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
@@ -37,7 +37,7 @@ object OperatorFactory {
         "Slice" -> Slice(attributes, inputs, outputs)
         "Squeeze" -> Squeeze(attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
-    } as Operator<ONNXData<*>, ONNXData<*>>
+    } as Operator<TFJSData<*>, TFJSData<*>>
 
     fun create(proto: NodeProto) = create(proto.opType, proto.attribute.map { Attribute.create(it) }.associateBy(Attribute<Any>::name), proto.input, proto.output)
 }

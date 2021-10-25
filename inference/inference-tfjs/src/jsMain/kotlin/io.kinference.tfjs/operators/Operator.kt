@@ -1,9 +1,9 @@
 package io.kinference.tfjs.operators
 
-import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.externals.extensions.isScalar
@@ -50,7 +50,7 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 
 @ExperimentalTime
 @Suppress("UNCHECKED_CAST")
-abstract class Operator<in T : ONNXData<*>, out U : ONNXData<*>>(
+abstract class Operator<in T : TFJSData<*>, out U : TFJSData<*>>(
     val info: OperatorInfo,
     val attributes: Map<String, Attribute<Any>> = emptyMap(),
     val inputs: List<String>,
@@ -72,7 +72,7 @@ abstract class Operator<in T : ONNXData<*>, out U : ONNXData<*>>(
         }
     }
 
-    private fun check(constraints: List<IOInfo>, values: List<ONNXData<*>?>, what: String) {
+    private fun check(constraints: List<IOInfo>, values: List<TFJSData<*>?>, what: String) {
         fun infos(constraints: List<IOInfo>) = sequence {
             for (constraint in constraints) {
                 while (constraint is VariadicIOInfo) yield(constraint)

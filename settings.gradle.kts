@@ -11,8 +11,10 @@ include(":utils:test-utils")
 include(":utils:logger")
 include(":utils:model-profiler")
 
-include(":adapters:adapter-multik")
-include(":adapters:adapter-kmath")
+include(":adapters:multik:adapter-multik-core")
+include(":adapters:multik:adapter-multik-ort")
+
+include(":adapters:kmath:adapter-kmath-core")
 
 
 pluginManagement {
@@ -30,4 +32,3 @@ pluginManagement {
         }
     }
 }
-include("inference")

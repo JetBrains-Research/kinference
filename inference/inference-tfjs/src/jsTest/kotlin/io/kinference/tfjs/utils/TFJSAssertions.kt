@@ -1,8 +1,8 @@
 package io.kinference.tfjs.utils
 
 import io.kinference.TestLoggerFactory
-import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -80,7 +80,7 @@ object TFJSAssertions {
         }
     }
 
-    fun assertEquals(expected: ONNXData<*>, actual: ONNXData<*>, delta: Double) {
+    fun assertEquals(expected: TFJSData<*>, actual: TFJSData<*>, delta: Double) {
         when (expected.type) {
             ONNXDataType.ONNX_TENSOR -> assertEquals(expected as TFJSTensor, actual as TFJSTensor, delta)
             ONNXDataType.ONNX_MAP -> assertEquals(expected as TFJSMap, actual as TFJSMap, delta)

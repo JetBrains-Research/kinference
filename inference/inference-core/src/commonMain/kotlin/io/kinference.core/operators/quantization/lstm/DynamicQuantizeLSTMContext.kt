@@ -1,12 +1,12 @@
 package io.kinference.core.operators.quantization.lstm
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.operators.Operator
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
-import io.kinference.data.ONNXData
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
@@ -14,7 +14,7 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
     private val logger = LoggerFactory.create("LSTM Initializer")
 
     @OptIn(ExperimentalTime::class)
-    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<ONNXData<*>, ONNXData<*>>) {
+    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)

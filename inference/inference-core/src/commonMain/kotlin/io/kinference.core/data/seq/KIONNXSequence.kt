@@ -1,14 +1,18 @@
 package io.kinference.core.data.seq
 
+import io.kinference.core.CoreBackend
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.types.*
 import io.kinference.data.*
 import io.kinference.protobuf.message.SequenceProto
 
-class KIONNXSequence(name: String?, data: List<ONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<ONNXData<*>>>(name, data) {
-    constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> ONNXData<*>) : this(name, List(size, init), info)
-    constructor(data: List<ONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
+class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data) {
+    constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> KIONNXData<*>) : this(name, List(size, init), info)
+    constructor(data: List<KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
+
+    override val backend = CoreBackend
 
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 

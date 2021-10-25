@@ -96,7 +96,7 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
-        val output = input.allocateNDArray(input.strides) as MutableFloatNDArray
+        val output = input.allocateNDArray(input.strides)
         input.normalize(
             skip = inputs[1]!!.data as FloatNDArray,
             gamma = inputs[2]!!.data as FloatNDArray,

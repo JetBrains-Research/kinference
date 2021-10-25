@@ -1,15 +1,18 @@
 package io.kinference.core.data.map
 
+import io.kinference.core.CoreBackend
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
 import io.kinference.core.types.ValueInfo
 import io.kinference.core.types.ValueTypeInfo
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXMap
+import io.kinference.data.*
 import io.kinference.protobuf.message.*
 
-class KIONNXMap(name: String?, data: Map<Any, ONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, ONNXData<*>>>(name, data) {
-    constructor(data: Map<Any, ONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
+class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data) {
+    constructor(data: Map<Any, KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
+
+    override val backend = CoreBackend
 
     val keyType: TensorProto.DataType
         get() = info.keyType
@@ -23,7 +26,7 @@ class KIONNXMap(name: String?, data: Map<Any, ONNXData<*>>, val info: ValueTypeI
         fun create(proto: MapProto): KIONNXMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
             val name = proto.name!!
-            val map = HashMap<Any, ONNXData<*>>().apply {
+            val map = HashMap<Any, KIONNXData<*>>().apply {
                 val keys = if (proto.keyType == TensorProto.DataType.STRING) proto.stringKeys else castKeys(proto.keys!!, proto.keyType)
                 keys.zip(KIONNXSequence.create(proto.values!!).data) { key, value -> put(key, value) }
             }

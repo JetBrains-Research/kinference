@@ -1,11 +1,11 @@
 package io.kinference.core.operators
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.attributes.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
-import io.kinference.data.ONNXData
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto.DataType
@@ -51,7 +51,7 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 
 @ExperimentalTime
 @Suppress("UNCHECKED_CAST")
-abstract class Operator<in T : ONNXData<*>, out U : ONNXData<*>>(
+abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
     val info: OperatorInfo,
     val attributes: Map<String, Attribute<Any>> = emptyMap(),
     val inputs: List<String>,
@@ -73,7 +73,7 @@ abstract class Operator<in T : ONNXData<*>, out U : ONNXData<*>>(
         }
     }
 
-    private fun check(constraints: List<IOInfo>, values: List<ONNXData<*>?>, what: String) {
+    private fun check(constraints: List<IOInfo>, values: List<KIONNXData<*>?>, what: String) {
         fun infos(constraints: List<IOInfo>) = sequence {
             for (constraint in constraints) {
                 while (constraint is VariadicIOInfo) yield(constraint)

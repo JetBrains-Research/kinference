@@ -1,11 +1,12 @@
 package io.kinference.tfjs.graph
 
 import io.kinference.data.ONNXData
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 
 
 class Context(private val base: Context? = null) {
-    private val values = HashMap<String, ONNXData<*>>()
+    private val values = HashMap<String, TFJSData<*>>()
     private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
@@ -16,16 +17,16 @@ class Context(private val base: Context? = null) {
         return shapes.contains(name) && (base?.hasShape(name) ?: true)
     }
 
-    fun putValue(name: String, value: ONNXData<*>) {
+    fun putValue(name: String, value: TFJSData<*>) {
         require(name !in values && base?.hasValue(name)?.not() ?: true) { "'$name' already exists in context values" }
         values[name] = value
     }
 
-    fun getValue(name: String): ONNXData<*> {
+    fun getValue(name: String): TFJSData<*> {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
     }
 
-    fun getOrNullValue(name: String): ONNXData<*>? {
+    fun getOrNullValue(name: String): TFJSData<*>? {
         return values[name] ?: base?.getOrNullValue(name)
     }
 

@@ -2,8 +2,8 @@ package io.kinference.benchmark
 
 import ai.onnxruntime.*
 import io.kinference.core.KIEngine
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.*
@@ -31,7 +31,7 @@ object BenchmarkUtils {
 
     private fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
 
-    fun modelWithInputs(path: String): Pair<ByteArray, Map<String, ONNXData<*>>> {
+    fun modelWithInputs(path: String): Pair<ByteArray, Map<String, KIONNXData<*>>> {
         val (mainPath, testName, dataSet) = path.split('.')
 
         val testDir = javaClass.getResource("/$mainPath/test_$testName").path
@@ -57,7 +57,7 @@ object BenchmarkUtils {
         }
     }
 
-    data class KIState(val model: Model<ONNXData<*>>, val inputs: Map<String, ONNXData<*>>) {
+    data class KIState(val model: Model<KIONNXData<*>>, val inputs: Map<String, KIONNXData<*>>) {
         companion object {
             fun create(path: String): KIState {
                 val (modelBytes, inputs) = modelWithInputs(path)

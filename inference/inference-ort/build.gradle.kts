@@ -39,7 +39,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("com.microsoft.onnxruntime:onnxruntime:1.9.0")
+                api("com.microsoft.onnxruntime:onnxruntime:1.9.0")
             }
         }
 

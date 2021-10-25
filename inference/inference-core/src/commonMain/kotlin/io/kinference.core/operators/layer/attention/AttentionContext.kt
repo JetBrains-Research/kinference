@@ -1,11 +1,11 @@
 package io.kinference.core.operators.layer.attention
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.operators.Operator
-import io.kinference.data.ONNXData
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 internal object AttentionContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.attention.AttentionContext")
 
-    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<ONNXData<*>, ONNXData<*>>) {
+    override fun appendContext(context: Context, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("weight", operator, initializers)
         val biasInit = initTensorByDefaultName("bias", operator, initializers)
         val numHeads = operator.getAttribute<Long>("num_heads").toInt()

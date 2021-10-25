@@ -1,5 +1,6 @@
 package io.kinference.core.operators
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.operators.activations.*
 import io.kinference.core.operators.flow.*
@@ -15,7 +16,6 @@ import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.seq.ConcatFromSequence
 import io.kinference.core.operators.seq.SplitToSequence
 import io.kinference.core.operators.tensor.*
-import io.kinference.data.ONNXData
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
 import io.kinference.protobuf.message.NodeProto
 import kotlin.time.ExperimentalTime
@@ -91,7 +91,7 @@ object OperatorFactory {
         "Where" -> Where(attributes, inputs, outputs)
         "ZipMap" -> ZipMap(attributes, inputs, outputs)
         else -> error("Unsupported operator: $name")
-    } as Operator<ONNXData<*>, ONNXData<*>>
+    } as Operator<KIONNXData<*>, KIONNXData<*>>
 
     fun create(proto: NodeProto) = create(proto.opType, proto.attribute.map { Attribute.create(it) }.associateBy(Attribute<Any>::name), proto.input, proto.output)
 }

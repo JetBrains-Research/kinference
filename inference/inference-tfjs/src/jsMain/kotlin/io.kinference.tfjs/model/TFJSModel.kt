@@ -1,14 +1,14 @@
 package io.kinference.tfjs.model
 
-import io.kinference.data.ONNXData
 import io.kinference.model.Model
 import io.kinference.protobuf.message.ModelProto
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.graph.Graph
 import io.kinference.tfjs.utils.setDefaultBackend
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class TFJSModel(proto: ModelProto) : Model<ONNXData<*>> {
+class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
     init {
         setDefaultBackend()
     }
@@ -23,7 +23,7 @@ class TFJSModel(proto: ModelProto) : Model<ONNXData<*>> {
         }
     }*/
 
-    override fun predict(input: Map<String, ONNXData<*>>, profile: Boolean): Map<String, ONNXData<*>> {
+    override fun predict(input: Map<String, TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
         val inputs = input.values
         return graph.execute(inputs).associateBy { it.name.orEmpty() }
     }

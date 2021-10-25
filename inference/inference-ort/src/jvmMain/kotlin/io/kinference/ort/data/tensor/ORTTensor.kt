@@ -2,13 +2,15 @@ package io.kinference.ort.data.tensor
 
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
-import io.kinference.data.ONNXDataType
-import io.kinference.data.ONNXTensor
+import io.kinference.data.*
 import io.kinference.ndarray.extensions.primitiveFromTiledArray
+import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
 import java.nio.*
 
-class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor>(name, data) {
+class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor, ORTBackend>(name, data) {
+    override val backend: ORTBackend = ORTBackend
+
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
     override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 

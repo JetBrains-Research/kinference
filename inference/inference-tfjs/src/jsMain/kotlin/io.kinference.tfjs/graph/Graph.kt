@@ -1,7 +1,7 @@
 package io.kinference.tfjs.graph
 
-import io.kinference.data.ONNXData
 import io.kinference.protobuf.message.*
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.*
 import io.kinference.tfjs.types.ValueInfo
@@ -13,7 +13,7 @@ class Graph(proto: GraphProto) {
         private val logger = LoggerFactory.create("TFJS Graph") //logger(Graph::class.simpleName ?: "")
     }
 
-    val operators: List<Operator<ONNXData<*>, ONNXData<*>>>
+    val operators: List<Operator<TFJSData<*>, TFJSData<*>>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
@@ -109,7 +109,7 @@ class Graph(proto: GraphProto) {
         return this.removeValues { it !in initNames && it !in availableInputs && valueOrderInfo.getOrder(it) <= order }
     }
 
-    fun execute(inputs: Collection<ONNXData<*>>, root: Context? = null): List<ONNXData<*>> {
+    fun execute(inputs: Collection<TFJSData<*>>, root: Context? = null): List<TFJSData<*>> {
         //TODO: check that all inputs were set and not null
 
         val context = Context(root)

@@ -2,15 +2,14 @@ package io.kinference.runners
 
 import io.kinference.TestEngine
 import io.kinference.TestLoggerFactory
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.utils.*
 import kotlin.math.pow
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class AccuracyRunner(private val testEngine: TestEngine) {
-    data class ONNXTestData(val name: String, val actual: Map<String, ONNXData<*>>, val expected: Map<String, ONNXData<*>>)
+class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) {
+    private data class ONNXTestData<T : ONNXData<*, *>> (val name: String, val actual: Map<String, T>, val expected: Map<String, T>)
     data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
         companion object {
             private const val DEFAULT_DATATYPE = "ONNX_TENSOR"
@@ -61,7 +60,7 @@ class AccuracyRunner(private val testEngine: TestEngine) {
         }
     }
 
-    private fun check(dataset: ONNXTestData, delta: Double = DELTA) {
+    private fun check(dataset: ONNXTestData<T>, delta: Double = DELTA) {
         logger.info { "Dataset: ${dataset.name}\n" }
 
         val (_, expectedOutputs, actualOutputs) = dataset

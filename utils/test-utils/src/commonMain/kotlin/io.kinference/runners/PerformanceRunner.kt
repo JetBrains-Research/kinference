@@ -1,15 +1,14 @@
 package io.kinference.runners
 
 import io.kinference.*
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.model.Model
 import io.kinference.profiler.Profilable
 import io.kinference.utils.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-class PerformanceRunner(private val engine: TestEngine) {
+class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
     private suspend fun runPerformanceFromS3(name: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false): List<PerformanceResults> {
@@ -35,7 +34,7 @@ class PerformanceRunner(private val engine: TestEngine) {
     ): List<PerformanceResults> {
         logger.info { "Predict: $path" }
 
-        lateinit var model: Model<ONNXData<*>>
+        lateinit var model: Model<T>
         val modelLoadTime = measureTime {
             model = engine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
         }
@@ -60,7 +59,7 @@ class PerformanceRunner(private val engine: TestEngine) {
 
             val times = LongArray(count)
             for (i in (0 until count)) {
-                lateinit var outputs: Map<String, ONNXData<*>>
+                lateinit var outputs: Map<String, T>
                 val time = measureTime {
                     outputs = model.predict(inputs, withProfiling)
                 }.inMilliseconds.toLong()

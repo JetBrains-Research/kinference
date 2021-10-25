@@ -1,8 +1,8 @@
 package io.kinference.tfjs
 
+import io.kinference.BackendInfo
 import io.kinference.InferenceEngine
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.*
@@ -12,7 +12,14 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.model.TFJSModel
 import okio.Buffer
 
-object TFJSEngine : InferenceEngine {
+typealias TFJSData<T> = ONNXData<T, TFJSBackend>
+
+object TFJSBackend : BackendInfo(name = "TensorFlow for JS")
+
+object TFJSEngine : InferenceEngine<TFJSData<*>> {
+    override val info: BackendInfo
+        get() = TFJSBackend
+
     private val TFJS_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
     private fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), TFJS_READER_CONFIG)
 
@@ -21,7 +28,7 @@ object TFJSEngine : InferenceEngine {
         return TFJSModel(modelScheme)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*> = when (type) {
+    override fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> = when (type) {
         ONNXDataType.ONNX_TENSOR -> TFJSTensor.create(TensorProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_SEQUENCE -> TFJSSequence.create(SequenceProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_MAP -> TFJSMap.create(MapProto.decode(protoReader(bytes)))

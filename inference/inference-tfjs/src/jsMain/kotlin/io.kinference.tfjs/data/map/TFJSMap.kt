@@ -3,13 +3,16 @@ package io.kinference.tfjs.data.map
 import io.kinference.data.*
 import io.kinference.protobuf.message.MapProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.*
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.seq.TFJSSequence.Companion.extractTypeInfo
 import io.kinference.tfjs.types.ValueInfo
 import io.kinference.tfjs.types.ValueTypeInfo
 
-class TFJSMap(name: String?, data: Map<Any, ONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, ONNXData<*>>>(name, data) {
-    constructor(data: Map<Any, ONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
+class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, TFJSData<*>>, TFJSBackend>(name, data) {
+    constructor(data: Map<Any, TFJSData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
+
+    override val backend = TFJSBackend
 
     val keyType: TensorProto.DataType
         get() = info.keyType
@@ -23,7 +26,7 @@ class TFJSMap(name: String?, data: Map<Any, ONNXData<*>>, val info: ValueTypeInf
         fun create(proto: MapProto): TFJSMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
             val info = ValueInfo(elementType, proto.name!!)
-            val map = HashMap<Any, ONNXData<*>>().apply {
+            val map = HashMap<Any, TFJSData<*>>().apply {
                 val keys = if (proto.keyType == TensorProto.DataType.STRING) proto.stringKeys else castKeys(proto.keys!!, proto.keyType)
                 keys.zip(TFJSSequence.create(proto.values!!).data) { key, value -> put(key, value) }
             }

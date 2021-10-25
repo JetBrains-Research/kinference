@@ -1,5 +1,6 @@
 package io.kinference.core.graph
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.utils.Stack
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.*
@@ -9,7 +10,6 @@ import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTMContext
 import io.kinference.protobuf.message.*
 import io.kinference.core.types.ValueInfo
-import io.kinference.data.ONNXData
 import io.kinference.profiler.ProfilingContext
 import io.kinference.profiler.profile
 import io.kinference.utils.LoggerFactory
@@ -23,7 +23,7 @@ class Graph(proto: GraphProto) {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
 
-    val operators: List<Operator<ONNXData<*>, ONNXData<*>>>
+    val operators: List<Operator<KIONNXData<*>, KIONNXData<*>>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
@@ -129,7 +129,7 @@ class Graph(proto: GraphProto) {
     }
 
     @ExperimentalTime
-    fun execute(inputs: List<ONNXData<*>>, root: Context? = null, profilingContext: ProfilingContext? = null): List<ONNXData<*>> {
+    fun execute(inputs: List<KIONNXData<*>>, root: Context? = null, profilingContext: ProfilingContext? = null): List<KIONNXData<*>> {
         //TODO: check that all inputs were set and not null
 
         val context = Context(root)
@@ -146,7 +146,7 @@ class Graph(proto: GraphProto) {
         }
 
         for ((i, operator) in operators.withIndex()) {
-            lateinit var outputs: List<ONNXData<*>?>
+            lateinit var outputs: List<KIONNXData<*>?>
             profilingContext.profile(operator.info.name) { profilingContext ->
                 outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)
             }

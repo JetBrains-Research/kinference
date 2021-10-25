@@ -1,6 +1,5 @@
 package io.kinference.tfjs.data.tensors
 
-import io.kinference.data.ONNXDataType
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
@@ -8,6 +7,7 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.resolveProtoDataType
+import io.kinference.tfjs.TFJSBackend
 import io.kinference.tfjs.externals.core.NDArrayTFJS
 import io.kinference.tfjs.externals.core.tensor
 import io.kinference.tfjs.externals.extensions.*
@@ -16,8 +16,10 @@ import io.kinference.tfjs.types.ValueTypeInfo
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Int32Array
 
-class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS>(name, data) {
+class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data) {
     constructor(data: NDArrayTFJS, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
+
+    override val backend = TFJSBackend
 
     override fun rename(name: String): TFJSTensor {
         return TFJSTensor(name, data, info)

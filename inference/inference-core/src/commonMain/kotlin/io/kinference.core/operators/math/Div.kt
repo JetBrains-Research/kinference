@@ -40,6 +40,6 @@ class Div(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val result = inputs[0]!! / inputs[1]!!
-        return listOf(result.rename("C") as KITensor)
+        return listOf(result.rename("C"))
     }
 }
