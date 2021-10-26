@@ -15,6 +15,7 @@ include(":adapters:multik:adapter-multik-core")
 include(":adapters:multik:adapter-multik-ort")
 
 include(":adapters:kmath:adapter-kmath-core")
+include(":adapters:kmath:adapter-kmath-ort")
 
 
 pluginManagement {
