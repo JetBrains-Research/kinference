@@ -1,14 +1,19 @@
 package io.kinference.kmath
 
+import io.kinference.core.KIONNXData
+import io.kinference.core.data.map.KIONNXMap
+import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.model.KIModel
+import io.kinference.core.types.TensorShape
+import io.kinference.core.types.ValueTypeInfo
+import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.primitives.types.DataType
-import io.kinference.protobuf.message.GraphProto
-import io.kinference.protobuf.message.ModelProto
+import io.kinference.protobuf.message.*
 import io.kinference.utils.ArrayAssertions
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
@@ -18,35 +23,88 @@ import kotlin.test.assertEquals
 import kotlin.time.ExperimentalTime
 
 class KIKMathAdapterTest {
-    private val emptyModel = KIModel(ModelProto(graph = GraphProto()))
-    private val testAdapter = KIKMathAdapter(emptyModel)
-
     @OptIn(ExperimentalTime::class)
     @Test
-    fun test_kmath_adapter_convert_to_onnx_data() {
+    fun test_kmath_adapter_convert_to_onnx_tensor() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedTensor = testAdapter.toONNXData("test", kmathArray)
+        val convertedTensor = KIKMathTensorAdapter.toONNXData("test", kmathArray)
         val expectedTensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor("test")
-        assertTensorEquals(expectedTensor, convertedTensor)
+        assertKIEquals(expectedTensor, convertedTensor)
     }
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun test_kmath_adapter_convert_from_onnx_data() {
+    fun test_kmath_adapter_convert_to_onnx_map() {
+        val array = IntArray(4) { it }
+        val shape = intArrayOf(1, 2, 2)
+
+        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathMap = mapOf(0 to listOf(kmathArray), 1 to listOf(kmathArray), 2 to listOf(kmathArray))
+        val convertedMap = KIKMathMapAdapter.toONNXData("test", kmathMap as Map<Any, *>)
+
+        val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
+        val tensor = KITensor(null, IntNDArray(shape) { it }, tensorInfo)
+        val expectedValueInfo = ValueTypeInfo.MapTypeInfo(TensorProto.DataType.INT32, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        val expectedMapData = mapOf(
+            0 to KIONNXSequence(null, listOf(tensor), ValueTypeInfo.SequenceTypeInfo(tensorInfo)),
+            1 to KIONNXSequence(null, listOf(tensor), ValueTypeInfo.SequenceTypeInfo(tensorInfo)),
+            2 to KIONNXSequence(null, listOf(tensor), ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        ) as Map<Any, KIONNXData<*>>
+        val expectedMap = KIONNXMap("test", expectedMapData, expectedValueInfo)
+        assertKIEquals(expectedMap, convertedMap)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun test_kmath_adapter_convert_to_onnx_sequence() {
+        val array = IntArray(4) { it }
+        val shape = intArrayOf(1, 2, 2)
+        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathSeq = List(4) { List(1) { kmathArray } }
+        val convertedSeq = KIKMathSequenceAdapter.toONNXData("test", kmathSeq)
+
+        val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
+        val expectedValueInfo = ValueTypeInfo.SequenceTypeInfo(ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        val expectedSeqData = KIONNXSequence("", List(1) { KITensor("", IntNDArray(shape) { it }, tensorInfo) }, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        val expectedSeq = KIONNXSequence("test", List(4) { expectedSeqData }, expectedValueInfo)
+        assertKIEquals(expectedSeq, convertedSeq)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun test_kmath_adapter_convert_from_onnx_tensor() {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
         val expectedArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedArray = testAdapter.fromONNXData(tensor) as NDStructure<Int>
+        val convertedArray = KIKMathTensorAdapter.fromONNXData(tensor)
         NDStructure.contentEquals(expectedArray, convertedArray)
     }
 
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun test_kmath_adapter_inference() {
+        val inOutTensorType = TypeProto.Tensor(TensorProto.DataType.FLOAT, TensorShapeProto(listOf(TensorShapeProto.Dimension(dimValue = 6L))))
+        val modelProto = ModelProto(
+            graph = GraphProto(
+                input = mutableListOf(ValueInfoProto("input", TypeProto(tensorType = inOutTensorType))),
+                output = mutableListOf(ValueInfoProto("output", TypeProto(tensorType = inOutTensorType))),
+                node = mutableListOf(NodeProto(input = mutableListOf("input"), mutableListOf("output"), opType = "Identity"))
+            )
+        )
+        val modelAdapter = KIKMathModelAdapter(KIModel(modelProto))
+        val array = FloatArray(6) { it.toFloat() }
+        val shape = intArrayOf(6)
+        val inputArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val result = modelAdapter.predict(mapOf("input" to inputArray))
+        NDStructure.contentEquals(inputArray, result.values.first() as NDStructure<*>)
+    }
+
     companion object {
-        fun assertTensorEquals(expected: KITensor, actual: KITensor) {
+        fun assertEquals(expected: KITensor, actual: KITensor) {
             assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.name} do not match")
-            assertEquals(expected.name, actual.name, "Names of tensors do not match")
             ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray(), "Shapes do not match")
             ArrayAssertions.assertArrayEquals(
                 (expected.data as IntNDArray).array,
@@ -55,6 +113,31 @@ class KIKMathAdapterTest {
                 delta = 0.0,
                 ""
             )
+        }
+
+        fun assertEquals(expected: KIONNXMap, actual: KIONNXMap) {
+            assertEquals(expected.keyType, actual.keyType, "Map key types should match")
+            assertEquals(expected.data.keys, actual.data.keys, "Map key sets are not equal")
+
+            for (entry in expected.data.entries) {
+                assertKIEquals(entry.value, actual.data[entry.key]!!)
+            }
+        }
+
+        fun assertEquals(expected: KIONNXSequence, actual: KIONNXSequence) {
+            assertEquals(expected.length, actual.length, "Sequence lengths do not match")
+
+            for (i in expected.data.indices) {
+                assertKIEquals(expected.data[i], actual.data[i])
+            }
+        }
+
+        fun assertKIEquals(expected: KIONNXData<*>, actual: KIONNXData<*>) {
+            when (expected.type) {
+                ONNXDataType.ONNX_TENSOR -> assertEquals(expected as KITensor, actual as KITensor)
+                ONNXDataType.ONNX_MAP -> assertEquals(expected as KIONNXMap, actual as KIONNXMap)
+                ONNXDataType.ONNX_SEQUENCE -> assertEquals(expected as KIONNXSequence, actual as KIONNXSequence)
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package io.kinference.core.types
 
-import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.message.ValueInfoProto
 
 class ValueInfo(val typeInfo: ValueTypeInfo, val name: String = "") {
@@ -9,7 +8,7 @@ class ValueInfo(val typeInfo: ValueTypeInfo, val name: String = "") {
             val type = proto.type!!
             val info = when {
                 type.tensorType != null -> {
-                    val dataType = DataType.fromValue(type.tensorType!!.elem_type!!)!!
+                    val dataType = type.tensorType!!.elem_type!!
                     val shape = if (type.tensorType?.shape == null) TensorShape.empty() else TensorShape(type.tensorType!!.shape!!)
                     ValueTypeInfo.TensorTypeInfo(shape, dataType)
                 }

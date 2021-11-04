@@ -38,14 +38,14 @@ class TypeProto(
         }
     }
 
-    class Tensor(val elem_type: Int? = null, val shape: TensorShapeProto? = null) {
+    class Tensor(val elem_type: TensorProto.DataType? = null, val shape: TensorShapeProto? = null) {
         companion object {
             fun decode(reader: ProtobufReader): Tensor {
-                var elemType: Int? = null
+                var elemType: TensorProto.DataType? = null
                 var shape: TensorShapeProto? = null
                 reader.forEachTag { tag ->
                     when (ReaderTag.fromInt(tag)) {
-                        ReaderTag.ELEMENT_TYPE -> elemType = reader.readInt()
+                        ReaderTag.ELEMENT_TYPE -> elemType = TensorProto.DataType.fromValue(reader.readInt())
                         ReaderTag.SHAPE -> shape = TensorShapeProto.decode(reader)
                         null -> reader.readUnknownField(tag)
                     }

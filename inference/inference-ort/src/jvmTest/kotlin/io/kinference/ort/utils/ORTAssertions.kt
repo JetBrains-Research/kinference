@@ -25,7 +25,7 @@ object ORTAssertions {
             OnnxJavaType.INT64 -> ArrayAssertions.assertArrayEquals(expected.data.longBuffer.array(), actual.data.longBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
             OnnxJavaType.INT16 -> ArrayAssertions.assertArrayEquals(expected.data.shortBuffer.array(), actual.data.shortBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
             OnnxJavaType.INT8 -> ArrayAssertions.assertArrayEquals(expected.data.byteBuffer.array(), actual.data.byteBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
-            else -> error("")
+            else -> error("Unsupported data type: ${expected.data.info.type}")
         }
     }
 }

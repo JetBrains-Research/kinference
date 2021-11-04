@@ -84,7 +84,7 @@ kotlin {
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
 
-                implementation(project(":serialization"))
+                api(project(":serialization"))
             }
         }
 

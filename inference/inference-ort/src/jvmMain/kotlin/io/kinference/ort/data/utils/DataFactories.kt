@@ -10,5 +10,5 @@ inline fun <reified V : OnnxValue> createORTData(name: String?, data: V) : ORTDa
     is OnnxTensor -> ORTTensor(name, data)
     is OnnxMap -> ORTMap(name, data)
     is OnnxSequence -> ORTSequence(name, data)
-    else -> error("")
+    else -> error("Cannot find corresponding ONNXData type for ${data::class}")
 }

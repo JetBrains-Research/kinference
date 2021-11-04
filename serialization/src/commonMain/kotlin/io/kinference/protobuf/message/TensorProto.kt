@@ -73,7 +73,7 @@ class TensorProto(
             val newArray = when (arrayFormat) {
                 ArrayFormat.TILED -> parseInt32TiledData()
                 ArrayFormat.PRIMITIVE -> parseInt32PrimitiveData()
-                ArrayFormat.OTHER -> error("")
+                ArrayFormat.OTHER -> error("Cannot read the array. Please, specify tensor backing array type as either TILED or PRIMITIVE")
             }
             _arrayData!!.setData(newArray)
         }
@@ -111,7 +111,7 @@ class TensorProto(
         private fun makeArray(arrayFormat: ArrayFormat, type: DataType, shape: IntArray, init: (Int) -> Any) = when (arrayFormat) {
             ArrayFormat.TILED -> createArray(type.resolveLocalDataType(), shape, init)
             ArrayFormat.PRIMITIVE -> createPrimitiveArray(type.resolveLocalDataType(), shape, init)
-            ArrayFormat.OTHER -> error("")
+            ArrayFormat.OTHER -> error("Cannot read the array. Please, specify tensor backing array type as either TILED or PRIMITIVE")
         }
 
         private fun parseRaw(rawData: ByteString?, proto: TensorProto) {

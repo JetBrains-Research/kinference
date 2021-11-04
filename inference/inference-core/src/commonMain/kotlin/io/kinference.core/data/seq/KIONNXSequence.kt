@@ -26,7 +26,7 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
                 SequenceProto.DataType.TENSOR -> proto.tensorValues.map { KITensor.create(it) }
                 SequenceProto.DataType.SEQUENCE -> proto.sequenceValues.map { create(it) }
                 SequenceProto.DataType.MAP -> proto.mapValues.map { KIONNXMap.create(it) }
-                else -> error("")
+                else -> error("Unsupported sequence element type: ${proto.elementType}")
             }
             return KIONNXSequence(name, data, elementTypeInfo)
         }
@@ -42,7 +42,7 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
                 val valueType = first.values!!.extractTypeInfo()
                 ValueTypeInfo.MapTypeInfo(keyType = first.keyType, valueType = valueType)
             }
-            else -> error("")
+            else -> error("Unsupported sequence element type: ${this.elementType}")
         }
     }
 }

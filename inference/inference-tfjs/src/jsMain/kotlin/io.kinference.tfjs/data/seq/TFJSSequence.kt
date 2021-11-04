@@ -26,7 +26,7 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
                 SequenceProto.DataType.TENSOR -> proto.tensorValues.map { TFJSTensor.create(it) }
                 SequenceProto.DataType.SEQUENCE -> proto.sequenceValues.map { create(it) }
                 SequenceProto.DataType.MAP -> proto.mapValues.map { TFJSMap.create(it) }
-                else -> error("")
+                else -> error("Unsupported sequence element type: ${proto.elementType}")
             }
             return TFJSSequence(name, data, elementTypeInfo)
         }
@@ -42,7 +42,7 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
                 val valueType = first.values!!.extractTypeInfo()
                 ValueTypeInfo.MapTypeInfo(keyType = first.keyType, valueType = valueType)
             }
-            else -> error("")
+            else -> error("Unsupported sequence element type: ${this.elementType}")
         }
     }
 }

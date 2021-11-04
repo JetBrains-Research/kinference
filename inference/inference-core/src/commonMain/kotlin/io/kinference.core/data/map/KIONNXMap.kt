@@ -42,7 +42,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
             TensorProto.DataType.INT64 -> keys.map { it.toLong() }
             TensorProto.DataType.UINT32 -> keys.map { it.toUInt() }
             TensorProto.DataType.UINT64 -> keys.map { it.toULong() }
-            else -> error("")
+            else -> error("Unsupported data type: $type")
         }
     }
 }
