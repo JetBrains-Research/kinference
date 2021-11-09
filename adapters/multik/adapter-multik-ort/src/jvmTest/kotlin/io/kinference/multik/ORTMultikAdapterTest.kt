@@ -18,7 +18,7 @@ class ORTMultikAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Int, D3>(MemoryViewIntArray(array), shape = shape, dtype = DataType.IntDataType, dim = D3)
-        val convertedTensor = ORTMultikTensorAdapter.toONNXData("test", multikArray as MultiArray<Number, Dimension>)
+        val convertedTensor = ORTMultikTensorAdapter.toONNXData(ORTMultikData.MultikTensor("test", multikArray as MultiArray<Number, Dimension>))
         val expectedTensorData = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val expectedTensor = ORTTensor("test", expectedTensorData)
         assertTensorEquals(expectedTensor, convertedTensor)
@@ -31,7 +31,7 @@ class ORTMultikAdapterTest {
         val tensorData = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val tensor = ORTTensor("test", tensorData)
         val expectedArray = NDArray<Int, D2>(MemoryViewIntArray(array), shape = shape, dtype = DataType.IntDataType, dim = D2)
-        val convertedArray = ORTMultikTensorAdapter.fromONNXData(tensor)
+        val convertedArray = ORTMultikTensorAdapter.fromONNXData(tensor).data
         assertTrue(expectedArray == convertedArray)
     }
 

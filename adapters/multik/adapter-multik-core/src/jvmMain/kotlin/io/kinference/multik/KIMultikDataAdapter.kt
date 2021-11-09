@@ -7,8 +7,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.types.TensorShape
 import io.kinference.core.types.ValueTypeInfo
-import io.kinference.data.ONNXDataAdapter
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
@@ -16,11 +15,29 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
+import org.jetbrains.kotlinx.multik.ndarray.operations.first
 
 internal typealias MultikDataType = org.jetbrains.kotlinx.multik.ndarray.data.DataType
 
-object KIMultikTensorAdapter : ONNXDataAdapter<MultiArray<Number, Dimension>, KITensor> {
-    override fun fromONNXData(data: KITensor): MultiArray<Number, Dimension> {
+sealed class KIMultikData<T>(override val name: String?) : BaseONNXData<T> {
+    class MultikTensor(name: String?, override val data: MultiArray<Number, Dimension>) : KIMultikData<MultiArray<Number, Dimension>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
+        override fun rename(name: String): KIMultikData<MultiArray<Number, Dimension>> = MultikTensor(name, data)
+    }
+
+    class MultikMap(name: String?, override val data: Map<Any, KIMultikData<*>>) : KIMultikData<Map<Any, KIMultikData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_MAP
+        override fun rename(name: String): KIMultikData<Map<Any, KIMultikData<*>>> = MultikMap(name, data)
+    }
+
+    class MultikSequence(name: String?, override val data: List<KIMultikData<*>>) : KIMultikData<List<KIMultikData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
+        override fun rename(name: String): KIMultikData<List<KIMultikData<*>>> = MultikSequence(name, data)
+    }
+}
+
+object KIMultikTensorAdapter : ONNXDataAdapter<KIMultikData.MultikTensor, KITensor> {
+    override fun fromONNXData(data: KITensor): KIMultikData.MultikTensor {
         val ndArray = data.data
         val dtype = ndArray.type.resolveMultikDataType()
         val view = when (val ndArray = data.data) {
@@ -32,36 +49,37 @@ object KIMultikTensorAdapter : ONNXDataAdapter<MultiArray<Number, Dimension>, KI
             is DoubleNDArray -> MemoryViewDoubleArray(ndArray.array.toArray())
             else -> error("${ndArray.type} type is not supported by Multik")
         } as MemoryView<Number>
-        return NDArray(view, shape = ndArray.shape, dtype = dtype, dim = dimensionOf(ndArray.rank))
+        val multikArray = NDArray(view, shape = ndArray.shape, dtype = dtype, dim = dimensionOf(ndArray.rank))
+        return KIMultikData.MultikTensor(data.name, multikArray)
     }
 
-    override fun toONNXData(name: String, data: MultiArray<Number, Dimension>): KITensor {
-        val tiledArray = createArray(data.shape, data.data.data)
-        return createNDArray(data.dtype.resolveKIDataType(), tiledArray, data.shape).asTensor(name)
-    }
-}
-
-object KIMultikMapAdapter : ONNXDataAdapter<Map<Any, *>, KIONNXMap> {
-    override fun fromONNXData(data: KIONNXMap): Map<Any, *> {
-        return data.data.mapValues { it.value.fromKIONNXData() }
-    }
-
-    override fun toONNXData(name: String, data: Map<Any, *>): KIONNXMap {
-        val typeInfo = data.extractTypeInfo()
-        val mapData = data.mapValues { it.value.toKIONNXData(null) }
-        return KIONNXMap(name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
+    override fun toONNXData(data: KIMultikData.MultikTensor): KITensor {
+        val tiledArray = createArray(data.data.shape, data.data.data.data)
+        return createNDArray(data.data.dtype.resolveKIDataType(), tiledArray, data.data.shape).asTensor(data.name)
     }
 }
 
-object KIMultikSequenceAdapter : ONNXDataAdapter<List<*>, KIONNXSequence> {
-    override fun fromONNXData(data: KIONNXSequence): List<*> {
-        return data.data.map { it.fromKIONNXData() }
+object KIMultikMapAdapter : ONNXDataAdapter<KIMultikData.MultikMap, KIONNXMap> {
+    override fun fromONNXData(data: KIONNXMap): KIMultikData.MultikMap {
+        return KIMultikData.MultikMap(data.name, data.data.mapValues { it.value.fromKIONNXData() })
     }
 
-    override fun toONNXData(name: String, data: List<*>): KIONNXSequence {
+    override fun toONNXData(data: KIMultikData.MultikMap): KIONNXMap {
         val typeInfo = data.extractTypeInfo()
-        val mapData = data.map { it.toKIONNXData(null) }
-        return KIONNXSequence(name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
+        val mapData = data.data.mapValues { it.value.toKIONNXData() }
+        return KIONNXMap(data.name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
+    }
+}
+
+object KIMultikSequenceAdapter : ONNXDataAdapter<KIMultikData.MultikSequence, KIONNXSequence> {
+    override fun fromONNXData(data: KIONNXSequence): KIMultikData.MultikSequence {
+        return KIMultikData.MultikSequence(data.name, data.data.map { it.fromKIONNXData() })
+    }
+
+    override fun toONNXData(data: KIMultikData.MultikSequence): KIONNXSequence {
+        val typeInfo = data.extractTypeInfo()
+        val mapData = data.data.map { it.toKIONNXData() }
+        return KIONNXSequence(data.name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
     }
 }
 
@@ -84,27 +102,25 @@ fun DataType.resolveMultikDataType() = when (this) {
     else -> error("$this type is not supported by Multik")
 }
 
-private fun KIONNXData<*>.fromKIONNXData(): Any = when (this.type) {
+fun KIONNXData<*>.fromKIONNXData() = when (this.type) {
     ONNXDataType.ONNX_TENSOR -> KIMultikTensorAdapter.fromONNXData(this as KITensor)
     ONNXDataType.ONNX_MAP -> KIMultikMapAdapter.fromONNXData(this as KIONNXMap)
     ONNXDataType.ONNX_SEQUENCE -> KIMultikSequenceAdapter.fromONNXData(this as KIONNXSequence)
 }
 
-private fun <T> T.toKIONNXData(name: String? = null): KIONNXData<*> = when (this) {
-    is MultiArray<*, *> -> KIMultikTensorAdapter.toONNXData(name ?: "", this as MultiArray<Number, Dimension>)
-    is List<*> -> KIMultikSequenceAdapter.toONNXData(name ?: "", this)
-    is Map<*, *> -> KIMultikMapAdapter.toONNXData(name ?: "", this as Map<Any, *>)
-    else -> error("Type info extraction failed. Cannot extract info from ${this!!::class}")
+fun KIMultikData<*>.toKIONNXData() = when (this.type) {
+    ONNXDataType.ONNX_TENSOR -> KIMultikTensorAdapter.toONNXData(this as KIMultikData.MultikTensor)
+    ONNXDataType.ONNX_MAP -> KIMultikMapAdapter.toONNXData(this as KIMultikData.MultikMap)
+    ONNXDataType.ONNX_SEQUENCE -> KIMultikSequenceAdapter.toONNXData(this as KIMultikData.MultikSequence)
 }
 
-private fun <T> T.extractTypeInfo(): ValueTypeInfo = when (this) {
-    is MultiArray<*, *> -> ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), this.data[0].resolveProtoType())
-    is List<*> -> ValueTypeInfo.SequenceTypeInfo(this[0].extractTypeInfo())
-    is Map<*, *> -> {
-        val first = this.entries.first()
+fun KIMultikData<*>.extractTypeInfo(): ValueTypeInfo = when (this) {
+    is KIMultikData.MultikTensor -> ValueTypeInfo.TensorTypeInfo(TensorShape(data.shape), data.first().resolveProtoType())
+    is KIMultikData.MultikSequence -> ValueTypeInfo.SequenceTypeInfo(data[0].extractTypeInfo())
+    is KIMultikData.MultikMap -> {
+        val first = data.entries.first()
         ValueTypeInfo.MapTypeInfo(keyType = first.key.resolveProtoType(), valueType = first.value.extractTypeInfo())
     }
-    else -> error("Type info extraction failed. Cannot extract info from ${this!!::class}")
 }
 
 private fun <T> T.resolveProtoType() = when (this) {

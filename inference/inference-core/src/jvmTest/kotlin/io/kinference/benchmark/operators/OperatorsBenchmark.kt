@@ -121,7 +121,7 @@ open class OperatorsBenchmark {
 
     @Benchmark
     fun benchmarkKI(blackhole: Blackhole) {
-        val outputs = kiState.model.predict(kiState.inputs)
+        val outputs = kiState.model.predict(kiState.inputs.values.toList())
         blackhole.consume(outputs)
     }
 

@@ -1,7 +1,7 @@
 package io.kinference.multik
 
 import ai.onnxruntime.*
-import io.kinference.data.ONNXDataAdapter
+import io.kinference.data.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.ndarray.toLongArray
 import io.kinference.ort.data.map.ORTMap
@@ -10,8 +10,25 @@ import io.kinference.ort.data.tensor.ORTTensor
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import java.nio.*
 
-object ORTMultikTensorAdapter : ONNXDataAdapter<MultiArray<Number, Dimension>, ORTTensor> {
-    override fun fromONNXData(data: ORTTensor): MultiArray<Number, Dimension> {
+sealed class ORTMultikData<T>(override val name: String?) : BaseONNXData<T> {
+    class MultikTensor(name: String?, override val data: MultiArray<Number, Dimension>) : ORTMultikData<MultiArray<Number, Dimension>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
+        override fun rename(name: String): ORTMultikData<MultiArray<Number, Dimension>> = MultikTensor(name, data)
+    }
+
+    class MultikMap(name: String?, override val data: Map<Any, ORTMultikData<*>>) : ORTMultikData<Map<Any, ORTMultikData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_MAP
+        override fun rename(name: String): ORTMultikData<Map<Any, ORTMultikData<*>>> = MultikMap(name, data)
+    }
+
+    class MultikSequence(name: String?, override val data: List<ORTMultikData<*>>) : ORTMultikData<List<ORTMultikData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
+        override fun rename(name: String): ORTMultikData<List<ORTMultikData<*>>> =MultikSequence(name, data)
+    }
+}
+
+object ORTMultikTensorAdapter : ONNXDataAdapter<ORTMultikData.MultikTensor, ORTTensor> {
+    override fun fromONNXData(data: ORTTensor): ORTMultikData.MultikTensor {
         val tensor = data.data
         val dtype = tensor.info.type
         val view = when (dtype) {
@@ -23,49 +40,54 @@ object ORTMultikTensorAdapter : ONNXDataAdapter<MultiArray<Number, Dimension>, O
             OnnxJavaType.INT64 -> MemoryViewLongArray(tensor.longBuffer.array())
             else -> error("$dtype type is not supported by Multik")
         } as MemoryView<Number>
-        return NDArray(view, shape = tensor.info.shape.toIntArray(), dtype = dtype.resolveMultikDataType(), dim = dimensionOf(tensor.info.shape.size))
+        val ndArray = NDArray(view, shape = tensor.info.shape.toIntArray(), dtype = dtype.resolveMultikDataType(), dim = dimensionOf(tensor.info.shape.size))
+        return ORTMultikData.MultikTensor(data.name, ndArray)
     }
 
-    override fun toONNXData(name: String, data: MultiArray<Number, Dimension>): ORTTensor {
-        val arrayData = data.data
+    override fun toONNXData(data: ORTMultikData.MultikTensor): ORTTensor {
+        val arrayData = data.data.data
         val env = OrtEnvironment.getEnvironment()
         val tensor = when (val array = arrayData.data) {
-            is DoubleArray -> OnnxTensor.createTensor(env, DoubleBuffer.wrap(array), data.shape.toLongArray())
-            is FloatArray -> OnnxTensor.createTensor(env, FloatBuffer.wrap(array), data.shape.toLongArray())
-            is LongArray -> OnnxTensor.createTensor(env, LongBuffer.wrap(array), data.shape.toLongArray())
-            is IntArray -> OnnxTensor.createTensor(env, IntBuffer.wrap(array), data.shape.toLongArray())
-            is ShortArray -> OnnxTensor.createTensor(env, ShortBuffer.wrap(array), data.shape.toLongArray())
-            is ByteArray -> OnnxTensor.createTensor(env, ByteBuffer.wrap(array), data.shape.toLongArray())
+            is DoubleArray -> OnnxTensor.createTensor(env, DoubleBuffer.wrap(array), data.data.shape.toLongArray())
+            is FloatArray -> OnnxTensor.createTensor(env, FloatBuffer.wrap(array), data.data.shape.toLongArray())
+            is LongArray -> OnnxTensor.createTensor(env, LongBuffer.wrap(array), data.data.shape.toLongArray())
+            is IntArray -> OnnxTensor.createTensor(env, IntBuffer.wrap(array), data.data.shape.toLongArray())
+            is ShortArray -> OnnxTensor.createTensor(env, ShortBuffer.wrap(array), data.data.shape.toLongArray())
+            is ByteArray -> OnnxTensor.createTensor(env, ByteBuffer.wrap(array), data.data.shape.toLongArray())
             else -> error("Unsupported data type")
         }
-        return ORTTensor(name, tensor)
+        return ORTTensor(data.name, tensor)
     }
 }
 
-object ORTMultikMapAdapter : ONNXDataAdapter<Map<Any, *>, ORTMap> {
-    override fun fromONNXData(data: ORTMap): Map<Any, *> {
+object ORTMultikMapAdapter : ONNXDataAdapter<ORTMultikData.MultikMap, ORTMap> {
+    override fun fromONNXData(data: ORTMap): ORTMultikData.MultikMap {
         val valueType = data.data.info.valueType
-        return data.data.value.mapValues { it.toScalarNDArray(valueType) }
+        val mapValues = data.data.value.mapValues { ORTMultikData.MultikTensor(null, it.toScalarNDArray(valueType)) }
+        return ORTMultikData.MultikMap(data.name, mapValues)
     }
 
-    override fun toONNXData(name: String, data: Map<Any, *>): ORTMap {
+    override fun toONNXData(data: ORTMultikData.MultikMap): ORTMap {
         error("ONNXRuntime backend does not support map conversion")
     }
 }
 
-object ORTMultikSequenceAdapter : ONNXDataAdapter<List<*>, ORTSequence> {
-    override fun fromONNXData(data: ORTSequence): List<*> {
+object ORTMultikSequenceAdapter : ONNXDataAdapter<ORTMultikData.MultikSequence, ORTSequence> {
+    override fun fromONNXData(data: ORTSequence): ORTMultikData.MultikSequence {
         val elements = data.data.value
-        return if (data.data.info.sequenceOfMaps) {
+        val seq = if (data.data.info.sequenceOfMaps) {
             val mapType = data.data.info.mapInfo.valueType
-            (elements as List<Map<*, *>>).map { entry -> entry.mapValues { it.value!!.toScalarNDArray(mapType) } }
+            (elements as List<Map<*, *>>)
+                .map { entry -> entry.mapValues { ORTMultikData.MultikTensor(null, it.value!!.toScalarNDArray(mapType)) } }
+                .map { ORTMultikData.MultikMap(null, it as Map<Any, ORTMultikData<*>>) }
         } else {
             val valueType = data.data.info.sequenceType
-            elements.map { it.toScalarNDArray(valueType) }
+            elements.map { ORTMultikData.MultikTensor(null, it.toScalarNDArray(valueType)) }
         }
+        return ORTMultikData.MultikSequence(data.name, seq)
     }
 
-    override fun toONNXData(name: String, data: List<*>): ORTSequence {
+    override fun toONNXData(data: ORTMultikData.MultikSequence): ORTSequence {
         error("ONNXRuntime backend does not support sequence conversion")
     }
 }

@@ -20,7 +20,7 @@ class ORTKMathAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedTensor = ORTKMathTensorAdapter.toONNXData("test", kmathArray)
+        val convertedTensor = ORTKMathTensorAdapter.toONNXData(ORTKMathData.KMathTensor("test", kmathArray))
         val expectedTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val expectedOrtTensor = ORTTensor("test", expectedTensor)
         assertTensorEquals(expectedOrtTensor, convertedTensor)
@@ -34,7 +34,7 @@ class ORTKMathAdapterTest {
         val tensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val ortTensor = ORTTensor("test", tensor)
         val expectedArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedArray = ORTKMathTensorAdapter.fromONNXData(ortTensor) as NDStructure<Int>
+        val convertedArray = ORTKMathTensorAdapter.fromONNXData(ortTensor).data as NDStructure<Int>
         NDStructure.contentEquals(expectedArray, convertedArray)
     }
 

@@ -19,7 +19,7 @@ class KIMultikAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Int, D3>(MemoryViewIntArray(array), shape = shape, dtype = MultikDataType.IntDataType, dim = D3)
-        val convertedTensor = KIMultikTensorAdapter.toONNXData("test", multikArray as MultiArray<Number, Dimension>)
+        val convertedTensor = KIMultikTensorAdapter.toONNXData(KIMultikData.MultikTensor("test", multikArray as MultiArray<Number, Dimension>))
         val expectedTensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor("test")
         assertTensorEquals(expectedTensor, convertedTensor)
     }
@@ -30,7 +30,7 @@ class KIMultikAdapterTest {
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
         val expectedArray = NDArray<Int, D2>(MemoryViewIntArray(array), shape = shape, dtype = MultikDataType.IntDataType, dim = D2)
-        val convertedArray = KIMultikTensorAdapter.fromONNXData(tensor)
+        val convertedArray = KIMultikTensorAdapter.fromONNXData(tensor).data
         assertTrue(expectedArray == convertedArray)
     }
 

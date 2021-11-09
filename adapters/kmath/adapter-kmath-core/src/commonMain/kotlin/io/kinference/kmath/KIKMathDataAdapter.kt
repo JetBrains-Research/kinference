@@ -7,16 +7,32 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.types.TensorShape
 import io.kinference.core.types.ValueTypeInfo
-import io.kinference.data.ONNXDataAdapter
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
-object KIKMathTensorAdapter : ONNXDataAdapter<NDStructure<*>, KITensor> {
-    override fun fromONNXData(data: KITensor): NDStructure<*> {
+sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
+    class KMathTensor(name: String?, override val data: NDStructure<*>) : KIKMathData<NDStructure<*>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
+        override fun rename(name: String): KIKMathData<NDStructure<*>> = KMathTensor(name, data)
+    }
+
+    class KMathMap(name: String?, override val data: Map<Any, KIKMathData<*>>) : KIKMathData<Map<Any, KIKMathData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_MAP
+        override fun rename(name: String): KIKMathData<Map<Any, KIKMathData<*>>> = KMathMap(name, data)
+    }
+
+    class KMathSequence(name: String?, override val data: List<KIKMathData<*>>) : KIKMathData<List<KIKMathData<*>>>(name) {
+        override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
+        override fun rename(name: String): KIKMathData<List<KIKMathData<*>>> = KMathSequence(name, data)
+    }
+}
+
+object KIKMathTensorAdapter : ONNXDataAdapter<KIKMathData.KMathTensor, KITensor> {
+    override fun fromONNXData(data: KITensor): KIKMathData.KMathTensor {
         val array = data.data
         val buffer = when (val type = data.data.type) {
             DataType.BYTE -> {
@@ -65,13 +81,13 @@ object KIKMathTensorAdapter : ONNXDataAdapter<NDStructure<*>, KITensor> {
             }
             else -> error("Unsupported data type $type")
         }
-        return NDBuffer(DefaultStrides(array.shape), buffer)
+        return KIKMathData.KMathTensor(data.name, NDBuffer(DefaultStrides(array.shape), buffer))
     }
 
-    override fun toONNXData(name: String, data: NDStructure<*>): KITensor {
-        val elements = data.elements().map { it.second!! }.iterator()
-        val shape = data.shape
-        return when (val element = data.elements().first().second!!) {
+    override fun toONNXData(data: KIKMathData.KMathTensor): KITensor {
+        val elements = data.data.elements().map { it.second!! }.iterator()
+        val shape = data.data.shape
+        return when (val element = data.data.elements().first().second!!) {
             is Byte -> ByteNDArray(shape) { elements.next() as Byte }
             is Short -> ShortNDArray(shape) { elements.next() as Short }
             is Int -> IntNDArray(shape) { elements.next() as Int }
@@ -84,55 +100,53 @@ object KIKMathTensorAdapter : ONNXDataAdapter<NDStructure<*>, KITensor> {
             is Double -> DoubleNDArray(shape) { elements.next() as Double }
             is Boolean -> BooleanNDArray(shape) { elements.next() as Boolean }
             else -> error("Cannot convert from StructureND of ${element::class} to ONNXTensor")
-        }.asTensor(name)
+        }.asTensor(data.name)
     }
 }
 
-object KIKMathMapAdapter : ONNXDataAdapter<Map<Any, *>, KIONNXMap> {
-    override fun fromONNXData(data: KIONNXMap): Map<Any, *> {
-        return data.data.mapValues { it.value.fromKIONNXData() }
+object KIKMathMapAdapter : ONNXDataAdapter<KIKMathData.KMathMap, KIONNXMap> {
+    override fun fromONNXData(data: KIONNXMap): KIKMathData.KMathMap {
+        return KIKMathData.KMathMap(data.name, data.data.mapValues { it.value.toKIKMathData() })
     }
 
-    override fun toONNXData(name: String, data: Map<Any, *>): KIONNXMap {
+    override fun toONNXData(data: KIKMathData.KMathMap): KIONNXMap {
         val typeInfo = data.extractTypeInfo()
-        val mapData = data.mapValues { it.value.toKIONNXData(null) }
-        return KIONNXMap(name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
+        val mapData = data.data.mapValues { it.value.toKIONNXData() }
+        return KIONNXMap(data.name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
     }
 }
 
-object KIKMathSequenceAdapter : ONNXDataAdapter<List<*>, KIONNXSequence> {
-    override fun fromONNXData(data: KIONNXSequence): List<*> {
-        return data.data.map { it.fromKIONNXData() }
+object KIKMathSequenceAdapter : ONNXDataAdapter<KIKMathData.KMathSequence, KIONNXSequence> {
+    override fun fromONNXData(data: KIONNXSequence): KIKMathData.KMathSequence {
+        return KIKMathData.KMathSequence(data.name, data.data.map { it.toKIKMathData() })
     }
 
-    override fun toONNXData(name: String, data: List<*>): KIONNXSequence {
+    override fun toONNXData(data: KIKMathData.KMathSequence): KIONNXSequence {
         val typeInfo = data.extractTypeInfo()
-        val mapData = data.map { it.toKIONNXData(null) }
-        return KIONNXSequence(name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
+        val mapData = data.data.map { it.toKIONNXData() }
+        return KIONNXSequence(data.name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
     }
 }
 
-private fun <T> T.toKIONNXData(name: String? = null): KIONNXData<*> = when (this) {
-    is NDStructure<*> -> KIKMathTensorAdapter.toONNXData(name ?: "", this)
-    is List<*> -> KIKMathSequenceAdapter.toONNXData(name ?: "", this)
-    is Map<*, *> -> KIKMathMapAdapter.toONNXData(name ?: "", this as Map<Any, *>)
-    else -> error("Data conversion from ${this!!::class} to ONNX format failed")
+fun KIKMathData<*>.toKIONNXData() = when (this.type) {
+    ONNXDataType.ONNX_TENSOR -> KIKMathTensorAdapter.toONNXData(this as KIKMathData.KMathTensor)
+    ONNXDataType.ONNX_SEQUENCE -> KIKMathSequenceAdapter.toONNXData(this as KIKMathData.KMathSequence)
+    ONNXDataType.ONNX_MAP -> KIKMathMapAdapter.toONNXData(this as KIKMathData.KMathMap)
 }
 
-private fun KIONNXData<*>.fromKIONNXData(): Any = when (this.type) {
+fun KIONNXData<*>.toKIKMathData() = when (this.type) {
     ONNXDataType.ONNX_TENSOR -> KIKMathTensorAdapter.fromONNXData(this as KITensor)
     ONNXDataType.ONNX_SEQUENCE -> KIKMathSequenceAdapter.fromONNXData(this as KIONNXSequence)
     ONNXDataType.ONNX_MAP -> KIKMathMapAdapter.fromONNXData(this as KIONNXMap)
 }
 
-private fun <T> T.extractTypeInfo(): ValueTypeInfo = when (this) {
-    is NDStructure<*> -> ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), this.elements().first().second.resolveProtoType())
-    is List<*> -> ValueTypeInfo.SequenceTypeInfo(this[0].extractTypeInfo())
-    is Map<*, *> -> {
-        val first = this.entries.first()
+fun KIKMathData<*>.extractTypeInfo(): ValueTypeInfo = when (this) {
+    is KIKMathData.KMathTensor -> ValueTypeInfo.TensorTypeInfo(TensorShape(data.shape), data.elements().first().second.resolveProtoType())
+    is KIKMathData.KMathSequence -> ValueTypeInfo.SequenceTypeInfo(data[0].extractTypeInfo())
+    is KIKMathData.KMathMap -> {
+        val first = data.entries.first()
         ValueTypeInfo.MapTypeInfo(keyType = first.key.resolveProtoType(), valueType = first.value.extractTypeInfo())
     }
-    else -> error("Type info extraction failed. Cannot extract info from ${this!!::class}")
 }
 
 private fun <T> T.resolveProtoType() = when (this) {

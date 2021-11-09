@@ -23,8 +23,7 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         }
     }*/
 
-    override fun predict(input: Map<String, TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
-        val inputs = input.values
-        return graph.execute(inputs).associateBy { it.name.orEmpty() }
+    override fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
+        return graph.execute(input).associateBy { it.name.orEmpty() }
     }
 }

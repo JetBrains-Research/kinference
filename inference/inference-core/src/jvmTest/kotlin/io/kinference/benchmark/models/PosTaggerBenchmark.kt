@@ -30,7 +30,7 @@ open class PosTaggerBenchmarkKI {
 
     @Benchmark
     fun benchmark(blackhole: Blackhole) {
-        val outputs = state.model.predict(state.inputs)
+        val outputs = state.model.predict(state.inputs.values.toList())
         blackhole.consume(outputs)
     }
 }

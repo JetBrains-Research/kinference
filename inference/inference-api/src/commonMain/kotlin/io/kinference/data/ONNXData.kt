@@ -2,14 +2,17 @@ package io.kinference.data
 
 import io.kinference.BackendInfo
 
-interface ONNXData<T, B : BackendInfo> {
-    val backend: B
-
+interface BaseONNXData<T> {
     val name: String?
     val type: ONNXDataType
     val data: T
 
-    fun rename(name: String): ONNXData<T, B>
+    fun rename(name: String): BaseONNXData<T>
+}
+
+interface ONNXData<T, B : BackendInfo> : BaseONNXData<T> {
+    val backend: B
+    override fun rename(name: String): ONNXData<T, B>
 }
 
 abstract class ONNXTensor<T, B : BackendInfo>(override val name: String?, override val data: T) : ONNXData<T, B> {

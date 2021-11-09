@@ -9,6 +9,7 @@ import io.kinference.core.model.KIModel
 import io.kinference.core.types.TensorShape
 import io.kinference.core.types.ValueTypeInfo
 import io.kinference.data.ONNXDataType
+import io.kinference.kmath.KIKMathData.*
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
@@ -29,7 +30,7 @@ class KIKMathAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val convertedTensor = KIKMathTensorAdapter.toONNXData("test", kmathArray)
+        val convertedTensor = KIKMathTensorAdapter.toONNXData(KMathTensor("test", kmathArray))
         val expectedTensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor("test")
         assertKIEquals(expectedTensor, convertedTensor)
     }
@@ -40,9 +41,10 @@ class KIKMathAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
 
-        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val kmathMap = mapOf(0 to listOf(kmathArray), 1 to listOf(kmathArray), 2 to listOf(kmathArray))
-        val convertedMap = KIKMathMapAdapter.toONNXData("test", kmathMap as Map<Any, *>)
+        val kmathArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
+        val kmathSequence = KMathSequence("", listOf(kmathArray))
+        val kmathMap = mapOf(0 to kmathSequence, 1 to kmathSequence, 2 to kmathSequence)
+        val convertedMap = KIKMathMapAdapter.toONNXData(KMathMap("test", kmathMap as Map<Any, KIKMathData<*>>))
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
         val tensor = KITensor(null, IntNDArray(shape) { it }, tensorInfo)
@@ -61,9 +63,9 @@ class KIKMathAdapterTest {
     fun test_kmath_adapter_convert_to_onnx_sequence() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val kmathSeq = List(4) { List(1) { kmathArray } }
-        val convertedSeq = KIKMathSequenceAdapter.toONNXData("test", kmathSeq)
+        val kmathArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
+        val kmathSeq = KMathSequence("", List(4) { KMathSequence("", listOf(kmathArray)) })
+        val convertedSeq = KIKMathSequenceAdapter.toONNXData(kmathSeq)
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
         val expectedValueInfo = ValueTypeInfo.SequenceTypeInfo(ValueTypeInfo.SequenceTypeInfo(tensorInfo))
@@ -78,9 +80,9 @@ class KIKMathAdapterTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
-        val expectedArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val expectedArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
         val convertedArray = KIKMathTensorAdapter.fromONNXData(tensor)
-        NDStructure.contentEquals(expectedArray, convertedArray)
+        NDStructure.contentEquals(expectedArray.data, convertedArray.data)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -98,8 +100,8 @@ class KIKMathAdapterTest {
         val array = FloatArray(6) { it.toFloat() }
         val shape = intArrayOf(6)
         val inputArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
-        val result = modelAdapter.predict(mapOf("input" to inputArray))
-        NDStructure.contentEquals(inputArray, result.values.first() as NDStructure<*>)
+        val result = modelAdapter.predict(listOf(KMathTensor("input", inputArray)))
+        NDStructure.contentEquals(inputArray, result.values.first().data as NDStructure<*>)
     }
 
     companion object {

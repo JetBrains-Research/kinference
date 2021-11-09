@@ -50,7 +50,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
         val results = ArrayList<PerformanceResults>()
 
         for (dataset in datasets) {
-            val inputs = dataset.data.map { engine.loadData(it.first, it.second) }.associateBy { it.name!! }
+            val inputs = dataset.data.map { engine.loadData(it.first, it.second) }
 
             repeat(warmup) {
                 val outputs = model.predict(inputs)
@@ -78,7 +78,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
                 (model as Profilable).resetProfiles()
             }
 
-            inputs.forEach { engine.postprocessData(it.value) }
+            inputs.forEach { engine.postprocessData(it) }
         }
         return results
     }
