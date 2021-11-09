@@ -1,7 +1,6 @@
 package io.kinference.ort.data.tensor
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
+import ai.onnxruntime.*
 import io.kinference.data.*
 import io.kinference.ndarray.extensions.primitiveFromTiledArray
 import io.kinference.ort.ORTBackend
@@ -60,9 +59,16 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
                     val array = (value as List<String>).toTypedArray()
                     OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), array, dims)
                 }
+                TensorProto.DataType.UINT8 -> {
+                    value as UByteArray
+                    val buffer = ByteBuffer.allocate(value.size).apply {
+                        for (number in value) put(number.toByte())
+                    }
+                    OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.UINT8)
+                }
                 else -> error("Unsupported data type $type")
             }
-            return ORTTensor(name ?: "", onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
     }
 }

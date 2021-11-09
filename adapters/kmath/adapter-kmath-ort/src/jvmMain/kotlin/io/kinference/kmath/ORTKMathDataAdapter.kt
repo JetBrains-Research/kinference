@@ -57,6 +57,10 @@ object ORTKMathTensorAdapter : ONNXDataAdapter<ORTKMathData.KMathTensor, ORTTens
                 val data = data.data.longBuffer
                 Buffer.auto(linearSize) { data.get() }
             }
+            OnnxJavaType.UINT8 -> {
+                val data = data.data.byteBuffer
+                Buffer.auto(linearSize) { data.get().toUByte() }
+            }
             else -> error("Unsupported data type: $type")
         }
         return ORTKMathData.KMathTensor(data.name ?: "", NDBuffer(DefaultStrides(info.shape.toIntArray()), buffer))
@@ -69,6 +73,7 @@ object ORTKMathTensorAdapter : ONNXDataAdapter<ORTKMathData.KMathTensor, ORTTens
         val shapeLong = data.data.shape.toLongArray()
         val tensor = when (val element = data.data.elements().first().second!!) {
             is Byte -> OnnxTensor.createTensor(env, ByteBuffer.wrap(ByteArray(linSize) { elements.next() as Byte }), shapeLong)
+            is UByte -> OnnxTensor.createTensor(env, ByteBuffer.wrap(ByteArray(linSize) { (elements.next() as UByte).toByte() }), shapeLong, OnnxJavaType.UINT8)
             is Short -> OnnxTensor.createTensor(env, ShortBuffer.wrap(ShortArray(linSize) { elements.next() as Short }), shapeLong)
             is Int -> OnnxTensor.createTensor(env, IntBuffer.wrap(IntArray(linSize) { elements.next() as Int }), shapeLong)
             is Long -> OnnxTensor.createTensor(env, LongBuffer.wrap(LongArray(linSize) { elements.next() as Long }), shapeLong)
