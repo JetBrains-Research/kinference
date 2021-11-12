@@ -38,6 +38,7 @@ interface NDArray {
     fun nonZero(): LongNDArray
 
     fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
+    fun tile(repeats: IntArray): NDArray
 }
 
 interface MutableNDArray : NDArray {

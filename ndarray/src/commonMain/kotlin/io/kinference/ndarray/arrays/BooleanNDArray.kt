@@ -238,6 +238,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         TODO("Not yet implemented")
     }
 
+    override fun tile(repeats: IntArray): NDArray {
+        TODO("Not yet implemented")
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false

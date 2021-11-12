@@ -1370,6 +1370,98 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return result
     }
 
+    override fun tile(repeats: IntArray): NumberNDArray {
+        require(repeats.size == rank)
+
+        if (repeats.all() { it == 1 }) return this.toMutable()
+
+        val outputShape = shape.copyOf().apply {
+            for (idx in indices) {
+                this[idx] *= repeats[idx]
+            }
+        }
+        val outputArray = allocateNDArray(Strides(outputShape))
+
+        var axisToStop = -1
+        for (idx in repeats.indices) {
+            when {
+                axisToStop == -1 && repeats[idx] == 1 -> axisToStop = idx
+                repeats[idx] != 1 -> axisToStop = -1
+            }
+        }
+
+        val blockToCopy = if (axisToStop != -1) computeBlockSize(fromDim = axisToStop) else 0
+
+        fun tileCopy(axis: Int, inputOffset: Int, outputOffset: Int) {
+            when(axis) {
+                axisToStop -> {
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    outputPointer.accept(inputPointer, blockToCopy) { _: PrimitiveType, src: PrimitiveType -> src }
+                }
+
+                shape.lastIndex -> {
+                    val inputPointer = this.array.pointer(inputOffset)
+                    val outputPointer = outputArray.array.pointer(outputOffset)
+
+                    outputPointer.accept(inputPointer, shape.last()) { _: PrimitiveType, src: PrimitiveType -> src }
+                }
+
+                else -> {
+                    val dims = this.shape[axis]
+
+                    repeat(dims) { dim ->
+                        val additionalInputOffset = dim * this.strides.strides[axis]
+                        val additionalOutputOffset = dim * outputArray.strides.strides[axis]
+
+                        tileCopy(axis + 1, inputOffset + additionalInputOffset, outputOffset + additionalOutputOffset)
+                    }
+                }
+            }
+        }
+
+        fun tileRepeat(axis: Int, offset: Int) {
+            val countRepeat = repeats[axis]
+
+            when(axis) {
+                axisToStop -> return
+                shape.lastIndex -> {
+                    val blockSize = this.shape[axis]
+                    val inputPointer = outputArray.array.pointer()
+                    val outputPointer = outputArray.array.pointer(offset + blockSize)
+
+                    repeat(countRepeat - 1) {
+                        inputPointer.linearIndex = offset
+                        outputPointer.accept(inputPointer, blockSize) { _: PrimitiveType, src: PrimitiveType -> src }
+                    }
+                }
+                else -> {
+                    val dims = this.shape[axis]
+                    repeat(dims) { dim ->
+                        val additionalOffset = dim * outputArray.strides.strides[axis]
+                        tileRepeat(axis + 1, offset + additionalOffset)
+                    }
+
+                    if (countRepeat > 1) {
+                        val blockSize = outputArray.strides.strides[axis] * this.shape[axis]
+                        val inputPointer = outputArray.array.pointer()
+                        val outputPointer = outputArray.array.pointer(offset + blockSize)
+                        repeat(countRepeat - 1) {
+                            inputPointer.linearIndex = offset
+                            outputPointer.accept(inputPointer, blockSize) { _: PrimitiveType, src: PrimitiveType -> src }
+                        }
+                    }
+                }
+            }
+        }
+
+        tileCopy(0, 0, 0)
+        tileRepeat(0, 0)
+
+        return outputArray
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false
