@@ -6,6 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.getIndices
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
@@ -28,22 +29,6 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false))
 
         private val INFO = OperatorInfo("ScatterElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
-
-        private fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
-            if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
-
-            fun checkIndex(index: Int, axisLimit: Int): Int = if (index >= 0) index else index + axisLimit
-
-            return if (indices is IntNDArray) {
-                indices.map (object : IntMap {
-                    override fun apply(value: Int): Int = checkIndex(value, axisLimit)
-                }) as IntNDArray
-            } else {
-                indices as LongNDArray
-                val pointer = indices.array.pointer()
-                IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
-            }
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

@@ -48,6 +48,7 @@ object OperatorFactory {
         "Flatten" -> Flatten(attributes, inputs, outputs)
         "FusedMatMul" -> FusedMatMul(attributes, inputs, outputs)
         "Gather" -> Gather(attributes, inputs, outputs)
+        "GatherElements" -> GatherElements(attributes, inputs, outputs)
         "GatherND" -> GatherND(attributes, inputs, outputs)
         "Gelu" -> Gelu(attributes, inputs, outputs)
         "Gemm" -> Gemm(attributes, inputs, outputs)
