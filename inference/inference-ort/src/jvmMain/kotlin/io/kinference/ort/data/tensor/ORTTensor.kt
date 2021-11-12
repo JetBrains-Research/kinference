@@ -66,6 +66,13 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
                     }
                     OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.UINT8)
                 }
+                TensorProto.DataType.BOOL -> {
+                    value as BooleanArray
+                    val buffer = ByteBuffer.allocateDirect(OnnxJavaType.BOOL.size * value.size).order(ByteOrder.LITTLE_ENDIAN)
+                    for (b in value) buffer.put(if (b) (1).toByte() else (0).toByte())
+                    buffer.rewind()
+                    OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.BOOL)
+                }
                 else -> error("Unsupported data type $type")
             }
             return ORTTensor(name, onnxTensor)
