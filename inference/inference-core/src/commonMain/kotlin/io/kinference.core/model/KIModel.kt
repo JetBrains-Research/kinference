@@ -13,7 +13,7 @@ class KIModel(proto: ModelProto) : Model<KIONNXData<*>>, Profilable {
     val name: String = "${proto.domain}:${proto.modelVersion}"
 
     private val profiles: MutableList<ProfilingContext> = ArrayList()
-    override fun addContext(name: String): ProfilingContext = ProfilingContext("Model $name").apply { profiles.add(this) }
+    override fun addContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
