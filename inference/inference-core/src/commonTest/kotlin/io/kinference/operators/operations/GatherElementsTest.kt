@@ -21,4 +21,9 @@ class GatherElementsTest {
     fun test_gather_elements_with_negative_indices() = TestRunner.runTest {
         KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_gather_elements_negative_indices"))
     }
+
+    @Test
+    fun test_gather_elements_model() = TestRunner.runTest {
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_gather_elements_model"))
+    }
 }

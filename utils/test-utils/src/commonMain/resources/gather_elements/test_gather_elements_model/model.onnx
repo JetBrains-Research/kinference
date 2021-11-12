@@ -1,0 +1,20 @@
+	onnx-test:«
+5
+input
+indicesoutput"GatherElements*
+axis gather_elements_modelZ
+input
+
+
+!
+€Z
+indices
+
+
+!
+€b
+output
+
+
+!
+€B

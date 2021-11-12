@@ -9,7 +9,6 @@ import io.kinference.core.operators.*
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.toIntArray
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -41,7 +40,7 @@ class GatherElements(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
                 currentDims[array.rank - 1] = 0
                 if (array.rank == 1) return
                 for (currentAxis in array.rank - 2 downTo 0) {
-                   if (currentDims[currentAxis]++ != indicesShape[currentAxis]) return
+                    if (++currentDims[currentAxis] != indicesShape[currentAxis]) return
                     currentDims[currentAxis] = 0
                 }
             }
@@ -65,8 +64,8 @@ class GatherElements(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         val actualAxis = data.indexAxis(axis)
         val actualIndices = getIndices(indices, data.shape[actualAxis])
         val output = data.allocateNDArray(Strides(indices.shape))
-        val numBlocks = actualIndices.computeBlockSize(toDim = indices.shape.size - 1)
-        val blockSize = actualIndices.shape[data.rank - 1]
+        val blockSize = actualIndices.shape.last()
+        val numBlocks = actualIndices.linearSize / blockSize
         val isLastDim = if (actualAxis != data.rank - 1) 1 else 0
         val indexer = OffsetIndexer(data, actualIndices, actualAxis)
         repeat(numBlocks) {
