@@ -242,6 +242,19 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         TODO("Not yet implemented")
     }
 
+    override fun reshape(strides: Strides): BooleanNDArray {
+        require(strides.linearSize == this.strides.linearSize) { "Linear size must be equal" }
+
+        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
+            val newArray = BooleanTiledArray(strides)
+            this.array.copyInto(newArray)
+
+            return BooleanNDArray(newArray, strides)
+        }
+
+        return BooleanNDArray(this.array, strides)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BooleanNDArray) return false
@@ -315,18 +328,6 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array as BooleanNDArray
         val (blockIndex, blockOffset) = array.array.indexFor(index)
         this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
-    }
-
-    override fun reshape(strides: Strides): MutableNDArray {
-        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
-            val newArray = BooleanTiledArray(strides)
-
-            this.array.copyInto(newArray)
-            this.array = newArray
-        }
-
-        this.strides = strides
-        return this
     }
 
     // TODO separate from PrimitiveArray (maybe LateInitArray will help)

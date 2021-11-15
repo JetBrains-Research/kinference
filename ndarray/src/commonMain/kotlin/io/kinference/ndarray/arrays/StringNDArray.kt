@@ -70,6 +70,12 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         TODO("Not yet implemented")
     }
 
+    override fun reshape(strides: Strides): StringNDArray {
+        require(strides.linearSize == this.strides.linearSize)
+
+        return StringNDArray(array, strides)
+    }
+
     companion object {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)
@@ -95,11 +101,6 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
         array as StringNDArray
         this.array.fill(array.array[index], from, to)
-    }
-
-    override fun reshape(strides: Strides): MutableNDArray {
-        this.strides = strides
-        return this
     }
 
     override fun transpose(permutations: IntArray): MutableNDArray {

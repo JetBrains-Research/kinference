@@ -201,18 +201,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         other.array.copyInto(this.array, offset, startInOther, endInOther)
     }
 
-    override fun reshape(strides: Strides): MutableNumberNDArray {
-        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
-            val newArray = PrimitiveTiledArray(strides)
-
-            this.array.copyInto(newArray)
-            this.array = newArray
-        }
-
-        this.strides = strides
-        return this
-    }
-
     // TODO separate from PrimitiveArray (maybe LateInitArray will help)
     private fun transposeRec(prevArray: PrimitiveTiledArray, newArray: PrimitiveTiledArray, prevStrides: Strides, newStrides: Strides, index: Int, prevOffset: Int, newOffset: Int, permutation: IntArray) {
         if (index != newStrides.shape.lastIndex) {

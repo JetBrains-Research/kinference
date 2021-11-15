@@ -521,8 +521,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
         require(shape.size in 1..2 && other.shape.size in 1..2)
-        val actualThis = (if (this.shape.size == 1) this.reshapeView(intArrayOf(1, shape[0])) else this) as PrimitiveNDArray
-        val actualOther = (if (other.shape.size == 1) other.reshapeView(intArrayOf(1, other.shape[0])) else other) as PrimitiveNDArray
+        val actualThis = (if (this.shape.size == 1) this.reshape(intArrayOf(1, shape[0])) else this) as PrimitiveNDArray
+        val actualOther = (if (other.shape.size == 1) other.reshape(intArrayOf(1, other.shape[0])) else other) as PrimitiveNDArray
 
         require(actualThis.shape[1] == actualOther.shape[0])
 
@@ -1460,6 +1460,19 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         tileRepeat(0, 0)
 
         return outputArray
+    }
+
+    override fun reshape(strides: Strides): NumberNDArray {
+        require(strides.linearSize == this.strides.linearSize) { "Linear size must be equal" }
+
+        if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
+            val newArray = PrimitiveTiledArray(strides)
+            this.array.copyInto(newArray)
+
+            return PrimitiveNDArray(newArray, strides)
+        }
+
+        return PrimitiveNDArray(this.array, strides)
     }
 
     override fun equals(other: Any?): Boolean {

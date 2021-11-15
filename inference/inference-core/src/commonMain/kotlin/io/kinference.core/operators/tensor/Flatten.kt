@@ -40,7 +40,7 @@ class Flatten(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         val actualAxis = input.indexAxis(axis)
 
         val newShape = makeShape(input.shape, actualAxis)
-        return listOf(input.toMutable().reshape(newShape).asTensor("output"))
+        return listOf(input.reshape(newShape).asTensor("output"))
     }
 
 }

@@ -18,7 +18,7 @@ fun canDequantizePerTensor(zeroPoint: NDArray?, scale: NDArray): Boolean {
     return scale.linearSize == 1 && (zeroPoint == null || zeroPoint.linearSize == 1)
 }
 
-fun MutableNDArray.wrapOneDim(): MutableNDArray {
+fun NDArray.wrapOneDim(): NDArray {
     return this.reshape(1.concat(this.shape))
 }
 
@@ -32,7 +32,7 @@ val NDArray.rows: Array<MutableNDArray>
 val NumberNDArray.rows: Array<MutableNumberNDArray>
     get() = Array(shape[0]) { i -> row(i) }
 
-fun MutableNDArray.squeeze(vararg axes: Int): MutableNDArray {
+fun NDArray.squeeze(vararg axes: Int): NDArray {
     val actualAxes = if (axes.isNotEmpty()) {
         axes.map { indexAxis(it) }
     } else {
@@ -50,7 +50,7 @@ private fun indexAxisForUnsqueeze(axis: Int, shapeSize: Int): Int {
     return if (axis < 0) shapeSize + axis else axis
 }
 
-fun MutableNDArray.unsqueeze(vararg axes: Int): MutableNDArray {
+fun NDArray.unsqueeze(vararg axes: Int): NDArray {
     val actualAxes = axes.map { indexAxisForUnsqueeze(it, this.rank + axes.size) }.sorted()
     val newShape = shape.toMutableList()
     for (axis in actualAxes) {
@@ -78,12 +78,12 @@ fun Array<NDArray>.stack(axis: Int): NDArray {
     fstShape.copyInto(newShape, 0, 0, axis)
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
-    return this.map { it.reshapeView(newShape) }.concatenate(axis)
+    return this.map { it.reshape(newShape) }.concatenate(axis)
 }
 
 fun NDArray.as2DList(): List<NDArray> {
     if (this.rank == 2) return listOf(this)
-    if (this.rank == 1) return listOf(this.copyIfNotMutable().wrapOneDim())
+    if (this.rank == 1) return listOf(this.wrapOneDim())
 
     val matrixShape = intArrayOf(shape[indexAxis(-2)], shape[indexAxis(-1)])
     val matrixStrides = Strides(matrixShape)
@@ -105,7 +105,7 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
 }
 
 
-fun MutableNDArray.reshape(tensorShape: NDArray): MutableNDArray {
+fun NDArray.reshape(tensorShape: NDArray): NDArray {
     require(tensorShape is LongNDArray) { "Tensor shape must have Long type" }
 
     val pointer = tensorShape.array.pointer()

@@ -50,7 +50,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             val rows = resolveDims(shape.sliceArray(rowIdx))
             val columns = resolveDims(shape.sliceArray(columnIdx))
 
-            val matrixRows = (input.reshapeView(intArrayOf(rows, columns)) as NumberNDArray).rows
+            val matrixRows = (input.reshape(intArrayOf(rows, columns)) as NumberNDArray).rows
 
             fun MutableNumberNDArray.softmax() {
                 minusAssign(createScalarNDArray(input.type, max()))

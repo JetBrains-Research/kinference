@@ -23,7 +23,10 @@ interface NDArray {
     fun allocateNDArray(strides: Strides): MutableNDArray
 
     fun view(vararg axes: Int): NDArray
+    @Deprecated(message = "Use reshape() instead", replaceWith = ReplaceWith("reshape()"))
     fun reshapeView(newShape: IntArray): NDArray
+    fun reshape(strides: Strides): NDArray
+    fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
     fun toMutable(newStrides: Strides = strides): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
@@ -48,8 +51,7 @@ interface MutableNDArray : NDArray {
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
     fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
-    fun reshape(strides: Strides): MutableNDArray
-    fun reshape(shape: IntArray): MutableNDArray = reshape(Strides(shape))
+
     fun transpose(permutations: IntArray): MutableNDArray
     fun transpose2D(): MutableNDArray
 
@@ -101,14 +103,15 @@ interface NumberNDArray : NDArray {
     fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
     fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, LongNDArray>
 
+    override fun reshape(strides: Strides): NumberNDArray
+    override fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
+
     override fun view(vararg axes: Int): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
-    override fun reshape(strides: Strides): MutableNumberNDArray
-    override fun reshape(shape: IntArray): MutableNumberNDArray = reshape(Strides(shape))
     override fun transpose(permutations: IntArray): MutableNumberNDArray
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 

@@ -216,7 +216,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             }
 
             output.transpose(intArrayOf(0, 2, 1, 3))
-            return output.reshapeView(intArrayOf(batchSize, seqLen, hiddenSize)) to present
+            return output.reshape(intArrayOf(batchSize, seqLen, hiddenSize)) to present
         }
 
         internal fun getScores(
