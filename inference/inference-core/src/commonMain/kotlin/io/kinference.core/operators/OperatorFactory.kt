@@ -70,6 +70,7 @@ object OperatorFactory {
         "Not" -> Not(attributes, inputs, outputs)
         "Or" -> Or(attributes, inputs, outputs)
         "QAttention" -> QAttention(attributes, inputs, outputs)
+        "QEmbedLayerNormalization" -> QEmbedLayerNormalization(attributes, inputs, outputs)
         "Relu" -> Relu(attributes, inputs, outputs)
         "Reshape" -> Reshape(attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(attributes, inputs, outputs)
