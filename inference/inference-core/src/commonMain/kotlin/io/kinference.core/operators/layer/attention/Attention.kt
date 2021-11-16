@@ -12,7 +12,6 @@ import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.activations.Softmax
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto

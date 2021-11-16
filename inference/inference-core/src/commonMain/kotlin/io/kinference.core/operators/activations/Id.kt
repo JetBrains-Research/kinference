@@ -2,7 +2,6 @@ package io.kinference.core.operators.activations
 
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.allocateNDArray
 import kotlin.time.ExperimentalTime

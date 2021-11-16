@@ -30,9 +30,7 @@ open class IOInfo(
 }
 
 data class VersionInfo(val sinceVersion: Int, val untilVersion: Int = Int.MAX_VALUE) {
-    companion object {
-        fun VersionInfo.asRange() = sinceVersion until untilVersion
-    }
+    fun asRange() = sinceVersion until untilVersion
 }
 
 class VariadicIOInfo(

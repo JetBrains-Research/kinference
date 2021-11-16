@@ -11,7 +11,6 @@ import io.kinference.ndarray.broadcasting.unsqueezeFirst
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto

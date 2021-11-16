@@ -5,7 +5,6 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray

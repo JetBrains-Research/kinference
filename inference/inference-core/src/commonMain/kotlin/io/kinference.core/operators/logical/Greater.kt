@@ -9,7 +9,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptDouble
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto

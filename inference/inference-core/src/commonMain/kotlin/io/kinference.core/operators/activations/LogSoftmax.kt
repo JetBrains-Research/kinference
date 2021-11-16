@@ -4,7 +4,6 @@ import io.kinference.core.attributes.Attribute
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 

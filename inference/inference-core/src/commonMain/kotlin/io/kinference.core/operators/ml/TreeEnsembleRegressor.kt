@@ -7,7 +7,6 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
 import io.kinference.core.operators.ml.trees.TreeEnsembleBuilder
 import io.kinference.core.operators.ml.trees.toFloatNDArray

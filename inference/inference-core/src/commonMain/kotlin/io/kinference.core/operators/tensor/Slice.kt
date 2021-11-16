@@ -9,7 +9,6 @@ import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto

@@ -9,7 +9,6 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.rows
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.ml.trees.*
 import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
 import io.kinference.core.operators.ml.trees.TreeEnsembleBuilder

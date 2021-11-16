@@ -8,7 +8,6 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.extensions.squeeze
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 

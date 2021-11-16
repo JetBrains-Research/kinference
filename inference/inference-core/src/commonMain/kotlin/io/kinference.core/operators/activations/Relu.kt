@@ -2,7 +2,6 @@ package io.kinference.core.operators.activations
 
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.max

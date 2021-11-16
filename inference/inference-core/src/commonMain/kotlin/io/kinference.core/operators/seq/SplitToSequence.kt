@@ -8,7 +8,6 @@ import io.kinference.core.data.tensor.splitWithAxis
 import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
-import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.core.types.ValueTypeInfo.SequenceTypeInfo
