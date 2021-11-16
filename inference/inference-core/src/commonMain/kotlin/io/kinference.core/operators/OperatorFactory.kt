@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 object OperatorFactory {
     @Suppress("UNCHECKED_CAST")
-    fun create(name: String?, version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
+    fun create(name: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
         "Add" -> Add(version, attributes, inputs, outputs)
         "Sub" -> Sub(version, attributes, inputs, outputs)
         "Attention" -> Attention(version, attributes, inputs, outputs)

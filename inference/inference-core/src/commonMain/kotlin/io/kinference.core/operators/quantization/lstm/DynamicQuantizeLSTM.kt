@@ -15,7 +15,9 @@ import kotlin.time.ExperimentalTime
 
 sealed class DynamicQuantizeLSTM(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in DynamicQuantizeLSTMVer1.VERSION.asRange() -> DynamicQuantizeLSTMVer1(attributes, inputs, outputs)
             else -> error("Unsupported version of DynamicQuantizeLSTM operator: $version")
         }

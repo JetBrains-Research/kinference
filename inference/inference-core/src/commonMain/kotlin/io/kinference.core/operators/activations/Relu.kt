@@ -17,7 +17,9 @@ sealed class Relu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, i
             override fun apply(value: Double): Double = max(0.0, value)
         }
 
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6, untilVersion = 14)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in ReluVer6.VERSION.asRange() -> ReluVer6(attributes, inputs, outputs)
             else -> error("Unsupported version of Relu operator: $version")
         }

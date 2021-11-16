@@ -9,7 +9,9 @@ import kotlin.time.ExperimentalTime
 
 sealed class LogSoftmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
     companion object {
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in LogSoftmaxVer1.VERSION.asRange() -> LogSoftmaxVer1(attributes, inputs, outputs)
             else -> error("Unsupported version of LogSoftmax operator: $version")
         }

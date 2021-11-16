@@ -13,7 +13,9 @@ import io.kinference.protobuf.message.AttributeProto
 
 sealed class Split(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 2, untilVersion = 13)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in SplitVer2.VERSION.asRange() -> SplitVer2(attributes, inputs, outputs)
             else -> error("Unsupported version of Constant operator: $version")
         }

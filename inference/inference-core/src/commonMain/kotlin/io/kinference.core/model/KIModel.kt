@@ -20,9 +20,9 @@ class KIModel(proto: ModelProto) : Model<KIONNXData<*>>, Profilable {
             }
         }
 
-        fun getVersion(domain: String?): Int {
+        fun getVersion(domain: String?): Int? {
             val domainName = domain ?: OperatorInfo.DEFAULT_DOMAIN
-            return operatorSets[domainName] ?: 1
+            return operatorSets[domainName]
         }
     }
 

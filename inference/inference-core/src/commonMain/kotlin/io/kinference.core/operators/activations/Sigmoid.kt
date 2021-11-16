@@ -17,7 +17,9 @@ sealed class Sigmoid(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
             override fun apply(value: Double): Double = 1.0 / (1.0 + exp(-value))
         }
 
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in SigmoidVer6.VERSION.asRange() -> SigmoidVer6(attributes, inputs, outputs)
             else -> error("Unsupported version of Sigmoid operator: $version")
         }
