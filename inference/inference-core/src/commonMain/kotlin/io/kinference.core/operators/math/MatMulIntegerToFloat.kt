@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.profiler.ProfilingContext
@@ -33,7 +34,13 @@ class MatMulIntegerToFloat(attributes: Map<String, Attribute<Any>>, inputs: List
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val INFO = OperatorInfo("MatMulIntegerToFloat", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("MatMulIntegerToFloat", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> MatMulIntegerToFloat(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMulIntegerToFloat operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

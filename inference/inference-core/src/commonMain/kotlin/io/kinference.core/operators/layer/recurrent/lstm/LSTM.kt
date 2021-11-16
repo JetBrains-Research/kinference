@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -50,7 +51,13 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             IOInfo(2, TYPE_CONSTRAINTS, "Y_c", optional = true) // [num_directions, batch_size, hidden_size]
         )
 
-        private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> LSTM(attributes, inputs, outputs)
+            else -> error("Unsupported version of LSTM operator: $version")
+        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->
@@ -93,16 +100,16 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         val initialCellState = inputs.getOrNull(6)
 
         val (output, lastState, lastCellState) = lstmLayer.apply(
-                                                 inputAsLSTMInput,
-                                                 weightsAsLSTMWeights,
-                                                 recurrentWeightsAsLSTMWeights,
-                                                 preparedBias?.data as NumberNDArray?,
-                                                 sequenceLens?.data as IntNDArray?,
-                                                 initialState?.data as NumberNDArray?,
-                                                 initialCellState?.data as NumberNDArray?,
-                                                 preparedPeepholes?.data as NumberNDArray?,
-                                                 input.data.type
-        )
+                                                    inputAsLSTMInput,
+                                                    weightsAsLSTMWeights,
+                                                    recurrentWeightsAsLSTMWeights,
+                                                    preparedBias?.data as NumberNDArray?,
+                                                    sequenceLens?.data as IntNDArray?,
+                                                    initialState?.data as NumberNDArray?,
+                                                    initialCellState?.data as NumberNDArray?,
+                                                    preparedPeepholes?.data as NumberNDArray?,
+                                                    input.data.type
+                                                )
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }
 }

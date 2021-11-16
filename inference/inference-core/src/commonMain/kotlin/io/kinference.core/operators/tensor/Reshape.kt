@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.extensions.reshape
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
@@ -22,7 +23,13 @@ class Reshape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "reshaped", optional = false, differentiable = true))
 
-        private val INFO = OperatorInfo("Reshape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
+        private val INFO = OperatorInfo("Reshape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Reshape(attributes, inputs, outputs)
+            else -> error("Unsupported version of Reshape operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

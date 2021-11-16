@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.matmul
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
@@ -32,7 +33,13 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val INFO = OperatorInfo("MatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("MatMul", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> MatMul(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMul operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

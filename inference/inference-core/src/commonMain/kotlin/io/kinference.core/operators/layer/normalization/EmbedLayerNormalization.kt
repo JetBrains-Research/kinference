@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
@@ -43,7 +44,13 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
             IOInfo(1, setOf(TensorProto.DataType.INT32), "mask_index", false)
         )
 
-        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> EmbedLayerNormalization(attributes, inputs, outputs)
+            else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
+        }
 
         fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArray {
             val maskIndices = MutableIntNDArray(shape = intArrayOf(batchSize))

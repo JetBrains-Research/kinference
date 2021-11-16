@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
@@ -14,8 +15,12 @@ import io.kinference.protobuf.message.TensorProto
 class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
+            TensorProto.DataType.UINT8,
+            TensorProto.DataType.UINT16,
             TensorProto.DataType.UINT32,
             TensorProto.DataType.UINT64,
+            TensorProto.DataType.INT8,
+            TensorProto.DataType.INT16,
             TensorProto.DataType.INT32,
             TensorProto.DataType.INT64,
             TensorProto.DataType.FLOAT16,
@@ -33,7 +38,13 @@ class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Mul(attributes, inputs, outputs)
+            else -> error("Unsupported version of Mul operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

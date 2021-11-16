@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
@@ -28,11 +29,16 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             IOInfo(0, TYPE_CONSTRAINTS, "y", optional = false)
         )
 
-        private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Gelu(attributes, inputs, outputs)
+            else -> error("Unsupported version of Gelu operator: $version")
+        }
 
         fun gelu(array: MutableNumberNDArray): NumberNDArray {
-            when (array.type) {
+            when (val type = array.type) {
                 DataType.FLOAT -> {
                     array as MutableFloatNDArray
                     val pointer = array.array.pointer()
@@ -47,7 +53,7 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
                         0.5 * it * (1.0 + array.erfFor(it / SQRT2))
                     }
                 }
-                else -> throw IllegalStateException("Unsupported type")
+                else -> throw IllegalStateException("Unsupported data type: $type")
             }
             return array
         }

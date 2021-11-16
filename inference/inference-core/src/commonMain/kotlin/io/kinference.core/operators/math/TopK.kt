@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.profiler.ProfilingContext
@@ -45,7 +46,13 @@ class TopK(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             AttributeInfo("sorted", setOf(AttributeProto.AttributeType.INT), false, 1),
         )
 
-        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> TopK(attributes, inputs, outputs)
+            else -> error("Unsupported version of TopK operator: $version")
+        }
     }
 
     private val axis: Int by attribute() { it: Long -> it.toInt() }

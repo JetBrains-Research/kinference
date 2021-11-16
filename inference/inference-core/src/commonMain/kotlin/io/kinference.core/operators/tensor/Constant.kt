@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
@@ -31,7 +32,13 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("Constant", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Constant", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Constant(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
     }
 
 

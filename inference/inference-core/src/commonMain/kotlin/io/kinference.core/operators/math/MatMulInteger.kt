@@ -10,6 +10,7 @@ import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.ndarray.extensions.matmul
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
@@ -32,8 +33,13 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 10)
+        private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> MatMulInteger(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMulInteger operator: $version")
+        }
 
         private fun NumberNDArray.toIntNDArray(): IntNDArray {
             val result = IntNDArray(IntTiledArray(this.strides), strides)

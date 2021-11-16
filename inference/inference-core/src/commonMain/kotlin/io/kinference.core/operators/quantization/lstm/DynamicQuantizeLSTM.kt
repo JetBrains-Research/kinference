@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMLayerBase
 import io.kinference.ndarray.arrays.*
@@ -57,14 +58,19 @@ class DynamicQuantizeLSTM(attributes: Map<String, Attribute<Any>>, inputs: List<
             IOInfo(2, FLOAT_TYPE, "Y_c", optional = true) // [num_directions, batch_size, hidden_size]
         )
 
-        private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> DynamicQuantizeLSTM(attributes, inputs, outputs)
+            else -> error("Unsupported version of DynamicQuantizeLSTM operator: $version")
+        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->
         if (direction == "forward" || direction == "reverse")
             it.subList(0, 3)
-        else
-            it
+        else it
     }
 
     private val direction: String by attribute()

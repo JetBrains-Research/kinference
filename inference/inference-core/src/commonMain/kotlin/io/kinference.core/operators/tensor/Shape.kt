@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -22,7 +23,13 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "shape", optional = false, differentiable = false))
 
-        private val INFO = OperatorInfo("Shape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 15)
+        private val INFO = OperatorInfo("Shape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Shape(attributes, inputs, outputs)
+            else -> error("Unsupported version of Shape operator: $version")
+        }
     }
 
 

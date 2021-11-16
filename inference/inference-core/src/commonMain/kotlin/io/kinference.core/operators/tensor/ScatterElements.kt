@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.profiler.ProfilingContext
@@ -27,7 +28,13 @@ class ScatterElements(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false))
 
-        private val INFO = OperatorInfo("ScatterElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
+        private val INFO = OperatorInfo("ScatterElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> ScatterElements(attributes, inputs, outputs)
+            else -> error("Unsupported version o ScatterElements operator: $version")
+        }
 
         private fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
             if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")

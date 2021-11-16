@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.profiler.ProfilingContext
@@ -34,11 +35,17 @@ class ReduceSum(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false, longArrayOf()),
+            AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false, LongArray(0)),
             AttributeInfo("keepdims", setOf(AttributeProto.AttributeType.INT), false, 1),
         )
 
-        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> ReduceSum(attributes, inputs, outputs)
+            else -> error("Unsupported version of ReduceSum operator: $version")
+        }
     }
 
     private val axes: LongArray by attribute()

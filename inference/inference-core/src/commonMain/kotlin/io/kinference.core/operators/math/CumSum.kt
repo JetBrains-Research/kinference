@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto.DataType
@@ -31,7 +32,13 @@ class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<
             IOInfo(0, TYPE_CONSTRAINTS, "y", optional = false)
         )
 
-        private val INFO = OperatorInfo("CumSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("CumSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> CumSum(attributes, inputs, outputs)
+            else -> error("Unsupported version of CumSum operator: $version")
+        }
     }
 
     private val exclusive by attribute { ex: Number -> ex.toInt() != 0 }

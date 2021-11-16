@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
@@ -29,7 +30,13 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 9)
+        private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Where(attributes, inputs, outputs)
+            else -> error("Unsupported version of Where operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
@@ -44,7 +51,7 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
             val conditionPoint = (condition as BooleanNDArray).array.pointer()
 
-            when (left.type) {
+            when (val type = left.type) {
                 DataType.FLOAT -> {
                     val leftPoint = (left as FloatNDArray).array.pointer()
                     val rightPoint = (right as FloatNDArray).array.pointer()
@@ -109,7 +116,7 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
                     destPoint.acceptTriple(leftPoint, rightPoint, conditionPoint, dest.linearSize) { _, left, right, cond -> if (cond) left else right }
                 }
 
-                else -> throw IllegalStateException("Unsupported type")
+                else -> throw IllegalStateException("Unsupported data type: $type")
             }
         }
 

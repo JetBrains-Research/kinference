@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.*
@@ -29,7 +30,13 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
             IOInfo(2, setOf(TensorProto.DataType.UINT8), "y_zero_point", optional = false)
         )
 
-        private val INFO = OperatorInfo("DynamicQuantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("DynamicQuantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> DynamicQuantizeLinear(attributes, inputs, outputs)
+            else -> error("Unsupported version of DynamicQuantizeLinear operator: $version")
+        }
 
         private fun clip(x: Float, min: Float, max: Float) = when {
             x < min -> min

@@ -8,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.extensions.transpose
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
@@ -24,7 +25,13 @@ class Transpose(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "transposed", optional = false, differentiable = true))
 
-        private val INFO = OperatorInfo("Transpose", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Transpose", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Transpose(attributes, inputs, outputs)
+            else -> error("Unsupported version of Transpose operator: $version")
+        }
     }
 
     private val perm: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }

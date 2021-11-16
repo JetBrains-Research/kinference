@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptRecursive
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
@@ -27,15 +28,20 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false)
         )
 
-        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
-    }
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> FastGelu(attributes, inputs, outputs)
+            else -> error("Unsupported version of FastGelu operator: $version")
+        }
+    }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)
 
-        val result = when (input.data.type) {
+        val result = when (val type = input.data.type) {
             DataType.FLOAT -> {
                 val biasData = bias?.data as? FloatNDArray
                 val result = input.data.toMutable() as MutableFloatNDArray
@@ -60,7 +66,7 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                 result
             }
 
-            else -> error("Unsupported operation")
+            else -> error("Unsupported operation for data type $type")
         }.asTensor("Y")
 
         return listOf(result)

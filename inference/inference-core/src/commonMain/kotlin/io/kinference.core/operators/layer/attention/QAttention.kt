@@ -10,6 +10,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -48,7 +49,13 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
             IOInfo(1, FLOATS, "present", optional = true)
         )
 
-        private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> QAttention(attributes, inputs, outputs)
+            else -> error("Unsupported version of QAttention operator: $version")
+        }
     }
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }

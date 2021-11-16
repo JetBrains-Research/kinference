@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
@@ -32,7 +33,13 @@ class Slice(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
             IOInfo(0, DATA_TYPE_CONSTRAINTS, "output", optional = false, differentiable = true)
         )
 
-        private val INFO = OperatorInfo("Slice", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 10)
+        private val INFO = OperatorInfo("Slice", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Slice(attributes, inputs, outputs)
+            else -> error("Unsupported version of Slice operator: $version")
+        }
     }
 
 

@@ -12,6 +12,7 @@ import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.activations.Softmax
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -46,7 +47,13 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
         )
 
-        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Attention(attributes, inputs, outputs)
+            else -> error("Unsupported version of Attention operator: $version")
+        }
 
         internal fun initQueryKeyValue(
             input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int,

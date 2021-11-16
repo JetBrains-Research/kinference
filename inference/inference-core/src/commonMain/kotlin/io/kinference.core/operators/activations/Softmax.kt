@@ -6,6 +6,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import kotlinx.coroutines.*
@@ -23,10 +24,16 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1)
         )
 
-        private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO,
-            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false)),
-            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
-        )
+        private val INPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false))
+        private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
+
+        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO, INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Softmax(attributes, inputs, outputs)
+            else -> error("Unsupported version of Softmax operator: $version")
+        }
 
         private fun resolveDims(dims: IntArray?): Int {
             return if (dims == null || dims.isEmpty()) 1 else dims.reduce(Int::times)
@@ -39,7 +46,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             DataType.DOUBLE -> object : DoubleMap {
                 override fun apply(value: Double): Double = exp(value)
             }
-            else -> error("Unsupported data type")
+            else -> error("Unsupported data type: $type")
         }
 
         fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
@@ -84,7 +91,7 @@ class Softmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         }
     }
 
-    private val axis: Int by attribute("axis") { it: Number -> it.toInt() }
+    private val axis: Int by attribute { it: Number -> it.toInt() }
 
     override fun activate(input: NDArray): NDArray {
         return softmax(input, axis, input.strides)

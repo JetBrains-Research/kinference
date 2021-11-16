@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.computeBlockSize
 import io.kinference.profiler.ProfilingContext
@@ -22,7 +23,13 @@ class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false))
 
-        private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
+        private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> ScatterND(attributes, inputs, outputs)
+            else -> error("Unsupported version of ScatterND operator: $version")
+        }
 
         private fun getActualIndices(input: NDArray, indices: LongNDArray, kDim: Int): IntArray {
             val inputStrides = input.strides.strides

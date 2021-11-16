@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
@@ -23,7 +24,13 @@ class Flatten(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), default = 1, required = false)
         )
 
-        private val INFO = OperatorInfo("Flatten", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Flatten", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Flatten(attributes, inputs, outputs)
+            else -> error("Unsupported version of Flatten operator: $version")
+        }
     }
 
     val axis: Int by attribute() { it: Number -> it.toInt() }

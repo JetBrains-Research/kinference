@@ -8,9 +8,9 @@ import io.kinference.core.data.tensor.splitWithAxis
 import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.core.types.ValueInfo
 import io.kinference.core.types.ValueTypeInfo.SequenceTypeInfo
 import kotlin.time.ExperimentalTime
 
@@ -33,7 +33,13 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output_sequence", optional = false, onnxDataType = ONNXDataType.ONNX_SEQUENCE))
 
-        private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> SplitToSequence(attributes, inputs, outputs)
+            else -> error("Unsupported version of SplitToSequence operator: $version")
+        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

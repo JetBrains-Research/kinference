@@ -4,6 +4,7 @@ import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -35,7 +36,13 @@ class Div(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(0, TYPE_CONSTRAINTS, "C", differentiable = true, optional = false)
         )
 
-        private val INFO = OperatorInfo("Div", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Div", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Div(attributes, inputs, outputs)
+            else -> error("Unsupported version of Div operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

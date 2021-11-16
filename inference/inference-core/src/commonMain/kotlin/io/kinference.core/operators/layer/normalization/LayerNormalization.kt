@@ -13,6 +13,7 @@ import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
@@ -49,7 +50,13 @@ class LayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<S
             IOInfo(2, TYPE_CONSTRAINTS, "inv_std_var", true)
         )
 
-        private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> LayerNormalization(attributes, inputs, outputs)
+            else -> error("Unsupported version of LayerNormalization operator: $version")
+        }
     }
 
 

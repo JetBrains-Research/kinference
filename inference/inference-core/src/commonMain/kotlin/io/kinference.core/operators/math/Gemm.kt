@@ -11,6 +11,7 @@ import io.kinference.ndarray.broadcasting.unsqueezeFirst
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -51,7 +52,13 @@ class Gemm(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val INFO = OperatorInfo("Gemm", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("Gemm", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Gemm(attributes, inputs, outputs)
+            else -> error("Unsupported version of Gemm operator: $version")
+        }
 
         private fun getDest(array: NDArray?, type: DataType, targetShape: IntArray): MutableNDArray {
             if (array == null) return allocateNDArray(type, Strides(targetShape))

@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.ndarray.extensions.matmul
@@ -37,7 +38,13 @@ class FusedMatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val INFO = OperatorInfo("FusedMatMul", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("FusedMatMul", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> FusedMatMul(attributes, inputs, outputs)
+            else -> error("Unsupported version of FusedMatMul operator: $version")
+        }
     }
 
     private val alpha: Float by attribute()

@@ -1,6 +1,5 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
-
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
@@ -9,6 +8,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -48,7 +48,13 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(1, TYPE_CONSTRAINTS, "Y_h", optional = true), // [num_directions, batch_size, hidden_size]
         )
 
-        private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> GRU(attributes, inputs, outputs)
+            else -> error("Unsupported version of LSTM operator: $version")
+        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->
@@ -98,4 +104,3 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"))
     }
 }
-

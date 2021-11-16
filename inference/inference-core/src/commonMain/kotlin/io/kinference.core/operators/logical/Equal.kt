@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptDouble
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
@@ -27,8 +28,13 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
             IOInfo(0, setOf(TensorProto.DataType.BOOL), "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("Equal", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Equal", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Equal(attributes, inputs, outputs)
+            else -> error("Unsupported version of Equal operator: $version")
+        }
 
         infix fun NDArray.equal(other: NDArray): NDArray {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->

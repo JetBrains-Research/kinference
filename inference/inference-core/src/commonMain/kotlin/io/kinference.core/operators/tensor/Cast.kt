@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -28,7 +29,13 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 6)
+        private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Cast(attributes, inputs, outputs)
+            else -> error("Unsupported version of Cast operator: $version")
+        }
     }
 
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }

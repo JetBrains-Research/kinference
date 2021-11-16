@@ -7,6 +7,7 @@ import io.kinference.core.data.tensor.*
 import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
@@ -25,7 +26,13 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "concat_result", optional = false))
 
-        private val INFO = OperatorInfo("ConcatFromSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("ConcatFromSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> ConcatFromSequence(attributes, inputs, outputs)
+            else -> error("Unsupported version of ConcatFromSequence operator: $version")
+        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

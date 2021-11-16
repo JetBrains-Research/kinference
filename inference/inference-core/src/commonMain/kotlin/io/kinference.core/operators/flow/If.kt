@@ -10,6 +10,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -30,7 +31,13 @@ class If(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
 
         private val OUTPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "outputs", minimumArity = 1))
 
-        private val INFO = OperatorInfo("If", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val INFO = OperatorInfo("If", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> If(attributes, inputs, outputs)
+            else -> error("Unsupported version of If operator: $version")
+        }
     }
 
     private val thenBranch: Graph by attribute("then_branch")

@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArray
@@ -26,7 +27,13 @@ class GatherND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false))
 
-        private val INFO = OperatorInfo("GatherND", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("GatherND", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> GatherND(attributes, inputs, outputs)
+            else -> error("Unsupported version of GatherND operator: $version")
+        }
 
         private fun NDArray.getOffsetsFromIndices(indices: LongNDArray, batchDims: Int): IntArray {
             val indexSize = indices.shape.last()

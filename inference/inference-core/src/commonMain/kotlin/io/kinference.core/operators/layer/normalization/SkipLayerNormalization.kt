@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
@@ -44,8 +45,13 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
             IOInfo(2, TYPE_CONSTRAINTS, "inv_std_var", true)
         )
 
-        private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> SkipLayerNormalization(attributes, inputs, outputs)
+            else -> error("Unsupported version of SkipLayerNormalization operator: $version")
+        }
 
         private fun FloatNDArray.normalize(
             skip: FloatNDArray,

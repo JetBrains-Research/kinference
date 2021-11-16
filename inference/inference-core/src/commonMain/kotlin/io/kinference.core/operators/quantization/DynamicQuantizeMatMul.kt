@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
@@ -33,7 +34,13 @@ class DynamicQuantizeMatMul(attributes: Map<String, Attribute<Any>>, inputs: Lis
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, FLOAT_TYPE, "Y", optional = false))
 
-        private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> DynamicQuantizeMatMul(attributes, inputs, outputs)
+            else -> error("Unsupported version of DynamicQuantizeMatMul operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

@@ -7,6 +7,7 @@ import io.kinference.core.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
@@ -15,8 +16,6 @@ class Or(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.BOOL)
 
-        private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()
-
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),
             IOInfo(1, TYPE_CONSTRAINTS, "B", optional = false)
@@ -24,7 +23,13 @@ class Or(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false))
 
-        private val INFO = OperatorInfo("Or", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Or", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> Or(attributes, inputs, outputs)
+            else -> error("Unsupported version of Or operator: $version")
+        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

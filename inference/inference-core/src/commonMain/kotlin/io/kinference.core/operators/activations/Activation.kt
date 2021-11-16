@@ -22,7 +22,6 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
         return listOf(activate(inputs.first()!!))
     }
 
-
     companion object {
         // TODO: Add activations with alpha and beta
         fun createFloat(name: String): FloatMap = when (name) {

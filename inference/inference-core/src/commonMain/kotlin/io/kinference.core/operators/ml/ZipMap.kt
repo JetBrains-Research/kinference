@@ -11,6 +11,7 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.pointers.FloatPointer
 import io.kinference.core.operators.*
+import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.core.types.*
@@ -35,7 +36,13 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
             AttributeInfo("classlabels_strings", setOf(AttributeProto.AttributeType.STRINGS), required = false)
         )
 
-        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        private val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in VERSION.asRange() -> ZipMap(attributes, inputs, outputs)
+            else -> error("Unsupported version of ZipMap operator: $version")
+        }
 
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
