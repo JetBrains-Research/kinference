@@ -28,7 +28,7 @@ internal object LSTMContext: ContextPrepare() {
     internal fun prepareWeights(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 4, shape[1] / 4, shape[2])
-        return tensor.data.reshape(newShape).toMutable()
+        return tensor.data.reshape(newShape)
                .transpose(intArrayOf(0, 1, 3, 2)).asTensor("prepared_${tensor.name}")
     }
 

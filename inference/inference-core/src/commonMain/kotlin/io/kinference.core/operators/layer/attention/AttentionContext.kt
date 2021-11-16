@@ -27,7 +27,7 @@ internal object AttentionContext: ContextPrepare() {
         val headSize = shape[1] / 3 / numHeads
         val newShape = intArrayOf(shape[0], 3, numHeads, headSize)
 
-        return tensor.data.reshape(newShape).toMutable().transpose(intArrayOf(1, 2, 0, 3)).asTensor("prepared_${tensor.name}")
+        return tensor.data.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor("prepared_${tensor.name}")
     }
 
     internal fun prepareBias(tensor: KITensor, numHeads: Int): KITensor {

@@ -1475,6 +1475,127 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return PrimitiveNDArray(this.array, strides)
     }
 
+    private fun transposeByBlocks(permutations: IntArray): NumberNDArray {
+        val outputBlocks =  this.array.blocks.copyOf()
+        val outputStrides = strides.transpose(permutations)
+
+        var axisToStop: Int = permutations.size
+
+        for (idx in permutations.indices.reversed()) {
+            if (permutations[idx] != idx) {
+                axisToStop = idx + 1
+                break
+            }
+        }
+        val countBlocksToCopy = computeBlockSize(fromDim = axisToStop) / this.array.blockSize
+
+
+        fun transposeByBlocksRec(axis: Int, inputOffset: Int, outputOffset: Int) {
+            when(axis) {
+                shape.lastIndex, axisToStop -> {
+                    val inputStartBlockNum = inputOffset / this.array.blockSize
+                    val outputStartBlockNum = outputOffset / this.array.blockSize
+
+                    repeat(countBlocksToCopy) {
+                        outputBlocks[outputStartBlockNum + it] = this.array.blocks[inputStartBlockNum + it]
+                    }
+                }
+
+                else -> {
+                    val dims = outputStrides.shape[axis]
+
+                    repeat(dims) { dim ->
+                        val additionalInputOffset = this.strides.strides[permutations[axis]] * dim
+                        val additionalOutputOffset = outputStrides.strides[axis] * dim
+
+                        transposeByBlocksRec(axis + 1, inputOffset + additionalInputOffset, outputOffset + additionalOutputOffset)
+                    }
+                }
+            }
+        }
+
+        transposeByBlocksRec(0, 0, 0)
+
+        return PrimitiveNDArray(PrimitiveTiledArray(outputBlocks), outputStrides)
+    }
+
+    override fun transpose(permutations: IntArray): NumberNDArray {
+        require(permutations.size == rank)
+        require(permutations.all { it in permutations.indices })
+
+        if (permutations.withIndex().all { it.value == it.index }) {
+            return this
+        }
+
+        val outputStrides = strides.transpose(permutations)
+
+        if (isTransposeReshape(permutations)) {
+            return reshape(outputStrides)
+        }
+
+        if (rank == 2) {
+            return transpose2D()
+        }
+
+        if (permutations.lastIndex == permutations.last()) {
+            return transposeByBlocks(permutations)
+        }
+
+        val outputArray = allocateNDArray(outputStrides)
+
+        fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
+            when(axis) {
+                shape.lastIndex -> {
+                    val dims = outputStrides.shape[axis]
+                    val inputStride = this.strides.strides[permutations[axis]]
+                    var index = 0
+                    outputArray.array.pointer(outputOffset).map(dims) { _: PrimitiveType -> this.array[inputOffset + inputStride * index++] }
+                }
+
+                else -> {
+                    val dims = outputStrides.shape[axis]
+
+                    repeat(dims) { dim ->
+                        val inputAdditionalOffset = this.strides.strides[permutations[axis]] * dim
+                        val outputAdditionalOffset = outputStrides.strides[axis] * dim
+
+                        transposeRec(axis + 1, inputOffset + inputAdditionalOffset, outputOffset + outputAdditionalOffset)
+                    }
+                }
+            }
+        }
+
+        transposeRec(0, 0, 0)
+
+        return outputArray
+    }
+
+    override fun transpose2D(): NumberNDArray {
+        require(rank == 2)
+
+        val outputShape = shape.reversedArray()
+        val outputStrides = Strides(outputShape)
+        val outputArray = PrimitiveTiledArray(outputStrides)
+
+        val newBlocksInRow = outputShape[1] / outputArray.blockSize
+
+        var blockNum = 0
+
+        for (row in 0 until outputShape[0]) {
+            val (blockOffset, offset) = array.indexFor(row)
+            var col = 0
+            for (i in 0 until newBlocksInRow) {
+                val block = outputArray.blocks[blockNum++]
+                for (idx in 0 until outputArray.blockSize) {
+                    block[idx] = this.array.blocks[blockOffset + col * this.blocksInRow][offset]
+                    col++
+                }
+            }
+        }
+
+        return PrimitiveNDArray(outputArray, outputStrides)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PrimitiveNDArray) return false

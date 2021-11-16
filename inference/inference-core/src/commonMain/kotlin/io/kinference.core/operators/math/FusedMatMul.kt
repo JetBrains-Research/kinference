@@ -49,12 +49,12 @@ class FusedMatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         val left = inputs[0]!!.data as NumberNDArray
         val right = inputs[1]!!.data as NumberNDArray
 
-        val actualLeft = if (transposeLeft) left.toMutable().transpose(left.shape.indices.toIntArray().apply {
+        val actualLeft = if (transposeLeft) left.transpose(left.shape.indices.toIntArray().apply {
             this[lastIndex]--
             this[lastIndex - 1]++
         }) else left
 
-        val actualRight = if (transposeRight) right.toMutable().transpose(right.shape.indices.toIntArray().apply {
+        val actualRight = if (transposeRight) right.transpose(right.shape.indices.toIntArray().apply {
             this[lastIndex]--
             this[lastIndex - 1]++
         }) else right

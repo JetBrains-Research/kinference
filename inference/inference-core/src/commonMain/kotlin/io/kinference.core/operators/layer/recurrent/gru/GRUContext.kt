@@ -26,7 +26,7 @@ internal object GRUContext: ContextPrepare() {
     internal fun prepareWeights(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 3, shape[1] / 3, shape[2])
-        return tensor.data.reshape(newShape).toMutable().transpose(intArrayOf(0, 1, 3, 2)).asTensor("prepared_${tensor.name}")
+        return tensor.data.reshape(newShape).transpose(intArrayOf(0, 1, 3, 2)).asTensor("prepared_${tensor.name}")
     }
 
     internal fun prepareBias(tensor: KITensor): KITensor {

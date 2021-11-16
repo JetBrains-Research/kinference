@@ -60,7 +60,7 @@ fun NDArray.unsqueeze(vararg axes: Int): NDArray {
     return reshape(newShape.toIntArray())
 }
 
-fun MutableNDArray.transpose(permutations: IntArray? = null): MutableNDArray {
+fun NDArray.transpose(permutations: IntArray? = null): NDArray {
     require(permutations.isNullOrEmpty() || permutations!!.size == rank) { "Axes permutations list size should match the number of axes" }
     if (this.rank == 2) return this.transpose2D()
 
@@ -196,4 +196,17 @@ fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
         val pointer = indices.array.pointer()
         IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
     }
+}
+
+fun NDArray.isTransposeReshape(permutation: IntArray): Boolean {
+    var lastPermutedAxis = 0
+    for (idx in permutation.indices) {
+        if (shape[permutation[idx]] == 1) {
+            continue
+        }
+        if (permutation[idx] < lastPermutedAxis)
+            return false
+        lastPermutedAxis = permutation[idx]
+    }
+    return true
 }

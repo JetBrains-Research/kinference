@@ -42,6 +42,8 @@ interface NDArray {
 
     fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
     fun tile(repeats: IntArray): NDArray
+    fun transpose(permutations: IntArray): NDArray
+    fun transpose2D(): NDArray
 }
 
 interface MutableNDArray : NDArray {
@@ -50,10 +52,6 @@ interface MutableNDArray : NDArray {
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
     fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
-
-
-    fun transpose(permutations: IntArray): MutableNDArray
-    fun transpose2D(): MutableNDArray
 
     fun clean()
 
@@ -107,12 +105,13 @@ interface NumberNDArray : NDArray {
     override fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
 
     override fun view(vararg axes: Int): NumberNDArray
+
+    override fun transpose(permutations: IntArray): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
-    override fun transpose(permutations: IntArray): MutableNumberNDArray
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 
     fun erf(): MutableNumberNDArray
