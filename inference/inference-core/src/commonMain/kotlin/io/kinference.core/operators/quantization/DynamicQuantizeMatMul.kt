@@ -5,10 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
-import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.extensions.quantizeMatMul
+import io.kinference.ndarray.extensions.matmul
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -44,8 +43,9 @@ class DynamicQuantizeMatMul(attributes: Map<String, Attribute<Any>>, inputs: Lis
         val rightZeroPoint = inputs[3]?.data as? NumberNDArray
         val bias = inputs[4]?.data as? FloatNDArray
 
-        val (quantizedLeft, leftScale, leftZeroPoint) = left.dynamicQuantize()
-        val output = quantizeMatMul(quantizedLeft, quantizedRight, leftZeroPoint, rightZeroPoint, leftScale, rightScale)
+        val dequantRight = quantizedRight.dequantize(rightZeroPoint, rightScale) as NumberNDArray
+
+        val output = left.matmul(dequantRight)
 
         if (bias != null) {
             output.plusAssign(bias)

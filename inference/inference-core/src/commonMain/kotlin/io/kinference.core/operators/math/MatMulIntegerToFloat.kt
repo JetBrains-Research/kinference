@@ -47,7 +47,10 @@ class MatMulIntegerToFloat(attributes: Map<String, Attribute<Any>>, inputs: List
 
         val bias = inputs[6]?.data as? FloatNDArray
 
-        val outputArray = quantizeMatMul(left, right, leftZeroPoint, rightZeroPoint, leftScale, rightScale)
+        val leftDequant = left.dequantize(leftZeroPoint, leftScale) as NumberNDArray
+        val rightDequant = right.dequantize(rightZeroPoint, rightScale) as NumberNDArray
+
+        val outputArray = leftDequant.matmul(rightDequant)
 
         if (bias != null) {
             outputArray.plusAssign(bias)
