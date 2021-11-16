@@ -102,7 +102,11 @@ class Graph(proto: GraphProto) {
             } else stack.pop()
         }
 
-        require(operators.size == proto.node.size)
+        if (operators.size != proto.node.size) {
+            logger.warning { "Count of used operators ${operators.size} not equals count of operators in model ${proto.node.size}. " +
+                             "Remove unused operators from model for more performance!" }
+        }
+//        require(operators.size == proto.node.size)
 
         initializers = proto.initializer.map { KITensor.create(it) }
 
