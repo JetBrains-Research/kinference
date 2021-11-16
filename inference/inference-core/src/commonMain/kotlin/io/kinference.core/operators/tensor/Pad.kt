@@ -12,8 +12,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Pad(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in PadVer9.VERSION.asRange() -> PadVer9(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Pad(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class PadVer9(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Pad(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES - TensorProto.DataType.BOOL
 
@@ -29,13 +38,8 @@ class Pad(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false, differentiable = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 9)
+        internal val VERSION = VersionInfo(sinceVersion = 9)
         private val INFO = OperatorInfo("Pad", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Pad(attributes, inputs, outputs)
-            else -> error("Unsupported version of Pad operator: $version")
-        }
     }
 
     private val mode: String by attribute()

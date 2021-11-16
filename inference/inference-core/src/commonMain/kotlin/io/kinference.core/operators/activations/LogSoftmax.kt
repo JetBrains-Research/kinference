@@ -8,8 +8,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
+sealed class LogSoftmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in LogSoftmaxVer1.VERSION.asRange() -> LogSoftmaxVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of LogSoftmax operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class LogSoftmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+class LogSoftmaxVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LogSoftmax(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -18,13 +27,8 @@ class LogSoftmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
 
         private val ATTRIBUTES_INFO = listOf(AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1))
 
-        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("LogSoftmax", ATTRIBUTES_INFO, INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> LogSoftmax(attributes, inputs, outputs)
-            else -> error("Unsupported version of LogSoftmax operator: $version")
-        }
     }
 
     val axis: Int by attribute { it: Number -> it.toInt() }

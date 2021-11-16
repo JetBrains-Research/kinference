@@ -12,8 +12,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
+sealed class Unsqueeze(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in UnsqueezeVer1.VERSION.asRange() -> UnsqueezeVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Unsqueeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Unsqueeze(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -25,13 +34,8 @@ class Unsqueeze(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "expanded", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("Unsqueeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Unsqueeze(attributes, inputs, outputs)
-            else -> error("Unsupported version of Unsqueeze operator: $version")
-        }
     }
 
     private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }

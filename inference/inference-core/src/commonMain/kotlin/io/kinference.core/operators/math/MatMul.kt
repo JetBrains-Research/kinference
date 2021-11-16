@@ -12,8 +12,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in MatMulVer1.VERSION.asRange() -> MatMulVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMul operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMul(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -33,13 +42,8 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("MatMul", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> MatMul(attributes, inputs, outputs)
-            else -> error("Unsupported version of MatMul operator: $version")
-        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

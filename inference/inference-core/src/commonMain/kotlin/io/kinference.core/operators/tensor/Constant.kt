@@ -11,9 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
+sealed class Constant(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ConstantVer1.VERSION.asRange() -> ConstantVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ConstantVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Constant(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -32,13 +40,8 @@ class Constant(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("Constant", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Constant(attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
-        }
     }
 
 

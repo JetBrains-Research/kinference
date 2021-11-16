@@ -13,9 +13,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
+sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of FastGelu operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : FastGelu(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -28,13 +36,8 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> FastGelu(attributes, inputs, outputs)
-            else -> error("Unsupported version of FastGelu operator: $version")
-        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

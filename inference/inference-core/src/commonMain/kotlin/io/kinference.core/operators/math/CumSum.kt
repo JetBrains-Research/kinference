@@ -12,9 +12,17 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto.DataType
 
+sealed class CumSum(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in CumSumVer11.VERSION.asRange() -> CumSumVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of CumSum operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class CumSumVer11(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : CumSum(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(DataType.UINT32, DataType.UINT64, DataType.INT32, DataType.INT64, DataType.FLOAT, DataType.DOUBLE)
 
@@ -32,13 +40,8 @@ class CumSum(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<
             IOInfo(0, TYPE_CONSTRAINTS, "y", optional = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 11)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("CumSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> CumSum(attributes, inputs, outputs)
-            else -> error("Unsupported version of CumSum operator: $version")
-        }
     }
 
     private val exclusive by attribute { ex: Number -> ex.toInt() != 0 }

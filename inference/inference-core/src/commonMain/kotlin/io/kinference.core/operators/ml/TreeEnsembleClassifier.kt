@@ -18,8 +18,34 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 
+sealed class TreeEnsembleClassifier(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in TreeEnsembleClassifierVer1.VERSION.asRange() -> TreeEnsembleClassifierVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
+        }
+    }
+
+    internal class ClassifierInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
+        val classIds: LongArray = op.getAttribute("class_ids")
+        val classNodeIds: LongArray = op.getAttribute("class_nodeids")
+        val classTreeIds: LongArray = op.getAttribute("class_treeids")
+        val classWeights: FloatArray = op.getAttribute("class_weights")
+        val classLabels: TreeEnsemble.LabelsInfo<*>
+
+        init {
+            val longLabels = op.getAttributeOrNull<LongArray>("classlabels_int64s")
+            classLabels = if (longLabels != null) {
+                TreeEnsemble.LabelsInfo.LongLabelsInfo(longLabels.toList())
+            } else {
+                TreeEnsemble.LabelsInfo.StringLabelsInfo(op.getAttribute("classlabels_strings"))
+            }
+        }
+    }
+}
+
 @ExperimentalTime
-class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class TreeEnsembleClassifierVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TreeEnsembleClassifier(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             //TensorProto.DataType.INT32,
@@ -57,13 +83,8 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
             AttributeInfo("post_transform", setOf(AttributeType.STRING), required = false, default = "NONE"),
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> TreeEnsembleClassifier(attributes, inputs, outputs)
-            else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
-        }
 
         fun FloatNDArray.maxIdx(): Int {
             var max = Float.MIN_VALUE
@@ -88,23 +109,6 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
                 TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it) as Long }
                 TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
                 else -> error("Unsupported data type: $dataType")
-            }
-        }
-    }
-
-    internal class ClassifierInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
-        val classIds: LongArray = op.getAttribute("class_ids")
-        val classNodeIds: LongArray = op.getAttribute("class_nodeids")
-        val classTreeIds: LongArray = op.getAttribute("class_treeids")
-        val classWeights: FloatArray = op.getAttribute("class_weights")
-        val classLabels: TreeEnsemble.LabelsInfo<*>
-
-        init {
-            val longLabels = op.getAttributeOrNull<LongArray>("classlabels_int64s")
-            classLabels = if (longLabels != null) {
-                TreeEnsemble.LabelsInfo.LongLabelsInfo(longLabels.toList())
-            } else {
-                TreeEnsemble.LabelsInfo.StringLabelsInfo(op.getAttribute("classlabels_strings"))
             }
         }
     }

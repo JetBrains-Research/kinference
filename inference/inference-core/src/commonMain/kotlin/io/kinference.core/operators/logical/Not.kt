@@ -11,9 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Not(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in NotVer1.VERSION.asRange() -> NotVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Not operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class NotVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Not(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.BOOL)
 
@@ -21,13 +29,8 @@ class Not(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("Not", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Not(attributes, inputs, outputs)
-            else -> error("Unsupported version of Not operator: $version")
-        }
     }
 
 

@@ -14,8 +14,17 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Equal(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in EqualVer7.VERSION.asRange() -> EqualVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of Equal operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class EqualVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Equal(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16
 
@@ -28,13 +37,8 @@ class Equal(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
             IOInfo(0, setOf(TensorProto.DataType.BOOL), "C", optional = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Equal", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Equal(attributes, inputs, outputs)
-            else -> error("Unsupported version of Equal operator: $version")
-        }
 
         infix fun NDArray.equal(other: NDArray): NDArray {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->

@@ -13,8 +13,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class ReduceSum(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ReduceSumVer1.VERSION.asRange() -> ReduceSumVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of ReduceSum operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class ReduceSum(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ReduceSumVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ReduceSum(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -39,13 +48,8 @@ class ReduceSum(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             AttributeInfo("keepdims", setOf(AttributeProto.AttributeType.INT), false, 1),
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> ReduceSum(attributes, inputs, outputs)
-            else -> error("Unsupported version of ReduceSum operator: $version")
-        }
     }
 
     private val axes: LongArray by attribute()

@@ -1,6 +1,7 @@
 package io.kinference.core.operators.tensor
 
 import io.kinference.core.attributes.Attribute
+import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
@@ -15,9 +16,17 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Cast(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in CastVer6.VERSION.asRange() -> CastVer6(attributes, inputs, outputs)
+            else -> error("Unsupported version of Cast operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class CastVer6(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Cast(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -29,13 +38,8 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 6)
+        internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Cast(attributes, inputs, outputs)
-            else -> error("Unsupported version of Cast operator: $version")
-        }
     }
 
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }

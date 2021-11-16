@@ -11,8 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Mul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in MulVer7.VERSION.asRange() -> MulVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of Mul operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class MulVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Mul(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT8,
@@ -38,13 +47,8 @@ class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Mul(attributes, inputs, outputs)
-            else -> error("Unsupported version of Mul operator: $version")
-        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

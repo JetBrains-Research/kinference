@@ -18,8 +18,22 @@ import io.kinference.core.types.*
 import kotlin.collections.HashMap
 import kotlin.time.ExperimentalTime
 
+sealed class ZipMap(
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KITensor, KIONNXSequence>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ZipMapVer1.VERSION.asRange() -> ZipMapVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of ZipMap operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KIONNXSequence>(INFO, attributes, inputs, outputs) {
+class ZipMapVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ZipMap(INFO, attributes, inputs, outputs) {
     companion object {
         private val OUT_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING, TensorProto.DataType.FLOAT)
 
@@ -36,13 +50,8 @@ class ZipMap(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
             AttributeInfo("classlabels_strings", setOf(AttributeProto.AttributeType.STRINGS), required = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> ZipMap(attributes, inputs, outputs)
-            else -> error("Unsupported version of ZipMap operator: $version")
-        }
 
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)

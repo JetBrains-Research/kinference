@@ -14,8 +14,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class MatMulInteger(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in MatMulIntegerVer10.VERSION.asRange() -> MatMulIntegerVer10(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMulInteger operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class MatMulIntegerVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMulInteger(INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT8,
@@ -33,13 +42,8 @@ class MatMulInteger(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "Y", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 10)
+        internal val VERSION = VersionInfo(sinceVersion = 10)
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> MatMulInteger(attributes, inputs, outputs)
-            else -> error("Unsupported version of MatMulInteger operator: $version")
-        }
 
         private fun NumberNDArray.toIntNDArray(): IntNDArray {
             val result = IntNDArray(IntTiledArray(this.strides), strides)

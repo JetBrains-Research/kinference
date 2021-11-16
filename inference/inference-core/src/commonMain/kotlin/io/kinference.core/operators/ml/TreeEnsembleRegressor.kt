@@ -15,8 +15,26 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 
+sealed class TreeEnsembleRegressor(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in TreeEnsembleRegressorVer1.VERSION.asRange() -> TreeEnsembleRegressorVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of TreeEnsembleRegressor operator: $version")
+        }
+    }
+
+    @Suppress("PropertyName")
+    internal class RegressorInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
+        val nTargets: Number = op.getAttribute("n_targets")
+        val targetIds: LongArray = op.getAttribute("target_ids")
+        val targetNodeIds: LongArray = op.getAttribute("target_nodeids")
+        val targetTreeIds: LongArray = op.getAttribute("target_treeids")
+        val targetWeights: FloatArray = op.getAttribute("target_weights")
+    }
+}
+
 @ExperimentalTime
-class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class TreeEnsembleRegressorVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TreeEnsembleRegressor(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             //TensorProto.DataType.INT32,
@@ -53,22 +71,8 @@ class TreeEnsembleRegressor(attributes: Map<String, Attribute<Any>>, inputs: Lis
             AttributeInfo("target_weights", setOf(AttributeType.FLOATS), required = true)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleRegressor", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> TreeEnsembleRegressor(attributes, inputs, outputs)
-            else -> error("Unsupported version of TreeEnsembleRegressor operator: $version")
-        }
-    }
-
-    @Suppress("PropertyName")
-    internal class RegressorInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
-        val nTargets: Number = op.getAttribute("n_targets")
-        val targetIds: LongArray = op.getAttribute("target_ids")
-        val targetNodeIds: LongArray = op.getAttribute("target_nodeids")
-        val targetTreeIds: LongArray = op.getAttribute("target_treeids")
-        val targetWeights: FloatArray = op.getAttribute("target_weights")
     }
 
     private val ensembleInfo: RegressorInfo

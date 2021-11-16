@@ -13,8 +13,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class GRU(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in GRUVer7.VERSION.asRange() -> GRUVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of GRU operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class GRUVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GRU(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -48,13 +57,8 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(1, TYPE_CONSTRAINTS, "Y_h", optional = true), // [num_directions, batch_size, hidden_size]
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> GRU(attributes, inputs, outputs)
-            else -> error("Unsupported version of LSTM operator: $version")
-        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->

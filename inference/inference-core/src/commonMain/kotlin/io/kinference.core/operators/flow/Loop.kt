@@ -14,8 +14,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Loop(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in LoopVer1.VERSION.asRange() -> LoopVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Loop operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Loop(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -31,13 +40,8 @@ class Loop(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
         private val OUTPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "v_final_and_scan_outputs", minimumArity = 1))
 
-        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("Loop", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Loop(attributes, inputs, outputs)
-            else -> error("Unsupported version of Loop operator: $version")
-        }
     }
 
     private val body: Graph by attribute()

@@ -14,8 +14,17 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Greater(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in GreaterVer7.VERSION.asRange() -> GreaterVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of Greater operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Greater(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class GreaterVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Greater(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16
 
@@ -28,13 +37,8 @@ class Greater(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             IOInfo(0, setOf(TensorProto.DataType.BOOL), "C", optional = false)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Greater", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Greater(attributes, inputs, outputs)
-            else -> error("Unsupported version of Greater operator: $version")
-        }
 
         infix fun NDArray.greater(other: NDArray): NDArray {
             require(this.type == other.type) { "Arrays must have same types" }

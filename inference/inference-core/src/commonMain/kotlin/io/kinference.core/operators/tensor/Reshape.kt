@@ -11,8 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Reshape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ReshapeVer5.VERSION.asRange() -> ReshapeVer5(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Reshape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ReshapeVer5(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Reshape(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -23,13 +32,8 @@ class Reshape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "reshaped", optional = false, differentiable = true))
 
-        private val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
+        internal val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
         private val INFO = OperatorInfo("Reshape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Reshape(attributes, inputs, outputs)
-            else -> error("Unsupported version of Reshape operator: $version")
-        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

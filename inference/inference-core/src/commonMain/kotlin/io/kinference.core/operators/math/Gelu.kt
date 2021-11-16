@@ -13,29 +13,9 @@ import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+sealed class Gelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
-
         private val SQRT2 = sqrt(2.0)
-
-        private val INPUTS_INFO = listOf(
-            IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false)
-        )
-
-        private val OUTPUTS_INFO = listOf(
-            IOInfo(0, TYPE_CONSTRAINTS, "y", optional = false)
-        )
-
-        private val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Gelu(attributes, inputs, outputs)
-            else -> error("Unsupported version of Gelu operator: $version")
-        }
 
         fun gelu(array: MutableNumberNDArray): NumberNDArray {
             when (val type = array.type) {
@@ -57,6 +37,29 @@ class Gelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<St
             }
             return array
         }
+
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in GeluVer1.VERSION.asRange() -> GeluVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Gelu operator: $version")
+        }
+    }
+}
+
+@ExperimentalTime
+class GeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Gelu(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
+
+        private val INPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false)
+        )
+
+        private val OUTPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "y", optional = false)
+        )
+
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Gelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
 

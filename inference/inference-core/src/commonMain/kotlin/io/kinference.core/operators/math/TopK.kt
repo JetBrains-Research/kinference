@@ -13,8 +13,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class TopK(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in TopKVer11.VERSION.asRange() -> TopKVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of TopK operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class TopK(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class TopKVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TopK(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT8,
@@ -46,13 +55,8 @@ class TopK(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             AttributeInfo("sorted", setOf(AttributeProto.AttributeType.INT), false, 1),
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 11)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> TopK(attributes, inputs, outputs)
-            else -> error("Unsupported version of TopK operator: $version")
-        }
     }
 
     private val axis: Int by attribute() { it: Long -> it.toInt() }

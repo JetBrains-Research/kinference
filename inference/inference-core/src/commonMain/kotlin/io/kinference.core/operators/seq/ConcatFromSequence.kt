@@ -11,9 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
+sealed class ConcatFromSequence(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KIONNXSequence, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ConcatFromSequenceVer11.VERSION.asRange() -> ConcatFromSequenceVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of ConcatFromSequence operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KIONNXSequence, KITensor>(INFO, attributes, inputs, outputs) {
+class ConcatFromSequenceVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ConcatFromSequence(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -26,13 +34,8 @@ class ConcatFromSequence(attributes: Map<String, Attribute<Any>>, inputs: List<S
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "concat_result", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 11)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("ConcatFromSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> ConcatFromSequence(attributes, inputs, outputs)
-            else -> error("Unsupported version of ConcatFromSequence operator: $version")
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

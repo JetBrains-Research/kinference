@@ -13,8 +13,17 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class LSTM(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in LSTMVer7.VERSION.asRange() -> LSTMVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of LSTM operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class LSTMVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LSTM(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -51,13 +60,8 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             IOInfo(2, TYPE_CONSTRAINTS, "Y_c", optional = true) // [num_directions, batch_size, hidden_size]
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> LSTM(attributes, inputs, outputs)
-            else -> error("Unsupported version of LSTM operator: $version")
-        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->

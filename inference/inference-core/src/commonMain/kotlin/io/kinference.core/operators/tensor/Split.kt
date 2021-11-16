@@ -12,8 +12,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
+sealed class Split(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in SplitVer2.VERSION.asRange() -> SplitVer2(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class SplitVer2(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Split(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -26,13 +35,8 @@ class Split(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val OUTPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "outputs", minimumArity = 1, differentiable = true))
 
-        private val VERSION = VersionInfo(sinceVersion = 2, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 2, untilVersion = 13)
         private val INFO = OperatorInfo("Split", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Split(attributes, inputs, outputs)
-            else -> error("Unsupported version of Split operator: $version")
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

@@ -12,9 +12,17 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
+sealed class DequantizeLinear(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in DequantizeLinearVer1.VERSION.asRange() -> DequantizeLinearVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of DequantizeLinear operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class DequantizeLinearVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DequantizeLinear(INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT8, TensorProto.DataType.UINT8)
 
@@ -32,13 +40,8 @@ class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<Str
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "y", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> DequantizeLinear(attributes, inputs, outputs)
-            else -> error("Unsupported version of DequantizeLinear operator: $version")
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

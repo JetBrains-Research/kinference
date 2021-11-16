@@ -11,8 +11,17 @@ import io.kinference.core.operators.VersionInfo.Companion.asRange
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Or(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in OrVer7.VERSION.asRange() -> OrVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of Or operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class Or(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class OrVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Or(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.BOOL)
 
@@ -23,13 +32,8 @@ class Or(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs:
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 7)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Or", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Or(attributes, inputs, outputs)
-            else -> error("Unsupported version of Or operator: $version")
-        }
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {

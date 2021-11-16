@@ -13,9 +13,17 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Shape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in ShapeVer1.VERSION.asRange() -> ShapeVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ShapeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Shape(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -23,13 +31,8 @@ class Shape(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "shape", optional = false, differentiable = false))
 
-        private val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 15)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 15)
         private val INFO = OperatorInfo("Shape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> Shape(attributes, inputs, outputs)
-            else -> error("Unsupported version of Shape operator: $version")
-        }
     }
 
 

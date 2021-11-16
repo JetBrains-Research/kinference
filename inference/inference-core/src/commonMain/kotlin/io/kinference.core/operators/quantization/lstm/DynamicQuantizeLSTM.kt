@@ -14,17 +14,24 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class DynamicQuantizeLSTM(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in DynamicQuantizeLSTMVer1.VERSION.asRange() -> DynamicQuantizeLSTMVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of DynamicQuantizeLSTM operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class DynamicQuantizeLSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class DynamicQuantizeLSTMVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeLSTM(INFO, attributes, inputs, outputs) {
     companion object {
         private val BYTE_TYPES = setOf(
             TensorProto.DataType.UINT8,
             TensorProto.DataType.INT8
         )
 
-        private val FLOAT_TYPE = setOf(
-            TensorProto.DataType.FLOAT
-        )
+        private val FLOAT_TYPE = setOf(TensorProto.DataType.FLOAT)
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("activation_alpha", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
@@ -58,13 +65,8 @@ class DynamicQuantizeLSTM(attributes: Map<String, Attribute<Any>>, inputs: List<
             IOInfo(2, FLOAT_TYPE, "Y_c", optional = true) // [num_directions, batch_size, hidden_size]
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> DynamicQuantizeLSTM(attributes, inputs, outputs)
-            else -> error("Unsupported version of DynamicQuantizeLSTM operator: $version")
-        }
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->

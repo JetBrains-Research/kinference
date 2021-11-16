@@ -18,9 +18,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
+sealed class QAttention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
+            in QAttentionVer1.VERSION.asRange() -> QAttentionVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of QAttention operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : QAttention(INFO, attributes, inputs, outputs) {
 
     companion object {
         private val FLOATS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
@@ -49,13 +57,8 @@ class QAttention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
             IOInfo(1, FLOATS, "present", optional = true)
         )
 
-        private val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
-
-        operator fun invoke(version: Int, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version) {
-            in VERSION.asRange() -> QAttention(attributes, inputs, outputs)
-            else -> error("Unsupported version of QAttention operator: $version")
-        }
     }
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
