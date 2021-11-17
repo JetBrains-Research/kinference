@@ -1,5 +1,6 @@
 package io.kinference.core.operators.ml
 
+import io.kinference.core.KIONNXData
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
@@ -8,15 +9,56 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.rows
 import io.kinference.core.operators.*
-import io.kinference.core.operators.ml.TreeEnsembleOperator.Companion.toFloatNDArray
+import io.kinference.core.operators.ml.trees.*
+import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
 import io.kinference.core.operators.ml.trees.TreeEnsembleBuilder
+import io.kinference.core.operators.ml.trees.toFloatNDArray
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 
-@ExperimentalTime
-class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+sealed class TreeEnsembleClassifier(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in TreeEnsembleClassifierVer1.VERSION.asRange() -> TreeEnsembleClassifierVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
+        }
+    }
+
+    internal class ClassifierInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
+        val classIds: LongArray = op.getAttribute("class_ids")
+        val classNodeIds: LongArray = op.getAttribute("class_nodeids")
+        val classTreeIds: LongArray = op.getAttribute("class_treeids")
+        val classWeights: FloatArray = op.getAttribute("class_weights")
+        val classLabels: TreeEnsemble.LabelsInfo<*>
+
+        init {
+            val longLabels = op.getAttributeOrNull<LongArray>("classlabels_int64s")
+            classLabels = if (longLabels != null) {
+                TreeEnsemble.LabelsInfo.LongLabelsInfo(longLabels.toList())
+            } else {
+                TreeEnsemble.LabelsInfo.StringLabelsInfo(op.getAttribute("classlabels_strings"))
+            }
+        }
+    }
+}
+
+@ExperimentalTime
+class TreeEnsembleClassifierVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TreeEnsembleClassifier(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val TYPE_CONSTRAINTS = setOf(
+            //TensorProto.DataType.INT32,
+            //TensorProto.DataType.INT64,
+            TensorProto.DataType.FLOAT,
+            TensorProto.DataType.DOUBLE
+        )
+
+        private val INPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false)
+        )
+
         private val OUTPUTS_INFO = listOf(
             IOInfo(0, setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING), "Y", optional = false),
             IOInfo(1, setOf(TensorProto.DataType.FLOAT), "Z", optional = false),
@@ -42,7 +84,8 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
             AttributeInfo("post_transform", setOf(AttributeType.STRING), required = false, default = "NONE"),
         )
 
-        private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, TreeEnsembleOperator.INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
 
         fun FloatNDArray.maxIdx(): Int {
             var max = Float.MIN_VALUE
@@ -71,18 +114,8 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
         }
     }
 
-    @Suppress("PropertyName")
-    class ClassifierInfo(map: Map<String, Any?>) : TreeEnsembleOperator.BaseEnsembleInfo(map) {
-        val class_ids: LongArray by map
-        val class_nodeids: LongArray by map
-        val class_treeids: LongArray by map
-        val class_weights: FloatArray by map
-        val classlabels_int64s: LongArray? by map
-        val classlabels_strings: List<String>? by map
-    }
-
     private val ensembleInfo: ClassifierInfo
-        get() = ClassifierInfo(this.attributes.mapValues { it.value.value }.withDefault { null })
+        get() = ClassifierInfo(this as Operator<KIONNXData<*>, KIONNXData<*>>)
 
     private val ensemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
 
@@ -90,7 +123,7 @@ class TreeEnsembleClassifier(attributes: Map<String, Attribute<Any>>, inputs: Li
         val rows = array.rows
         val shape = intArrayOf(array.shape[0])
         return writeLabels(ensemble.labelsInfo!!.labelsDataType, shape) {
-            ensemble.labelsInfo.labels[(rows[it] as FloatNDArray).maxIdx()]
+            ensemble.labelsInfo.labels[(rows[it] as FloatNDArray).maxIdx()]!!
         }
     }
 

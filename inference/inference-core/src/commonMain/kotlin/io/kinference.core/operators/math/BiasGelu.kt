@@ -9,9 +9,19 @@ import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.core.operators.*
 import kotlin.time.ExperimentalTime
 
+sealed class BiasGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in BiasGeluVer1.VERSION.asRange() -> BiasGeluVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of BiasGelu operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class BiasGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class BiasGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : BiasGelu(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -24,7 +34,8 @@ class BiasGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
 

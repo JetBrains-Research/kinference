@@ -12,8 +12,12 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+abstract class Activation protected constructor(
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
 
     open fun activate(input: KITensor): KITensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray): NDArray
@@ -21,7 +25,6 @@ abstract class Activation(info: OperatorInfo, attributes: Map<String, Attribute<
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         return listOf(activate(inputs.first()!!))
     }
-
 
     companion object {
         // TODO: Add activations with alpha and beta

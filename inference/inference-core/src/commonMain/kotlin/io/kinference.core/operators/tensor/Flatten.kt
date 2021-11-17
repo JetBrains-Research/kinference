@@ -10,8 +10,19 @@ import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
+sealed class Flatten(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in FlattenVer1.VERSION.asRange() -> FlattenVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class Flatten(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class FlattenVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Flatten(INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(
             IOInfo(0, ALL_DATA_TYPES, "input", optional = false, differentiable = true),
@@ -23,7 +34,8 @@ class Flatten(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), default = 1, required = false)
         )
 
-        private val INFO = OperatorInfo("Flatten", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Flatten", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     val axis: Int by attribute() { it: Number -> it.toInt() }

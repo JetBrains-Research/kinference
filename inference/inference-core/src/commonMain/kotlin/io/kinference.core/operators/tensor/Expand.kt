@@ -12,8 +12,19 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Expand(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 8)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ExpandVer8.VERSION.asRange() -> ExpandVer8(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class Expand(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ExpandVer8(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Expand(INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(
             IOInfo(0, ALL_DATA_TYPES, "input", optional = false, differentiable = true),
@@ -22,7 +33,8 @@ class Expand(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false, differentiable = true))
 
-        private val INFO = OperatorInfo("Expand", emptySet(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 8)
+        private val INFO = OperatorInfo("Expand", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     internal fun LongTiledArray.toIntArray(): IntArray {

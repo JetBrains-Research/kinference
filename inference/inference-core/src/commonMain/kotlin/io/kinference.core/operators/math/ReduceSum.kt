@@ -12,8 +12,19 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class ReduceSum(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ReduceSumVer1.VERSION.asRange() -> ReduceSumVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of ReduceSum operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class ReduceSum(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ReduceSumVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ReduceSum(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -34,11 +45,12 @@ class ReduceSum(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false, longArrayOf()),
+            AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false, LongArray(0)),
             AttributeInfo("keepdims", setOf(AttributeProto.AttributeType.INT), false, 1),
         )
 
-        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val axes: LongArray by attribute()

@@ -7,23 +7,32 @@ import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
+sealed class LogSoftmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in LogSoftmaxVer1.VERSION.asRange() -> LogSoftmaxVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of LogSoftmax operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class LogSoftmax(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(INFO, attributes, inputs, outputs) {
+class LogSoftmaxVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LogSoftmax(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1)
-        )
+        private val INPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false))
+        private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("LogSoftmax", ATTRIBUTES_INFO,
-            listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false, differentiable = true)),
-            listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false, differentiable = true))
-        )
+        private val ATTRIBUTES_INFO = listOf(AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, default = 1))
 
+        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val INFO = OperatorInfo("LogSoftmax", ATTRIBUTES_INFO, INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    val axis: Int by attribute() { it: Number -> it.toInt() }
+    val axis: Int by attribute { it: Number -> it.toInt() }
 
     override fun activate(input: NDArray): NDArray {
         val actualAxis = input.indexAxis(axis)

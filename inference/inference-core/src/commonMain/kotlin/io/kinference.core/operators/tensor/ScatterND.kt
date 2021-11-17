@@ -11,8 +11,19 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class ScatterND(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ScatterNDVer11.VERSION.asRange() -> ScatterNDVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of Constant operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class ScatterNDVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ScatterND(INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(
             IOInfo(0, ALL_DATA_TYPES, "data", optional = false, differentiable = true),
@@ -22,7 +33,8 @@ class ScatterND(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, ALL_DATA_TYPES, "output", optional = false))
 
-        private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
+        private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
         private fun getActualIndices(input: NDArray, indices: LongNDArray, kDim: Int): IntArray {
             val inputStrides = input.strides.strides

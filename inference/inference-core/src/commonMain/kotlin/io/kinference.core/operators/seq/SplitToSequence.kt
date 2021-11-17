@@ -10,13 +10,22 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.core.operators.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.core.types.ValueInfo
 import io.kinference.core.types.ValueTypeInfo.SequenceTypeInfo
 import kotlin.time.ExperimentalTime
 
+sealed class SplitToSequence(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KIONNXSequence>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SplitToSequenceVer11.VERSION.asRange() -> SplitToSequenceVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of SplitToSequence operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KIONNXSequence>(INFO, attributes, inputs, outputs) {
+class SplitToSequenceVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SplitToSequence(INFO, attributes, inputs, outputs) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -33,7 +42,8 @@ class SplitToSequence(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output_sequence", optional = false, onnxDataType = ONNXDataType.ONNX_SEQUENCE))
 
-        private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("SplitToSequence", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
