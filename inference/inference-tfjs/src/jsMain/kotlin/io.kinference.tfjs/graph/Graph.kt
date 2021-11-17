@@ -3,12 +3,13 @@ package io.kinference.tfjs.graph
 import io.kinference.protobuf.message.*
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.model.TFJSModel
 import io.kinference.tfjs.operators.*
 import io.kinference.tfjs.types.ValueInfo
 import io.kinference.tfjs.utils.Stack
 import io.kinference.utils.LoggerFactory
 
-class Graph(proto: GraphProto) {
+class Graph(proto: GraphProto, opSetRegistry: TFJSModel.OperatorSetRegistry) {
     companion object {
         private val logger = LoggerFactory.create("TFJS Graph") //logger(Graph::class.simpleName ?: "")
     }
@@ -84,7 +85,7 @@ class Graph(proto: GraphProto) {
                 if (ready) {
                     node.visited = true
                     stack.pop()
-                    operators.add(OperatorFactory.create(node.proto))
+                    operators.add(OperatorFactory.create(node.proto, opSetRegistry))
                     valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
                     order++
                 }

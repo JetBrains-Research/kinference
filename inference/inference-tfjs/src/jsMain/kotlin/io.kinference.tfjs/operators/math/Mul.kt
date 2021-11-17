@@ -9,7 +9,18 @@ import io.kinference.tfjs.externals.extensions.times
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+sealed class Mul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in MulVer7.VERSION.asRange() -> MulVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of Mul operator: $version")
+        }
+    }
+}
+
+class MulVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -32,7 +43,8 @@ class Mul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {

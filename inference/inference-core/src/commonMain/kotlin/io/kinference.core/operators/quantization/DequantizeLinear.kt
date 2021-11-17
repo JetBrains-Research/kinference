@@ -13,7 +13,7 @@ import io.kinference.protobuf.message.TensorProto
 
 sealed class DequantizeLinear(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
         operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in DequantizeLinearVer1.VERSION.asRange() -> DequantizeLinearVer1(attributes, inputs, outputs)
@@ -41,7 +41,7 @@ class DequantizeLinearVer1(attributes: Map<String, Attribute<Any>>, inputs: List
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "y", optional = false))
 
-        internal val VERSION = VersionInfo(sinceVersion = 1)
+        internal val VERSION = VersionInfo(sinceVersion = 10)
         private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 

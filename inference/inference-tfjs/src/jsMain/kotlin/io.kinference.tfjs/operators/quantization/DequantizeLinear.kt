@@ -10,7 +10,18 @@ import io.kinference.tfjs.externals.extensions.*
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+sealed class DequantizeLinear(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in DequantizeLinearVer10.VERSION.asRange() -> DequantizeLinearVer10(attributes, inputs, outputs)
+            else -> error("Unsupported version of DequantizeLinear operator: $version")
+        }
+    }
+}
+
+class DequantizeLinearVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(
@@ -35,7 +46,8 @@ class DequantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<Str
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "y", optional = false))
 
-        private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 10)
+        private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
         private fun canDequantizePerTensor(zeroPoint: NDArrayTFJS?, scale: NDArrayTFJS): Boolean {
             return scale.size == 1 && (zeroPoint == null || zeroPoint.size == 1)

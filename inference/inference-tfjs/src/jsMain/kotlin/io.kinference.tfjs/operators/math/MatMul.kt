@@ -11,30 +11,8 @@ import io.kinference.tfjs.externals.extensions.tidy
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
-
+sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = setOf(
-            TensorProto.DataType.FLOAT16,
-            TensorProto.DataType.FLOAT,
-            TensorProto.DataType.DOUBLE,
-            TensorProto.DataType.UINT32,
-            TensorProto.DataType.UINT64,
-            TensorProto.DataType.INT32,
-            TensorProto.DataType.INT64,
-            TensorProto.DataType.BFLOAT16
-        )
-
-        private val INPUTS_INFO = listOf(
-            IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "B", optional = false)
-        )
-
-        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
-
-        private val INFO = OperatorInfo("MatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
-
         internal fun expandTensors(left: NDArrayTFJS, right: NDArrayTFJS): Pair<NDArrayTFJS, NDArrayTFJS> {
             return when {
                 left.rank == right.rank -> left to right
@@ -56,6 +34,40 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
                 }
             }
         }
+
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in MatMulVer1.VERSION.asRange() -> MatMulVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of MatMul operator: $version")
+        }
+    }
+}
+
+class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+
+    companion object {
+        private val TYPE_CONSTRAINTS = setOf(
+            TensorProto.DataType.FLOAT16,
+            TensorProto.DataType.FLOAT,
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.UINT32,
+            TensorProto.DataType.UINT64,
+            TensorProto.DataType.INT32,
+            TensorProto.DataType.INT64,
+            TensorProto.DataType.BFLOAT16
+        )
+
+        private val INPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),
+            IOInfo(1, TYPE_CONSTRAINTS, "B", optional = false)
+        )
+
+        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
+
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("MatMul", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
 
@@ -63,7 +75,7 @@ class MatMul(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         val outputs = tidy {
             val left = inputs[0]!!.data
             val right = inputs[1]!!.data
-            val (leftActual, rightActual) = expandTensors(left, right)
+            val (leftActual, rightActual) = MatMul.expandTensors(left, right)
 
             val output = leftActual.matMul(rightActual)
             return@tidy arrayOf(output)

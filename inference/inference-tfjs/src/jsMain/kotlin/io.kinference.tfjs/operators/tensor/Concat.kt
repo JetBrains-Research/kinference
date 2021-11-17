@@ -8,7 +8,18 @@ import io.kinference.tfjs.externals.extensions.*
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+sealed class Concat(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 4)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ConcatVer4.VERSION.asRange() -> ConcatVer4(attributes, inputs, outputs)
+            else -> error("Unsupported version of Concat operator: $version")
+        }
+    }
+}
+
+class ConcatVer4(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
@@ -21,7 +32,8 @@ class Concat(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "concat_result", optional = false, differentiable = true))
 
-        private val INFO = OperatorInfo("Concat", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 4)
+        private val INFO = OperatorInfo("Concat", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

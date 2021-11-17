@@ -11,7 +11,18 @@ import io.kinference.tfjs.externals.extensions.*
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+sealed class EmbedLayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
+        }
+    }
+}
+
+class EmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
 
     companion object {
@@ -40,7 +51,8 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
             IOInfo(1, setOf(TensorProto.DataType.INT32), "mask_index", false)
         )
 
-        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
     private val epsilon: Float by attribute()

@@ -13,65 +13,8 @@ import io.kinference.tfjs.operators.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
-
+sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
-
-        private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),
-            AttributeInfo("unidirectional", setOf(AttributeProto.AttributeType.INT), false, default = 0)
-        )
-
-        private val INPUTS_INFO = listOf(
-            IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
-            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
-            IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
-            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
-        )
-
-        private val OUTPUTS_INFO = listOf(
-            IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false),
-            IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
-        )
-
-        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
-
-        internal fun initQueryKeyValue(input: NDArrayTFJS, weights: NDArrayTFJS, bias: NDArrayTFJS, numHeads: Int): Array<NDArrayTFJS> {
-            return tidy {
-                val (batchSize, seqLen, inputHidden) = input.shape
-                val headSize = inputHidden / numHeads
-                val weightsPrepared = weights
-                    .reshape(arrayOf(inputHidden, 1, 3, numHeads, headSize))
-                    .transpose(arrayOf(2, 1, 3, 0, 4))
-                    .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
-                val biasPrepared = bias.reshape(arrayOf(3, 1, numHeads, 1, headSize))
-                val inputPrepared = input
-                    .reshape(arrayOf(1, batchSize, 1, seqLen, inputHidden))
-                    .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
-
-                val output = inputPrepared.matMul(weightsPrepared).plus(biasPrepared)
-                return@tidy output.unstack(0)
-            }
-        }
-
-        internal fun getScores(unidir: Boolean, q: NDArrayTFJS, k: NDArrayTFJS, v: NDArrayTFJS, mask: NDArrayTFJS?,
-                               past: NDArrayTFJS?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
-        ): Array<NDArrayTFJS> {
-            return tidy {
-                val present = k.stack(v, axis = 0)
-                val pastSeqLen = if (past != null) past.shape[3] else 0
-                val headSize = hiddenSize / numHeads
-                val presentWithPast = past?.concat(present, axis = 3) ?: present
-                val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else presentWithPast.unstack(0)
-                val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, presentKeys)
-                return@tidy arrayOf(attentionScore(scores, batchSize, seqLen, hiddenSize, presentValue), presentWithPast)
-            }
-
-        }
-
         internal fun NDArrayTFJS?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): NDArrayTFJS {
             return tidy {
                 val fullSeqLen = pastSeqLen + seqLen
@@ -150,6 +93,75 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
             }.first()
         }
 
+        internal fun getScores(unidir: Boolean, q: NDArrayTFJS, k: NDArrayTFJS, v: NDArrayTFJS, mask: NDArrayTFJS?,
+                               past: NDArrayTFJS?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
+        ): Array<NDArrayTFJS> {
+            return tidy {
+                val present = k.stack(v, axis = 0)
+                val pastSeqLen = if (past != null) past.shape[3] else 0
+                val headSize = hiddenSize / numHeads
+                val presentWithPast = past?.concat(present, axis = 3) ?: present
+                val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else presentWithPast.unstack(0)
+                val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, presentKeys)
+                return@tidy arrayOf(attentionScore(scores, batchSize, seqLen, hiddenSize, presentValue), presentWithPast)
+            }
+
+        }
+
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in AttentionVer1.VERSION.asRange() -> AttentionVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Attention operator: $version")
+        }
+    }
+}
+
+
+class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+
+    companion object {
+        private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
+
+        private val ATTRIBUTES_INFO = listOf(
+            AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),
+            AttributeInfo("unidirectional", setOf(AttributeProto.AttributeType.INT), false, default = 0)
+        )
+
+        private val INPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
+            IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
+            IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
+            IOInfo(3, setOf(TensorProto.DataType.INT32), "mask_index", optional = true),
+            IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
+        )
+
+        private val OUTPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false),
+            IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
+        )
+
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+
+        internal fun initQueryKeyValue(input: NDArrayTFJS, weights: NDArrayTFJS, bias: NDArrayTFJS, numHeads: Int): Array<NDArrayTFJS> {
+            return tidy {
+                val (batchSize, seqLen, inputHidden) = input.shape
+                val headSize = inputHidden / numHeads
+                val weightsPrepared = weights
+                    .reshape(arrayOf(inputHidden, 1, 3, numHeads, headSize))
+                    .transpose(arrayOf(2, 1, 3, 0, 4))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
+                val biasPrepared = bias.reshape(arrayOf(3, 1, numHeads, 1, headSize))
+                val inputPrepared = input
+                    .reshape(arrayOf(1, batchSize, 1, seqLen, inputHidden))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
+
+                val output = inputPrepared.matMul(weightsPrepared).plus(biasPrepared)
+                return@tidy output.unstack(0)
+            }
+        }
     }
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
@@ -173,7 +185,7 @@ class Attention(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
                 numHeads
             )
 
-            return@tidy getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+            return@tidy Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         }
 
         return listOf(outputs[0].asTensor(), outputs[1].asTensor())

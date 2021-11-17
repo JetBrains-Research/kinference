@@ -9,7 +9,18 @@ import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 import kotlin.math.sqrt
 
-class BiasGelu(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+sealed class BiasGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in BiasGeluVer1.VERSION.asRange() -> BiasGeluVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of BiasGelu operator: $version")
+        }
+    }
+}
+
+class BiasGeluVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
 
     companion object {
@@ -29,7 +40,8 @@ class BiasGelu(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
             IOInfo(0, TYPE_CONSTRAINTS, "C", optional = false)
         )
 
-        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
 

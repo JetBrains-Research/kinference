@@ -10,7 +10,18 @@ import io.kinference.tfjs.externals.extensions.tidy
 import io.kinference.tfjs.graph.Context
 import io.kinference.tfjs.operators.*
 
-class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+sealed class Cast(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in CastVer6.VERSION.asRange() -> CastVer6(attributes, inputs, outputs)
+            else -> error("Unsupported version of Cast operator: $version")
+        }
+    }
+}
+
+class CastVer6(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
 
     companion object {
@@ -24,7 +35,8 @@ class Cast(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 6)
+        private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val toType: Int by attribute("to") { it: Long -> it.toInt() }
