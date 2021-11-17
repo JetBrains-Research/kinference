@@ -13,8 +13,19 @@ import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
+sealed class EmbedLayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class EmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : EmbedLayerNormalization(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 
     companion object {
@@ -43,7 +54,8 @@ class EmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: L
             IOInfo(1, setOf(TensorProto.DataType.INT32), "mask_index", false)
         )
 
-        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("EmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArray {
             val maskIndices = MutableIntNDArray(shape = intArrayOf(batchSize))

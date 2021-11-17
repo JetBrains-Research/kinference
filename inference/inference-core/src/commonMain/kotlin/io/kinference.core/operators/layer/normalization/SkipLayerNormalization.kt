@@ -14,9 +14,19 @@ import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
+sealed class SkipLayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SkipLayerNormalizationVer1.VERSION.asRange() -> SkipLayerNormalizationVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of SkipLayerNormalization operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class SkipLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SkipLayerNormalization(INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 
     companion object {
@@ -44,8 +54,8 @@ class SkipLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: Li
             IOInfo(2, TYPE_CONSTRAINTS, "inv_std_var", true)
         )
 
-        private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
-
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("SkipLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         private fun FloatNDArray.normalize(
             skip: FloatNDArray,

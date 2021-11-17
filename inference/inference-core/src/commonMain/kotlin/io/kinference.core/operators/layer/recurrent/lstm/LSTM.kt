@@ -12,8 +12,19 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class LSTM(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in LSTMVer7.VERSION.asRange() -> LSTMVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of LSTM operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class LSTMVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LSTM(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -50,7 +61,8 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             IOInfo(2, TYPE_CONSTRAINTS, "Y_c", optional = true) // [num_directions, batch_size, hidden_size]
         )
 
-        private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->
@@ -93,16 +105,16 @@ class LSTM(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
         val initialCellState = inputs.getOrNull(6)
 
         val (output, lastState, lastCellState) = lstmLayer.apply(
-                                                 inputAsLSTMInput,
-                                                 weightsAsLSTMWeights,
-                                                 recurrentWeightsAsLSTMWeights,
-                                                 preparedBias?.data as NumberNDArray?,
-                                                 sequenceLens?.data as IntNDArray?,
-                                                 initialState?.data as NumberNDArray?,
-                                                 initialCellState?.data as NumberNDArray?,
-                                                 preparedPeepholes?.data as NumberNDArray?,
-                                                 input.data.type
-        )
+                                                    inputAsLSTMInput,
+                                                    weightsAsLSTMWeights,
+                                                    recurrentWeightsAsLSTMWeights,
+                                                    preparedBias?.data as NumberNDArray?,
+                                                    sequenceLens?.data as IntNDArray?,
+                                                    initialState?.data as NumberNDArray?,
+                                                    initialCellState?.data as NumberNDArray?,
+                                                    preparedPeepholes?.data as NumberNDArray?,
+                                                    input.data.type
+                                                )
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }
 }

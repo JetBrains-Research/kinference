@@ -14,30 +14,14 @@ import io.kinference.protobuf.message.TensorProto
 import kotlin.math.*
 import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+sealed class DynamicQuantizeLinear(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
     companion object {
-        private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()
-
-        private val INPUTS_INFO = listOf(
-            IOInfo(0, setOf(TensorProto.DataType.FLOAT), "x", optional = false)
-        )
-
-        private val OUTPUTS_INFO = listOf(
-            IOInfo(0, setOf(TensorProto.DataType.UINT8), "y", optional = false),
-            IOInfo(1, setOf(TensorProto.DataType.FLOAT), "y_scale", optional = false),
-            IOInfo(2, setOf(TensorProto.DataType.UINT8), "y_zero_point", optional = false)
-        )
-
-        private val INFO = OperatorInfo("DynamicQuantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
-
         private fun clip(x: Float, min: Float, max: Float) = when {
             x < min -> min
             x > max -> max
             else -> x
         }
-
-
+        
         private fun Float.toUByte() = this.toUInt().toUByte()
 
         internal fun FloatNDArray.dynamicQuantize(): Triple<UByteNDArray, FloatNDArray, UByteNDArray> {
@@ -62,6 +46,33 @@ class DynamicQuantizeLinear(attributes: Map<String, Attribute<Any>>, inputs: Lis
                 outputZeroPointScalar as UByteNDArray
             )
         }
+
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in DynamicQuantizeLinearVer11.VERSION.asRange() -> DynamicQuantizeLinearVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of DynamicQuantizeLinear operator: $version")
+        }
+    }
+}
+
+@ExperimentalTime
+class DynamicQuantizeLinearVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeLinear(INFO, attributes, inputs, outputs) {
+    companion object {
+        private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()
+
+        private val INPUTS_INFO = listOf(
+            IOInfo(0, setOf(TensorProto.DataType.FLOAT), "x", optional = false)
+        )
+
+        private val OUTPUTS_INFO = listOf(
+            IOInfo(0, setOf(TensorProto.DataType.UINT8), "y", optional = false),
+            IOInfo(1, setOf(TensorProto.DataType.FLOAT), "y_scale", optional = false),
+            IOInfo(2, setOf(TensorProto.DataType.UINT8), "y_zero_point", optional = false)
+        )
+
+        internal val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("DynamicQuantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
 

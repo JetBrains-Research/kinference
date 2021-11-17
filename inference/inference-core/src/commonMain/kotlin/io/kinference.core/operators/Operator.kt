@@ -29,6 +29,10 @@ open class IOInfo(
     }
 }
 
+data class VersionInfo(val sinceVersion: Int, val untilVersion: Int = Int.MAX_VALUE) {
+    fun asRange() = sinceVersion until untilVersion
+}
+
 class VariadicIOInfo(
     startIndex: Int, types: Set<DataType>, name: String,
     val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
@@ -36,9 +40,16 @@ class VariadicIOInfo(
     val heterogeneous: Boolean = true
 ) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
 
-data class OperatorInfo(val name: String, val attributes: Map<String, AttributeInfo>, val inputs: List<IOInfo>, val outputs: List<IOInfo>) {
-    constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>)
-        : this(name, attributes.map { it.name to it }.toMap(), inputs, outputs)
+data class OperatorInfo(
+    val name: String,
+    val attributes: Map<String, AttributeInfo>,
+    val inputs: List<IOInfo>,
+    val outputs: List<IOInfo>,
+    val versionInfo: VersionInfo,
+    val domain: String
+) {
+    constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>, versionInfo: VersionInfo, domain: String)
+        : this(name, attributes.associateBy { it.name }, inputs, outputs, versionInfo, domain)
 
     init {
         val variadicInputIndex = inputs.indexOfFirst { it is VariadicIOInfo }
@@ -46,6 +57,10 @@ data class OperatorInfo(val name: String, val attributes: Map<String, AttributeI
 
         val variadicOutputIndex = outputs.indexOfFirst { it is VariadicIOInfo }
         require(variadicOutputIndex == -1 || variadicOutputIndex == outputs.size - 1) { "Variadic output must be last" }
+    }
+
+    companion object {
+        const val DEFAULT_DOMAIN = "ai.onnx"
     }
 }
 

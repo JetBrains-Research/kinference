@@ -3,6 +3,7 @@ package io.kinference.core.graph
 import io.kinference.core.KIONNXData
 import io.kinference.core.utils.Stack
 import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.model.KIModel
 import io.kinference.core.operators.*
 import io.kinference.core.operators.layer.attention.AttentionContext
 import io.kinference.core.operators.layer.recurrent.gru.GRUContext
@@ -18,7 +19,7 @@ import kotlin.time.ExperimentalTime
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-class Graph(proto: GraphProto) {
+class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
@@ -95,7 +96,7 @@ class Graph(proto: GraphProto) {
                 if (ready) {
                     node.visited = true
                     stack.pop()
-                    operators.add(OperatorFactory.create(node.proto))
+                    operators.add(OperatorFactory.create(node.proto, opSetRegistry))
                     valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
                     order++
                 }

@@ -1,8 +1,17 @@
 package io.kinference.core.operators.ml.trees
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
+
+internal fun NDArray.toFloatNDArray() = if (this is FloatNDArray) {
+    this
+} else {
+    require(this is DoubleNDArray)
+    val pointer = DoublePointer(this.array)
+    FloatNDArray(this.shape) { pointer.getAndIncrement().toFloat() }
+}
 
 @ExperimentalTime
 class TreeEnsemble(
@@ -16,10 +25,12 @@ class TreeEnsemble(
     private val leafValues: FloatArray,
     private val biases: FloatArray,
     private val numTargets: Int,
-    internal val labelsInfo: LabelsInfo? = null
+    internal val labelsInfo: LabelsInfo<*>? = null
 ) {
-
-    data class LabelsInfo(val labels: List<Any>, val labelsDataType: TensorProto.DataType)
+    sealed class LabelsInfo<T>(val labels: List<T>, val labelsDataType: TensorProto.DataType) {
+        class LongLabelsInfo(labels: List<Long>) : LabelsInfo<Long>(labels, TensorProto.DataType.INT64)
+        class StringLabelsInfo(labels: List<String>) : LabelsInfo<String>(labels, TensorProto.DataType.STRING)
+    }
 
     private fun FloatArray.computeSplit(srcIdx: Int, splitIdx: Int): Int {
         return if (this[srcIdx + featureIds[splitIdx]] > nodeFloatSplits[splitIdx]) 1 else 0

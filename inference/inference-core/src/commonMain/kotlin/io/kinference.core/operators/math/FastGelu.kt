@@ -12,9 +12,19 @@ import io.kinference.core.operators.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
+sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of FastGelu operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : FastGelu(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -27,15 +37,15 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
             IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false)
         )
 
-        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
-
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)
 
-        val result = when (input.data.type) {
+        val result = when (val type = input.data.type) {
             DataType.FLOAT -> {
                 val biasData = bias?.data as? FloatNDArray
                 val result = input.data.toMutable() as MutableFloatNDArray
@@ -60,7 +70,7 @@ class FastGelu(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
                 result
             }
 
-            else -> error("Unsupported operation")
+            else -> error("Unsupported operation for data type $type")
         }.asTensor("Y")
 
         return listOf(result)

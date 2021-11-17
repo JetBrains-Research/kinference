@@ -1,6 +1,5 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
-
 import io.kinference.core.attributes.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
@@ -13,8 +12,19 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class GRU(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in GRUVer7.VERSION.asRange() -> GRUVer7(attributes, inputs, outputs)
+            else -> error("Unsupported version of GRU operator: $version")
+        }
+    }
+}
+
 @OptIn(ExperimentalTime::class)
-class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class GRUVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GRU(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -48,7 +58,8 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
             IOInfo(1, TYPE_CONSTRAINTS, "Y_h", optional = true), // [num_directions, batch_size, hidden_size]
         )
 
-        private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val activations: List<String> by attribute() { it: List<String> ->
@@ -98,4 +109,3 @@ class GRU(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"))
     }
 }
-

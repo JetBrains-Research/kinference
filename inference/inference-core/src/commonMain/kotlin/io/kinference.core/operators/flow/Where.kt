@@ -13,9 +13,19 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
+sealed class Where(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 9)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in WhereVer1.VERSION.asRange() -> WhereVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of Where operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class WhereVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Where(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -29,7 +39,8 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 9)
+        private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
@@ -44,7 +55,7 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
 
             val conditionPoint = (condition as BooleanNDArray).array.pointer()
 
-            when (left.type) {
+            when (val type = left.type) {
                 DataType.FLOAT -> {
                     val leftPoint = (left as FloatNDArray).array.pointer()
                     val rightPoint = (right as FloatNDArray).array.pointer()
@@ -109,7 +120,7 @@ class Where(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outpu
                     destPoint.acceptTriple(leftPoint, rightPoint, conditionPoint, dest.linearSize) { _, left, right, cond -> if (cond) left else right }
                 }
 
-                else -> throw IllegalStateException("Unsupported type")
+                else -> throw IllegalStateException("Unsupported data type: $type")
             }
         }
 
