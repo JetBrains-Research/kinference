@@ -10,8 +10,19 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
+sealed class Tile(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
+
+        operator fun invoke(version:  Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when(version ?: DEFAULT_VERSION.sinceVersion) {
+            in TileVer6.VERSION.asRange() -> TileVer6(attributes, inputs, outputs)
+            else -> error("Unsupported version of Tile operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class Tile(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class TileVer6(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Tile(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -24,7 +35,8 @@ class Tile(attributes: Map<String, Attribute<Any>>, inputs: List<String>, output
             IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false, differentiable = true)
         )
 
-        private val INFO = OperatorInfo("Tile", emptySet(), INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 6)
+        private val INFO = OperatorInfo("Tile", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     @Suppress("UNCHECKED_CAST")

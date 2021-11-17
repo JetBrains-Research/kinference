@@ -12,7 +12,18 @@ import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.*
 import kotlin.math.sqrt
 
-class QEmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+sealed class QEmbedLayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when(version ?: DEFAULT_VERSION.sinceVersion) {
+            in QEmbedLayerNormalizationVer1.VERSION.asRange() -> QEmbedLayerNormalizationVer1(attributes, inputs, outputs)
+            else -> error("Unsupported version of QEmbedLayerNormalization operator: $version")
+        }
+    }
+}
+
+class QEmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : QEmbedLayerNormalization(INFO, attributes, inputs, outputs) {
     companion object {
         private val INT_TYPE = setOf(TensorProto.DataType.INT32)
 
@@ -50,31 +61,8 @@ class QEmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: 
             IOInfo(1, INT_TYPE, "mask_index_out", false)
         )
 
-        private val INFO = OperatorInfo("QEmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
-
-        /*private class ByteOrUBytePointer(array: NDArray, startIndex: Int) {
-            private val type: TensorProto.DataType
-            private val bytePointer: BytePointer?
-            private val uBytePointer: UBytePointer?
-
-            init {
-                when(array) {
-                    is ByteNDArray -> {
-                        type = TensorProto.DataType.INT8
-                        bytePointer = array.array.pointer(startIndex)
-                        uBytePointer = null
-                    }
-                    is UByteNDArray -> {
-                        type = TensorProto.DataType.UINT8
-                        bytePointer = null
-                        uBytePointer = array.array.pointer(startIndex)
-                    }
-                    else -> error("Only Byte or UByte")
-                }
-            }
-
-
-        }*/
+        internal val VERSION = VersionInfo(sinceVersion = 1)
+        private val INFO = OperatorInfo("QEmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, "com.microsoft")
     }
 
     private val epsilon: Float by attribute()
@@ -232,7 +220,7 @@ class QEmbedLayerNormalization(attributes: Map<String, Attribute<Any>>, inputs: 
             }
         }
 
-        return listOf(output.asTensor(), EmbedLayerNormalization.createMaskIndices(mask, batchSize, seqLen).asTensor())
+        return listOf(output.asTensor(), EmbedLayerNormalizationVer1.createMaskIndices(mask, batchSize, seqLen).asTensor())
     }
 }
 

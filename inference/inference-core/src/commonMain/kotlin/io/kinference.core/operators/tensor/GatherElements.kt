@@ -13,8 +13,19 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
+sealed class GatherElements(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+    companion object {
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
+
+        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when(version ?: DEFAULT_VERSION.sinceVersion) {
+            in GatherElementsVer11.VERSION.asRange() -> GatherElementsVer11(attributes, inputs, outputs)
+            else -> error("Unsupported version of GatherElements operator: $version")
+        }
+    }
+}
+
 @ExperimentalTime
-class GatherElements(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(INFO, attributes, inputs, outputs) {
+class GatherElementsVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GatherElements(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -29,7 +40,8 @@ class GatherElements(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        private val INFO = OperatorInfo("GatherElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
+        private val INFO = OperatorInfo("GatherElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
         private class OffsetIndexer(private val array: NDArray, indices: IntNDArray, private val axis: Int) {
             private val indicesShape = indices.shape
