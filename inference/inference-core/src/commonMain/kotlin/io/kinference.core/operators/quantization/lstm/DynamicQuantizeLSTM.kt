@@ -113,10 +113,10 @@ class DynamicQuantizeLSTMVer1(attributes: Map<String, Attribute<Any>>, inputs: L
         require(weightsScale.data.rank == 1 && weightsZeroPoint.data.rank == 1 &&
                 recurrentWeightsScale.data.rank == 1 && recurrentWeightsZeroPoint.data.rank == 1)
 
-        val preparedWeightsScale = weightsScale.data.toMutable().reshape(intArrayOf(numDirections, 1))
-        val preparedWeightsZeroPoint = weightsZeroPoint.data.toMutable().reshape(intArrayOf(numDirections, 1))
-        val preparedRecurrentWeightsScale = recurrentWeightsScale.data.toMutable().reshape(intArrayOf(numDirections, 1))
-        val preparedRecurrentWeightsZeroPoint = recurrentWeightsZeroPoint.data.toMutable().reshape(intArrayOf(numDirections, 1))
+        val preparedWeightsScale = weightsScale.data.reshape(intArrayOf(numDirections, 1))
+        val preparedWeightsZeroPoint = weightsZeroPoint.data.reshape(intArrayOf(numDirections, 1))
+        val preparedRecurrentWeightsScale = recurrentWeightsScale.data.reshape(intArrayOf(numDirections, 1))
+        val preparedRecurrentWeightsZeroPoint = recurrentWeightsZeroPoint.data.reshape(intArrayOf(numDirections, 1))
 
 
         val weightsAsLSTMWeights = QuantizedLSTMWeights(

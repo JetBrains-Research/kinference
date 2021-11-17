@@ -1,4 +1,4 @@
-package io.kinference.ort.models.gpt
+package io.kinference.ort.models
 
 import io.kinference.ort.ORTTestEngine.ORTAccuracyRunner
 import io.kinference.ort.ORTTestEngine.ORTPerformanceRunner

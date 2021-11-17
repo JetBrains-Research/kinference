@@ -25,8 +25,8 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
 
     if (rank <= 2 && other.rank <= 2) {
-        val actualThis = if (rank == 1) this.reshapeView(1.concat(shape)) as NumberNDArray else this
-        val actualOther = if (other.rank == 1) this.reshapeView(other.shape.concat(1)) else other
+        val actualThis = if (rank == 1) this.reshape(1.concat(shape)) as NumberNDArray else this
+        val actualOther = if (other.rank == 1) this.reshape(other.shape.concat(1)) else other
 
         return actualThis.dotFunc(actualOther as NumberNDArray, dest)
     }

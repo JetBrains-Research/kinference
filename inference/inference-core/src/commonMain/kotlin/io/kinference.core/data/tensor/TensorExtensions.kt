@@ -16,7 +16,7 @@ fun Collection<KITensor>.stack(axis: Int): KITensor {
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
 
-    return this.map { it.data.reshapeView(newShape) }.concatenate(axis).asTensor()
+    return this.map { it.data.reshape(newShape) }.concatenate(axis).asTensor()
 }
 
 fun List<KITensor>.concatenate(axis: Int): KITensor {

@@ -45,7 +45,7 @@ object Broadcasting {
     }
 
     fun applyWithBroadcast(inputs: List<NDArray>, destination: MutableNDArray, op: (List<NDArray>, MutableNDArray) -> Unit): MutableNDArray {
-        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, destination.shape.size)) }
+        val wrappedInputs = inputs.map { it.reshape(unsqueezeFirst(it.shape, destination.shape.size)) }
 
         broadcast(wrappedInputs, destination, op)
         return destination
@@ -55,7 +55,7 @@ object Broadcasting {
         val newShape = broadcastShape(inputs.map { it.shape })
         val destination = allocateNDArray(destType, newShape)
 
-        val wrappedInputs = inputs.map { it.reshapeView(unsqueezeFirst(it.shape, newShape.size)) }
+        val wrappedInputs = inputs.map { it.reshape(unsqueezeFirst(it.shape, newShape.size)) }
 
         broadcast(wrappedInputs, destination, op)
         return destination
@@ -69,8 +69,8 @@ object Broadcasting {
     ) {
         require(broadcastShapeForMatmul(left.shape, right.shape).contentEquals(destination.shape))
 
-        val wrappedLeft = left.reshapeView(unsqueezeFirst(left.shape, destination.shape.size))
-        val wrappedRight = right.reshapeView(unsqueezeFirst(right.shape, destination.shape.size))
+        val wrappedLeft = left.reshape(unsqueezeFirst(left.shape, destination.shape.size))
+        val wrappedRight = right.reshape(unsqueezeFirst(right.shape, destination.shape.size))
 
         matmulBroadcast(wrappedLeft, wrappedRight, destination, dotFunc)
     }

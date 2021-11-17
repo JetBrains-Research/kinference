@@ -9,10 +9,10 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.*
 import io.kinference.core.operators.activations.Softmax
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -49,10 +49,9 @@ sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any
                 }
             }
 
-            output.transpose(intArrayOf(0, 2, 1, 3))
-            return output.reshapeView(intArrayOf(batchSize, seqLen, hiddenSize)) to present
+            return output.transpose(intArrayOf(0, 2, 1, 3)).reshape(intArrayOf(batchSize, seqLen, hiddenSize)) to present
         }
-        
+
         internal fun getScores(
             unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: IntNDArray?,
             past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int

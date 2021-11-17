@@ -66,6 +66,24 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         TODO("Not yet implemented")
     }
 
+    override fun tile(repeats: IntArray): NDArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun reshape(strides: Strides): StringNDArray {
+        require(strides.linearSize == this.strides.linearSize)
+
+        return StringNDArray(array, strides)
+    }
+
+    override fun transpose(permutations: IntArray): NDArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun transpose2D(): NDArray {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)
@@ -93,18 +111,13 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         this.array.fill(array.array[index], from, to)
     }
 
-    override fun reshape(strides: Strides): MutableNDArray {
-        this.strides = strides
-        return this
-    }
-
-    override fun transpose(permutations: IntArray): MutableNDArray {
+    /*override fun transpose(permutations: IntArray): MutableNDArray {
         TODO("Not yet implemented")
-    }
+    }*/
 
-    override fun transpose2D(): MutableNDArray {
+    /*override fun transpose2D(): MutableNDArray {
         TODO("Not yet implemented")
-    }
+    }*/
 
     override fun clean() {
         TODO("Not yet implemented")

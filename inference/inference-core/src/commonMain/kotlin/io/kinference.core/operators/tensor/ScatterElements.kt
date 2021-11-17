@@ -6,6 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.Context
 import io.kinference.core.operators.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.getIndices
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto

@@ -52,7 +52,7 @@ class FlattenVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         val actualAxis = input.indexAxis(axis)
 
         val newShape = makeShape(input.shape, actualAxis)
-        return listOf(input.toMutable().reshape(newShape).asTensor("output"))
+        return listOf(input.reshape(newShape).asTensor("output"))
     }
 
 }

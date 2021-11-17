@@ -27,14 +27,14 @@ internal object AttentionContext: ContextPrepare() {
         val headSize = shape[1] / 3 / numHeads
         val newShape = intArrayOf(shape[0], 3, numHeads, headSize)
 
-        return tensor.data.toMutable().reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor("prepared_${tensor.name}")
+        return tensor.data.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor("prepared_${tensor.name}")
     }
 
     internal fun prepareBias(tensor: KITensor, numHeads: Int): KITensor {
         val shape = tensor.data.shape
         val headSize = shape[0] / 3 / numHeads
         val newShape = intArrayOf(3, numHeads, headSize)
-        return tensor.data.toMutable().reshape(newShape).asTensor("prepared_${tensor.name}")
+        return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
     private fun appendWeights(tensor: KITensor?, context: Context, numHeads: Int) {
