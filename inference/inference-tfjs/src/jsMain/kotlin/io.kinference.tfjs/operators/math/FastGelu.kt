@@ -1,14 +1,17 @@
 package io.kinference.tfjs.operators.math
 
-import io.kinference.tfjs.attributes.Attribute
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.scalar
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
-sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
@@ -19,8 +22,7 @@ sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>
     }
 }
 
-class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+class FastGeluVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FastGelu(INFO, attributes, inputs, outputs) {
     companion object {
         private val COEF_1 = scalar(0.5f, "float32")
         private val COEF_2 = scalar(0.035677408136300125f, "float32")
@@ -42,7 +44,7 @@ class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs:
     }
 
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs.first()!!.data
             val bias = inputs.getOrNull(1)?.data

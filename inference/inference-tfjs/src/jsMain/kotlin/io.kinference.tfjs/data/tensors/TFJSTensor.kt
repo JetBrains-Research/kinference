@@ -11,8 +11,8 @@ import io.kinference.tfjs.TFJSBackend
 import io.kinference.tfjs.externals.core.NDArrayTFJS
 import io.kinference.tfjs.externals.core.tensor
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.types.ValueInfo
-import io.kinference.tfjs.types.ValueTypeInfo
+import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Int32Array
 

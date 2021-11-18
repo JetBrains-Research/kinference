@@ -1,15 +1,17 @@
 package io.kinference.core.operators.flow
 
 import io.kinference.core.KIONNXData
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.core.graph.Graph
+import io.kinference.core.graph.KIContext
+import io.kinference.core.graph.KIGraph
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -45,12 +47,12 @@ class IfVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         private val INFO = OperatorInfo("If", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val thenBranch: Graph by attribute("then_branch")
-    private val elseBranch: Graph by attribute("else_branch")
+    private val thenBranch: KIGraph by attribute("then_branch")
+    private val elseBranch: KIGraph by attribute("else_branch")
 
     private fun inner(
-        context: Context,
-        body: Graph,
+        context: Context<KIONNXData<*>>,
+        body: KIGraph,
         counter: Long,
         condition: Boolean,
         modified: MutableList<KITensor>,
@@ -81,9 +83,9 @@ class IfVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val condition = inputs[0]!!.data.singleValue() as Boolean
-        val outputs = if (condition) thenBranch.execute(emptyList(), context, profilingContext) else elseBranch.execute(emptyList(), context, profilingContext)
+        val outputs = if (condition) thenBranch.execute(emptyList(), context as KIContext, profilingContext) else elseBranch.execute(emptyList(), context as KIContext, profilingContext)
 
         return outputs as List<KITensor>
     }

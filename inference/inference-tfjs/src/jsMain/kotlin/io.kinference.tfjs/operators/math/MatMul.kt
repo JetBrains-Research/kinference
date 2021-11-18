@@ -1,17 +1,20 @@
 package io.kinference.tfjs.operators.math
 
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.NDArrayTFJS
 import io.kinference.tfjs.externals.core.reshape
 import io.kinference.tfjs.externals.extensions.matMul
 import io.kinference.tfjs.externals.extensions.tidy
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
-sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
         internal fun expandTensors(left: NDArrayTFJS, right: NDArrayTFJS): Pair<NDArrayTFJS, NDArrayTFJS> {
             return when {
@@ -44,9 +47,7 @@ sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>,
     }
 }
 
-class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
-
+class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMul(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -71,7 +72,7 @@ class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     }
 
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val left = inputs[0]!!.data
             val right = inputs[1]!!.data

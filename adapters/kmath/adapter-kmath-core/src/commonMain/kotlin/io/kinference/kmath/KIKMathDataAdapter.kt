@@ -5,8 +5,8 @@ import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.types.TensorShape
-import io.kinference.core.types.ValueTypeInfo
+import io.kinference.types.TensorShape
+import io.kinference.types.ValueTypeInfo
 import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType

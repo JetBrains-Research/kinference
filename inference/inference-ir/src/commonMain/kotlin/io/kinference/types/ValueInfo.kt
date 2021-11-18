@@ -1,4 +1,4 @@
-package io.kinference.tfjs.types
+package io.kinference.types
 
 import io.kinference.protobuf.message.ValueInfoProto
 

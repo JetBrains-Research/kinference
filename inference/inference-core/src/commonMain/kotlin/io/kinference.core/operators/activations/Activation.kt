@@ -1,14 +1,15 @@
 package io.kinference.core.operators.activations
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
-import io.kinference.core.operators.Operator
-import io.kinference.core.operators.OperatorInfo
+import io.kinference.operator.Operator
+import io.kinference.operator.OperatorInfo
 import io.kinference.primitives.types.DataType
+import io.kinference.profiler.ProfilingContext
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -22,7 +23,7 @@ abstract class Activation protected constructor(
     open fun activate(input: KITensor): KITensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray): NDArray
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         return listOf(activate(inputs.first()!!))
     }
 

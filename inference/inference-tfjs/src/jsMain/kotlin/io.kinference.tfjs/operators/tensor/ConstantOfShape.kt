@@ -1,14 +1,16 @@
 package io.kinference.tfjs.operators.tensor
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.tensor
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
 sealed class ConstantOfShape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -22,9 +24,7 @@ sealed class ConstantOfShape(info: OperatorInfo, attributes: Map<String, Attribu
 }
 
 
-class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
-
+class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ConstantOfShape(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
@@ -43,7 +43,7 @@ class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<
 
     private val value: TFJSTensor by attribute()
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val shape = inputs[0]!!.data.dataInt().toTypedArray()
             if (shape.contains(0)) {

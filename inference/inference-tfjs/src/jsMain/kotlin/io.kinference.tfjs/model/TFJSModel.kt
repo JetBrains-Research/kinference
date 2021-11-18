@@ -1,11 +1,10 @@
 package io.kinference.tfjs.model
 
 import io.kinference.model.Model
+import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.ModelProto
-import io.kinference.protobuf.message.OperatorSetIdProto
 import io.kinference.tfjs.TFJSData
-import io.kinference.tfjs.graph.Graph
-import io.kinference.tfjs.operators.OperatorInfo
+import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.utils.setDefaultBackend
 import kotlin.time.ExperimentalTime
 
@@ -15,23 +14,8 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         setDefaultBackend()
     }
 
-    class OperatorSetRegistry(proto: List<OperatorSetIdProto>) {
-        private val operatorSets = HashMap<String, Int>().apply {
-            for (opSet in proto) {
-                val name = opSet.domain ?: OperatorInfo.DEFAULT_DOMAIN
-                val version = opSet.version?.toInt() ?: 1
-                put(name, version)
-            }
-        }
-
-        fun getVersion(domain: String?): Int? {
-            val domainName = domain ?: OperatorInfo.DEFAULT_DOMAIN
-            return operatorSets[domainName]
-        }
-    }
-
     private val opSet = OperatorSetRegistry(proto.opSetImport)
-    val graph = Graph(proto.graph!!, opSet)
+    val graph = TFJSGraph(proto.graph!!, opSet)
     val name: String = "${proto.domain}:${proto.modelVersion}"
 
    /* companion object {

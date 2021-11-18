@@ -1,7 +1,7 @@
 package io.kinference.core.operators.ml.trees
 
 import io.kinference.core.KIONNXData
-import io.kinference.core.operators.Operator
+import io.kinference.operator.Operator
 import io.kinference.ndarray.toIntArray
 import io.kinference.core.operators.ml.*
 import kotlin.math.ceil

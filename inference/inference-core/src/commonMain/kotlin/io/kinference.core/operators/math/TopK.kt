@@ -1,10 +1,12 @@
 package io.kinference.core.operators.math
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.core.operators.*
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.profiler.ProfilingContext
@@ -64,7 +66,7 @@ class TopKVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     private val largest: Boolean by attribute() { it: Number -> it.toInt() == 1 }
     private val sorted: Boolean by attribute() { it: Number -> it.toInt() == 1 }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArray
         val k = (inputs[1]!!.data as LongNDArray).singleValue().toInt()
 

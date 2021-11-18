@@ -6,8 +6,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
-import io.kinference.core.types.ValueInfo
-import io.kinference.core.types.ValueTypeInfo
+import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.matmul

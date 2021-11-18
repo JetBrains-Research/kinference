@@ -1,15 +1,18 @@
 package io.kinference.tfjs.operators.tensor
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.tensor
 import io.kinference.tfjs.externals.extensions.tidy
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
-sealed class Shape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class Shape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 15)
 
@@ -20,8 +23,7 @@ sealed class Shape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, 
     }
 }
 
-class ShapeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+class ShapeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Shape(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -34,7 +36,7 @@ class ShapeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     }
 
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!
             val inputShape = input.data.shape

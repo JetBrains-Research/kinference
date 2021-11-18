@@ -4,7 +4,7 @@ import io.kinference.core.CoreBackend
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.types.*
+import io.kinference.types.*
 import io.kinference.data.*
 import io.kinference.protobuf.message.SequenceProto
 

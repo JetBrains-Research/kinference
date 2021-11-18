@@ -79,7 +79,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
                 api(project(":inference:inference-api"))
-
+                api(project(":inference:inference-ir"))
                 api(project(":ndarray"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))

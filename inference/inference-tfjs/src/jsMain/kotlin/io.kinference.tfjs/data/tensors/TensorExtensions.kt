@@ -2,7 +2,7 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.externals.core.NDArrayTFJS
-import io.kinference.tfjs.types.*
+import io.kinference.types.*
 
 fun NDArrayTFJS.asTensor(name: String? = null) =
     TFJSTensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape.toIntArray()), dtype.tfTypeResolve()), name ?: ""))

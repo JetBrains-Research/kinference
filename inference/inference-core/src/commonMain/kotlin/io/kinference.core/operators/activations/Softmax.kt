@@ -1,11 +1,11 @@
 package io.kinference.core.operators.activations
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.runBlocking
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import kotlinx.coroutines.*

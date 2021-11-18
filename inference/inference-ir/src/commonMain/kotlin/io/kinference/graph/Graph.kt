@@ -1,38 +1,31 @@
-package io.kinference.core.graph
+package io.kinference.graph
 
-import io.kinference.core.KIONNXData
-import io.kinference.core.utils.Stack
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.model.KIModel
-import io.kinference.core.operators.*
-import io.kinference.core.operators.layer.attention.AttentionContext
-import io.kinference.core.operators.layer.recurrent.gru.GRUContext
-import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
-import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTMContext
-import io.kinference.protobuf.message.*
-import io.kinference.core.types.ValueInfo
+import io.kinference.data.ONNXData
+import io.kinference.operator.*
 import io.kinference.profiler.ProfilingContext
 import io.kinference.profiler.profile
+import io.kinference.protobuf.message.*
+import io.kinference.types.ValueInfo
 import io.kinference.utils.LoggerFactory
+import io.kinference.utils.Stack
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
+abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>) {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
 
-    val operators: List<Operator<KIONNXData<*>, KIONNXData<*>>>
+    val operators: List<Operator<T, T>>
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
     private val valueOrderInfo = GraphValueOrderInfo()
 
-    val initializers: List<KITensor>
+    val initializers: List<T>
     private val initNames = proto.initializer.map { it.name }
-    private val preparedTensorsContext = Context()
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -96,7 +89,7 @@ class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
                 if (ready) {
                     node.visited = true
                     stack.pop()
-                    operators.add(OperatorFactory.create(node.proto, opSetRegistry))
+                    operators.add(factory.create(node.proto, opSetRegistry))
                     valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
                     order++
                 }
@@ -104,22 +97,16 @@ class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
         }
 
         if (operators.size != proto.node.size) {
-            logger.warning { "Count of used operators ${operators.size} not equals count of operators in model ${proto.node.size}. " +
-                             "Remove unused operators from model for more performance!" }
-        }
-//        require(operators.size == proto.node.size)
-
-        initializers = proto.initializer.map { KITensor.create(it) }
-
-        for (operator in operators) {
-            when(operator.info.name) {
-                "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
-                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers, operator)
-                "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
-                "Attention", "QAttention" -> AttentionContext.appendContext(preparedTensorsContext, initializers, operator)
+            logger.warning {
+                "Count of used operators ${operators.size} not equals count of operators in model ${proto.node.size}. " +
+                    "Remove unused operators from model for more performance!"
             }
         }
+
+        initializers = proto.initializer.map { prepareInput(it) }
     }
+
+    abstract fun prepareInput(proto: TensorProto): T
 
     private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
         val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
@@ -129,16 +116,18 @@ class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
     val availableInputs: List<String>
         get() = inputs.map { it.name }
 
-    private fun Context.cleanupUntilOrder(order: Int) {
+    private fun Context<T>.cleanupUntilOrder(order: Int) {
         return this.removeValues { valueOrderInfo.getOrder(it) <= order }
     }
 
+    protected abstract fun makeContext(root: Context<T>?): Context<T>
+
     @ExperimentalTime
-    fun execute(inputs: List<KIONNXData<*>>, root: Context? = null, profilingContext: ProfilingContext? = null): List<KIONNXData<*>> {
+    fun execute(inputs: List<T>, root: Context<T>? = null, profilingContext: ProfilingContext? = null): List<T> {
         //TODO: check that all inputs were set and not null
 
-        val context = Context(root)
-        context.mergeContext(preparedTensorsContext)
+        val context = makeContext(root)
+
         for (tensor in initializers) {
             context.putValue(tensor.name!!, tensor)
         }
@@ -151,7 +140,7 @@ class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
         }
 
         for ((i, operator) in operators.withIndex()) {
-            lateinit var outputs: List<KIONNXData<*>?>
+            lateinit var outputs: List<T?>
             profilingContext.profile(operator.info.name) { profilingContext ->
                 outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)
             }
@@ -161,7 +150,7 @@ class Graph(proto: GraphProto, opSetRegistry: KIModel.OperatorSetRegistry) {
                 outputs.zip(operator.outputs) { output, variable ->
                     if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                     if (variable.isNotEmpty()) {
-                        context.putValue(variable, output!!.rename(name = variable))
+                        context.putValue(variable, output!!.rename(name = variable) as T)
                     }
                 }
             }

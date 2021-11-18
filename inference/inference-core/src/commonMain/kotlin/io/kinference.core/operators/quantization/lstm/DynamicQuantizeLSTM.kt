@@ -1,12 +1,14 @@
 package io.kinference.core.operators.quantization.lstm
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.core.operators.*
+import io.kinference.core.graph.KIContext
+import io.kinference.operator.*
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMLayerBase
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.*
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
@@ -83,7 +85,7 @@ class DynamicQuantizeLSTMVer1(attributes: Map<String, Attribute<Any>>, inputs: L
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val inputAsLSTMInput = QuantizedLSTMInput.create(input)
 

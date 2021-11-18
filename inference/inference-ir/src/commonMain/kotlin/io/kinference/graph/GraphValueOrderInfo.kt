@@ -1,4 +1,4 @@
-package io.kinference.core.graph
+package io.kinference.graph
 
 class GraphValueOrderInfo {
     private val orders: HashMap<String, Int> = HashMap()

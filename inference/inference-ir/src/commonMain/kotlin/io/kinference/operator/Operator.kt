@@ -1,14 +1,13 @@
-package io.kinference.core.operators
+package io.kinference.operator
 
-import io.kinference.core.KIONNXData
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Context
 import io.kinference.ndarray.extensions.isScalar
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.message.TensorProto
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.time.ExperimentalTime
@@ -20,7 +19,7 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
 }
 
 open class IOInfo(
-    val index: Int, val types: Set<DataType>, val name: String,
+    val index: Int, val types: Set<TensorProto.DataType>, val name: String,
     val optional: Boolean = false, val onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
     val scalar: Boolean = false, val differentiable: Boolean? = null /* null == undefined, TODO */
 ) {
@@ -34,7 +33,7 @@ data class VersionInfo(val sinceVersion: Int, val untilVersion: Int = Int.MAX_VA
 }
 
 class VariadicIOInfo(
-    startIndex: Int, types: Set<DataType>, name: String,
+    startIndex: Int, types: Set<TensorProto.DataType>, name: String,
     val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
     scalar: Boolean = false, differentiable: Boolean? = null,
     val heterogeneous: Boolean = true
@@ -66,7 +65,7 @@ data class OperatorInfo(
 
 @ExperimentalTime
 @Suppress("UNCHECKED_CAST")
-abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
+abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     val info: OperatorInfo,
     val attributes: Map<String, Attribute<Any>> = emptyMap(),
     val inputs: List<String>,
@@ -88,7 +87,7 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
         }
     }
 
-    private fun check(constraints: List<IOInfo>, values: List<KIONNXData<*>?>, what: String) {
+    private fun check(constraints: List<IOInfo>, values: List<ONNXData<*, *>?>, what: String) {
         fun infos(constraints: List<IOInfo>) = sequence {
             for (constraint in constraints) {
                 while (constraint is VariadicIOInfo) yield(constraint)
@@ -99,7 +98,7 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
         }
 
         var variadicCounter = 0
-        var variadicType: DataType? = null
+        var variadicType: TensorProto.DataType? = null
         infos(constraints).zip(values.asSequence().plusElement(null)) { constraint, value ->
             // TODO check for not null variadic
             if (value == null) {
@@ -119,17 +118,10 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
             }
 
             require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.name}' for '${info.name}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
-            //require(value.info.type in constraint.types) { "Wrong $what type '${value.info.name}' for '${info.name}' operator\nPresent: ${value.info.type}, Expected: ${constraint.types}" }
-            if (constraint.scalar) {
-                when (value.type) {
-                    ONNXDataType.ONNX_TENSOR -> require((value as KITensor).data.isScalar()) { "${what.capitalize()} '${value.name}' must be a scalar for '${info.name}' operator" }
-                    //ONNXDataType.ONNX_SEQUENCE -> require((value as Sequence).data.all { it.data.isScalar() }) { "${what.capitalize()} '${value.info.name}' must be a list of scalars for '${info.name}' operator" }
-                }
-            }
         }
     }
 
-    fun applyWithCheck(context: Context, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
+    fun <D : ONNXData<*, *>> applyWithCheck(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
         check(info.inputs, inputs, "input")
         val outputs = apply(context, inputs, profilingContext)
         require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
@@ -154,7 +146,7 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
     }
 
     fun <O> attribute(name: String? = null) = AttributeValueDelegate<O, O>(name, { it }, { getAttribute(it) })
-    fun <I, O> attribute(name: String? = null, transform: (I) -> O) = AttributeValueDelegate(name, transform, { getAttribute(it) })
+    fun <I, O> attribute(name: String? = null, transform: (I) -> O) = AttributeValueDelegate(name, transform) { getAttribute(it) }
 
     /**
      * Get attribute from operator info
@@ -168,7 +160,7 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
     }
 
     fun <O> attributeOrNull(name: String? = null) = AttributeValueDelegate<O, O?>(name, { it }, { getAttributeOrNull(it) })
-    fun <I, O> attributeOrNull(name: String? = null, transform: (I?) -> O?) = AttributeValueDelegate(name, transform, { getAttributeOrNull(it) })
+    fun <I, O> attributeOrNull(name: String? = null, transform: (I?) -> O?) = AttributeValueDelegate(name, transform) { getAttributeOrNull(it) }
 
     /**
      * Get attribute from operator info or null if no default
@@ -182,15 +174,26 @@ abstract class Operator<in T : KIONNXData<*>, out U : KIONNXData<*>>(
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
-    abstract fun apply(context: Context, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
-    open fun apply(context: Context, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> = apply(context, inputs.toList(), profilingContext)
+    abstract fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
+    open fun <D : ONNXData<*, *>> apply(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
+        apply(context, inputs.toList(), profilingContext)
 
     companion object {
-        val ALL_DATA_TYPES = DataType.values().toHashSet() - DataType.UNDEFINED
+        val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED
         val PRIMITIVE_DATA_TYPES = setOf(
-            DataType.BOOL, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE, DataType.INT32,
-            DataType.INT16, DataType.INT8, DataType.INT64, DataType.UINT16, DataType.UINT8, DataType.UINT32, DataType.UINT64
+            TensorProto.DataType.BOOL,
+            TensorProto.DataType.FLOAT16,
+            TensorProto.DataType.FLOAT,
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.INT32,
+            TensorProto.DataType.INT16,
+            TensorProto.DataType.INT8,
+            TensorProto.DataType.INT64,
+            TensorProto.DataType.UINT16,
+            TensorProto.DataType.UINT8,
+            TensorProto.DataType.UINT32,
+            TensorProto.DataType.UINT64
         )
-        val FLOAT_DATA_TYPES = setOf(DataType.BFLOAT16, DataType.FLOAT16, DataType.FLOAT, DataType.DOUBLE)
+        val FLOAT_DATA_TYPES = setOf(TensorProto.DataType.BFLOAT16, TensorProto.DataType.FLOAT16, TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE)
     }
 }

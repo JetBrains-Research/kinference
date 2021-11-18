@@ -1,4 +1,4 @@
-package io.kinference.core.utils
+package io.kinference.utils
 
 fun <T> MutableSet<T>.removeIf(body: (T) -> Boolean) {
     val filtered = this.filter(body)

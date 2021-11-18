@@ -1,13 +1,15 @@
 package io.kinference.tfjs.operators.tensor
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.ndarray.toIntArray
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
 sealed class Unsqueeze(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -20,8 +22,7 @@ sealed class Unsqueeze(info: OperatorInfo, attributes: Map<String, Attribute<Any
     }
 }
 
-class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Unsqueeze(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -39,7 +40,7 @@ class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
     private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val actualAxes = axes.map { input.indexAxis(it) }.sorted()

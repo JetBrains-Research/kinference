@@ -1,9 +1,15 @@
 package io.kinference.tfjs.operators
 
-import io.kinference.protobuf.message.NodeProto
+import io.kinference.attribute.Attribute
+import io.kinference.attribute.AttributeFactory
+import io.kinference.graph.Graph
+import io.kinference.operator.*
+import io.kinference.operator.Operator
+import io.kinference.protobuf.message.GraphProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
-import io.kinference.tfjs.attributes.Attribute
-import io.kinference.tfjs.model.TFJSModel
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
@@ -12,9 +18,16 @@ import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
 import io.kinference.tfjs.operators.tensor.*
 
-object OperatorFactory {
+object TFJSAttributeFactory : AttributeFactory<TFJSData<*>> {
+    override fun createTensor(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+    override fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<TFJSData<*>> = TFJSGraph(proto, opSet)
+}
+
+object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
+    override fun attributeFactory(): AttributeFactory<TFJSData<*>> = TFJSAttributeFactory
+
     @Suppress("UNCHECKED_CAST")
-    fun create(opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
+    override fun create(opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
         "Attention" -> Attention(version, attributes, inputs, outputs)
         "Add" -> Add(version, attributes, inputs, outputs)
         "Shape" -> Shape(version, attributes, inputs, outputs)
@@ -39,9 +52,4 @@ object OperatorFactory {
         "Squeeze" -> Squeeze(version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
-
-    fun create(proto: NodeProto, opSetRegistry: TFJSModel.OperatorSetRegistry): Operator<TFJSData<*>, TFJSData<*>> {
-        val version = opSetRegistry.getVersion(proto.domain)
-        return create(proto.opType, version, proto.attribute.map { Attribute.create(it, opSetRegistry) }.associateBy { it.name }, proto.input, proto.output)
-    }
 }

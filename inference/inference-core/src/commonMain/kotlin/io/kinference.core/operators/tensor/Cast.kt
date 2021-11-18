@@ -1,15 +1,17 @@
 package io.kinference.core.operators.tensor
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -682,7 +684,7 @@ class CastVer6(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         }
     }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!
 

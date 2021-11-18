@@ -1,10 +1,12 @@
 package io.kinference.core.operators.math
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.core.operators.*
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.profiler.ProfilingContext
@@ -56,7 +58,7 @@ class ReduceSumVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
     private val axes: LongArray by attribute()
     private val keepDims: Boolean by attribute("keepdims") { it: Long -> it == 1L }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArray
         val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
         return listOf(input.reduceSum(actualAxes, keepDims).asTensor("reduced"))

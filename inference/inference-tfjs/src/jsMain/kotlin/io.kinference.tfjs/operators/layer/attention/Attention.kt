@@ -1,19 +1,22 @@
 package io.kinference.tfjs.operators.layer.attention
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.NDArrayTFJS
 import io.kinference.tfjs.externals.core.scalar
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
-sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
         internal fun NDArrayTFJS?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): NDArrayTFJS {
             return tidy {
@@ -118,9 +121,7 @@ sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any
 }
 
 
-class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
-
+class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Attention(INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
 
@@ -167,8 +168,7 @@ class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
-
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val weights = inputs[1]!!.data
@@ -185,7 +185,7 @@ class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
                 numHeads
             )
 
-            return@tidy Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+            return@tidy getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         }
 
         return listOf(outputs[0].asTensor(), outputs[1].asTensor())

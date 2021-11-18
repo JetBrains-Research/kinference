@@ -1,14 +1,16 @@
 package io.kinference.core.operators.math
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptRecursive
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
@@ -41,7 +43,7 @@ class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs:
         private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)
 

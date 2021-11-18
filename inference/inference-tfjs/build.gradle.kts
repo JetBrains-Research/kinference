@@ -59,6 +59,7 @@ kotlin {
         val jsMain by getting() {
             dependencies {
                 implementation(project(":serialization"))
+                api(project(":inference:inference-ir"))
 
                 implementation(npm("@tensorflow/tfjs-core", "3.9.0"))
                 implementation(npm("@tensorflow/tfjs-backend-webgl", "3.9.0"))

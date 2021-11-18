@@ -1,8 +1,10 @@
 package io.kinference.core.operators
 
+import io.kinference.attribute.Attribute
+import io.kinference.attribute.AttributeFactory
 import io.kinference.core.KIONNXData
-import io.kinference.core.attributes.Attribute
-import io.kinference.core.model.KIModel
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.graph.KIGraph
 import io.kinference.core.operators.activations.*
 import io.kinference.core.operators.flow.*
 import io.kinference.core.operators.layer.attention.Attention
@@ -18,13 +20,22 @@ import io.kinference.core.operators.seq.ConcatFromSequence
 import io.kinference.core.operators.seq.SplitToSequence
 import io.kinference.core.operators.tensor.*
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
-import io.kinference.protobuf.message.NodeProto
+import io.kinference.graph.Graph
+import io.kinference.operator.*
+import io.kinference.protobuf.message.*
 import kotlin.time.ExperimentalTime
 
+object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
+    override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
+    override fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<KIONNXData<*>> = KIGraph(proto, opSet)
+}
+
 @ExperimentalTime
-object OperatorFactory {
+object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
+    override fun attributeFactory(): AttributeFactory<KIONNXData<*>> = KIAttributeFactory
+
     @Suppress("UNCHECKED_CAST")
-    fun create(name: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (name) {
+    override fun create(opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
         "Add" -> Add(version, attributes, inputs, outputs)
         "Sub" -> Sub(version, attributes, inputs, outputs)
         "Attention" -> Attention(version, attributes, inputs, outputs)
@@ -94,11 +105,6 @@ object OperatorFactory {
         "Unsqueeze" -> Unsqueeze(version, attributes, inputs, outputs)
         "Where" -> Where(version, attributes, inputs, outputs)
         "ZipMap" -> ZipMap(version, attributes, inputs, outputs)
-        else -> error("Unsupported operator: $name")
+        else -> error("Unsupported operator: $opType")
     } as Operator<KIONNXData<*>, KIONNXData<*>>
-
-    fun create(proto: NodeProto, opSetRegistry: KIModel.OperatorSetRegistry): Operator<KIONNXData<*>, KIONNXData<*>> {
-        val version = opSetRegistry.getVersion(proto.domain)
-        return create(proto.opType, version, proto.attribute.associate { it.name!! to Attribute.create(it, opSetRegistry) }, proto.input, proto.output)
-    }
 }

@@ -3,6 +3,7 @@ rootProject.name = "kinference"
 include(":ndarray")
 include(":serialization")
 include(":inference:inference-api")
+include(":inference:inference-ir")
 include(":inference:inference-core")
 include(":inference:inference-ort")
 include(":inference:inference-tfjs")

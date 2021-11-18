@@ -1,7 +1,7 @@
 package io.kinference.core.operators.activations
 
-import io.kinference.core.attributes.Attribute
-import io.kinference.core.operators.*
+import io.kinference.attribute.Attribute
+import io.kinference.operator.*
 import io.kinference.ndarray.arrays.MutableNumberNDArray
 import io.kinference.ndarray.arrays.NDArray
 import kotlin.time.ExperimentalTime

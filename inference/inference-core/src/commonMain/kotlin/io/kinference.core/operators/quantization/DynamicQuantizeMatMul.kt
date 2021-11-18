@@ -1,10 +1,12 @@
 package io.kinference.core.operators.quantization
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
-import io.kinference.core.operators.*
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.matmul
@@ -47,7 +49,7 @@ class DynamicQuantizeMatMulVer11(attributes: Map<String, Attribute<Any>>, inputs
         private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val left = inputs[0]!!.data as FloatNDArray
         val quantizedRight = inputs[1]!!.data as NumberNDArray
 

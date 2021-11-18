@@ -1,14 +1,16 @@
 package io.kinference.core.operators.flow
 
 import io.kinference.core.KIONNXData
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.*
-import io.kinference.core.graph.Context
-import io.kinference.core.graph.Graph
+import io.kinference.core.graph.KIContext
+import io.kinference.core.graph.KIGraph
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.profiler.ProfilingContext
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -45,9 +47,9 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         private val INFO = OperatorInfo("Loop", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val body: Graph by attribute()
+    private val body: KIGraph by attribute()
 
-    private fun inner(context: Context, profilingContext: ProfilingContext?, body: Graph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
+    private fun inner(context: Context<KIONNXData<*>>, profilingContext: ProfilingContext?, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
         val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
@@ -73,7 +75,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val maxTripCount = inputs[0]?.data?.singleValue() as Long?
         val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
 
@@ -88,6 +90,8 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
         var counter = 0L
         var condition = keepgoing ?: true
+
+        context as KIContext
         when {
             maxTripCount == null && keepgoing == null -> {
                 while (true) {

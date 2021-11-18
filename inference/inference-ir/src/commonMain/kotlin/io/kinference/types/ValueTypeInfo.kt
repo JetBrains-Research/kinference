@@ -1,6 +1,6 @@
-package io.kinference.core.types
+package io.kinference.types
 
-import io.kinference.core.graph.Context
+import io.kinference.graph.Context
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.message.TensorShapeProto
 import io.kinference.protobuf.message.TypeProto
@@ -16,7 +16,7 @@ class TensorShape(private val dims: List<Dimension>) {
     class DynamicDimension(val value: String) : Dimension()
     object UnknownDimension : Dimension()
 
-    fun getDimensions(context: Context? = null): IntArray {
+    fun getDimensions(context: Context<*>? = null): IntArray {
         if (context == null) require(dims.all { it is StaticDimension })
         return dims.map {
             when (it) {

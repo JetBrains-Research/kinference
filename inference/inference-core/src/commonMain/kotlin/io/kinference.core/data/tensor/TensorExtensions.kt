@@ -5,7 +5,7 @@ import io.kinference.ndarray.extensions.concatenate
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.resolveProtoDataType
-import io.kinference.core.types.*
+import io.kinference.types.*
 
 fun NDArray.asTensor(name: String? = null) = KITensor(name, this, ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()))
 

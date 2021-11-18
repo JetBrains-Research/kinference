@@ -6,8 +6,8 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.*
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.seq.TFJSSequence.Companion.extractTypeInfo
-import io.kinference.tfjs.types.ValueInfo
-import io.kinference.tfjs.types.ValueTypeInfo
+import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 
 class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, TFJSData<*>>, TFJSBackend>(name, data) {
     constructor(data: Map<Any, TFJSData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)

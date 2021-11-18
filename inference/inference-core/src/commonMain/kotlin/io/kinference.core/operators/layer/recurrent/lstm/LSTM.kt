@@ -1,13 +1,15 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -81,7 +83,7 @@ class LSTMVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!
         val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArray)
 

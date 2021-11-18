@@ -1,14 +1,16 @@
 package io.kinference.core.operators.tensor
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -45,7 +47,7 @@ class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<
     private val value: KITensor by attribute()
 
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()
         val shape = IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }

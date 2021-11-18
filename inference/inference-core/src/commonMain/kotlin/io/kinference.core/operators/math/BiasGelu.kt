@@ -1,12 +1,14 @@
 package io.kinference.core.operators.math
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.Context
+import io.kinference.core.graph.KIContext
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 
 sealed class BiasGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
@@ -39,7 +41,7 @@ class BiasGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs:
     }
 
 
-    override fun apply(context: Context, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val bias = inputs[1]!!.data as NumberNDArray
 

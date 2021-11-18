@@ -1,13 +1,15 @@
 package io.kinference.tfjs.operators.math
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.tidy
 import io.kinference.tfjs.externals.extensions.times
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
 sealed class Mul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -47,7 +49,7 @@ class MulVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val result = tidy { arrayOf(inputs[0]!!.data * inputs[1]!!.data) }.first()
         return listOf(result.asTensor("C"))
     }

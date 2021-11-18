@@ -1,13 +1,10 @@
-package io.kinference.tfjs.graph
+package io.kinference.graph
 
 import io.kinference.data.ONNXData
-import io.kinference.tfjs.TFJSData
-import io.kinference.tfjs.data.tensors.TFJSTensor
 
-
-class Context(private val base: Context? = null) {
-    private val values = HashMap<String, TFJSData<*>>()
-    private val shapes = HashMap<String, Int>()
+abstract class Context<T : ONNXData<*, *>>(private val base: Context<T>? = null) {
+    protected val values = HashMap<String, T>()
+    protected val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
         return values.contains(name) && (base?.hasValue(name) ?: true)
@@ -17,33 +14,25 @@ class Context(private val base: Context? = null) {
         return shapes.contains(name) && (base?.hasShape(name) ?: true)
     }
 
-    fun putValue(name: String, value: TFJSData<*>) {
+    fun putValue(name: String, value: T) {
         require(name !in values && base?.hasValue(name)?.not() ?: true) { "'$name' already exists in context values" }
         values[name] = value
     }
 
-    fun getValue(name: String): TFJSData<*> {
+    fun getValue(name: String): T {
         return values[name] ?: base?.getValue(name) ?: error("'$name' not found in context values")
     }
 
-    fun getOrNullValue(name: String): TFJSData<*>? {
+    fun getOrNullValue(name: String): T? {
         return values[name] ?: base?.getOrNullValue(name)
-    }
-
-    fun removeValues(predicate: (String) -> Boolean) {
-        val allToRemove = values.entries.filter { predicate(it.key) }
-        allToRemove.forEach {
-            if (it.value is TFJSTensor) {
-                (it.value as TFJSTensor).data.dispose()
-            }
-        }
-        values.entries.removeAll(allToRemove)
     }
 
     fun putShape(name: String, shape: Int) {
         require(name !in shapes && base?.hasShape(name)?.not() ?: true) { "'$name' already exists in context shapes" }
         shapes[name] = shape
     }
+
+    abstract fun removeValues(predicate: (String) -> Boolean)
 
     fun getShape(name: String): Int {
         return shapes[name] ?: base?.getShape(name) ?: error("'$name' not found in context shapes")
@@ -54,7 +43,7 @@ class Context(private val base: Context? = null) {
         shapes.clear()
     }
 
-    fun mergeContext(context: Context) {
+    fun mergeContext(context: Context<T>) {
         values.putAll(context.values)
         shapes.putAll(context.shapes)
     }

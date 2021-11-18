@@ -4,8 +4,8 @@ import io.kinference.core.CoreBackend
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
-import io.kinference.core.types.ValueInfo
-import io.kinference.core.types.ValueTypeInfo
+import io.kinference.types.ValueInfo
+import io.kinference.types.ValueTypeInfo
 import io.kinference.data.*
 import io.kinference.protobuf.message.*
 

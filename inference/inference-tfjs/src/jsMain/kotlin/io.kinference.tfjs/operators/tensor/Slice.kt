@@ -1,12 +1,14 @@
 package io.kinference.tfjs.operators.tensor
 
+import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
+import io.kinference.operator.*
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.attributes.Attribute
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.*
-import io.kinference.tfjs.graph.Context
-import io.kinference.tfjs.operators.*
 
 sealed class Slice(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -19,8 +21,7 @@ sealed class Slice(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, 
     }
 }
 
-class SliceVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(INFO, attributes, inputs, outputs) {
+class SliceVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(INFO, attributes, inputs, outputs) {
     companion object {
         private val DATA_TYPE_CONSTRAINTS = ALL_DATA_TYPES
         private val INDEX_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32)
@@ -42,7 +43,7 @@ class SliceVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     }
 
 
-    override fun apply(context: Context, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {

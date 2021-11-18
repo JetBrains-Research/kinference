@@ -1,9 +1,9 @@
 package io.kinference.core.operators.activations
 
-import io.kinference.core.attributes.Attribute
+import io.kinference.attribute.Attribute
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.indexAxis
-import io.kinference.core.operators.*
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
