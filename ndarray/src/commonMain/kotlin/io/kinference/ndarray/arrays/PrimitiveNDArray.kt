@@ -720,6 +720,34 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
         val inputPointer = this.array.pointer()
 
+        if (actualAxis == shape.lastIndex) {
+            val outputPointer = outputArray.array.pointer()
+            for (i in 0 until countIterations) {
+                var maxValue = inputPointer.getAndIncrement()
+                var maxIndex = 0
+
+                if (selectLastIndex) {
+                    inputPointer.forEachIndexed(countDims - 1) { index: Int, value: PrimitiveType ->
+                        if (value >= maxValue) {
+                            maxValue = value
+                            maxIndex = index + 1
+                        }
+                    }
+                } else {
+                    inputPointer.forEachIndexed(countDims - 1) { index: Int, value: PrimitiveType ->
+                        if (value > maxValue) {
+                            maxValue = value
+                            maxIndex = index + 1
+                        }
+                    }
+                }
+                outputPointer.set(maxIndex)
+                outputPointer.increment()
+            }
+
+            return outputArray
+        }
+
         for (i in 0 until countIterations) {
             var maxValuesPointer = tempMaxValues.pointer()
 
