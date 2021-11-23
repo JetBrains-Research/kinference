@@ -91,6 +91,7 @@ fun blockSizeByStrides(strides: Strides): Int {
 }
 
 const val ERF_P_VALUE = 0.3275911
+const val ERF_P_VALUE_FLOAT = 0.3275911f
 val ERF_COEF = doubleArrayOf(
     0.254829592,
     -0.284496736,
@@ -98,6 +99,18 @@ val ERF_COEF = doubleArrayOf(
     -1.453152027,
     1.061405429
 )
+
+const val ERF_COEF_1_FLOAT = 0.254829592f
+const val ERF_COEF_2_FLOAT = -0.284496736f
+const val ERF_COEF_3_FLOAT = 1.421413741f
+const val ERF_COEF_4_FLOAT = -1.453152027f
+const val ERF_COEF_5_FLOAT = 1.061405429f
+
+const val ERF_COEF_1 = 0.254829592
+const val ERF_COEF_2 = -0.284496736
+const val ERF_COEF_3 = 1.421413741
+const val ERF_COEF_4 = -1.453152027
+const val ERF_COEF_5 = 1.061405429
 
 internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
     val temp = get(leftIdx)
