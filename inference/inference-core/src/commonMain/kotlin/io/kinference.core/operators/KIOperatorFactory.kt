@@ -83,6 +83,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Or" -> Or(version, attributes, inputs, outputs)
         "QAttention" -> QAttention(version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(version, attributes, inputs, outputs)
+        "Range" -> Range(version, attributes, inputs, outputs)
         "Relu" -> Relu(version, attributes, inputs, outputs)
         "Reshape" -> Reshape(version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(version, attributes, inputs, outputs)
