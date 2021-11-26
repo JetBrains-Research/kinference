@@ -111,7 +111,6 @@ class EqualVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
     }
 
-
     override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val result = inputs[0]!!.data equal inputs[1]!!.data
         return listOf(result.asTensor("output"))

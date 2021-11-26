@@ -69,6 +69,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "GRU" -> GRU(version, attributes, inputs, outputs)
         "Identity" -> Identity(version, attributes, inputs, outputs)
         "If" -> If(version, attributes, inputs, outputs)
+        "Less" -> Less(version, attributes, inputs, outputs)
         "LSTM" -> LSTM(version, attributes, inputs, outputs)
         "Loop" -> Loop(version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(version, attributes, inputs, outputs)
