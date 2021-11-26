@@ -710,17 +710,16 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
         val actualAxis = indexAxis(axis)
 
-        val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
-        val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
+        val countIterations = computeBlockSize(toDim = actualAxis)
+        val countElements = computeBlockSize(fromDim = actualAxis + 1)
         val countDims = shape[actualAxis]
 
         val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
         val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
-        val tempMaxValues = if (actualAxis == shape.lastIndex) PrimitiveTiledArray(1, 1) else PrimitiveTiledArray(countElements, outputArray.array.blockSize)
 
         val inputPointer = this.array.pointer()
 
-        if (actualAxis == shape.lastIndex) {
+        if (actualAxis == shape.lastIndex || countElements == 1) {
             val outputPointer = outputArray.array.pointer()
             for (i in 0 until countIterations) {
                 var maxValue = inputPointer.getAndIncrement()
@@ -748,6 +747,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return outputArray
         }
 
+        val tempMaxValues = PrimitiveTiledArray(countElements, outputArray.array.blockSize)
+
         for (i in 0 until countIterations) {
             var maxValuesPointer = tempMaxValues.pointer()
 
@@ -771,14 +772,21 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
                         val maxValuesBlock = maxValuesPointer.currentBlock
                         maxValuesPointer.blockIncrement()
 
-                        for (index in offset until min(outputBlock.size, offset + end)) {
-                            val value = inputBlock[index]
-                            val oldMaxValue = maxValuesBlock[index]
-                            if (value > oldMaxValue) {
-                                maxValuesBlock[index] = value
-                                outputBlock[index] = j
-                            } else if (selectLastIndex && value == oldMaxValue) {
-                                outputBlock[index] = j
+                        if (selectLastIndex) {
+                            for (index in offset until min(outputBlock.size, offset + end)) {
+                                val value = inputBlock[index]
+                                if (value >= maxValuesBlock[index]) {
+                                    maxValuesBlock[index] = value
+                                    outputBlock[index] = j
+                                }
+                            }
+                        } else {
+                            for (index in offset until min(outputBlock.size, offset + end)) {
+                                val value = inputBlock[index]
+                                if (value > maxValuesBlock[index]) {
+                                    maxValuesBlock[index] = value
+                                    outputBlock[index] = j
+                                }
                             }
                         }
 
