@@ -46,9 +46,9 @@ class ArgMaxVer12(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         private val INFO = OperatorInfo("ArgMax", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axis: Int by attribute() { it: Long -> it.toInt() }
-    private val keepDims: Boolean by attribute("keepdims") { it: Long -> it.toInt() != 0 }
-    private val selectLastIndex: Boolean by attribute("select_last_index") { it: Long -> it.toInt() != 0 }
+    private val axis: Int by attribute() { it: Number -> it.toInt() }
+    private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() != 0 }
+    private val selectLastIndex: Boolean by attribute("select_last_index") { it: Number -> it.toInt() != 0 }
 
 
     override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
