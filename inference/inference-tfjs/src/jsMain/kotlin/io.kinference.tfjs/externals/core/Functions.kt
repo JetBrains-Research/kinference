@@ -68,3 +68,5 @@ internal external val stridedSlice: (x: NDArrayTFJS, begin: Array<Int>, end: Arr
                                      endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int) -> NDArrayTFJS
 
 internal external val squeeze: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
+
+internal external val argMax: (x: NDArrayTFJS, axis: Int) -> NDArrayTFJS
