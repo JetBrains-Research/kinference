@@ -73,6 +73,7 @@ interface NumberNDArray : NDArray {
 
     fun min(): Any
     fun max(): Any
+    fun max(axis: Int, keepDims: Boolean): NumberNDArray
     fun sum(): Any
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
     fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray

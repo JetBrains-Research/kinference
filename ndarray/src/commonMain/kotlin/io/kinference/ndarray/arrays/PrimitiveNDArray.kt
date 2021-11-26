@@ -807,6 +807,52 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return outputArray
     }
 
+    override fun max(axis: Int, keepDims: Boolean): PrimitiveNDArray {
+        val actualAxis = indexAxis(axis)
+
+        val countIterations = computeBlockSize(toDim = actualAxis)
+        val countElements = computeBlockSize(fromDim = actualAxis + 1)
+        val countDims = shape[actualAxis]
+
+        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
+        val outputArray = allocateNDArray(Strides(outputShape))
+
+        val inputPointer = this.array.pointer()
+
+        if (actualAxis == shape.lastIndex || countElements == 1) {
+            val outputPointer = outputArray.array.pointer()
+            for (i in 0 until countIterations) {
+                var maxValue = inputPointer.getAndIncrement()
+                inputPointer.forEach(countDims - 1) { value: PrimitiveType ->
+                    if (value > maxValue) {
+                        maxValue = value
+                    }
+                }
+                outputPointer.set(maxValue)
+                outputPointer.increment()
+            }
+
+            return outputArray
+        }
+
+        for (i in 0 until countIterations) {
+            val outputPointer = outputArray.array.pointer(i * countElements)
+            outputPointer.accept(inputPointer, countElements) { _: PrimitiveType, src: PrimitiveType -> src }
+
+            for (j in 1 until countDims) {
+                outputPointer.linearIndex = i * countElements
+                outputPointer.accept(inputPointer, countElements) { dst: PrimitiveType, src: PrimitiveType ->
+                    if (src > dst)
+                        src
+                    else
+                        dst
+                }
+            }
+        }
+
+        return outputArray
+    }
+
     override fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
         val axesToReduce = axes.map { indexAxis(it) }.toSet()
         require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
