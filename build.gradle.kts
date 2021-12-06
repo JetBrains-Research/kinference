@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 group = "io.kinference"
-version = "0.1.6"
+version = "0.1.7"
 
 plugins {
     kotlin("multiplatform") version "1.5.31" apply false
