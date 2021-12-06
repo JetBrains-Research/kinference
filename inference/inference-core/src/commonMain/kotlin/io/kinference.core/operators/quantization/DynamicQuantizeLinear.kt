@@ -3,11 +3,11 @@ package io.kinference.core.operators.quantization
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
 import io.kinference.graph.Context
 import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.operator.*
@@ -23,7 +23,7 @@ sealed class DynamicQuantizeLinear(info: OperatorInfo, attributes: Map<String, A
             x > max -> max
             else -> x
         }
-        
+
         private fun Float.toUByte() = this.toUInt().toUByte()
 
         internal fun FloatNDArray.dynamicQuantize(): Triple<UByteNDArray, FloatNDArray, UByteNDArray> {
@@ -38,8 +38,8 @@ sealed class DynamicQuantizeLinear(info: OperatorInfo, attributes: Map<String, A
 
             val output = allocateNDArray(DataType.UBYTE, this.strides) as MutableUByteNDArray
 
-            for (i in 0 until this.linearSize) {
-                output.array[i] = clip((round(this.array[i] / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
+            output.array.pointer().accept(this.array.pointer(), this.linearSize) { _: UByte, src: Float ->
+                clip((round(src / outputScale) + outputZeroPoint), 0f, 255f).toUByte()
             }
 
             return Triple(
