@@ -67,7 +67,7 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
-    private fun initQueryKeyValue(input: NumberNDArray, weights: NumberNDArray, bias: FloatNDArray,
+    /*private fun initQueryKeyValue(input: NumberNDArray, weights: NumberNDArray, bias: FloatNDArray,
                                   batchSize: Int, seqLen: Int, hiddenSize: Int, numHeads: Int,
                                   inputZeroPoint: Int, weightsZeroPoint: Int, deqScale: Float): Array<MutableNDArray> {
         val headSize = hiddenSize / numHeads
@@ -100,42 +100,34 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         }
 
         return qkv
-    }
+    }*/
 
     override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
+        val inputScale = inputs[3]!!.data as NumberNDArray
+        val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArray?
+        val dequantInput = input.dequantize(inputZeroPoint, inputScale)
+
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: AttentionContext.prepareWeights(weights, numHeads)) as KITensor
+        val weightsScale = inputs[4]!!
+        val weightsZeroPoint = inputs.getOrNull(7)
 
-        val inputScale = inputs[3]!!.data.singleValue() as Float
-        val weightsScale = inputs[4]!!.data.singleValue() as Float
-        val deqScale = inputScale * weightsScale
+        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
 
-        val inputZeroPointNumber = inputs.getOrNull(6)?.data?.singleValue()
-        val weightsZeroPointNumber = inputs.getOrNull(7)?.data?.singleValue()
-
-        val inputZeroPoint = when(inputZeroPointNumber) {
-            is UByte -> inputZeroPointNumber.toInt()
-            is Byte -> inputZeroPointNumber.toInt()
-            else -> 0
-        }
-
-        val weightsZeroPoint = when(weightsZeroPointNumber) {
-            is UByte -> weightsZeroPointNumber.toInt()
-            is Byte -> weightsZeroPointNumber.toInt()
-            else -> 0
-        }
-
-
-        val (batchSize, seqLen, hiddenSize) = input.shape
         val bias = inputs[2]!!
+
         val preparedBias = (context.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
+        val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?
+        val past = inputs.getOrNull(8)?.data as NumberNDArray?
 
-        val (queries, keys, values) = initQueryKeyValue(input, preparedWeights.data as NumberNDArray, preparedBias.data as FloatNDArray, batchSize, seqLen, hiddenSize, numHeads, inputZeroPoint, weightsZeroPoint, deqScale)
-
-        val maskIndices = inputs.elementAtOrNull(5)?.data as IntNDArray?
-        val past = inputs.elementAtOrNull(8)?.data
+        val (batchSize, seqLen, hiddenSize) = dequantInput.shape
+        val (queries, keys, values) = AttentionVer1.initQueryKeyValue(
+            dequantInput,
+            preparedWeights.data,
+            preparedBias.data,
+            batchSize, seqLen, hiddenSize, numHeads
+        )
         val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())
     }

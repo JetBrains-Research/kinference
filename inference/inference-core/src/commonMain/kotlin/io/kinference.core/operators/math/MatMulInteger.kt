@@ -1,8 +1,10 @@
 package io.kinference.core.operators.math
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
 import io.kinference.graph.Context
@@ -64,15 +66,44 @@ class MatMulIntegerVer10(attributes: Map<String, Attribute<Any>>, inputs: List<S
         }
     }
 
+    object MatMulIntegerPrepare : ContextPrepare() {
+        override fun appendContext(context: KIContext, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+            val leftTensor = initTensorByDefaultName("A", operator, initializers)
+            val rightTensor = initTensorByDefaultName("B", operator, initializers)
+            val leftZeroPoint = initTensorByDefaultName("a_zero_point", operator, initializers)
+            val rightZeroPoint = initTensorByDefaultName("b_zero_point", operator, initializers)
+
+            appendTensor(leftTensor, leftZeroPoint, context)
+            appendTensor(rightTensor, rightZeroPoint, context)
+        }
+
+        internal fun prepareTensor(tensor: KITensor, zeroPoint: KITensor?): KITensor {
+            val preparedTensor = if (zeroPoint == null)
+                (tensor.data as NumberNDArray).toIntNDArray()
+            else
+                (tensor.data as NumberNDArray).withZeroPoint(zeroPoint.data as NumberNDArray)
+
+            return preparedTensor.asTensor("prepared_${tensor.name}")
+        }
+
+        private fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, context: KIContext) {
+            if (tensor != null) {
+                val preparedTensor = prepareTensor(tensor, zeroPoint)
+                context.putValue(preparedTensor.name!!, preparedTensor)
+            }
+        }
+    }
+
     override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
-        val first = inputs[0]!!.data as NumberNDArray
-        val second = inputs[1]!!.data as NumberNDArray
-        val firstZero = inputs.getOrNull(2)?.data as? NumberNDArray
-        val secondZero = inputs.getOrNull(3)?.data as? NumberNDArray
+        val first = inputs[0]!!
+        val second = inputs[1]!!
+        val firstZero = inputs.getOrNull(2)
+        val secondZero = inputs.getOrNull(3)
 
-        val firstBiased = if (firstZero == null) first.toIntNDArray() else first.withZeroPoint(firstZero)
-        val secondBiased = if (secondZero == null) second.toIntNDArray() else second.withZeroPoint(secondZero)
+        val firstPrepared = (context.getOrNullValue("prepared_${first.name}") ?: MatMulIntegerPrepare.prepareTensor(first, firstZero)) as KITensor
+        val secondPrepared = (context.getOrNullValue("prepared_${second.name}") ?: MatMulIntegerPrepare.prepareTensor(second, secondZero)) as KITensor
 
-        return listOf((firstBiased matmul secondBiased).asTensor("y"))
+        val output = (firstPrepared.data as NumberNDArray) matmul (secondPrepared.data as NumberNDArray)
+        return listOf(output.asTensor("y"))
     }
 }
