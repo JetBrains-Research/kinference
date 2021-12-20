@@ -1,7 +1,5 @@
 package io.kinference.ndarray
 
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
 
@@ -13,11 +11,19 @@ fun Collection<Number>.toIntArray(): IntArray {
     return array
 }
 
-fun LongArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
+fun ByteArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
+fun ShortArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
 fun IntArray.toByteArray() = ByteArray(this.size) { this[it].toByte() }
 fun IntArray.toUByteArray() = UByteArray(this.size) { this[it].toUByte() }
 fun IntArray.toBooleanArray() = BooleanArray(this.size) { this[it] != 0 }
 fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
+fun LongArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
+
+fun UByteArray.toUIntArray() = UIntArray(this.size) { this[it].toUInt() }
+fun UShortArray.toUIntArray() = UIntArray(this.size) { this[it].toUInt() }
+fun ULongArray.toUIntArray() = UIntArray(this.size) { this[it].toUInt() }
+
+fun DoubleArray.toFloatArray() = FloatArray(this.size) { this[it].toFloat() }
 
 fun IntArray?.isNullOrEmpty() = this == null || this.isEmpty()
 fun LongArray?.isNullOrEmpty() = this == null || this.isEmpty()

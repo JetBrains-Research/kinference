@@ -23,7 +23,10 @@ subprojects {
     if (this.subprojects.isNotEmpty()) return@subprojects
 
     apply {
-        plugin("org.jetbrains.kotlin.multiplatform")
+        when {
+            name.endsWith("-jvm") -> plugin("org.jetbrains.kotlin.jvm")
+            else -> plugin("org.jetbrains.kotlin.multiplatform")
+        }
 
         plugin("maven-publish")
         plugin("idea")
@@ -45,7 +48,7 @@ subprojects {
         }
     }
 
-    extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+    extensions.findByType(KotlinMultiplatformExtension::class.java)?.apply {
         sourceSets.all {
             languageSettings {
                 optIn("kotlin.RequiresOptIn")
@@ -53,17 +56,14 @@ subprojects {
                 optIn("kotlin.ExperimentalUnsignedTypes")
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
             }
-
-            languageSettings {
-                apiVersion = "1.5"
-                languageVersion = "1.5"
-            }
         }
+    }
 
-        tasks.withType<KotlinJvmCompile> {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+    tasks.withType<KotlinJvmCompile> {
+        kotlinOptions {
+            jvmTarget = "11"
+            languageVersion = "1.5"
+            apiVersion = "1.5"
         }
     }
 

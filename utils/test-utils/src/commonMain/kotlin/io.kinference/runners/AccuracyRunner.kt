@@ -51,7 +51,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(TestDataLoader.Path(path, it.path)), it.type) }
 
             logger.info { "Start predicting: $group" }
-            val actualOutputs = model.predict(inputs)
+            val actualOutputs = model.predictSuspend(inputs)
             check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
 
             inputs.forEach { testEngine.postprocessData(it) }

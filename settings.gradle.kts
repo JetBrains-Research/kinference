@@ -7,10 +7,16 @@ include(":inference:inference-ir")
 include(":inference:inference-core")
 include(":inference:inference-ort")
 include(":inference:inference-tfjs")
+include(":inference:inference-webgpu")
 
 include(":utils:test-utils")
 include(":utils:logger")
 include(":utils:model-profiler")
+
+include(":utils:webgpu-utils:webgpu-compute")
+include(":utils:webgpu-utils:wgpu:jnr-generation-jvm")
+include(":utils:webgpu-utils:wgpu:jnr-internal-api-jvm")
+include(":utils:webgpu-utils:wgpu:jnr-jvm")
 
 include(":adapters:multik:adapter-multik-core")
 include(":adapters:multik:adapter-multik-ort")

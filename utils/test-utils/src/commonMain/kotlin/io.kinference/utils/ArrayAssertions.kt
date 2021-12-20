@@ -85,6 +85,16 @@ object ArrayAssertions {
         }
     }
 
+    fun assertArrayEquals(left: UIntArray, right: UIntArray, diff: (UInt, UInt) -> Double, delta: Double, message: String = "") {
+        assertEquals(left.size, right.size, message)
+        for (i in left.indices) {
+            val l = left[i]
+            val r = right[i]
+
+            assertTrue(diff(l, r) <= delta, message)
+        }
+    }
+
     fun assertArrayEquals(left: UByteTiledArray, right: UByteTiledArray, diff: (UByte, UByte) -> Double, delta: Double, message: String = "") {
         assertEquals(left.size, right.size, message)
         for (i in 0 until left.size) {
