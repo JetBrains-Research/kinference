@@ -43,7 +43,7 @@ class SqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
 
     private val axes: LongArray? by attributeOrNull()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val squeezeAxes = axes?.toIntArray() ?: IntArray(0)
         return listOf(inputs.first()!!.data.toMutable().squeeze(*squeezeAxes).asTensor())
     }

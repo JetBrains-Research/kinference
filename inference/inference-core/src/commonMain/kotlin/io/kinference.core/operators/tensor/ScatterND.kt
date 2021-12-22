@@ -50,7 +50,7 @@ class ScatterNDVer11(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data.toMutable()
         val indices = inputs[1]!!.data as LongNDArray
         val updates = inputs[2]!!.data

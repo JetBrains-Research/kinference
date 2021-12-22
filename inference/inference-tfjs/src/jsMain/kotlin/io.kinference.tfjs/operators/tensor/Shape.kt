@@ -36,7 +36,7 @@ class ShapeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!
             val inputShape = input.data.shape

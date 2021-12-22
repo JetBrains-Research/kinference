@@ -94,7 +94,7 @@ class MatMulIntegerVer10(attributes: Map<String, Attribute<Any>>, inputs: List<S
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val first = inputs[0]!!
         val second = inputs[1]!!
         val firstZero = inputs.getOrNull(2)

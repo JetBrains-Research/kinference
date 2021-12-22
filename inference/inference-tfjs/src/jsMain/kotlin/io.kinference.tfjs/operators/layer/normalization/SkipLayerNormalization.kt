@@ -57,7 +57,7 @@ class SkipLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val skip = inputs[1]!!.data

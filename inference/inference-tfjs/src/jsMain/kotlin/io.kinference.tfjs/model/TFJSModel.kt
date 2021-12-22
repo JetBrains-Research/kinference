@@ -25,7 +25,7 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         }
     }*/
 
-    override fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
-        return graph.execute(input).associateBy { it.name.orEmpty() }
+    override fun predict(input: List<TFJSData<*>>, profile: Boolean, checkCancelled: () -> Unit): Map<String, TFJSData<*>> {
+        return graph.execute(input, checkCancelled = checkCancelled).associateBy { it.name.orEmpty() }
     }
 }

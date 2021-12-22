@@ -49,7 +49,7 @@ class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         private val INFO = OperatorInfo("MatMul", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val first = inputs[0]!!.data as NumberNDArray
         val second = inputs[1]!!.data as NumberNDArray
         return listOf((first matmul second).asTensor("Y"))

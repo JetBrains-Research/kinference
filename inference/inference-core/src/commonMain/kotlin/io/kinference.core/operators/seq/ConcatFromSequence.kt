@@ -44,7 +44,7 @@ class ConcatFromSequenceVer11(attributes: Map<String, Attribute<Any>>, inputs: L
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val newAxis: Boolean by attribute("new_axis") { it: Number -> it.toInt() == 1 }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KIONNXSequence?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KIONNXSequence?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val srcTensors = inputs.first()!!.data as List<KITensor>
         val tensor = if (newAxis) srcTensors.stack(axis) else srcTensors.concatenate(axis)
         return listOf(tensor)

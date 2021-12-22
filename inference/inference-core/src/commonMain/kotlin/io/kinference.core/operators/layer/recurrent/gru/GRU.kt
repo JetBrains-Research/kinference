@@ -81,7 +81,7 @@ class GRUVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     private val gruLayer = GRULayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!
 
         val weights = inputs[1]!!

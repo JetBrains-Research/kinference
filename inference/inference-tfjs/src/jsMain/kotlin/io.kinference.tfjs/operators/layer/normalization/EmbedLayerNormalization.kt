@@ -59,7 +59,7 @@ class EmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, input
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val inputIds = inputs[0]!!.data
             val segmentIds = inputs[1]?.data

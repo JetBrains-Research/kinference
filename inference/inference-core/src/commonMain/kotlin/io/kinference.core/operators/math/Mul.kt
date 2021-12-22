@@ -54,7 +54,7 @@ class MulVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val result = (inputs[0]!!.data as NumberNDArray) * (inputs[1]!!.data as NumberNDArray)
         return listOf(result.asTensor("C"))
     }

@@ -71,7 +71,7 @@ class GatherElementsVer11(attributes: Map<String, Attribute<Any>>, inputs: List<
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val (data, indices) = inputs.map { it!!.data }
         require(data.rank == indices.rank) { "Data and indices tensors must have the same rank" }
 

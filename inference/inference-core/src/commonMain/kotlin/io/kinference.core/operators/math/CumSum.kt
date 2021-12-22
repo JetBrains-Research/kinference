@@ -50,7 +50,7 @@ class CumSumVer11(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: 
     private val exclusive by attribute { ex: Number -> ex.toInt() != 0 }
     private val reverse by attribute { r: Number -> r.toInt() != 0 }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val axis = (inputs[1]!!.data.singleValue() as Number).toInt()
         return listOf(input.cumulativeSum(axis, exclusive, reverse).asTensor("y"))

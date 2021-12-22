@@ -102,7 +102,7 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         return qkv
     }*/
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val inputScale = inputs[3]!!.data as NumberNDArray
         val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArray?

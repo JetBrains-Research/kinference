@@ -77,7 +77,7 @@ class RangeVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val start = inputs[0]!!.data
         val limit = inputs[1]!!.data
         val delta = inputs[2]!!.data

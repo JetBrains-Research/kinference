@@ -89,7 +89,7 @@ class GemmVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val a = inputs[0]!!.data as NumberNDArray
         val b = inputs[1]!!.data as NumberNDArray
 

@@ -72,7 +72,7 @@ class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val left = inputs[0]!!.data
             val right = inputs[1]!!.data

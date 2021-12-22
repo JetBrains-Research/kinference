@@ -19,9 +19,9 @@ class KIModel(proto: ModelProto) : Model<KIONNXData<*>>, Profilable {
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>> {
+    override fun predict(input: List<KIONNXData<*>>, profile: Boolean, checkCancelled: () -> Unit): Map<String, KIONNXData<*>> {
         val context = if (profile) addContext("Model $name") else null
-        val execResult = graph.execute(input, profilingContext = context)
+        val execResult = graph.execute(input, profilingContext = context, checkCancelled = checkCancelled)
         return execResult.associateBy { it.name!! }
     }
 }

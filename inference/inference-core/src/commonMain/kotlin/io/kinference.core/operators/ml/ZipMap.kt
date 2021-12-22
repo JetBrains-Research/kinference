@@ -96,7 +96,7 @@ class ZipMapVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
             return ValueTypeInfo.MapTypeInfo(mapKeyType, mapValueInfo)
         }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KIONNXSequence?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KIONNXSequence?> {
         val labels = classLabelsLong ?: classLabelsString
         requireNotNull(labels) { "Class labels should be specified" }
 

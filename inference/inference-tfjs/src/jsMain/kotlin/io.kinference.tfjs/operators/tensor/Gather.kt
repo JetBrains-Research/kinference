@@ -45,7 +45,7 @@ class GatherVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val data = inputs[0]!!.data
             val indices = inputs[1]!!.data
