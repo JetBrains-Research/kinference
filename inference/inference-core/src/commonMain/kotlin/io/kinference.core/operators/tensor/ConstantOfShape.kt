@@ -47,7 +47,7 @@ class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<
     private val value: KITensor by attribute()
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()
         val shape = IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }

@@ -23,7 +23,7 @@ abstract class Activation protected constructor(
     open fun activate(input: KITensor): KITensor = this.activate(input.data).asTensor()
     abstract fun activate(input: NDArray): NDArray
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         return listOf(activate(inputs.first()!!))
     }
 

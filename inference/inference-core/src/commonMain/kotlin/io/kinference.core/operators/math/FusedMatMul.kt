@@ -59,7 +59,7 @@ class FusedMatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Stri
     private val transposeLeft: Boolean by attribute("transA") { it: Long -> it == 1L }
     private val transposeRight: Boolean by attribute("transB") { it: Long -> it == 1L }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val left = inputs[0]!!.data as NumberNDArray
         val right = inputs[1]!!.data as NumberNDArray
 

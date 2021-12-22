@@ -138,7 +138,7 @@ class EmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, input
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs[1]?.data as IntNDArray?
         val wordEmbed = inputs[2]!!.data as FloatNDArray

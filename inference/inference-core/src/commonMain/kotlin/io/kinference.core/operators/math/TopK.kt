@@ -66,7 +66,7 @@ class TopKVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     private val largest: Boolean by attribute() { it: Number -> it.toInt() == 1 }
     private val sorted: Boolean by attribute() { it: Number -> it.toInt() == 1 }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArray
         val k = (inputs[1]!!.data as LongNDArray).singleValue().toInt()
 

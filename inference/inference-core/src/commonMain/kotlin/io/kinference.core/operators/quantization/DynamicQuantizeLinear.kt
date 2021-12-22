@@ -78,7 +78,7 @@ class DynamicQuantizeLinearVer11(attributes: Map<String, Attribute<Any>>, inputs
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs.first()!!.data as FloatNDArray
 
         val (output, outputScaleScalar, outputZeroPointScalar) = input.dynamicQuantize()

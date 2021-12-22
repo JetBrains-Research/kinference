@@ -129,7 +129,7 @@ class TreeEnsembleClassifierVer1(attributes: Map<String, Attribute<Any>>, inputs
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val inputData = inputs[0]!!.data.toFloatNDArray()
         val classScores = ensemble.execute(inputData) as FloatNDArray
         val classLabels = labeledTopClasses(classScores)

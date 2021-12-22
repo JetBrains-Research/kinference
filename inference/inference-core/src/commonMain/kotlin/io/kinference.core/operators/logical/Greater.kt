@@ -112,7 +112,7 @@ class GreaterVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val result = inputs[0]!!.data greater inputs[1]!!.data
         return listOf(result.asTensor("output"))
     }

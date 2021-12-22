@@ -57,7 +57,7 @@ class CastVer6(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         else -> error("Unsupported type")
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             return@tidy arrayOf(inputs[0]!!.data.cast(tfjsType))
         }

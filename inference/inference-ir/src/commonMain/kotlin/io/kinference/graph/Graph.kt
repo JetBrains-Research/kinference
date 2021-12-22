@@ -123,7 +123,7 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     protected abstract fun makeContext(root: Context<T>?): Context<T>
 
     @ExperimentalTime
-    fun execute(inputs: List<T>, root: Context<T>? = null, profilingContext: ProfilingContext? = null): List<T> {
+    fun execute(inputs: List<T>, root: Context<T>? = null, profilingContext: ProfilingContext? = null, checkCancelled: () -> Unit = { }): List<T> {
         //TODO: check that all inputs were set and not null
 
         val context = makeContext(root)
@@ -140,6 +140,8 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
         }
 
         for ((i, operator) in operators.withIndex()) {
+            checkCancelled()
+            
             lateinit var outputs: List<T?>
             profilingContext.profile(operator.info.name) { profilingContext ->
                 outputs = operator.applyWithCheck(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)

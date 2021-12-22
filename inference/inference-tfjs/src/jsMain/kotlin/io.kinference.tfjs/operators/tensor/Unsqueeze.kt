@@ -40,7 +40,7 @@ class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
     private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val actualAxes = axes.map { input.indexAxis(it) }.sorted()

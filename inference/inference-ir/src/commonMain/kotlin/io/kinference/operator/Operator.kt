@@ -121,9 +121,9 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         }
     }
 
-    fun <D : ONNXData<*, *>> applyWithCheck(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
+    fun <D : ONNXData<*, *>> applyWithCheck(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit = { }): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = apply(context, inputs, profilingContext)
+        val outputs = apply(context, inputs, profilingContext, checkCancelled)
         require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
@@ -174,9 +174,9 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
-    abstract fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
-    open fun <D : ONNXData<*, *>> apply(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
-        apply(context, inputs.toList(), profilingContext)
+    abstract fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null, checkCancelled: () -> Unit = { }): List<U?>
+    open fun <D : ONNXData<*, *>> apply(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null, checkCancelled: () -> Unit = { }): Collection<U?> =
+        apply(context, inputs.toList(), profilingContext, checkCancelled)
 
     companion object {
         val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED

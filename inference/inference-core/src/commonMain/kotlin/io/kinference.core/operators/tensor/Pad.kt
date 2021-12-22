@@ -47,7 +47,7 @@ class PadVer9(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     private val mode: String by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data
         val pads = inputs[1]!!.data as LongNDArray
         val padsData = pads.array.toArray()

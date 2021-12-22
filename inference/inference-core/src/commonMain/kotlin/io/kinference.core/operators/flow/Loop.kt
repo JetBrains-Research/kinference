@@ -49,7 +49,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
     private val body: KIGraph by attribute()
 
-    private fun inner(context: Context<KIONNXData<*>>, profilingContext: ProfilingContext?, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
+    private fun inner(context: Context<KIONNXData<*>>, profilingContext: ProfilingContext?, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>, checkCancelled: () -> Unit): Boolean {
         val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
@@ -58,7 +58,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
             }
         }
 
-        val outputs = body.execute(inputs, context, profilingContext)
+        val outputs = body.execute(inputs, context, profilingContext, checkCancelled)
         val iterationOutputs = outputs.drop(body.inputs.size - 1)
 
         modified.clear()
@@ -75,7 +75,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val maxTripCount = inputs[0]?.data?.singleValue() as Long?
         val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
 
@@ -95,25 +95,25 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         when {
             maxTripCount == null && keepgoing == null -> {
                 while (true) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans)
+                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
                     counter += 1
                 }
             }
             maxTripCount == null && keepgoing != null -> {
                 while (condition) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans)
+                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
                     counter += 1
                 }
             }
             maxTripCount != null && keepgoing == null -> {
                 for (counter in 0 until maxTripCount) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans)
+                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
                 }
             }
             maxTripCount != null && keepgoing != null -> {
                 for (counter in 0 until maxTripCount) {
                     if (!condition) break
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans)
+                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
                 }
             }
         }

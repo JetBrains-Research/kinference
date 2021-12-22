@@ -66,7 +66,7 @@ class GeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         return listOf(gelu(input.toMutable()).asTensor("Y"))
     }

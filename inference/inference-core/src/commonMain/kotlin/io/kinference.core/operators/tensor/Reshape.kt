@@ -39,7 +39,7 @@ class ReshapeVer5(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         private val INFO = OperatorInfo("Reshape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val targetShape = inputs[1]!!.data
         return listOf(inputs[0]!!.data.toMutable().reshape(targetShape).asTensor())
     }

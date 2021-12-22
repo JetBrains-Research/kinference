@@ -37,7 +37,7 @@ class NotVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val data = inputs[0]!!.data.toMutable() as MutableBooleanNDArray
         return listOf(data.not().asTensor("output"))
     }

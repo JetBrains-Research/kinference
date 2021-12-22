@@ -49,7 +49,7 @@ class DynamicQuantizeMatMulVer11(attributes: Map<String, Attribute<Any>>, inputs
         private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val left = inputs[0]!!.data as FloatNDArray
         val quantizedRight = inputs[1]!!.data as NumberNDArray
 

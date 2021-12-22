@@ -48,7 +48,7 @@ class GatherVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val (data, indices) = inputs
         val axis = data!!.data.indexAxis(axis)
         return listOf(data.data.gather(indices!!.data, axis).asTensor())

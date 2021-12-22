@@ -51,7 +51,7 @@ class ArgMaxVer12(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
     private val selectLastIndex: Boolean by attribute("select_last_index") { it: Number -> it.toInt() != 0 }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val output = input.argmax(axis, keepDims, selectLastIndex)
         val outputLong = allocateNDArray(DataType.LONG, output.strides) as MutableLongNDArray

@@ -49,7 +49,7 @@ class FlattenVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         return intArrayOf(firstDimension, secondDimension)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val input = inputs[0]!!.data
         val actualAxis = input.indexAxis(axis)
 

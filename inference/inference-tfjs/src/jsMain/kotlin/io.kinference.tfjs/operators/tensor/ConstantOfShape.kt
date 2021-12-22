@@ -43,7 +43,7 @@ class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<
 
     private val value: TFJSTensor by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
         val outputs = tidy {
             val shape = inputs[0]!!.data.dataInt().toTypedArray()
             if (shape.contains(0)) {

@@ -69,7 +69,7 @@ class QEmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inpu
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs.getOrNull(1)?.data as IntNDArray?
         val wordEmbedding = inputs[2]!!.data
