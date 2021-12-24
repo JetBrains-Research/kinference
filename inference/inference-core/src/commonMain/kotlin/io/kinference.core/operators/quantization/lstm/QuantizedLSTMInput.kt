@@ -5,14 +5,29 @@ import io.kinference.ndarray.extensions.quantizeMatMul
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMInput
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMWeights
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
+import io.kinference.graph.asCoroutineContext
+import io.kinference.model.ExecutionContext
 import kotlin.time.ExperimentalTime
 
 class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroPoint: NumberNDArray): AbstractLSTMInput(data) {
     override fun view(vararg dims: Int): QuantizedLSTMInput = QuantizedLSTMInput(data.view(*dims), scale, zeroPoint)
 
-    override fun dot(weights: AbstractLSTMWeights, destination: MutableNumberNDArray) {
+    override fun dot(
+        weights: AbstractLSTMWeights,
+        destination: MutableNumberNDArray,
+        executionContext: ExecutionContext?
+    ) {
         when(weights) {
-            is QuantizedLSTMWeights -> quantizeMatMul(data, weights.data, zeroPoint, weights.zeroPoint, scale, weights.scale, destination as MutableFloatNDArray)
+            is QuantizedLSTMWeights -> quantizeMatMul(
+                data,
+                weights.data,
+                zeroPoint,
+                weights.zeroPoint,
+                scale,
+                weights.scale,
+                destination as MutableFloatNDArray,
+                executionContext.asCoroutineContext()
+            )
             else -> error("Unsupported operation")
         }
     }

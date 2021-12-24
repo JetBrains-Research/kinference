@@ -3,14 +3,12 @@ package io.kinference.core.operators.quantization.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.operator.*
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMLayerBase
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -85,22 +83,22 @@ class DynamicQuantizeLSTMVer1(attributes: Map<String, Attribute<Any>>, inputs: L
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val inputAsLSTMInput = QuantizedLSTMInput.create(input)
 
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
+        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.name}")
+        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: LSTMContext.prepareWeights(recurrentWeights)) as KITensor
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
+        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
 
         val peepholes = inputs.getOrNull(7)
-        val preparedPeepholes = peepholes?.let { context.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as KITensor?
+        val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as KITensor?
 
         val sequenceLens = inputs.getOrNull(4)
         val initialState = inputs.getOrNull(5)
@@ -143,7 +141,8 @@ class DynamicQuantizeLSTMVer1(attributes: Map<String, Attribute<Any>>, inputs: L
             initialState?.data as NumberNDArray?,
             initialCellState?.data as NumberNDArray?,
             preparedPeepholes?.data as NumberNDArray?,
-            input.type
+            input.type,
+            contexts.execution
         )
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }

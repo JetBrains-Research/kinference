@@ -2,7 +2,7 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 
-abstract class Context<T : ONNXData<*, *>>(private val base: Context<T>? = null) {
+abstract class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null) {
     protected val values = HashMap<String, T>()
     protected val shapes = HashMap<String, Int>()
 
@@ -43,7 +43,7 @@ abstract class Context<T : ONNXData<*, *>>(private val base: Context<T>? = null)
         shapes.clear()
     }
 
-    fun mergeContext(context: Context<T>) {
+    fun mergeContext(context: GraphContext<T>) {
         values.putAll(context.values)
         shapes.putAll(context.shapes)
     }

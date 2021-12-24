@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -49,7 +47,7 @@ class FlattenVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         return intArrayOf(firstDimension, secondDimension)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val actualAxis = input.indexAxis(axis)
 

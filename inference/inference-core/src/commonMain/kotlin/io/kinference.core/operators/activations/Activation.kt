@@ -1,15 +1,15 @@
 package io.kinference.core.operators.activations
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorInfo
 import io.kinference.primitives.types.DataType
-import io.kinference.profiler.ProfilingContext
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -20,11 +20,11 @@ abstract class Activation protected constructor(
     outputs: List<String>
 ) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
 
-    open fun activate(input: KITensor): KITensor = this.activate(input.data).asTensor()
-    abstract fun activate(input: NDArray): NDArray
+    open fun activate(input: KITensor, contexts: Contexts<KIONNXData<*>>): KITensor = this.activate(input.data, contexts).asTensor()
+    abstract fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
-        return listOf(activate(inputs.first()!!))
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+        return listOf(activate(inputs.first()!!, contexts as Contexts<KIONNXData<*>>))
     }
 
     companion object {

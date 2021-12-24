@@ -1,5 +1,6 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
+import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
@@ -11,12 +12,19 @@ class LSTMGate(private val weights: AbstractLSTMWeights,
                batchSize: Int, hiddenSize: Int, dataType: DataType) {
     private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
 
-    fun compute(input: AbstractLSTMInput, lstmStates: LSTMStates, activationFunction: PrimitiveToPrimitiveFunction, numDirection: Int, batchNum: Int) {
+    fun compute(
+        input: AbstractLSTMInput,
+        lstmStates: LSTMStates,
+        activationFunction: PrimitiveToPrimitiveFunction,
+        numDirection: Int,
+        batchNum: Int,
+        executionContext: ExecutionContext? = null
+    ) {
         val gateLocal = gateData.viewMutable(batchNum)
         gateLocal.clean()
 
-        input.dot(weights, gateLocal)
-        lstmStates.hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal)
+        input.dot(weights, gateLocal, executionContext)
+        lstmStates.hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal, executionContext)
         if (bias != null) gateLocal.plusAssign(bias)
         if (peephole != null) gateLocal.plusAssign(peephole.times(lstmStates.cellState.getVector(numDirection, batchNum)))
         gateLocal.mapMutable(activationFunction)

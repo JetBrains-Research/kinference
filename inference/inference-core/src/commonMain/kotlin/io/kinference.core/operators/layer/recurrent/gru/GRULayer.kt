@@ -4,8 +4,9 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.activations.Activation
+import io.kinference.graph.Contexts
+import io.kinference.graph.asCoroutineContext
 import io.kinference.primitives.types.DataType
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -23,7 +24,8 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         sequenceLens: IntNDArray?,
         initialHiddenState: NumberNDArray?,
         dataType: DataType,
-        linearBeforeReset: Boolean
+        linearBeforeReset: Boolean,
+        contexts: Contexts<*>
     ): Pair<NumberNDArray, NumberNDArray> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
@@ -38,7 +40,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
             batchSize, hiddenSize, dataType, linearBeforeReset
         )
 
-        apply(input, outputArray, gruState, gruGates, sequenceLens, 0, seqLength, batchSize, dataType)
+        apply(input, outputArray, gruState, gruGates, sequenceLens, 0, seqLength, batchSize, dataType, contexts)
         return outputArray to gruState.data
     }
 
@@ -51,7 +53,8 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         numDirection: Int,
         seqLength: Int,
         batchSize: Int,
-        dataType: DataType
+        dataType: DataType,
+        contexts: Contexts<*>
     ) {
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
@@ -63,9 +66,9 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
                 if (seqNum >= seqLens[batchNum]) continue
                 body {
                     val localInput = input.view(seqNum, batchNum)
-                    gruGates.update.compute(localInput, hiddenState, f, numDirection, batchNum)
-                    gruGates.reset.compute(localInput, hiddenState, f, numDirection, batchNum)
-                    gruGates.hidden.compute(localInput, hiddenState, gruGates, g, numDirection, batchNum)
+                    gruGates.update.compute(localInput, hiddenState, f, numDirection, batchNum, contexts.execution)
+                    gruGates.reset.compute(localInput, hiddenState, f, numDirection, batchNum, contexts.execution)
+                    gruGates.hidden.compute(localInput, hiddenState, gruGates, g, numDirection, batchNum, contexts.execution)
                     hiddenState.compute(gruGates, numDirection, batchNum)
                     val outputVector = hiddenState.getVector(numDirection, batchNum)
 
@@ -77,7 +80,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         //TODO: research optimal batchSize for run with coroutines
         for (seqNum in seqRange) {
             if (batchSize > 1) {
-                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } } }
+                runBlocking(contexts.execution.asCoroutineContext()) { wrapper(seqNum) { launch { it() } } }
             } else {
                 wrapper(seqNum)
             }

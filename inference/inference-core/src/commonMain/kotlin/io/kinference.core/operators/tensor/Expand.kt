@@ -3,14 +3,12 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.pointers.forEachIndexed
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
@@ -46,7 +44,7 @@ class ExpandVer8(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
         return output
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val shapeNDArray = inputs[1]!!.data as LongNDArray
 

@@ -3,13 +3,11 @@ package io.kinference.core.operators.flow
 import io.kinference.core.KIONNXData
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.*
-import io.kinference.core.graph.KIContext
 import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.profiler.ProfilingContext
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -49,7 +47,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
     private val body: KIGraph by attribute()
 
-    private fun inner(context: Context<KIONNXData<*>>, profilingContext: ProfilingContext?, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>, checkCancelled: () -> Unit): Boolean {
+    private fun inner(contexts: Contexts<KIONNXData<*>>, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
         val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
@@ -58,7 +56,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
             }
         }
 
-        val outputs = body.execute(inputs, context, profilingContext, checkCancelled)
+        val outputs = body.execute(inputs, contexts)
         val iterationOutputs = outputs.drop(body.inputs.size - 1)
 
         modified.clear()
@@ -75,7 +73,7 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val maxTripCount = inputs[0]?.data?.singleValue() as Long?
         val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
 
@@ -91,29 +89,29 @@ class LoopVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         var counter = 0L
         var condition = keepgoing ?: true
 
-        context as KIContext
+        contexts as Contexts<KIONNXData<*>>
         when {
             maxTripCount == null && keepgoing == null -> {
                 while (true) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
+                    condition = inner(contexts, body, counter, condition, modified, scans)
                     counter += 1
                 }
             }
             maxTripCount == null && keepgoing != null -> {
                 while (condition) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
+                    condition = inner(contexts, body, counter, condition, modified, scans)
                     counter += 1
                 }
             }
             maxTripCount != null && keepgoing == null -> {
                 for (counter in 0 until maxTripCount) {
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
+                    condition = inner(contexts, body, counter, condition, modified, scans)
                 }
             }
             maxTripCount != null && keepgoing != null -> {
                 for (counter in 0 until maxTripCount) {
                     if (!condition) break
-                    condition = inner(context, profilingContext, body, counter, condition, modified, scans, checkCancelled)
+                    condition = inner(contexts, body, counter, condition, modified, scans)
                 }
             }
         }

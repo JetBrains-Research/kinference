@@ -1,6 +1,8 @@
 package io.kinference.core.operators.activations
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.allocateNDArray
@@ -29,5 +31,5 @@ class IdentityVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs:
         private val INFO = OperatorInfo("Identity", emptyMap(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray): NDArray = allocateNDArray(input.type, input.shape).apply { copyFrom(0, input) }
+    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = allocateNDArray(input.type, input.shape).apply { copyFrom(0, input) }
 }

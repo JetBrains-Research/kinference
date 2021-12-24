@@ -4,8 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptDouble
 import io.kinference.ndarray.extensions.applyWithBroadcast
@@ -111,7 +110,7 @@ class LessVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val result = inputs[0]!!.data less inputs[1]!!.data
         return listOf(result.asTensor("output"))
     }

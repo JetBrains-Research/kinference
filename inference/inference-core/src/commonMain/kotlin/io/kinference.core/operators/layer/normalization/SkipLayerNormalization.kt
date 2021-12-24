@@ -3,10 +3,8 @@ package io.kinference.core.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
@@ -106,7 +104,7 @@ class SkipLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val output = input.allocateNDArray(input.strides)
         input.normalize(

@@ -1,5 +1,6 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
@@ -20,7 +21,8 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         sequenceLens: IntNDArray?,
         initialHiddenState: NumberNDArray?,
         dataType: DataType,
-        linearBeforeReset: Boolean
+        linearBeforeReset: Boolean,
+        contexts: Contexts<*>
     ): Pair<NumberNDArray, NumberNDArray> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
@@ -43,8 +45,8 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
 
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArray
 
-        forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLens, 0, seqLength, batchSize, dataType)
-        reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLens, 1, seqLength, batchSize, dataType)
+        forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLens, 0, seqLength, batchSize, dataType, contexts)
+        reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLens, 1, seqLength, batchSize, dataType, contexts)
 
         return outputArray to gruHiddenState.data
     }

@@ -1,5 +1,7 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
+import io.kinference.graph.asCoroutineContext
+import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
@@ -7,12 +9,19 @@ import io.kinference.primitives.types.DataType
 class GRUDefaultGate(private val weights: NumberNDArray, private val recurrentWeights: NumberNDArray, private val bias: NumberNDArray?, batchSize: Int, hiddenSize: Int, dataType: DataType) {
     private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
 
-    fun compute(input: NumberNDArray, hiddenState: GRUHiddenState, activationFunction: PrimitiveToPrimitiveFunction, numDirection: Int, batchNum: Int) {
+    fun compute(
+        input: NumberNDArray,
+        hiddenState: GRUHiddenState,
+        activationFunction: PrimitiveToPrimitiveFunction,
+        numDirection: Int,
+        batchNum: Int,
+        executionContext: ExecutionContext? = null
+    ) {
         val gateLocal = gateData.viewMutable(batchNum)
         gateLocal.clean()
 
-        input.dot(weights, gateLocal)
-        hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal)
+        input.dot(weights, gateLocal, executionContext.asCoroutineContext())
+        hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal, executionContext.asCoroutineContext())
         if (bias != null) gateLocal.plusAssign(bias)
         gateLocal.mapMutable(activationFunction)
     }
@@ -46,32 +55,56 @@ class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWei
     private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
     private val tempData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
 
-    fun compute(input: NumberNDArray, hiddenState: GRUHiddenState, gates: GRUGates, activationFunction: PrimitiveToPrimitiveFunction,numDirection: Int, batchNum: Int) =
+    fun compute(
+        input: NumberNDArray,
+        hiddenState: GRUHiddenState,
+        gates: GRUGates,
+        activationFunction: PrimitiveToPrimitiveFunction,
+        numDirection: Int,
+        batchNum: Int,
+        executionContext: ExecutionContext? = null
+    ) =
         if (linearBeforeReset)
-            computeWithReset(input, hiddenState, gates, activationFunction, numDirection, batchNum)
+            computeWithReset(input, hiddenState, gates, activationFunction, numDirection, batchNum, executionContext)
         else
-            computeDefault(input, hiddenState, gates, activationFunction, numDirection, batchNum)
+            computeDefault(input, hiddenState, gates, activationFunction, numDirection, batchNum, executionContext)
 
-    private fun computeDefault(input: NumberNDArray, hiddenState: GRUHiddenState, gates: GRUGates, activationFunction: PrimitiveToPrimitiveFunction, numDirection: Int, batchNum: Int) {
+    private fun computeDefault(
+        input: NumberNDArray,
+        hiddenState: GRUHiddenState,
+        gates: GRUGates,
+        activationFunction: PrimitiveToPrimitiveFunction,
+        numDirection: Int,
+        batchNum: Int,
+        executionContext: ExecutionContext? = null
+    ) {
         val gateLocal = gateData.viewMutable(batchNum)
         val tempLocal = tempData.viewMutable(batchNum)
         gateLocal.clean()
 
-        input.dot(weights, gateLocal)
+        input.dot(weights, gateLocal, executionContext.asCoroutineContext())
         gates.reset.getVector(batchNum).times(hiddenState.getVector(numDirection, batchNum), tempLocal)
-        tempLocal.dot(recurrentWeights, gateLocal)
+        tempLocal.dot(recurrentWeights, gateLocal, executionContext.asCoroutineContext())
         if (bias != null) gateLocal.plusAssign(bias)
         gateLocal.mapMutable(activationFunction)
     }
 
-    private fun computeWithReset(input: NumberNDArray, hiddenState: GRUHiddenState, gates: GRUGates, activationFunction: PrimitiveToPrimitiveFunction, numDirection: Int, batchNum: Int) {
+    private fun computeWithReset(
+        input: NumberNDArray,
+        hiddenState: GRUHiddenState,
+        gates: GRUGates,
+        activationFunction: PrimitiveToPrimitiveFunction,
+        numDirection: Int,
+        batchNum: Int,
+        executionContext: ExecutionContext? = null
+    ) {
         val gateLocal = gateData.viewMutable(batchNum)
         gateLocal.clean()
 
-        hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal)
+        hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal, executionContext.asCoroutineContext())
         if (recurrentBias != null) gateLocal.plusAssign(recurrentBias)
         gateLocal.timesAssign(gates.reset.getVector(batchNum))
-        input.dot(weights, gateLocal)
+        input.dot(weights, gateLocal, executionContext.asCoroutineContext())
         if (weightsBias != null) gateLocal.plusAssign(weightsBias)
         gateLocal.mapMutable(activationFunction)
     }

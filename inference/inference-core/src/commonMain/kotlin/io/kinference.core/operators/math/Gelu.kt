@@ -3,10 +3,8 @@ package io.kinference.core.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operator.*
@@ -66,7 +64,7 @@ class GeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         return listOf(gelu(input.toMutable()).asTensor("Y"))
     }

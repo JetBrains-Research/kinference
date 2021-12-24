@@ -3,20 +3,12 @@ package io.kinference.core.operators.layer.attention
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
-import io.kinference.ndarray.Strides
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.runBlocking
 import io.kinference.operator.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
 sealed class QAttention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
@@ -74,7 +66,7 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
 
         val qkv = Array(3) { allocateNDArray(DataType.FLOAT, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize))) }
 
-        runBlocking(Dispatchers.Default) {
+        runBlocking(// use execution context here instead of Dispatchers.Default) {
             for (qkvIdx in 0 until 3) {
                 launch {
                     val output = qkv[qkvIdx]
@@ -102,7 +94,7 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         return qkv
     }*/
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val inputScale = inputs[3]!!.data as NumberNDArray
         val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArray?
@@ -112,11 +104,11 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
         val weightsScale = inputs[4]!!
         val weightsZeroPoint = inputs.getOrNull(7)
 
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
+        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
 
         val bias = inputs[2]!!
 
-        val preparedBias = (context.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
+        val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?
         val past = inputs.getOrNull(8)?.data as NumberNDArray?
@@ -126,9 +118,10 @@ class QAttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<Strin
             dequantInput,
             preparedWeights.data,
             preparedBias.data,
-            batchSize, seqLen, hiddenSize, numHeads
+            batchSize, seqLen, hiddenSize, numHeads,
+            contexts.execution
         )
-        val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+        val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize, contexts.execution)
         return listOf(scores.asTensor(), present.asTensor())
     }
 }

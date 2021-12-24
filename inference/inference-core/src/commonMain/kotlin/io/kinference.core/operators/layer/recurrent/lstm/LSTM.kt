@@ -3,10 +3,8 @@ package io.kinference.core.operators.layer.recurrent.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
@@ -83,40 +81,42 @@ class LSTMVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, ou
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
         val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArray)
 
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
+        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
         val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArray)
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.name}")
+        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: LSTMContext.prepareWeights(recurrentWeights)) as KITensor
         val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArray)
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
+        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
 
         val peepholes = inputs.getOrNull(7)
-        val preparedPeepholes = peepholes?.let { context.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as KITensor?
+        val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as KITensor?
 
         val sequenceLens = inputs.getOrNull(4)
         val initialState = inputs.getOrNull(5)
         val initialCellState = inputs.getOrNull(6)
 
         val (output, lastState, lastCellState) = lstmLayer.apply(
-                                                    inputAsLSTMInput,
-                                                    weightsAsLSTMWeights,
-                                                    recurrentWeightsAsLSTMWeights,
-                                                    preparedBias?.data as NumberNDArray?,
-                                                    sequenceLens?.data as IntNDArray?,
-                                                    initialState?.data as NumberNDArray?,
-                                                    initialCellState?.data as NumberNDArray?,
-                                                    preparedPeepholes?.data as NumberNDArray?,
-                                                    input.data.type
-                                                )
+            inputAsLSTMInput,
+            weightsAsLSTMWeights,
+            recurrentWeightsAsLSTMWeights,
+            preparedBias?.data as NumberNDArray?,
+            sequenceLens?.data as IntNDArray?,
+            initialState?.data as NumberNDArray?,
+            initialCellState?.data as NumberNDArray?,
+            preparedPeepholes?.data as NumberNDArray?,
+            input.data.type,
+            contexts.execution
+        )
+        
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }
 }

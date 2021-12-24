@@ -1,10 +1,10 @@
 package io.kinference.tfjs.graph
 
-import io.kinference.graph.Context
+import io.kinference.graph.GraphContext
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 
-class TFJSContext(base: TFJSContext? = null) : Context<TFJSData<*>>(base) {
+class TFJSGraphContext(base: TFJSGraphContext? = null) : GraphContext<TFJSData<*>>(base) {
     override fun removeValues(predicate: (String) -> Boolean) {
         val allToRemove = values.entries.filter { predicate(it.key) }
         allToRemove.forEach {

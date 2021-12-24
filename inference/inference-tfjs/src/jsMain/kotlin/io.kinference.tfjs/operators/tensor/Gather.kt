@@ -2,9 +2,8 @@ package io.kinference.tfjs.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -45,7 +44,7 @@ class GatherVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
             val data = inputs[0]!!.data
             val indices = inputs[1]!!.data

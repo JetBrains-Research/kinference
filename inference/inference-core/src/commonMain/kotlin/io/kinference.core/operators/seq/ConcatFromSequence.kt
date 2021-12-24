@@ -4,10 +4,8 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.*
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -44,7 +42,7 @@ class ConcatFromSequenceVer11(attributes: Map<String, Attribute<Any>>, inputs: L
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val newAxis: Boolean by attribute("new_axis") { it: Number -> it.toInt() == 1 }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KIONNXSequence?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KIONNXSequence?>): List<KITensor?> {
         val srcTensors = inputs.first()!!.data as List<KITensor>
         val tensor = if (newAxis) srcTensors.stack(axis) else srcTensors.concatenate(axis)
         return listOf(tensor)

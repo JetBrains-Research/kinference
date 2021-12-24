@@ -2,9 +2,8 @@ package io.kinference.tfjs.operators.math
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.scalar
@@ -46,7 +45,7 @@ class BiasGeluVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<TFJSTensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<TFJSTensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
             val input = inputs[0]!!.data
             val bias = inputs[1]!!.data
