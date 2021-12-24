@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.gather
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operator.*
@@ -48,7 +46,7 @@ class GatherVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val (data, indices) = inputs
         val axis = data!!.data.indexAxis(axis)
         return listOf(data.data.gather(indices!!.data, axis).asTensor())

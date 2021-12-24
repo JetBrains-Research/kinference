@@ -3,10 +3,8 @@ package io.kinference.core.operators.quantization
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
@@ -50,7 +48,7 @@ class DequantizeLinearVer1(attributes: Map<String, Attribute<Any>>, inputs: List
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val scale = inputs[1]!!.data
         val zeroPoint = inputs.getOrNull(2)?.data

@@ -1,6 +1,9 @@
 package io.kinference.core.operators.activations
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
+import io.kinference.graph.Contexts
+import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
@@ -29,7 +32,7 @@ sealed class Softmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
             else -> error("Unsupported data type: $type")
         }
 
-        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides): MutableNDArray {
+        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides, executionContext: ExecutionContext? = null): MutableNDArray {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -45,8 +48,8 @@ sealed class Softmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
                 divAssign(createScalarNDArray(input.type, sum()))
             }
 
-            if (matrixRows.size > 128) {
-                runBlocking(Dispatchers.Default) {
+            if (matrixRows.size > 128 && executionContext != null) {
+                runBlocking(executionContext.coroutineContext) {
                     for (i in matrixRows.indices step 32) {
                         val end = min(i + 32, matrixRows.size)
                         launch {
@@ -98,7 +101,7 @@ class SoftmaxVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: NDArray): NDArray {
-        return softmax(input, axis, input.strides)
+    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray {
+        return softmax(input, axis, input.strides, executionContext = contexts.execution)
     }
 }

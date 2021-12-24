@@ -2,6 +2,8 @@ package io.kinference.core.model
 
 import io.kinference.core.KIONNXData
 import io.kinference.core.graph.*
+import io.kinference.graph.Contexts
+import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
@@ -15,13 +17,17 @@ class KIModel(proto: ModelProto) : Model<KIONNXData<*>>, Profilable {
     val graph = KIGraph(proto.graph!!, opSet)
 
     private val profiles: MutableList<ProfilingContext> = ArrayList()
-    override fun addContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
+    override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override fun predict(input: List<KIONNXData<*>>, profile: Boolean, checkCancelled: () -> Unit): Map<String, KIONNXData<*>> {
-        val context = if (profile) addContext("Model $name") else null
-        val execResult = graph.execute(input, profilingContext = context, checkCancelled = checkCancelled)
+    override fun predict(input: List<KIONNXData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, KIONNXData<*>> {
+        val contexts = Contexts<KIONNXData<*>>(
+            null,
+            if (profile) addProfilingContext("Model $name") else null,
+            executionContext
+        )
+        val execResult = graph.execute(input, contexts)
         return execResult.associateBy { it.name!! }
     }
 }

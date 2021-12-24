@@ -1,12 +1,11 @@
 package io.kinference.core.operators.flow
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.graph.KIContext
 import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -46,9 +45,9 @@ class IfVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outp
     private val thenBranch: KIGraph by attribute("then_branch")
     private val elseBranch: KIGraph by attribute("else_branch")
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val condition = inputs[0]!!.data.singleValue() as Boolean
-        val outputs = if (condition) thenBranch.execute(emptyList(), context as KIContext, profilingContext, checkCancelled) else elseBranch.execute(emptyList(), context as KIContext, profilingContext, checkCancelled)
+        val outputs = if (condition) thenBranch.execute(emptyList(), contexts as Contexts<KIONNXData<*>>) else elseBranch.execute(emptyList(), contexts as Contexts<KIONNXData<*>>)
 
         return outputs as List<KITensor>
     }

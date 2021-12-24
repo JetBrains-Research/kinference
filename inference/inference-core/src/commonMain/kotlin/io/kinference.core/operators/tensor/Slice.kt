@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.toIntArray
@@ -49,7 +47,7 @@ class SliceVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, 
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val data = inputs[0]!!
         val shape = data.data.shape
 

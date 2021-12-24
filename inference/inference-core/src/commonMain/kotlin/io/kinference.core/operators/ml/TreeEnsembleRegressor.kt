@@ -4,14 +4,12 @@ import io.kinference.core.KIONNXData
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
-import io.kinference.profiler.ProfilingContext
 import io.kinference.operator.*
 import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
 import io.kinference.core.operators.ml.trees.TreeEnsembleBuilder
 import io.kinference.core.operators.ml.trees.toFloatNDArray
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
@@ -83,7 +81,7 @@ class TreeEnsembleRegressorVer1(attributes: Map<String, Attribute<Any>>, inputs:
 
     private val treeEnsemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputData = inputs[0]!!.data.toFloatNDArray()
         return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
     }

@@ -3,10 +3,8 @@ package io.kinference.core.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
@@ -54,7 +52,7 @@ class SubVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
         private val INFO = OperatorInfo("Sub", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val result = (inputs[0]!!.data as NumberNDArray) - (inputs[1]!!.data as NumberNDArray)
         return listOf(result.asTensor("C"))
     }

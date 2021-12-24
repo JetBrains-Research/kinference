@@ -1,11 +1,13 @@
 package io.kinference.tfjs.model
 
+import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.ModelProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.utils.setDefaultBackend
+import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -25,7 +27,13 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         }
     }*/
 
-    override fun predict(input: List<TFJSData<*>>, profile: Boolean, checkCancelled: () -> Unit): Map<String, TFJSData<*>> {
-        return graph.execute(input, checkCancelled = checkCancelled).associateBy { it.name.orEmpty() }
+    override fun predict(input: List<TFJSData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, TFJSData<*>> {
+        if (profile) logger.warning { "Profiling of models running on TFJS backend is not supported" }
+        if (executionContext != null) logger.warning { "ExecutionContext for models running on TFJS backend is not supported" }
+        return graph.execute(input).associateBy { it.name.orEmpty() }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.create("io.kinference.tfjs.model.TFJSModel")
     }
 }

@@ -3,10 +3,8 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
@@ -81,18 +79,18 @@ class GRUVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     private val gruLayer = GRULayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?, checkCancelled: () -> Unit): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
 
         val weights = inputs[1]!!
-        val preparedWeights = (context.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
+        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (context.getOrNullValue("prepared_${recurrentWeights.name}")
+        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: GRUContext.prepareWeights(recurrentWeights)) as KITensor
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { context.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
+        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
 
         val sequenceLens = inputs.getOrNull(4)
         val initialHiddenState = inputs.getOrNull(5)
@@ -105,7 +103,8 @@ class GRUVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
             sequenceLens?.data as IntNDArray?,
             initialHiddenState?.data as NumberNDArray?,
             input.data.type,
-            linearBeforeReset
+            linearBeforeReset,
+            contexts
         )
 
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"))

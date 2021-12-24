@@ -9,7 +9,7 @@ import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.math.MatMulIntegerVer10
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTMContext
-import io.kinference.graph.Context
+import io.kinference.graph.GraphContext
 import io.kinference.graph.Graph
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.GraphProto
@@ -34,7 +34,7 @@ class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIO
         }
     }
 
-    override fun makeContext(root: Context<KIONNXData<*>>?): Context<KIONNXData<*>> {
+    override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
         val context = KIContext(root as? KIContext)
         context.mergeContext(preparedTensorsContext)
         return context
