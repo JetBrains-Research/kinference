@@ -6,9 +6,9 @@ import io.kinference.graph.Context
 import io.kinference.operator.*
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
-import io.kinference.webgpu.tensor.WebGPUTensor
 
 sealed class Reshape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<WebGPUTensor, WebGPUTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -16,7 +16,7 @@ sealed class Reshape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
 
         operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in ReshapeVer5.VERSION.asRange() -> ReshapeVer5(attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+            else -> error("Unsupported version of Reshape operator: $version")
         }
     }
 }
@@ -37,11 +37,15 @@ class ReshapeVer5(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
     }
 
     override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
+        error("Use applySuspend()")
+    }
+
+    override suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
         context as WebGPUContext
 
-        val data = inputs[0]!!.data.getMappedRange()
-        val type = inputs[0]!!.data.info.type
-        val targetShape = inputs[1]!!.data.getMappedRange().toIntArray()
-        return listOf(NDArray(ArrayInfo(shape = targetShape, type = type), data = data, device = context.device).asTensor())
+        val input = inputs[0]!!.data
+        val targetShape = inputs[1]!!.data
+
+        return listOf(input.reshape(targetShape, context.gpuState).asTensor("output"))
     }
 }

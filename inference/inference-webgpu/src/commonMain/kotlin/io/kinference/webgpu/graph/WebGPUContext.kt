@@ -1,24 +1,27 @@
 package io.kinference.webgpu.graph
 
 import io.kinference.graph.Context
-import io.kinference.utils.webgpu.CommandEncoder
-import io.kinference.utils.webgpu.Device
+import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.engine.WebGPUData
 
 class WebGPUContext(
-    internal val device: Device,
-    internal val commandEncoder: CommandEncoder = device.createCommandEncoder(),
+    val gpuState: WebGPUState,
     base: Context<WebGPUData<*>>? = null
 ) : Context<WebGPUData<*>>(base) {
+    private val valuesToDestroy: MutableList<WebGPUData<*>> = arrayListOf()
+
     override fun removeValues(predicate: (String) -> Boolean) {
         val allToRemove = values.entries.filter { predicate(it.key) }
-        /*
-        allToRemove.forEach {
-            if (it.value is WebGPUTensor) {
-                (it.value as WebGPUTensor).data.buffer.destroy()
+        valuesToDestroy.addAll(allToRemove.map { it.value })
+        values.entries.removeAll(allToRemove)
+    }
+
+    fun destroyRemovedValues() {
+        valuesToDestroy.forEach {
+            if (it is WebGPUTensor) {
+                it.data.destroy()
             }
         }
-         */
-        values.entries.removeAll(allToRemove)
+        valuesToDestroy.clear()
     }
 }

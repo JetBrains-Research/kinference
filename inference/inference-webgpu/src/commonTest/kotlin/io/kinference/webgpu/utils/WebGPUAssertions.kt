@@ -1,11 +1,11 @@
 package io.kinference.webgpu.utils
 
-import io.kinference.TestLoggerFactory
 import io.kinference.data.ONNXDataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.ArrayAssertions.assertArrayEquals
 import io.kinference.webgpu.engine.WebGPUData
-import io.kinference.webgpu.tensor.WebGPUTensor
+import io.kinference.webgpu.data.tensor.WebGPUTensor
+import io.kinference.webgpu.ndarray.*
 import kotlin.math.abs
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -19,8 +19,8 @@ object WebGPUAssertions {
         val typeInfo = expected.info
         when (typeInfo.type) {
             TensorProto.DataType.FLOAT -> {
-                val expectedArray = expected.data.getMappedRange().toFloatArray()
-                val actualArray = actual.data.getMappedRange().toFloatArray()
+                val expectedArray = (expected.data.getData() as FloatNDArrayData).data
+                val actualArray = (actual.data.getData() as FloatNDArrayData).data
 
                 assertArrayEquals(
                     expectedArray,
@@ -31,8 +31,8 @@ object WebGPUAssertions {
                 )
             }
             TensorProto.DataType.INT32 -> {
-                val expectedArray = expected.data.getMappedRange().toIntArray()
-                val actualArray = expected.data.getMappedRange().toIntArray()
+                val expectedArray = (expected.data.getData() as IntNDArrayData).data
+                val actualArray = (expected.data.getData() as IntNDArrayData).data
 
                 assertArrayEquals(
                     expectedArray,
@@ -43,8 +43,8 @@ object WebGPUAssertions {
                 )
             }
             TensorProto.DataType.UINT32 -> {
-                val expectedArray = expected.data.getMappedRange().toUIntArray()
-                val actualArray = expected.data.getMappedRange().toUIntArray()
+                val expectedArray = (expected.data.getData() as UIntNDArrayData).data
+                val actualArray = (expected.data.getData() as UIntNDArrayData).data
 
                 assertArrayEquals(
                     expectedArray,

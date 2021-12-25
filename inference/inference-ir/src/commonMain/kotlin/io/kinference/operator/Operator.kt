@@ -129,6 +129,14 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         return outputs
     }
 
+    suspend fun <D : ONNXData<*, *>> applyWithCheckSuspend(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
+        check(info.inputs, inputs, "input")
+        val outputs = applySuspend(context, inputs, profilingContext)
+        require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
+        check(info.outputs, outputs, "output")
+        return outputs
+    }
+
     class AttributeValueDelegate<Input, Output>(
         val name: String?, val transform: (Input) -> Output,
         val getValue: Operator<*, *>.(String) -> Any?
@@ -177,6 +185,11 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     abstract fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
     open fun <D : ONNXData<*, *>> apply(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
         apply(context, inputs.toList(), profilingContext)
+
+    open suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?> =
+        apply(context, inputs, profilingContext)
+    open suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
+        applySuspend(context, inputs.toList(), profilingContext)
 
     companion object {
         val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED

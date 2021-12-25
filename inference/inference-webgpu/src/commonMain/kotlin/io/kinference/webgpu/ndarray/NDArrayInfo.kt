@@ -2,7 +2,7 @@ package io.kinference.webgpu.ndarray
 
 import io.kinference.ndarray.Strides
 
-class ArrayInfo(
+class NDArrayInfo(
     val strides: Strides,
     val type: WebGPUDataType
 ) {

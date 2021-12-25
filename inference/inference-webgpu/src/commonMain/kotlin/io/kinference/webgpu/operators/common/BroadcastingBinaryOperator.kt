@@ -5,7 +5,8 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.broadcasting.unsqueezeFirst
 import io.kinference.operator.OperatorInfo
-import io.kinference.webgpu.ndarray.ArrayInfo
+import io.kinference.webgpu.ndarray.NDArrayInfo
+import io.kinference.webgpu.ndarray.WebGPUDataType
 import io.kinference.webgpu.utils.WORK_GROUP_SIZE_1D
 import io.kinference.webgpu.utils.divUp
 
@@ -13,10 +14,12 @@ abstract class BroadcastingBinaryOperator(info: OperatorInfo, attributes: Map<St
     : BinaryOperator(info, attributes, inputs, outputs) {
     abstract fun operation(input0: String, input1: String, output: String): String
 
-    override fun outputInfo(inputInfo: List<ArrayInfo?>): List<ArrayInfo?> =
-        listOf(ArrayInfo(Broadcasting.broadcastShape(listOf(inputInfo[0]!!.shape, inputInfo[1]!!.shape)), inputInfo[0]!!.type))
+    open fun outputType(inputInfo: List<NDArrayInfo?>): WebGPUDataType = inputInfo[0]!!.type
 
-    private fun outputShape(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): IntArray = outputInfo[0]!!.let {
+    override fun outputInfo(inputInfo: List<NDArrayInfo?>): List<NDArrayInfo?> =
+        listOf(NDArrayInfo(Broadcasting.broadcastShape(listOf(inputInfo[0]!!.shape, inputInfo[1]!!.shape)), outputType(inputInfo)))
+
+    private fun outputShape(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): IntArray = outputInfo[0]!!.let {
         if (inputInfo[0]!!.shape contentEquals inputInfo[1]!!.shape) {
             intArrayOf(it.size)
         } else {
@@ -24,7 +27,7 @@ abstract class BroadcastingBinaryOperator(info: OperatorInfo, attributes: Map<St
         }
     }
 
-    override fun workGroupSize(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): IntArray {
+    override fun workGroupSize(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): IntArray {
         val outputShape = outputShape(inputInfo, outputInfo)
         if (outputShape.size == 1) {
             return intArrayOf(WORK_GROUP_SIZE_1D, 1, 1)
@@ -47,10 +50,10 @@ abstract class BroadcastingBinaryOperator(info: OperatorInfo, attributes: Map<St
         return intArrayOf(x, y, z)
     }
 
-    override fun dispatchSize(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>, workGroupSize: IntArray): IntArray =
+    override fun dispatchSize(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>, workGroupSize: IntArray): IntArray =
         (shapeToWorkSize(outputShape(inputInfo, outputInfo)) zip workGroupSize).map { (dim, workSize) -> dim divUp workSize }.toIntArray()
 
-    override fun createShader(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): String {
+    override fun createShader(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): String {
         val shapes = arrayListOf(
             inputInfo[0]!!.shape,
             inputInfo[1]!!.shape,

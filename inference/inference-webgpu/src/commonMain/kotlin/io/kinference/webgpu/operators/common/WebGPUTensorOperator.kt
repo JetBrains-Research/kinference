@@ -2,50 +2,48 @@ package io.kinference.webgpu.operators.common
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.webgpu.tensor.WebGPUTensor
+import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.graph.WebGPUContext
-import io.kinference.webgpu.ndarray.ArrayInfo
+import io.kinference.webgpu.ndarray.NDArrayInfo
 import io.kinference.utils.webgpu.*
 import io.kinference.graph.Context
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorInfo
 import io.kinference.profiler.ProfilingContext
-import kotlin.time.ExperimentalTime
 
 class CachedOperatorInfo(
-    val inputInfo: List<ArrayInfo?>,
-    val outputInfo: List<ArrayInfo?>,
+    val inputInfo: List<NDArrayInfo?>,
+    val outputInfo: List<NDArrayInfo?>,
     val bindGroupLayout: BindGroupLayout,
     val computePipeline: ComputePipeline,
     val workGroupSize: IntArray,
     val dispatchSize: IntArray
 )
 
-@ExperimentalTime
 abstract class WebGPUTensorOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<WebGPUTensor, WebGPUTensor>(info, attributes, inputs, outputs) {
     private var cachedOperatorInfo: CachedOperatorInfo? = null
 
     protected abstract val shaderEntryPoint: String
 
-    protected abstract fun outputInfo(inputInfo: List<ArrayInfo?>): List<ArrayInfo?>
+    protected abstract fun outputInfo(inputInfo: List<NDArrayInfo?>): List<NDArrayInfo?>
 
-    protected abstract fun workGroupSize(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): IntArray
-    protected abstract fun dispatchSize(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>, workGroupSize: IntArray): IntArray
+    protected abstract fun workGroupSize(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): IntArray
+    protected abstract fun dispatchSize(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>, workGroupSize: IntArray): IntArray
 
-    protected abstract fun createBindGroupLayout(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): BindGroupLayoutDescriptor
+    protected abstract fun createBindGroupLayout(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): BindGroupLayoutDescriptor
 
-    protected abstract fun createShader(inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): String
+    protected abstract fun createShader(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): String
 
-    private fun createComputePipeline(context: WebGPUContext, inputInfo: List<ArrayInfo?>, outputInfo: List<ArrayInfo?>): ComputePipeline {
-        val bindGroupLayout = context.device.createBindGroupLayout(createBindGroupLayout(inputInfo, outputInfo))
-        val pipelineLayout = context.device.createPipelineLayout(
+    private fun createComputePipeline(context: WebGPUContext, inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): ComputePipeline {
+        val bindGroupLayout = context.gpuState.device.createBindGroupLayout(createBindGroupLayout(inputInfo, outputInfo))
+        val pipelineLayout = context.gpuState.device.createPipelineLayout(
             PipelineLayoutDescriptor(bindGroupLayouts = listOf(bindGroupLayout))
         )
-        return context.device.createComputePipeline(
+        return context.gpuState.device.createComputePipeline(
             ComputePipelineDescriptor(
                 layout = pipelineLayout,
                 compute = ProgrammableStage(
-                    module = context.device.createShaderModule(ShaderModuleDescriptor(createShader(inputInfo, outputInfo))),
+                    module = context.gpuState.device.createShaderModule(ShaderModuleDescriptor(createShader(inputInfo, outputInfo))),
                     entryPoint = shaderEntryPoint
                 )
             )
@@ -64,7 +62,7 @@ abstract class WebGPUTensorOperator(info: OperatorInfo, attributes: Map<String, 
             cachedOperatorInfo = CachedOperatorInfo(
                 inputInfo = inputInfo,
                 outputInfo = outputInfo(inputInfo),
-                bindGroupLayout = context.device.createBindGroupLayout(createBindGroupLayout(inputInfo, outputInfo)),
+                bindGroupLayout = context.gpuState.device.createBindGroupLayout(createBindGroupLayout(inputInfo, outputInfo)),
                 computePipeline = createComputePipeline(context as WebGPUContext, inputInfo, outputInfo),
                 workGroupSize = workGroupSize,
                 dispatchSize = dispatchSize(inputInfo, outputInfo, workGroupSize),

@@ -3,15 +3,13 @@ package io.kinference.webgpu.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Context
-import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
-import io.kinference.operator.Operator.Companion.ALL_DATA_TYPES
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
-import io.kinference.webgpu.tensor.WebGPUTensor
+import io.kinference.webgpu.data.tensor.WebGPUTensor
 
 sealed class Constant(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<WebGPUTensor, WebGPUTensor>(info, attributes, inputs, outputs) {
     companion object {
@@ -55,19 +53,18 @@ class ConstantVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>
         @Suppress("UNCHECKED_CAST")
         val result = when (name) {
             "value" -> value
-            "value_float" -> NDArray(ArrayInfo(intArrayOf(), WebGPUDataType.FLOAT32), data = floatArrayOf(value as Float), device = context.device).asTensor()
+            "value_float" -> NDArray.floatNDArray(NDArrayInfo(intArrayOf(), WebGPUDataType.FLOAT32), floatArrayOf(value as Float)).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                NDArray(ArrayInfo(intArrayOf(value.size), WebGPUDataType.FLOAT32), data = value, device = context.device).asTensor()
+                NDArray.floatNDArray(NDArrayInfo(intArrayOf(value.size), WebGPUDataType.FLOAT32), value).asTensor()
             }
-            "value_int" -> NDArray(ArrayInfo(intArrayOf(), WebGPUDataType.INT32), data = intArrayOf((value as Long).toInt()), device = context.device).asTensor()
+            "value_int" -> NDArray.intNDArray(NDArrayInfo(intArrayOf(), WebGPUDataType.INT32), intArrayOf((value as Long).toInt())).asTensor()
             "value_ints" -> {
                 value as LongArray
-                NDArray(ArrayInfo(intArrayOf(value.size), WebGPUDataType.FLOAT32), data = value.toIntArray(), device = context.device).asTensor()
+                NDArray.intNDArray(NDArrayInfo(intArrayOf(value.size), WebGPUDataType.FLOAT32), value.toIntArray()).asTensor()
             }
             else -> error("Unsupported data type")
         } as WebGPUTensor
-        result.data.unmap()
         return listOf(result)
     }
 }

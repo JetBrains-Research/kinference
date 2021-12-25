@@ -3,6 +3,10 @@ import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
 import io.kinference.gradle.s3.S3Dependency
 
+plugins {
+    kotlin("kapt") apply true
+}
+
 group = rootProject.group
 version = rootProject.version
 
@@ -88,10 +92,13 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
+                implementation("org.openjdk.jmh:jmh-core:1.25.1")
                 api("org.slf4j:slf4j-simple:1.7.30")
                 implementation(kotlin("test-junit5"))
 
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+
+                configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
             }
         }
     }

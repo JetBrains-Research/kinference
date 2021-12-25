@@ -12,4 +12,6 @@ expect class Device {
     fun createPipelineLayout(descriptor: PipelineLayoutDescriptor): PipelineLayout
     fun createShaderModule(descriptor: ShaderModuleDescriptor): ShaderModule
     fun destroy()
+
+    suspend fun wait()
 }

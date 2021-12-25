@@ -157,4 +157,36 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
         }
         return outputs.map { context.getValue(it.name) }
     }
+
+    // FIXME duplicated code
+    suspend fun executeSuspend(inputs: List<T>, root: Context<T>? = null, profilingContext: ProfilingContext? = null): List<T> {
+        // TODO use profilingContext
+        // TODO check that all inputs were set and not null
+
+        require(root != null)
+        val context = makeContext(root)
+
+        for (tensor in initializers) {
+            context.putValue(tensor.name!!, tensor)
+        }
+        for (input in inputs) {
+            if (input.name !in availableInputs) {
+                logger.warning { "Input node '${input.name}' not found in Graph and probably is excessive" }
+                continue
+            }
+            context.putValue(input.name!!, input)
+        }
+
+        for ((i, operator) in operators.withIndex()) {
+            val outputs: List<T?> = operator.applyWithCheckSuspend(context, operator.inputs.map { input -> if (input.isEmpty()) null else context.getValue(input) }, profilingContext)
+            context.cleanupUntilOrder(i)
+            outputs.zip(operator.outputs) { output, variable ->
+                if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
+                if (variable.isNotEmpty()) {
+                    context.putValue(variable, output!!.rename(name = variable) as T)
+                }
+            }
+        }
+        return outputs.map { context.getValue(it.name) }
+    }
 }

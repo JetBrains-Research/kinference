@@ -28,6 +28,10 @@ actual class Device(private val gpuDevice: GPUDevice) {
         ShaderModule(gpuDevice.createShaderModule(descriptor))
 
     actual fun destroy() = gpuDevice.destroy()
+
+    actual suspend fun wait() {
+        queue.onSubmittedWorkDone()
+    }
 }
 
 external class GPUDevice {

@@ -10,7 +10,4 @@ interface InferenceEngine<T : ONNXData<*, *>> {
 
     fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*, *>
     fun loadModel(bytes: ByteArray): Model<T>
-
-    suspend fun loadDataSuspend(bytes: ByteArray, type: ONNXDataType): ONNXData<*, *> = loadData(bytes, type)
-    suspend fun loadModelSuspend(bytes: ByteArray): Model<T> = loadModel(bytes)
 }

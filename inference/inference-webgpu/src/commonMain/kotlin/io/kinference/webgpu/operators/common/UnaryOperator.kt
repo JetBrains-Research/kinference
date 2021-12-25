@@ -3,19 +3,18 @@ package io.kinference.webgpu.operators.common
 import io.kinference.attribute.Attribute
 import io.kinference.operator.OperatorInfo
 import io.kinference.utils.webgpu.*
+import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
-import io.kinference.webgpu.data.tensor.WebGPUTensor
 
-abstract class BinaryOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+abstract class UnaryOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : WebGPUTensorOperator(info, attributes, inputs, outputs) {
     override val shaderEntryPoint: String = "main"
 
     override fun createBindGroupLayout(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): BindGroupLayoutDescriptor = BindGroupLayoutDescriptor(
         listOf(
             BindGroupLayoutEntry(0, BufferBindingLayout(BufferBindingType.ReadOnlyStorage)),
-            BindGroupLayoutEntry(1, BufferBindingLayout(BufferBindingType.ReadOnlyStorage)),
-            BindGroupLayoutEntry(2, BufferBindingLayout(BufferBindingType.Storage))
+            BindGroupLayoutEntry(1, BufferBindingLayout(BufferBindingType.Storage))
         )
     )
 
@@ -27,8 +26,7 @@ abstract class BinaryOperator(info: OperatorInfo, attributes: Map<String, Attrib
                 layout = operatorInfo.bindGroupLayout,
                 entries = listOf(
                     BindGroupEntry(0, BufferBinding(inputs[0]!!.data.getBuffer(context.gpuState))),
-                    BindGroupEntry(1, BufferBinding(inputs[1]!!.data.getBuffer(context.gpuState))),
-                    BindGroupEntry(2, BufferBinding(output.getBuffer(context.gpuState))),
+                    BindGroupEntry(1, BufferBinding(output.getBuffer(context.gpuState))),
                 )
             )
         )

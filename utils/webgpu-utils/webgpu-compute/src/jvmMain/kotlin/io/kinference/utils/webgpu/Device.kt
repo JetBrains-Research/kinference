@@ -46,4 +46,8 @@ actual class Device(private val wgpuDevice: WGPUDevice) {
         ShaderModule(WebGPUInstance.wgpuNative.wgpuDeviceCreateShaderModule(wgpuDevice, descriptor.descriptor.getPointerTo()))
 
     actual fun destroy() = WebGPUInstance.wgpuNative.wgpuDeviceDestroy(wgpuDevice)
+
+    actual suspend fun wait() {
+        WebGPUInstance.wgpuNative.wgpuDevicePoll(wgpuDevice, force_wait = true)
+    }
 }

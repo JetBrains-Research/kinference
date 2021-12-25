@@ -3,9 +3,7 @@ package io.kinference.webgpu.operators.math
 import io.kinference.utils.TestRunner
 import io.kinference.webgpu.WebGPUTestEngine.WebGPUAccuracyRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class DivTest {
     private fun getTargetPath(dirName: String) = "/div/$dirName/"
 

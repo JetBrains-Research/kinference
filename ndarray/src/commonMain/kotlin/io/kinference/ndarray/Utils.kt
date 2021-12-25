@@ -11,6 +11,7 @@ fun Collection<Number>.toIntArray(): IntArray {
     return array
 }
 
+fun BooleanArray.toIntArray() = IntArray(this.size) { if (this[it]) 1 else 0 }
 fun ByteArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
 fun ShortArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
 fun IntArray.toByteArray() = ByteArray(this.size) { this[it].toByte() }
