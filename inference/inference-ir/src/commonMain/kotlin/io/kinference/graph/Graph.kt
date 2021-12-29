@@ -23,7 +23,7 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
-    private val valueOrderInfo = GraphValueOrderInfo()
+    protected val valueOrderInfo = GraphValueOrderInfo()
 
     val initializers: List<T>
     private val initNames = proto.initializer.map { it.name }
@@ -114,11 +114,10 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
         putOrder(otherNames, order)
     }
 
-    val availableInputs: List<String>
-        get() = inputs.map { it.name }
+    val availableInputs: List<String> = inputs.map { it.name }
 
-    private fun GraphContext<T>.cleanupUntilOrder(order: Int) {
-        return this.removeValues { valueOrderInfo.getOrder(it) <= order }
+    protected open fun cleanupUntilOrder(context: GraphContext<T>, order: Int) {
+        context.removeValues { valueOrderInfo.getOrder(it) <= order }
     }
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
@@ -141,7 +140,7 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
 
         for ((i, operator) in operators.withIndex()) {
             contexts.execution?.checkCancelled?.invoke()
-            
+
             lateinit var outputs: List<T?>
             contexts.profiling.profile(operator.info.name) { profilingContext ->
                 outputs = operator.applyWithCheck(
@@ -150,7 +149,8 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             }
 
             contexts.profiling.profile("${operator.info.name}:cleanup") {
-                contexts.graph!!.cleanupUntilOrder(i)
+                cleanupUntilOrder(contexts.graph!!, i)
+//                contexts.graph!!.cleanupUntilOrder(i)
                 outputs.zip(operator.outputs) { output, variable ->
                     if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
                     if (variable.isNotEmpty()) {
