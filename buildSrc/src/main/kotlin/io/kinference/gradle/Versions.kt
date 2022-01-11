@@ -1,7 +1,7 @@
 package io.kinference.gradle
 
 object Versions {
-    const val wire = "3.6.0"
+    const val wire = "4.0.1"
 
     // Don't forget change version for plugin
     const val kinferencePrimitives = "0.1.16"

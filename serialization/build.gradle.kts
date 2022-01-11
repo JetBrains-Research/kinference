@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js {
+    js(BOTH) {
         browser()
     }
 
@@ -15,7 +15,7 @@ kotlin {
             dependencies {
                 api(project(":ndarray"))
 
-                api("com.squareup.wire:wire-runtime-multiplatform:${Versions.wire}")
+                api("com.squareup.wire:wire-runtime:${Versions.wire}")
             }
         }
     }

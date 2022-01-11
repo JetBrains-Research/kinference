@@ -1,4 +1,5 @@
 @file:JsModule("@tensorflow/tfjs-core")
+@file:JsNonModule
 package io.kinference.tfjs.externals.core
 
 import org.khronos.webgl.*

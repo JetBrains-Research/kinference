@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js {
+    js(BOTH) {
         browser()
     }
 

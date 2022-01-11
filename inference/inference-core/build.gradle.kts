@@ -8,7 +8,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js {
+    js(BOTH) {
         testRuns["test"].configureAllExecutions {
             filter {
                 excludeTestsMatching("*.heavy_*")

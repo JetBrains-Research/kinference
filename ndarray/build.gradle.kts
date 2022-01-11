@@ -10,10 +10,8 @@ plugins {
 kotlin {
     jvm()
 
-    js {
+    js(BOTH) {
         browser()
-
-        useCommonJs()
     }
 
     sourceSets {
