@@ -29,7 +29,6 @@ kotlin {
             }
         }
 
-
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
@@ -48,12 +47,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-junit5"))
                 api("org.slf4j:slf4j-simple:${Versions.slf4j}")
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
             }
         }
     }
-}
-
-idea {
-    module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
 }

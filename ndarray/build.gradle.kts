@@ -11,13 +11,7 @@ kotlin {
     jvm()
 
     js {
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+        browser()
 
         useCommonJs()
     }
@@ -25,23 +19,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib"))
-
                 api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
-            }
-        }
-
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
-
-        val jsMain by getting {
-            dependencies {
-                implementation(npm("regl", "2.0.1"))
             }
         }
     }

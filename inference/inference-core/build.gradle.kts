@@ -7,10 +7,6 @@ import io.kinference.gradle.Versions
 group = rootProject.group
 version = rootProject.version
 
-plugins {
-    kotlin("kapt") apply true
-}
-
 kotlin {
     js {
         testRuns["test"].configureAllExecutions {
@@ -76,7 +72,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
 
                 api(project(":inference:inference-api"))
@@ -100,18 +95,8 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.openjdk.jmh:jmh-core:1.25.1")
                 api("org.slf4j:slf4j-simple:${Versions.slf4j}")
-
-                implementation("com.microsoft.onnxruntime:onnxruntime:${Versions.ONNXRuntime}")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-
-                configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
             }
         }
     }
-}
-
-idea {
-    module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
 }

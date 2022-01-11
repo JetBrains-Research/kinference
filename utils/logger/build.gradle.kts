@@ -8,22 +8,10 @@ kotlin {
     jvm()
 
     js {
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+        browser()
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(kotlin("stdlib"))
-            }
-        }
-
         val jvmMain by getting {
             dependencies {
                 api("org.slf4j:slf4j-api:${Versions.slf4j}")

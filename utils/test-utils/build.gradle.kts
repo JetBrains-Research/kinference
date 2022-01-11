@@ -5,13 +5,7 @@ version = rootProject.version
 
 kotlin {
     js {
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+        browser()
     }
 
     jvm()
@@ -19,8 +13,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib"))
-
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
 
                 api(project(":ndarray"))
@@ -35,8 +27,4 @@ kotlin {
         }
 
     }
-}
-
-idea {
-    module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
 }
