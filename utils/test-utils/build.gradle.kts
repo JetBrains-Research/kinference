@@ -1,3 +1,5 @@
+import io.kinference.gradle.Versions
+
 group = rootProject.group
 version = rootProject.version
 
@@ -19,7 +21,7 @@ kotlin {
             dependencies {
                 api(kotlin("stdlib"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
 
                 api(project(":ndarray"))
                 api(project(":inference:inference-api"))

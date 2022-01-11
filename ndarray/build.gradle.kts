@@ -1,3 +1,5 @@
+import io.kinference.gradle.Versions
+
 group = rootProject.group
 version = rootProject.version
 
@@ -25,8 +27,8 @@ kotlin {
             dependencies {
                 api(kotlin("stdlib"))
 
-                api("io.kinference.primitives:primitives-annotations:0.1.16")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
             }
         }
 

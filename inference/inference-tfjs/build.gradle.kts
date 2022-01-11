@@ -1,4 +1,5 @@
 import io.kinference.gradle.s3.S3Dependency
+import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
@@ -61,15 +62,15 @@ kotlin {
                 implementation(project(":serialization"))
                 api(project(":inference:inference-ir"))
 
-                implementation(npm("@tensorflow/tfjs-core", "3.9.0"))
-                implementation(npm("@tensorflow/tfjs-backend-webgl", "3.9.0"))
+                implementation(npm("@tensorflow/tfjs-core", Versions.TFJS))
+                implementation(npm("@tensorflow/tfjs-backend-webgl", Versions.TFJS))
 
                 implementation(project(":inference:inference-api"))
 
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
             }
         }
 

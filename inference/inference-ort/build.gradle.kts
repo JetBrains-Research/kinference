@@ -1,5 +1,6 @@
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
@@ -39,14 +40,14 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                api("com.microsoft.onnxruntime:onnxruntime:1.9.0")
+                api("com.microsoft.onnxruntime:onnxruntime:${Versions.ONNXRuntime}")
             }
         }
 
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
-                api("org.slf4j:slf4j-simple:1.7.30")
+                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
             }
         }

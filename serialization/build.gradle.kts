@@ -1,3 +1,5 @@
+import io.kinference.gradle.Versions
+
 group = rootProject.group
 version = rootProject.version
 
@@ -20,7 +22,7 @@ kotlin {
                 api(kotlin("stdlib"))
                 api(project(":ndarray"))
 
-                api("com.squareup.wire:wire-runtime-multiplatform:3.6.0")
+                api("com.squareup.wire:wire-runtime-multiplatform:${Versions.wire}")
             }
         }
     }

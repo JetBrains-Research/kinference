@@ -1,4 +1,5 @@
 import io.kinference.gradle.configureTests
+import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
@@ -30,8 +31,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 api(project(":inference:inference-ort"))
-                api("org.jetbrains.kotlinx:multik-api:0.0.1")
-                api("org.jetbrains.kotlinx:multik-default:0.0.1")
+                api("org.jetbrains.kotlinx:multik-api:${Versions.multik}")
+                api("org.jetbrains.kotlinx:multik-default:${Versions.multik}")
             }
         }
 
