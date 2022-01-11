@@ -2,16 +2,13 @@ import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
 import io.kinference.gradle.s3.S3Dependency
+import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
 
-plugins {
-    kotlin("kapt") apply true
-}
-
 kotlin {
-    js {
+    js(BOTH) {
         testRuns["test"].configureAllExecutions {
             filter {
                 excludeTestsMatching("*.heavy_*")
@@ -75,8 +72,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
 
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-ir"))
@@ -99,18 +95,8 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.openjdk.jmh:jmh-core:1.25.1")
-                api("org.slf4j:slf4j-simple:1.7.30")
-
-                implementation("com.microsoft.onnxruntime:onnxruntime:1.9.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-
-                configurations["kapt"].dependencies.add(implementation("org.openjdk.jmh:jmh-generator-annprocess:1.25.1"))
+                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
             }
         }
     }
-}
-
-idea {
-    module.generatedSourceDirs.plusAssign(files("src/commonMain/kotlin-gen"))
 }

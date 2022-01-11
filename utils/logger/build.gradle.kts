@@ -1,3 +1,5 @@
+import io.kinference.gradle.Versions
+
 group = rootProject.group
 version = rootProject.version
 
@@ -5,32 +7,20 @@ version = rootProject.version
 kotlin {
     jvm()
 
-    js {
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+    js(BOTH) {
+        browser()
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(kotlin("stdlib"))
-            }
-        }
-
         val jvmMain by getting {
             dependencies {
-                api("org.slf4j:slf4j-api:1.7.30")
+                api("org.slf4j:slf4j-api:${Versions.slf4j}")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                api(npm("loglevel", "1.7.1"))
+                api(npm("loglevel", Versions.loglevel))
             }
         }
     }
