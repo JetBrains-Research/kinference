@@ -6,7 +6,7 @@ object Versions {
     // Don't forget change version for plugin
     const val kinferencePrimitives = "0.1.16"
 
-    const val kotlinxCoroutines = "1.5.2"
+    const val kotlinxCoroutines = "1.6.0"
     const val slf4j = "1.7.30"
     const val loglevel = "1.7.1"
 
