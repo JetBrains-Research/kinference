@@ -15,7 +15,7 @@ Right now, KInference is in active development.
 
 ## Setup
 
-Latest version of KInference is: *0.1.9*
+Latest version of KInference is: *0.1.10*
 
 In `build.gradle.kts` you should add repository via:
 
@@ -31,6 +31,6 @@ After it you can add KInference Runtime as dependency:
 
 ```kotlin
 dependencies {
-    api("io.kinference", "inference", "0.1.9")
+    api("io.kinference", "inference", "0.1.10")
 }
 ```
