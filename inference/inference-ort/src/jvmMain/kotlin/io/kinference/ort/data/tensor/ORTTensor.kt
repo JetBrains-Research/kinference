@@ -11,6 +11,8 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
     override val backend: ORTBackend = ORTBackend
 
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
+    val shape: LongArray
+        get() = data.info.shape
     override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
     companion object {
