@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class ORTCommentUpdaterTest {
+class CommentUpdaterTest {
     @Test
     fun heavy_test_comment_updater() = TestRunner.runTest {
         ORTAccuracyRunner.runFromS3("custom:comment_updater")
