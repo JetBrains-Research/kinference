@@ -5,7 +5,7 @@ import io.kinference.data.ONNXDataType
 import io.kinference.ort.ORTData
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
-import kotlin.math.abs
+import kotlin.test.assertEquals
 
 object ORTAssertions {
     @OptIn(ExperimentalUnsignedTypes::class)
@@ -16,15 +16,43 @@ object ORTAssertions {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun assertTensorEquals(expected: ORTTensor, actual: ORTTensor, delta: Double) {
-        require(expected.data.info.type == actual.data.info.type)
+        assertEquals(expected.data.info.type, actual.data.info.type, "Types of tensors ${expected.name} do not match")
+        ArrayAssertions.assertArrayEquals(expected.shape.toTypedArray(), actual.shape.toTypedArray(), "Shapes are incorrect")
+
 
         when (expected.data.info.type) {
-            OnnxJavaType.FLOAT -> ArrayAssertions.assertArrayEquals(expected.data.floatBuffer.array(), actual.data.floatBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
-            OnnxJavaType.DOUBLE -> ArrayAssertions.assertArrayEquals(expected.data.doubleBuffer.array(), actual.data.doubleBuffer.array(), { l, r -> abs(l - r) }, delta)
-            OnnxJavaType.INT32 -> ArrayAssertions.assertArrayEquals(expected.data.intBuffer.array(), actual.data.intBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
-            OnnxJavaType.INT64 -> ArrayAssertions.assertArrayEquals(expected.data.longBuffer.array(), actual.data.longBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
-            OnnxJavaType.INT16 -> ArrayAssertions.assertArrayEquals(expected.data.shortBuffer.array(), actual.data.shortBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
-            OnnxJavaType.INT8 -> ArrayAssertions.assertArrayEquals(expected.data.byteBuffer.array(), actual.data.byteBuffer.array(), { l, r -> abs(l - r).toDouble() }, delta)
+            OnnxJavaType.FLOAT ->  {
+                val expectedArray = expected.data.floatBuffer.array()
+                val actualArray = actual.data.floatBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())
+            }
+            OnnxJavaType.DOUBLE -> {
+                val expectedArray = expected.data.doubleBuffer.array()
+                val actualArray = actual.data.doubleBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())
+            }
+            OnnxJavaType.INT32 -> {
+                val expectedArray = expected.data.intBuffer.array()
+                val actualArray = actual.data.intBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())            }
+            OnnxJavaType.INT64 -> {
+                val expectedArray = expected.data.longBuffer.array()
+                val actualArray = actual.data.longBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())            }
+            OnnxJavaType.INT16 -> {
+                val expectedArray = expected.data.shortBuffer.array()
+                val actualArray = actual.data.shortBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())            }
+            OnnxJavaType.INT8 -> {
+                val expectedArray = expected.data.byteBuffer.array()
+                val actualArray = actual.data.byteBuffer.array()
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, actual.name.orEmpty())            }
             else -> error("Unsupported data type: ${expected.data.info.type}")
         }
     }

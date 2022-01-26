@@ -1,10 +1,374 @@
 package io.kinference.utils
 
+import io.kinference.TestLoggerFactory
 import io.kinference.ndarray.arrays.tiled.*
+import kotlin.math.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 object ArrayAssertions {
+    private val logger = TestLoggerFactory.create("io.kinference.utils.ArrayAssertions")
+
+    fun assertEquals(expect: FloatArray, actual: FloatArray, delta: Double, tensorName: String) {
+        val errorsArray = FloatArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0f
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1))
+            else
+                0f
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: FloatTiledArray, actual: FloatTiledArray, delta: Double, tensorName: String) {
+        val errorsArray = FloatArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0f
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1))
+            else
+                0f
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: DoubleArray, actual: DoubleArray, delta: Double, tensorName: String) {
+        val errorsArray = DoubleArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0f
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r) }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: DoubleTiledArray, actual: DoubleTiledArray, delta: Double, tensorName: String) {
+        val errorsArray = DoubleArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0f
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r) }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: LongArray, actual: LongArray, delta: Double, tensorName: String) {
+        val errorsArray = LongArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: LongTiledArray, actual: LongTiledArray, delta: Double, tensorName: String) {
+        val errorsArray = LongArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: IntArray, actual: IntArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: IntTiledArray, actual: IntTiledArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: UByteArray, actual: UByteArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i].toInt() - actual[i].toInt())
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l.toInt() - r.toInt()).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: UByteTiledArray, actual: UByteTiledArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i].toInt() - actual[i].toInt())
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l.toInt() - r.toInt()).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: ShortArray, actual: ShortArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
+    fun assertEquals(expect: ByteArray, actual: ByteArray, delta: Double, tensorName: String) {
+        val errorsArray = IntArray(expect.size) { i ->
+            abs(expect[i] - actual[i])
+        }
+
+        val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum().toDouble() / errorsArray.size else 0.0
+        val standardDeviation =
+            if (errorsArray.isNotEmpty())
+                sqrt(errorsArray.sumOf { (it - averageError).pow(2) } / (errorsArray.size - 1))
+            else
+                0.0
+
+        val sortedErrorsArray = errorsArray.sorted()
+
+        val percentile50 = sortedErrorsArray.getOrElse(floor(0.5 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile95 = sortedErrorsArray.getOrElse(floor(0.95 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile99 = sortedErrorsArray.getOrElse(floor(0.99 * sortedErrorsArray.size).toInt()) { 0f }
+        val percentile999 = sortedErrorsArray.getOrElse(floor(0.999 * sortedErrorsArray.size).toInt()) { 0f }
+
+        logger.info { "Average error '${tensorName}' = $averageError" }
+        logger.info { "Standard deviation '${tensorName}' = $standardDeviation" }
+        if (sortedErrorsArray.isNotEmpty()) logger.info { "Max error '${tensorName}' = ${sortedErrorsArray.last()}" }
+        logger.info { "Percentile 50 '${tensorName}' = $percentile50" }
+        logger.info { "Percentile 95 '${tensorName}' = $percentile95" }
+        logger.info { "Percentile 99 '${tensorName}' = $percentile99" }
+        logger.info { "Percentile 99.9 '${tensorName}' = $percentile999\n" }
+
+        assertArrayEquals(expect, actual, { l, r -> abs(l - r).toDouble() }, delta, "Tensor $tensorName does not match")
+    }
+
     fun assertArrayEquals(left: FloatTiledArray, right: FloatTiledArray, diff: (Float, Float) -> Double, delta: Double, message: String = "") {
         assertEquals(left.size, right.size, message)
         for (i in 0 until left.size) {
