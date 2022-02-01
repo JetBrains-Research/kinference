@@ -16,7 +16,7 @@ object ArrayAssertions {
 
         val averageError = if (errorsArray.isNotEmpty()) errorsArray.sum() / errorsArray.size else 0f
         val standardDeviation =
-            if (errorsArray.isNotEmpty())
+            if (errorsArray.size > 1)
                 sqrt(errorsArray.sumOf { (it - averageError).pow(2).toDouble() } / (errorsArray.size - 1))
             else
                 0f
