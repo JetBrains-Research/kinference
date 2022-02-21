@@ -11,19 +11,19 @@ import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.scalar
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class LayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class LayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in LayerNormalizationVer1.VERSION.asRange() -> LayerNormalizationVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in LayerNormalizationVer1.VERSION.asRange() -> LayerNormalizationVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of LayerNormalization operator: $version")
         }
     }
 }
 
-class LayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LayerNormalization(INFO, attributes, inputs, outputs) {
+class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LayerNormalization(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT,

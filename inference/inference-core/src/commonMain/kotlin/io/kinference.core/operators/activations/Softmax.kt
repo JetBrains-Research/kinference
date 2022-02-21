@@ -16,7 +16,7 @@ import kotlin.math.exp
 import kotlin.math.min
 import kotlin.time.ExperimentalTime
 
-sealed class Softmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
         private fun resolveDims(dims: IntArray?): Int {
             return if (dims == null || dims.isEmpty()) 1 else dims.reduce(Int::times)
@@ -75,8 +75,8 @@ sealed class Softmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
 
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SoftmaxVer1.VERSION.asRange() -> SoftmaxVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SoftmaxVer1.VERSION.asRange() -> SoftmaxVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Softmax operator: $version")
         }
     }
@@ -84,7 +84,7 @@ sealed class Softmax(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
 
 //only for float and double types
 @ExperimentalTime
-class SoftmaxVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Softmax(INFO, attributes, inputs, outputs) {
+class SoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Softmax(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

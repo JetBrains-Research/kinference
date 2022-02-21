@@ -11,19 +11,19 @@ import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
-sealed class Squeeze(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Squeeze(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SqueezeVer1.VERSION.asRange() -> SqueezeVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SqueezeVer1.VERSION.asRange() -> SqueezeVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Constant operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class SqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Squeeze(INFO, attributes, inputs, outputs) {
+class SqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Squeeze(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

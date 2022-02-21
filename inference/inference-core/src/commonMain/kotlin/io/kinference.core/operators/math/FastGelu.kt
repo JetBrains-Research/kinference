@@ -12,19 +12,19 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
-sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of FastGelu operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class FastGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : FastGelu(INFO, attributes, inputs, outputs) {
+class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

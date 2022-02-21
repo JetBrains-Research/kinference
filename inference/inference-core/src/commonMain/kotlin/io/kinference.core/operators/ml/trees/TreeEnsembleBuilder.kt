@@ -10,7 +10,7 @@ import kotlin.time.ExperimentalTime
 
 internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) {
     init {
-        require(op.info.name == "TreeEnsembleClassifier" || op.info.name == "TreeEnsembleRegressor")
+        require(op.info.type == "TreeEnsembleClassifier" || op.info.type == "TreeEnsembleRegressor")
     }
 
     val aggregateFunc: String? = op.getAttributeOrNull("aggregate_function")

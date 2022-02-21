@@ -38,15 +38,15 @@ class VariadicIOInfo(
 ) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
 
 data class OperatorInfo(
-    val name: String,
+    val type: String,
     val attributes: Map<String, AttributeInfo>,
     val inputs: List<IOInfo>,
     val outputs: List<IOInfo>,
     val versionInfo: VersionInfo,
     val domain: String
 ) {
-    constructor(name: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>, versionInfo: VersionInfo, domain: String)
-        : this(name, attributes.associateBy { it.name }, inputs, outputs, versionInfo, domain)
+    constructor(type: String, attributes: Collection<AttributeInfo>, inputs: List<IOInfo>, outputs: List<IOInfo>, versionInfo: VersionInfo, domain: String)
+        : this(type, attributes.associateBy { it.name }, inputs, outputs, versionInfo, domain)
 
     init {
         val variadicInputIndex = inputs.indexOfFirst { it is VariadicIOInfo }
@@ -64,14 +64,18 @@ data class OperatorInfo(
 @ExperimentalTime
 @Suppress("UNCHECKED_CAST")
 abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
+    val name: String,
     val info: OperatorInfo,
     val attributes: Map<String, Attribute<Any>> = emptyMap(),
     val inputs: List<String>,
     val outputs: List<String>
 ) {
+    val type: String
+     get() = info.type
+
     init {
         for (info in info.attributes.values) {
-            if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${this.info.name} operator" }
+            if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${this.info.type} operator" }
 
             attributes[info.name]?.let { attribute ->
                 require(attribute.type in info.types) { "Attribute '${attribute.name}' type doesn't match specification\nPresent: ${attribute.type}, Expected: one of ${info.types}" }
@@ -80,7 +84,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
 
         for (attribute in attributes.values) {
             if (attribute.name !in info.attributes) {
-                println("Unknown attribute '${attribute.name}' in ${info.name} operator")
+                println("Unknown attribute '${attribute.name}' in ${info.type} operator")
             }
         }
     }
@@ -101,12 +105,12 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
             // TODO check for not null variadic
             if (value == null) {
                 require(constraint == null || constraint.optional || (constraint is VariadicIOInfo && variadicCounter >= constraint.minimumArity)) {
-                    "Required $what '${constraint!!.name}' for '${info.name}' operator not provided"
+                    "Required $what '${constraint!!.name}' for '${info.type}' operator not provided"
                 }
                 return@zip
             }
 
-            requireNotNull(constraint) { "Unexpected $what '${value.name}' for '${info.name}' operator" }
+            requireNotNull(constraint) { "Unexpected $what '${value.name}' for '${info.type}' operator" }
 
             if (constraint is VariadicIOInfo) {
                 //if (variadicCounter == 0) variadicType = value.info.type
@@ -115,14 +119,14 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
                 //if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
             }
 
-            require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.name}' for '${info.name}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
+            require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.name}' for '${info.type}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
         }
     }
 
     fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
         val outputs = apply(contexts, inputs)
-        require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
+        require(outputs.size >= this.outputs.size) { "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
     }
@@ -167,7 +171,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
      */
     fun <T> getAttributeOrNull(key: String): T? {
         val info = info.attributes[key]
-        requireNotNull(info) { "Attribute '$key' not specified in the '${this.info.name}' operator" }
+        requireNotNull(info) { "Attribute '$key' not specified in the '${this.info.type}' operator" }
 
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }

@@ -10,19 +10,19 @@ import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
-sealed class Mul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Mul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in MulVer7.VERSION.asRange() -> MulVer7(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in MulVer7.VERSION.asRange() -> MulVer7(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Mul operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class MulVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Mul(INFO, attributes, inputs, outputs) {
+class MulVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Mul(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT8,

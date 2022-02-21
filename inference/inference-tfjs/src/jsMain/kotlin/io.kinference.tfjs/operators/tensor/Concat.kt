@@ -9,19 +9,19 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class Concat(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class Concat(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 4)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ConcatVer4.VERSION.asRange() -> ConcatVer4(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ConcatVer4.VERSION.asRange() -> ConcatVer4(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Concat operator: $version")
         }
     }
 }
 
-class ConcatVer4(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Concat(INFO, attributes, inputs, outputs) {
+class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Concat(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

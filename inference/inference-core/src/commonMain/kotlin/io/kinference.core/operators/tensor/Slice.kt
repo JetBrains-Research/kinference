@@ -13,19 +13,19 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
-sealed class Slice(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SliceVer10.VERSION.asRange() -> SliceVer10(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SliceVer10.VERSION.asRange() -> SliceVer10(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Constant operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class SliceVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(INFO, attributes, inputs, outputs) {
+class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val DATA_TYPE_CONSTRAINTS = ALL_DATA_TYPES
         private val INDEX_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32)

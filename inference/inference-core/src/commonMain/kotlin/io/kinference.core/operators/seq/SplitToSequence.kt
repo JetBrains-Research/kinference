@@ -13,19 +13,19 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import kotlin.time.ExperimentalTime
 
-sealed class SplitToSequence(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KIONNXSequence>(info, attributes, inputs, outputs) {
+sealed class SplitToSequence(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KIONNXSequence>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SplitToSequenceVer11.VERSION.asRange() -> SplitToSequenceVer11(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SplitToSequenceVer11.VERSION.asRange() -> SplitToSequenceVer11(name, attributes, inputs, outputs)
             else -> error("Unsupported version of SplitToSequence operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class SplitToSequenceVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SplitToSequence(INFO, attributes, inputs, outputs) {
+class SplitToSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SplitToSequence(name, INFO, attributes, inputs, outputs) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

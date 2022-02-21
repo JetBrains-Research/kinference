@@ -10,19 +10,19 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
-sealed class Reshape(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Reshape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ReshapeVer5.VERSION.asRange() -> ReshapeVer5(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ReshapeVer5.VERSION.asRange() -> ReshapeVer5(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Constant operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class ReshapeVer5(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Reshape(INFO, attributes, inputs, outputs) {
+class ReshapeVer5(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Reshape(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

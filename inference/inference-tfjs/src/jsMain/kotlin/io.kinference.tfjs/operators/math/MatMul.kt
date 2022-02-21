@@ -12,8 +12,8 @@ import io.kinference.tfjs.externals.core.reshape
 import io.kinference.tfjs.externals.extensions.matMul
 import io.kinference.tfjs.externals.extensions.tidy
 
-sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class MatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         internal fun expandTensors(left: NDArrayTFJS, right: NDArrayTFJS): Pair<NDArrayTFJS, NDArrayTFJS> {
             return when {
@@ -39,14 +39,14 @@ sealed class MatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>,
 
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in MatMulVer1.VERSION.asRange() -> MatMulVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in MatMulVer1.VERSION.asRange() -> MatMulVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of MatMul operator: $version")
         }
     }
 }
 
-class MatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMul(INFO, attributes, inputs, outputs) {
+class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMul(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,

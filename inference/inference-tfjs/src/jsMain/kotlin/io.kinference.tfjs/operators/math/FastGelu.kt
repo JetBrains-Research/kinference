@@ -9,19 +9,19 @@ import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.scalar
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class FastGelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of FastGelu operator: $version")
         }
     }
 }
 
-class FastGeluVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FastGelu(INFO, attributes, inputs, outputs) {
+class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val COEF_1 = scalar(0.5f, "float32")
         private val COEF_2 = scalar(0.035677408136300125f, "float32")

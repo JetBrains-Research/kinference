@@ -11,19 +11,19 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class If(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class If(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in IfVer1.VERSION.asRange() -> IfVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in IfVer1.VERSION.asRange() -> IfVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of If operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class IfVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : If(INFO, attributes, inputs, outputs) {
+class IfVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : If(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

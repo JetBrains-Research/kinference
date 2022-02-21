@@ -13,19 +13,19 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class GatherElements(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when(version ?: DEFAULT_VERSION.sinceVersion) {
-            in GatherElementsVer11.VERSION.asRange() -> GatherElementsVer11(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when(version ?: DEFAULT_VERSION.sinceVersion) {
+            in GatherElementsVer11.VERSION.asRange() -> GatherElementsVer11(name, attributes, inputs, outputs)
             else -> error("Unsupported version of GatherElements operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class GatherElementsVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GatherElements(INFO, attributes, inputs, outputs) {
+class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GatherElements(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

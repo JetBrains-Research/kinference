@@ -9,19 +9,19 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class MatMulInteger(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class MatMulInteger(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in MatMulIntegerVer10.VERSION.asRange() -> MatMulIntegerVer10(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in MatMulIntegerVer10.VERSION.asRange() -> MatMulIntegerVer10(name, attributes, inputs, outputs)
             else -> error("Unsupported version of MatMulInteger operator: $version")
         }
     }
 }
 
-class MatMulIntegerVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMulInteger(INFO, attributes, inputs, outputs) {
+class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMulInteger(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT8,

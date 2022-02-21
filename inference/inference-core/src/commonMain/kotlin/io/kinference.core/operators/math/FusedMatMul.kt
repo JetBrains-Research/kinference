@@ -15,19 +15,19 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
-sealed class FusedMatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class FusedMatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in FusedMatMulVer1.VERSION.asRange() -> FusedMatMulVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in FusedMatMulVer1.VERSION.asRange() -> FusedMatMulVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of FusedMatMul operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class FusedMatMulVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FusedMatMul(INFO, attributes, inputs, outputs) {
+class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FusedMatMul(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,

@@ -11,19 +11,19 @@ import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
-sealed class Split(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Split(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 2, untilVersion = 13)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SplitVer2.VERSION.asRange() -> SplitVer2(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SplitVer2.VERSION.asRange() -> SplitVer2(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Constant operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class SplitVer2(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Split(INFO, attributes, inputs, outputs) {
+class SplitVer2(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Split(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 

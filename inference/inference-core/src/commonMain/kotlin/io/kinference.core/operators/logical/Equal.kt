@@ -13,19 +13,19 @@ import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
-sealed class Equal(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Equal(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in EqualVer7.VERSION.asRange() -> EqualVer7(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in EqualVer7.VERSION.asRange() -> EqualVer7(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Equal operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class EqualVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Equal(INFO, attributes, inputs, outputs) {
+class EqualVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Equal(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16
 

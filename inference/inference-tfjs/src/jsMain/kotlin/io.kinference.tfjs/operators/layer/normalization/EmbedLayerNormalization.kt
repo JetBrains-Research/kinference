@@ -12,19 +12,19 @@ import io.kinference.tfjs.externals.core.fill
 import io.kinference.tfjs.externals.core.range
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class EmbedLayerNormalization(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class EmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
         }
     }
 }
 
-class EmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : EmbedLayerNormalization(INFO, attributes, inputs, outputs) {
+class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : EmbedLayerNormalization(name, INFO, attributes, inputs, outputs) {
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
