@@ -9,5 +9,5 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     val info: BackendInfo
 
     fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*, *>
-    fun loadModel(bytes: ByteArray): Model<T>
+    fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
 }

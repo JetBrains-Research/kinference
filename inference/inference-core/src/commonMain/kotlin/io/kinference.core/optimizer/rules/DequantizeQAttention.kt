@@ -2,7 +2,6 @@ package io.kinference.core.optimizer.rules
 
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIGraph
 import io.kinference.core.operators.layer.attention.*
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear
 import io.kinference.graph.Graph

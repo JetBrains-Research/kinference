@@ -3,6 +3,7 @@ package io.kinference.optimizer
 import io.kinference.data.ONNXData
 import io.kinference.graph.Graph
 import io.kinference.operator.Operator
+import io.kinference.utils.LoggerFactory
 
 fun <T : ONNXData<*, *>> List<Operator<T, T>>.predecessorsOf(idx: Int): List<OperatorLocation<T>> {
     val op = this[idx]
@@ -58,10 +59,37 @@ fun <T : ONNXData<*, *>> Graph<T>.findPath(targetOpTypes: List<String>, startIdx
     return if (found) path else null
 }
 
+
 class GraphOptimizer<T : ONNXData<*, *>>(val graph: Graph<T>) {
+    class OptimizationReport {
+        val report = HashMap<String, Int>()
+
+        fun append(rule: OptimizerRule<*>) {
+            if (rule.name in report.keys)
+                report[rule.name] = report[rule.name]!! + 1
+            else
+                report[rule.name] = 1
+        }
+
+        override fun toString(): String {
+            val strReport = StringBuilder().appendLine("Number of applied graph transformations:")
+            for ((name, counts) in report.entries) {
+                strReport.appendLine("$name: $counts")
+            }
+            return strReport.toString()
+        }
+    }
+
     fun run(rules: Set<OptimizerRule<T>>): Graph<T> {
-        for (rule in rules) rule.apply(graph)
+        val report = OptimizationReport()
+        for (rule in rules) rule.apply(graph, report)
+
+        logger.info { report.toString() }
 
         return graph
+    }
+
+    companion object {
+        private val logger = LoggerFactory.create("io.kinference.optimizer.GraphOptimizer")
     }
 }
