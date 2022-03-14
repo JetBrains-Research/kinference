@@ -31,6 +31,6 @@ After it you can add KInference Runtime as dependency:
 
 ```kotlin
 dependencies {
-    api("io.kinference", "inference", "0.1.12")
+    api("io.kinference", "inference-core", "0.1.12")
 }
 ```
