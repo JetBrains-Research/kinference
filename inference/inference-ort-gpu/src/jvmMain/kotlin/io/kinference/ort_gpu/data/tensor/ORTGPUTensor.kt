@@ -46,10 +46,10 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
         return data.shortBuffer.array()
     }
 
-    fun toStringArray(): String {
+    /*fun toStringArray(): String {
         require(data.info.type == OnnxJavaType.STRING) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
         return data.value as String
-    }
+    }*/
 
     fun toUByteArray(): UByteArray {
         require(data.info.type == OnnxJavaType.UINT8) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
@@ -115,14 +115,14 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
             return ORTGPUTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: List<String>, dims: LongArray, name: String? = null): ORTGPUTensor {
+        /*operator fun invoke(array: List<String>, dims: LongArray, name: String? = null): ORTGPUTensor {
             val typedArray = array.toTypedArray()
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), typedArray, dims)
             return ORTGPUTensor(name, onnxTensor)
-        }
+        }*/
 
         operator fun invoke(array: UByteArray, dims: LongArray, name: String? = null): ORTGPUTensor {
-            val buffer = ByteBuffer.allocate(array.size).apply {
+            val buffer = ByteBuffer.allocateDirect(array.size).apply {
                 for (number in array) put(number.toByte())
             }
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.UINT8)
@@ -133,8 +133,8 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
         private const val BYTE_ZERO = (0).toByte()
 
         operator fun invoke(array: BooleanArray, dims: LongArray, name: String? = null): ORTGPUTensor {
-            val buffer = ByteBuffer.allocate(array.size).order(ByteOrder.LITTLE_ENDIAN)
-            for (b in array) buffer.put(if (b) BYTE_ONE else BYTE_ZERO)
+            val buffer = ByteBuffer.allocateDirect(array.size).order(ByteOrder.LITTLE_ENDIAN)
+            for (bool in array) buffer.put(if (bool) BYTE_ONE else BYTE_ZERO)
             buffer.rewind()
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.BOOL)
             return ORTGPUTensor(name, onnxTensor)
@@ -148,7 +148,7 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
                 TensorProto.DataType.INT8 -> invoke(value as ByteArray, dims, name)
                 TensorProto.DataType.INT64 -> invoke(value as LongArray, dims, name)
                 TensorProto.DataType.INT16 -> invoke(value as ShortArray, dims, name)
-                TensorProto.DataType.STRING -> invoke(value as List<String>, dims, name)
+//                TensorProto.DataType.STRING -> invoke(value as List<String>, dims, name)
                 TensorProto.DataType.UINT8 -> invoke(value as UByteArray, dims, name)
                 TensorProto.DataType.BOOL -> invoke(value as BooleanArray, dims, name)
                 else -> error("Unsupported data type $type")
