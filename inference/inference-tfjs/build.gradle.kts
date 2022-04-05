@@ -1,49 +1,18 @@
 import io.kinference.gradle.s3.S3Dependency
 import io.kinference.gradle.Versions
+import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 
 group = rootProject.group
 version = rootProject.version
 
 kotlin {
     js(BOTH) {
-        testRuns["test"].configureAllExecutions {
-            filter {
-                excludeTestsMatching("*.heavy_*")
-                excludeTestsMatching("*.benchmark_*")
-            }
+        //Configure tests for JS Legacy compiler
+        configureTFJSTests()
 
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("heavy").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.heavy_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-            executionTask.get().doFirst {
-                S3Dependency.withDefaultS3Dependencies(this)
-            }
-
-            executionTask.get().useKarma {
-                useChrome()
-            }
-        }
-
-        testRuns.create("benchmark").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.benchmark_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-
-            executionTask.get().useKarma {
-                useChrome()
-            }
-            executionTask.get().doFirst {
-                S3Dependency.withDefaultS3Dependencies(this)
-            }
-        }
+        //Configure tests for JS IR compiler
+        (this as KotlinJsTarget).irTarget?.configureTFJSTests()
 
         browser {
             testTask {
@@ -78,6 +47,47 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
                 implementation(project(":utils:test-utils"))
             }
+        }
+    }
+}
+
+fun KotlinJsTargetDsl.configureTFJSTests() {
+    testRuns["test"].configureAllExecutions {
+        filter {
+            excludeTestsMatching("*.heavy_*")
+            excludeTestsMatching("*.benchmark_*")
+        }
+
+        executionTask.get().enabled = !project.hasProperty("disable-tests")
+    }
+
+    testRuns.create("heavy").configureAllExecutions {
+        filter {
+            includeTestsMatching("*.heavy_*")
+        }
+
+        executionTask.get().enabled = !project.hasProperty("disable-tests")
+        executionTask.get().doFirst {
+            S3Dependency.withDefaultS3Dependencies(this)
+        }
+
+        executionTask.get().useKarma {
+            useChrome()
+        }
+    }
+
+    testRuns.create("benchmark").configureAllExecutions {
+        filter {
+            includeTestsMatching("*.benchmark_*")
+        }
+
+        executionTask.get().enabled = !project.hasProperty("disable-tests")
+
+        executionTask.get().useKarma {
+            useChrome()
+        }
+        executionTask.get().doFirst {
+            S3Dependency.withDefaultS3Dependencies(this)
         }
     }
 }
