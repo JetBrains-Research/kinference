@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+import io.kinference.gradle.optInFixed
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
@@ -6,7 +6,7 @@ group = "io.kinference"
 version = "0.1.13"
 
 plugins {
-    kotlin("multiplatform") version "1.6.20" apply false
+    kotlin("multiplatform") apply false
     idea apply true
     id("io.gitlab.arturbosch.detekt") version ("1.18.1") apply true
     `maven-publish`
@@ -49,10 +49,10 @@ subprojects {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         sourceSets.all {
             languageSettings {
-                optIn("kotlin.RequiresOptIn")
-                optIn("kotlin.time.ExperimentalTime")
-                optIn("kotlin.ExperimentalUnsignedTypes")
-                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+                optInFixed("kotlin.RequiresOptIn")
+                optInFixed("kotlin.time.ExperimentalTime")
+                optInFixed("kotlin.ExperimentalUnsignedTypes")
+                optInFixed("kotlinx.serialization.ExperimentalSerializationApi")
             }
 
             languageSettings {

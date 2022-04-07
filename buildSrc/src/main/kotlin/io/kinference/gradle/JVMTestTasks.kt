@@ -1,61 +1,74 @@
 package io.kinference.gradle
 
 import io.kinference.gradle.s3.S3Dependency
-import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.gradle.kotlin.dsl.*
 
-fun Test.configureTests() {
-    maxHeapSize = "400m"
+fun KotlinJvmTarget.configureTests() {
+    testRuns["test"].executionTask {
+        maxHeapSize = "400m"
 
-    useJUnitPlatform()
+        useJUnitPlatform()
 
-    filter {
-        excludeTestsMatching("*.heavy_*")
-        excludeTestsMatching("*.benchmark_*")
-    }
+        filter {
+            excludeTestsMatching("*.heavy_*")
+            excludeTestsMatching("*.benchmark_*")
+        }
 
-    testLogging {
-        events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
-    }
-}
+        testLogging {
+            events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
+        }
 
-fun Test.configureHeavyTests() {
-    group = "verification"
-
-    useJUnitPlatform()
-
-    maxHeapSize = "4G"
-
-
-    filter {
-        includeTestsMatching("*.heavy_*")
-    }
-
-    testLogging {
-        events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
-    }
-
-    doFirst {
-        S3Dependency.withDefaultS3Dependencies(this)
+        enabled = !project.hasProperty("disable-tests")
     }
 }
 
-fun Test.configureBenchmarkTests() {
-    group = "verification"
+fun KotlinJvmTarget.configureHeavyTests() {
+    testRuns.create("heavy").executionTask {
+        group = "verification"
 
-    maxHeapSize = "4G"
+        useJUnitPlatform()
 
-    useJUnitPlatform()
+        maxHeapSize = "4G"
 
-    filter {
-        includeTestsMatching("*.benchmark_*")
+
+        filter {
+            includeTestsMatching("*.heavy_*")
+        }
+
+        testLogging {
+            events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
+        }
+
+        doFirst {
+            S3Dependency.withDefaultS3Dependencies(this)
+        }
+
+        enabled = !project.hasProperty("disable-tests")
     }
+}
 
-    testLogging {
-        events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
-    }
+fun KotlinJvmTarget.configureBenchmarkTests() {
+    testRuns.create("benchmark").executionTask {
+        group = "verification"
 
-    doFirst {
-        S3Dependency.withDefaultS3Dependencies(this)
+        maxHeapSize = "4G"
+
+        useJUnitPlatform()
+
+        filter {
+            includeTestsMatching("*.benchmark_*")
+        }
+
+        testLogging {
+            events(TestLogEvent.STANDARD_ERROR, TestLogEvent.STARTED, TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
+        }
+
+        doFirst {
+            S3Dependency.withDefaultS3Dependencies(this)
+        }
+
+        enabled = !project.hasProperty("disable-tests")
     }
 }

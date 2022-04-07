@@ -7,17 +7,8 @@ version = rootProject.version
 
 kotlin {
     jvm {
-        testRuns.create("heavy").executionTask {
-            configureHeavyTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("benchmark").executionTask {
-            configureBenchmarkTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     sourceSets {

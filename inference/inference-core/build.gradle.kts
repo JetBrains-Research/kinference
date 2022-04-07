@@ -1,7 +1,6 @@
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
-import io.kinference.gradle.s3.S3Dependency
 import io.kinference.gradle.Versions
 
 group = rootProject.group
@@ -9,64 +8,17 @@ version = rootProject.version
 
 kotlin {
     js(BOTH) {
-        testRuns["test"].configureAllExecutions {
-            filter {
-                excludeTestsMatching("*.heavy_*")
-                excludeTestsMatching("*.benchmark_*")
-            }
+        browser()
 
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("heavy").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.heavy_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-            executionTask.get().doFirst {
-                S3Dependency.withDefaultS3Dependencies(this)
-            }
-        }
-
-        testRuns.create("benchmark").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.benchmark_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-            executionTask.get().doFirst {
-                S3Dependency.withDefaultS3Dependencies(this)
-            }
-        }
-
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     jvm {
-        testRuns["test"].executionTask {
-            configureTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("heavy").executionTask {
-            configureHeavyTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("benchmark").executionTask {
-            configureBenchmarkTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     sourceSets {

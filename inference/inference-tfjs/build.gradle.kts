@@ -1,26 +1,18 @@
-import io.kinference.gradle.s3.S3Dependency
 import io.kinference.gradle.Versions
-import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import io.kinference.gradle.configureBenchmarkTests
+import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.configureTests
 
 group = rootProject.group
 version = rootProject.version
 
 kotlin {
     js(BOTH) {
-        //Configure tests for JS Legacy compiler
-        configureTFJSTests()
+        browser()
 
-        //Configure tests for JS IR compiler
-        (this as KotlinJsTarget).irTarget?.configureTFJSTests()
-
-        browser {
-            testTask {
-                useKarma {
-                    useChrome()
-                }
-            }
-        }
+        configureTests()
+        configureBenchmarkTests()
+        configureHeavyTests()
     }
 
     sourceSets {
@@ -47,47 +39,6 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
                 implementation(project(":utils:test-utils"))
             }
-        }
-    }
-}
-
-fun KotlinJsTargetDsl.configureTFJSTests() {
-    testRuns["test"].configureAllExecutions {
-        filter {
-            excludeTestsMatching("*.heavy_*")
-            excludeTestsMatching("*.benchmark_*")
-        }
-
-        executionTask.get().enabled = !project.hasProperty("disable-tests")
-    }
-
-    testRuns.create("heavy").configureAllExecutions {
-        filter {
-            includeTestsMatching("*.heavy_*")
-        }
-
-        executionTask.get().enabled = !project.hasProperty("disable-tests")
-        executionTask.get().doFirst {
-            S3Dependency.withDefaultS3Dependencies(this)
-        }
-
-        executionTask.get().useKarma {
-            useChrome()
-        }
-    }
-
-    testRuns.create("benchmark").configureAllExecutions {
-        filter {
-            includeTestsMatching("*.benchmark_*")
-        }
-
-        executionTask.get().enabled = !project.hasProperty("disable-tests")
-
-        executionTask.get().useKarma {
-            useChrome()
-        }
-        executionTask.get().doFirst {
-            S3Dependency.withDefaultS3Dependencies(this)
         }
     }
 }

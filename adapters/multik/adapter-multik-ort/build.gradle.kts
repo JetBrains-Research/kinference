@@ -6,11 +6,7 @@ version = rootProject.version
 
 kotlin {
     jvm {
-        testRuns["test"].executionTask {
-            configureTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
+        configureTests()
     }
 
     sourceSets {
