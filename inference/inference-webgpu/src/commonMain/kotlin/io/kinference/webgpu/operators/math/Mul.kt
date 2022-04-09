@@ -1,12 +1,12 @@
 package io.kinference.webgpu.operators.math
 
 import io.kinference.attribute.Attribute
-import io.kinference.webgpu.operators.common.BroadcastingBinaryOperator
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.webgpu.operators.common.ArithmeticOperator
 
 sealed class Mul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : BroadcastingBinaryOperator(info, attributes, inputs, outputs) {
+    : ArithmeticOperator(info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 

@@ -5,7 +5,6 @@ import io.kinference.webgpu.WebGPUTestEngine.WebGPUAccuracyRunner
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 class OrTest {
     private fun getTargetPath(dirName: String) = "/or/$dirName/"
 

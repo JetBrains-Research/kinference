@@ -32,7 +32,7 @@ object WebGPUAssertions {
             }
             TensorProto.DataType.INT32 -> {
                 val expectedArray = (expected.data.getData() as IntNDArrayData).data
-                val actualArray = (expected.data.getData() as IntNDArrayData).data
+                val actualArray = (actual.data.getData() as IntNDArrayData).data
 
                 assertArrayEquals(
                     expectedArray,
@@ -44,7 +44,7 @@ object WebGPUAssertions {
             }
             TensorProto.DataType.UINT32 -> {
                 val expectedArray = (expected.data.getData() as UIntNDArrayData).data
-                val actualArray = (expected.data.getData() as UIntNDArrayData).data
+                val actualArray = (actual.data.getData() as UIntNDArrayData).data
 
                 assertArrayEquals(
                     expectedArray,

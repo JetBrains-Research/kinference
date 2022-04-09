@@ -1,12 +1,12 @@
 package io.kinference.webgpu.operators.math
 
 import io.kinference.attribute.Attribute
-import io.kinference.webgpu.operators.common.BroadcastingBinaryOperator
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.webgpu.operators.common.ArithmeticOperator
 
 sealed class Add(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : BroadcastingBinaryOperator(info, attributes, inputs, outputs) {
+    : ArithmeticOperator(info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -43,4 +43,3 @@ class AddVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, out
 
     override fun operation(input0: String, input1: String, output: String): String = "$output = $input0 + $input1;"
 }
-

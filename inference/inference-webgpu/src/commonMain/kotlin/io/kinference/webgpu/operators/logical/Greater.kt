@@ -3,12 +3,10 @@ package io.kinference.webgpu.operators.logical
 import io.kinference.attribute.Attribute
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.webgpu.ndarray.NDArrayInfo
-import io.kinference.webgpu.ndarray.WebGPUDataType
-import io.kinference.webgpu.operators.common.BroadcastingBinaryOperator
+import io.kinference.webgpu.operators.common.LogicalOperator
 
 sealed class Greater(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : BroadcastingBinaryOperator(info, attributes, inputs, outputs) {
+    : LogicalOperator(info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -37,6 +35,4 @@ class GreaterVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
     }
 
     override fun operation(input0: String, input1: String, output: String): String = "$output = i32($input0 > $input1);"
-
-    override fun outputType(inputInfo: List<NDArrayInfo?>): WebGPUDataType = WebGPUDataType.INT32
 }

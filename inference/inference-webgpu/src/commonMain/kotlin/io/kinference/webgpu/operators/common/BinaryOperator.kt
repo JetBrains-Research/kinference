@@ -1,17 +1,20 @@
 package io.kinference.webgpu.operators.common
 
 import io.kinference.attribute.Attribute
+import io.kinference.data.ONNXData
+import io.kinference.graph.Context
 import io.kinference.operator.OperatorInfo
+import io.kinference.profiler.ProfilingContext
 import io.kinference.utils.webgpu.*
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
 import io.kinference.webgpu.data.tensor.WebGPUTensor
 
-abstract class BinaryOperator(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : WebGPUTensorOperator(info, attributes, inputs, outputs) {
-    override val shaderEntryPoint: String = "main"
-
-    override fun createBindGroupLayout(inputInfo: List<NDArrayInfo?>, outputInfo: List<NDArrayInfo?>): BindGroupLayoutDescriptor = BindGroupLayoutDescriptor(
+abstract class BinaryOperator(
+    device: Device,
+    info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>
+) : ShaderOperator(device, info, attributes, inputs, outputs) {
+    override val bindGroupLayoutDescriptor: BindGroupLayoutDescriptor = BindGroupLayoutDescriptor(
         listOf(
             BindGroupLayoutEntry(0, BufferBindingLayout(BufferBindingType.ReadOnlyStorage)),
             BindGroupLayoutEntry(1, BufferBindingLayout(BufferBindingType.ReadOnlyStorage)),
@@ -19,12 +22,19 @@ abstract class BinaryOperator(info: OperatorInfo, attributes: Map<String, Attrib
         )
     )
 
-    override fun apply(context: WebGPUContext, inputs: List<WebGPUTensor?>, operatorInfo: CachedOperatorInfo): List<WebGPUTensor?> {
-        val outputInfo = operatorInfo.outputInfo[0]!!
+    abstract val outputShape: IntArray
+    abstract val outputType: WebGPUDataType
+
+    protected val outputInfo: NDArrayInfo
+        get() = NDArrayInfo(outputShape, outputType)
+
+    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
+        context as WebGPUContext
+
         val output = NDArray(outputInfo, context.gpuState)
         val bindGroup = context.gpuState.device.createBindGroup(
             BindGroupDescriptor(
-                layout = operatorInfo.bindGroupLayout,
+                layout = device.createBindGroupLayout(bindGroupLayoutDescriptor),
                 entries = listOf(
                     BindGroupEntry(0, BufferBinding(inputs[0]!!.data.getBuffer(context.gpuState))),
                     BindGroupEntry(1, BufferBinding(inputs[1]!!.data.getBuffer(context.gpuState))),
@@ -32,16 +42,7 @@ abstract class BinaryOperator(info: OperatorInfo, attributes: Map<String, Attrib
                 )
             )
         )
-
-        val computePass = context.gpuState.beginComputePass()
-        computePass.setPipeline(operatorInfo.computePipeline)
-        computePass.setBindGroup(0, bindGroup, listOf())
-        computePass.dispatch(
-            operatorInfo.dispatchSize[0],
-            operatorInfo.dispatchSize[1],
-            operatorInfo.dispatchSize[2],
-        )
-        computePass.endPass()
+        performComputePass(context.gpuState, bindGroup)
         return listOf(output.asTensor("C"))
     }
 }

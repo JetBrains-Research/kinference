@@ -11,7 +11,7 @@ fun loadWgsl(shaderSource: String): WGPUShaderModuleDescriptor {
         chain.apply {
             sType = WGPUSType.ShaderModuleWGSLDescriptor
         }
-        source = shaderSource.createPointerTo()
+        code = shaderSource.createPointerTo()
     }
     return WGPUShaderModuleDescriptor.allocateDirect().apply {
         nextInChain = wgslDescriptor.getPointerTo()

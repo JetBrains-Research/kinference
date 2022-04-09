@@ -7,7 +7,7 @@ plugins {
     java
 }
 
-val wgpuNativeVersion = "0.10.4.1"
+val wgpuNativeVersion = "0.11.0.1"
 
 dependencies {
     api(project(":utils:webgpu-utils:wgpu:jnr-internal-api-jvm"))
