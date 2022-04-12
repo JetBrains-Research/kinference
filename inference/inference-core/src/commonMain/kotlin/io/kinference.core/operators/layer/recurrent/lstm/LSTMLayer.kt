@@ -2,11 +2,10 @@ package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.activations.Activation
+import io.kinference.model.ExecutionContext
 import io.kinference.primitives.types.DataType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -25,6 +24,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         initialCellState: NumberNDArray?,
         peepholes: NumberNDArray?,
         dataType: DataType,
+        executionContext: ExecutionContext?,
     ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
         val h = Activation.create(activations[2], dataType)
 
@@ -48,7 +48,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
             batchSize, hiddenSize, dataType
         )
 
-        apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType)
+        apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType, executionContext)
 
         return Triple(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
@@ -62,7 +62,8 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         numDirection: Int,
         seqLength: Int,
         batchSize: Int,
-        dataType: DataType
+        dataType: DataType,
+        executionContext: ExecutionContext? = null
     ) {
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
@@ -74,11 +75,11 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
                 if (seqNum >= seqLens[batchNum]) continue
                 body {
                     val localInput = input.view(seqNum, batchNum)
-                    lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum)
-                    lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum)
-                    lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum)
+                    lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
+                    lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
+                    lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum, executionContext)
                     lstmStates.cellState.compute(lstmGates, numDirection, batchNum)
-                    lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
                     lstmStates.hiddenState.compute(lstmGates, lstmStates.cellState, numDirection, batchNum)
                     val outputVector = lstmStates.hiddenState.getVectorRaw(numDirection, batchNum)
 
@@ -92,7 +93,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         //TODO: research optimal batchSize for run with coroutines
         for (seqNum in seqRange) {
 //            if (batchSize > 1) {
-//                runBlocking(Dispatchers.Default) { wrapper(seqNum) { launch { it() } }  }
+//                runBlocking(executionContext.asCoroutineContext()) { wrapper(seqNum) { launch { it() } }  }
 //            } else {
                 wrapper(seqNum)
 //            }

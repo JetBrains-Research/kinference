@@ -29,9 +29,15 @@ fun NDArrayTFJS.reshape(shape: Array<Int>) = reshape(this, shape)
 
 fun NDArrayTFJS.gather(indices: NDArrayTFJS, axis: Int = 0, batchDims: Int = 0) = gather(this, indices, axis, batchDims)
 
-fun NDArrayTFJS.moments(axis: Int, keepDims: Boolean = false) = moments(this, arrayOf(axis), keepDims)
+fun NDArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
+    val out = moments(this, arrayOf(axis), keepDims)
+    return MomentsOutput(out["mean"] as NDArrayTFJS, out["variance"] as NDArrayTFJS)
+}
 
-fun NDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false) = moments(this, axes, keepDims)
+fun NDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): MomentsOutput {
+    val out = moments(this, axes, keepDims)
+    return MomentsOutput(out["mean"] as NDArrayTFJS, out["variance"] as NDArrayTFJS)
+}
 
 fun NDArrayTFJS.sum(axis: Int, keepDims: Boolean = false) = sum(this, arrayOf(axis), keepDims)
 

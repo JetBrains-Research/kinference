@@ -32,11 +32,6 @@ class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeI
         return (this.data / other.data).asTensor()
     }
 
-    infix fun matmul(other: KITensor): KITensor {
-        require(this.data is NumberNDArray && other.data is NumberNDArray)
-        return (this.data matmul other.data).asTensor()
-    }
-
     override val backend = CoreBackend
 
     override fun rename(name: String): KITensor {

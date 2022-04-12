@@ -2,8 +2,7 @@ package io.kinference.webgpu.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
@@ -42,8 +41,8 @@ class UnsqueezeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
     private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
-        context as WebGPUContext
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
+        val context = contexts.graph as WebGPUContext
 
         return listOf(inputs[0]!!.data.unsqueeze(axes, context.gpuState).asTensor())
     }

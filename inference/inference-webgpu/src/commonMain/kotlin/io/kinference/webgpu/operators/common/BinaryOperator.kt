@@ -2,9 +2,8 @@ package io.kinference.webgpu.operators.common
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.OperatorInfo
-import io.kinference.profiler.ProfilingContext
 import io.kinference.utils.webgpu.*
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
@@ -28,8 +27,8 @@ abstract class BinaryOperator(
     protected val outputInfo: NDArrayInfo
         get() = NDArrayInfo(outputShape, outputType)
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
-        context as WebGPUContext
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
+        val context = contexts.graph as WebGPUContext
 
         val output = NDArray(outputInfo, context.gpuState)
         val bindGroup = context.gpuState.device.createBindGroup(

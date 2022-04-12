@@ -2,10 +2,9 @@ package io.kinference.webgpu.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.webgpu.graph.WebGPUContext
 import io.kinference.webgpu.ndarray.*
@@ -44,8 +43,8 @@ class ConstantVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
-        context as WebGPUContext
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
+        val context = contexts.graph as WebGPUContext
 
         //only one of all attributes is not null
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeOrNull<Any?>(it.name) }.single { it.second != null }

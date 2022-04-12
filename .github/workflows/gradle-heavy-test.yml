@@ -23,7 +23,7 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmHeavyTest jsHeavyTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2

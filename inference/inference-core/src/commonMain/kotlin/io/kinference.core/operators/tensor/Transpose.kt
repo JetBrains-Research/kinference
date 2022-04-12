@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.transpose
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
@@ -43,7 +41,7 @@ class TransposeVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
 
     private val perm: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         return listOf(inputs.first()!!.data.toMutable().transpose(perm).asTensor())
     }
 }

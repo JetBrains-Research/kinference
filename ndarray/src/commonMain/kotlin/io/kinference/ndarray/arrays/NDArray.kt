@@ -2,6 +2,8 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.primitives.types.DataType
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.min
 
 interface PrimitiveToPrimitiveFunction
@@ -92,8 +94,8 @@ interface NumberNDArray : NDArray {
     operator fun div(other: NumberNDArray): MutableNumberNDArray
     fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
-    fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
-    fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
+    fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
+    fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
 
     fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
              ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray

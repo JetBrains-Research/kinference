@@ -4,8 +4,6 @@ import io.kinference.core.KIONNXData
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
-import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.rows
 import io.kinference.operator.*
@@ -14,7 +12,7 @@ import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
 import io.kinference.core.operators.ml.trees.TreeEnsembleBuilder
 import io.kinference.core.operators.ml.trees.toFloatNDArray
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
@@ -129,7 +127,7 @@ class TreeEnsembleClassifierVer1(attributes: Map<String, Attribute<Any>>, inputs
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputData = inputs[0]!!.data.toFloatNDArray()
         val classScores = ensemble.execute(inputData) as FloatNDArray
         val classLabels = labeledTopClasses(classScores)

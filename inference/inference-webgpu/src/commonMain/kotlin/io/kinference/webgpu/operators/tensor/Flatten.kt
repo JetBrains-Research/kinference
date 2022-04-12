@@ -2,9 +2,8 @@ package io.kinference.webgpu.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.graph.WebGPUContext
@@ -47,8 +46,8 @@ class FlattenVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>,
         return intArrayOf(firstDimension, secondDimension)
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
-        context as WebGPUContext
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
+        val context = contexts.graph as WebGPUContext
 
         val input = inputs[0]!!.data
         val actualAxis = input.indexAxis(axis)

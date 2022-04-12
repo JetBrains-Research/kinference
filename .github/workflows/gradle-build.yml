@@ -17,7 +17,7 @@ jobs:
           settings-path: ${{ github.workspace }}
 
       - name: Build with Gradle
-        run: ./gradlew --no-daemon build -x jsBenchmarkTest -x jsBrowserBenchmarkTest -x jsBrowserHeavyTest -x jsBrowserTest -x jsHeavyTest -x jsTest -x jvmBenchmarkTest -x jvmHeavyTest -x jvmTest -x allTests --console=plain
+        run: ./gradlew --no-daemon build -Pdisable-tests --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2

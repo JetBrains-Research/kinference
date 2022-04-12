@@ -4,10 +4,9 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.profiler.ProfilingContext
 import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
@@ -47,7 +46,7 @@ class BiasGeluVer1(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs:
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val bias = inputs[1]!!.data
 

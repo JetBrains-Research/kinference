@@ -7,8 +7,8 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
+import io.kinference.graph.asCoroutineContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
@@ -94,16 +94,16 @@ class MatMulIntegerVer10(attributes: Map<String, Attribute<Any>>, inputs: List<S
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val first = inputs[0]!!
         val second = inputs[1]!!
         val firstZero = inputs.getOrNull(2)
         val secondZero = inputs.getOrNull(3)
 
-        val firstPrepared = (context.getOrNullValue("prepared_${first.name}") ?: MatMulIntegerPrepare.prepareTensor(first, firstZero)) as KITensor
-        val secondPrepared = (context.getOrNullValue("prepared_${second.name}") ?: MatMulIntegerPrepare.prepareTensor(second, secondZero)) as KITensor
+        val firstPrepared = (contexts.graph!!.getOrNullValue("prepared_${first.name}") ?: MatMulIntegerPrepare.prepareTensor(first, firstZero)) as KITensor
+        val secondPrepared = (contexts.graph!!.getOrNullValue("prepared_${second.name}") ?: MatMulIntegerPrepare.prepareTensor(second, secondZero)) as KITensor
 
-        val output = (firstPrepared.data as NumberNDArray) matmul (secondPrepared.data as NumberNDArray)
+        val output = (firstPrepared.data as NumberNDArray).matmul(secondPrepared.data as NumberNDArray, contexts.execution.asCoroutineContext())
         return listOf(output.asTensor("y"))
     }
 }

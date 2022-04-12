@@ -2,8 +2,7 @@ package io.kinference.webgpu.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -41,12 +40,12 @@ class ConstantOfShapeVer9(attributes: Map<String, Attribute<Any>>, inputs: List<
 
     private val value: WebGPUTensor by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
+    override fun <D : ONNXData<*, *>> apply(context: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
         error("Use applySuspend()")
     }
 
-    override suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, inputs: List<WebGPUTensor?>, profilingContext: ProfilingContext?): List<WebGPUTensor?> {
-        context as WebGPUContext
+    override suspend fun <D : ONNXData<*, *>> applySuspend(contexts: Contexts<D>, inputs: List<WebGPUTensor?>): List<WebGPUTensor?> {
+        val context = contexts.graph as WebGPUContext
 
         val shape = (inputs[0]!!.data.getData(context.gpuState) as IntNDArrayData).data
         val size = shape.fold(1, Int::times)

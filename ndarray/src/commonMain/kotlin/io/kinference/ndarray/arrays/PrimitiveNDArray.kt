@@ -11,6 +11,8 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -518,7 +520,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return result
     }
 
-    override fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
         require(shape.size in 1..2 && other.shape.size in 1..2)
         val actualThis = (if (this.shape.size == 1) this.reshape(intArrayOf(1, shape[0])) else this) as PrimitiveNDArray
@@ -566,7 +568,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         if (rBlockInRow > 1) {
-            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+            runBlocking(coroutineContext) { wrapper { launch { it() } } }
         } else {
             wrapper()
         }
@@ -574,7 +576,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
 
         @Suppress("NAME_SHADOWING") val alpha = alpha.toPrimitive()
@@ -620,7 +622,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         if (destination.blocksInRow > 1) {
-            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+            runBlocking(coroutineContext) { wrapper { launch { it() } } }
         } else {
             wrapper()
         }
@@ -1197,7 +1199,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     @FilterPrimitives(exclude = [DataType.DOUBLE, DataType.FLOAT, DataType.BOOLEAN, DataType.BOOLEAN, DataType.INT, DataType.LONG, DataType.SHORT,
         DataType.UINT, DataType.ULONG, DataType.USHORT])
     @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
-    fun quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f): MutableFloatNDArray {
+    fun quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
         val M = this.shape[0]
 
         fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
@@ -1227,7 +1229,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         if (other.blocksInRow > 1) {
-            runBlocking(Dispatchers.Default) { wrapper { launch { it() } } }
+            runBlocking(coroutineContext) { wrapper { launch { it() } } }
         } else {
             wrapper()
         }

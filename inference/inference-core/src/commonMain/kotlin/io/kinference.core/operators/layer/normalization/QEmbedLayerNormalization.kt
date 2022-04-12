@@ -3,14 +3,12 @@ package io.kinference.core.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.primitives.types.DataType
-import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.*
 import kotlin.math.sqrt
 
@@ -69,7 +67,7 @@ class QEmbedLayerNormalizationVer1(attributes: Map<String, Attribute<Any>>, inpu
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs.getOrNull(1)?.data as IntNDArray?
         val wordEmbedding = inputs[2]!!.data

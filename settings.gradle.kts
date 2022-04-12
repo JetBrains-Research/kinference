@@ -6,6 +6,7 @@ include(":inference:inference-api")
 include(":inference:inference-ir")
 include(":inference:inference-core")
 include(":inference:inference-ort")
+include(":inference:inference-ort-gpu")
 include(":inference:inference-tfjs")
 include(":inference:inference-webgpu")
 

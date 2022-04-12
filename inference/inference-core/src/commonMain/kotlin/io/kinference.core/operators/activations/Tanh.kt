@@ -1,8 +1,10 @@
 package io.kinference.core.operators.activations
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
 import io.kinference.operator.*
 import io.kinference.core.operators.math.tanh
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
@@ -38,7 +40,7 @@ class TanhVer6(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: Lis
         private val INFO = OperatorInfo("Tanh", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray): NDArray = when (val type = input.type) {
+    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
         DataType.FLOAT -> input.map(Tanh.activateFloat)
         DataType.DOUBLE -> input.map(Tanh.activateDouble)
         else -> error("Unsupported data type for this operation: $type")

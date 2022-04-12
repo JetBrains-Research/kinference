@@ -2,23 +2,9 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js{
-        browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
-        }
+    js(BOTH) {
+        browser()
     }
 
     jvm()
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(kotlin("stdlib"))
-            }
-        }
-    }
 }

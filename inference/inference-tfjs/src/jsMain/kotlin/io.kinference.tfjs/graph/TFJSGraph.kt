@@ -1,6 +1,6 @@
 package io.kinference.tfjs.graph
 
-import io.kinference.graph.Context
+import io.kinference.graph.GraphContext
 import io.kinference.graph.Graph
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.GraphProto
@@ -11,5 +11,8 @@ import io.kinference.tfjs.operators.TFJSOperatorFactory
 
 class TFJSGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<TFJSData<*>>(proto, opSetRegistry, TFJSOperatorFactory) {
     override fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
-    override fun makeContext(root: Context<TFJSData<*>>?): Context<TFJSData<*>> = TFJSContext(root as? TFJSContext)
+    override fun makeContext(root: GraphContext<TFJSData<*>>?): GraphContext<TFJSData<*>> = TFJSGraphContext(root as? TFJSGraphContext)
+    override fun cleanupUntilOrder(context: GraphContext<TFJSData<*>>, order: Int) {
+        context.removeValues { it !in availableInputs && valueOrderInfo.getOrder(it) <= order }
+    }
 }

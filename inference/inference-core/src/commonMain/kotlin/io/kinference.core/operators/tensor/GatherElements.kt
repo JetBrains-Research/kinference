@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
@@ -71,7 +69,7 @@ class GatherElementsVer11(attributes: Map<String, Attribute<Any>>, inputs: List<
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val (data, indices) = inputs.map { it!!.data }
         require(data.rank == indices.rank) { "Data and indices tensors must have the same rank" }
 

@@ -3,10 +3,8 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.splitWithAxis
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
@@ -46,7 +44,7 @@ class SplitVer2(attributes: Map<String, Attribute<Any>>, inputs: List<String>, o
     private val split: LongArray? by attributeOrNull()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!
         val actualAxis = input.data.indexAxis(axis)
         return if (split == null) {

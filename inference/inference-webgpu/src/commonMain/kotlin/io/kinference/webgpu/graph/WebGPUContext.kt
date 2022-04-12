@@ -1,13 +1,13 @@
 package io.kinference.webgpu.graph
 
-import io.kinference.graph.Context
+import io.kinference.graph.GraphContext
 import io.kinference.webgpu.data.tensor.WebGPUTensor
 import io.kinference.webgpu.engine.WebGPUData
 
 class WebGPUContext(
     val gpuState: WebGPUState,
-    base: Context<WebGPUData<*>>? = null
-) : Context<WebGPUData<*>>(base) {
+    base: GraphContext<WebGPUData<*>>? = null
+) : GraphContext<WebGPUData<*>>(base) {
     private val valuesToDestroy: MutableList<WebGPUData<*>> = arrayListOf()
 
     override fun removeValues(predicate: (String) -> Boolean) {

@@ -1,28 +1,23 @@
+import io.kinference.gradle.configureBenchmarkTests
+import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.configureTests
+
 group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    jvm {
-        tasks.withType<Test> {
-            useJUnitPlatform {}
+    js(BOTH) {
+        browser()
 
-            testLogging {
-                events("passed", "skipped", "failed")
-            }
-        }
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
-    js {
-        browser {
-            testTask {
-                useKarma {
-                    useChrome()
-                }
-                testLogging {
-                    events("passed", "skipped", "failed")
-                }
-            }
-        }
+    jvm {
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     sourceSets {

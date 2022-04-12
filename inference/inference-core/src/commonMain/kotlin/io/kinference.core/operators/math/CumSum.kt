@@ -3,10 +3,8 @@ package io.kinference.core.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Context
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
@@ -50,7 +48,7 @@ class CumSumVer11(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: 
     private val exclusive by attribute { ex: Number -> ex.toInt() != 0 }
     private val reverse by attribute { r: Number -> r.toInt() != 0 }
 
-    override fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<KITensor?>, profilingContext: ProfilingContext?): List<KITensor?> {
+    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
         val axis = (inputs[1]!!.data.singleValue() as Number).toInt()
         return listOf(input.cumulativeSum(axis, exclusive, reverse).asTensor("y"))

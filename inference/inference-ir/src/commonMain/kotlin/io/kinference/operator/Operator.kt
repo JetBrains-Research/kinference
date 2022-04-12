@@ -3,9 +3,7 @@ package io.kinference.operator
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.graph.Context
-import io.kinference.ndarray.extensions.isScalar
-import io.kinference.profiler.ProfilingContext
+import io.kinference.graph.Contexts
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.properties.ReadOnlyProperty
@@ -121,17 +119,17 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         }
     }
 
-    fun <D : ONNXData<*, *>> applyWithCheck(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
+    fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = apply(context, inputs, profilingContext)
+        val outputs = apply(contexts, inputs)
         require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
     }
 
-    suspend fun <D : ONNXData<*, *>> applyWithCheckSuspend(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext?): List<U?> {
+    suspend fun <D : ONNXData<*, *>> applyWithCheckSuspend(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = applySuspend(context, inputs, profilingContext)
+        val outputs = applySuspend(contexts, inputs)
         require(outputs.size >= this.outputs.size) { "Operator '${info.name}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
         check(info.outputs, outputs, "output")
         return outputs
@@ -182,14 +180,11 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
-    abstract fun <D : ONNXData<*, *>> apply(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?>
-    open fun <D : ONNXData<*, *>> apply(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
-        apply(context, inputs.toList(), profilingContext)
+    abstract fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<T?>): List<U?>
+    open fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, vararg inputs: T?): Collection<U?> = apply(contexts, inputs.toList())
 
-    open suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, inputs: List<T?>, profilingContext: ProfilingContext? = null): List<U?> =
-        apply(context, inputs, profilingContext)
-    open suspend fun <D : ONNXData<*, *>> applySuspend(context: Context<D>, vararg inputs: T?, profilingContext: ProfilingContext? = null): Collection<U?> =
-        applySuspend(context, inputs.toList(), profilingContext)
+    open suspend fun <D : ONNXData<*, *>> applySuspend(contexts: Contexts<D>, inputs: List<T?>): List<U?> = apply(contexts, inputs)
+    open suspend fun <D : ONNXData<*, *>> applySuspend(contexts: Contexts<D>, vararg inputs: T?): Collection<U?> = applySuspend(contexts, inputs.toList())
 
     companion object {
         val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED

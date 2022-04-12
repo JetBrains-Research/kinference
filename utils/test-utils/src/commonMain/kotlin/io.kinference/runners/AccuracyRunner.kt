@@ -29,7 +29,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
     }
 
     suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
-        val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/main/${testPath}"
+        val path = "build/processedResources/${TestRunner.forPlatform("jsLegacy", "jvm")}/main/${testPath}"
         runTestsFromFolder(ResourcesTestDataLoader, path, disableTests, delta)
     }
 

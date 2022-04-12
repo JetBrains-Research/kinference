@@ -1,7 +1,6 @@
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
-import io.kinference.gradle.s3.S3Dependency
 
 plugins {
     kotlin("kapt") apply true
@@ -11,65 +10,18 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js {
-        testRuns["test"].configureAllExecutions {
-            filter {
-                excludeTestsMatching("*.heavy_*")
-                excludeTestsMatching("*.benchmark_*")
-            }
+    js(BOTH) {
+        browser()
 
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("heavy").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.heavy_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-            executionTask.get().doFirst {
-                S3Dependency.withDefaultS3Dependencies(this)
-            }
-        }
-
-        testRuns.create("benchmark").configureAllExecutions {
-            filter {
-                includeTestsMatching("*.benchmark_*")
-            }
-
-            executionTask.get().enabled = !project.hasProperty("disable-tests")
-            executionTask.get().doFirst {
-                io.kinference.gradle.s3.S3Dependency.withDefaultS3Dependencies(this)
-            }
-        }
-
-        browser {
-            testTask {
-                useKarma {
-                    useChrome()
-                }
-            }
-        }
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     jvm {
-        testRuns["test"].executionTask {
-            configureTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("heavy").executionTask {
-            configureHeavyTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
-
-        testRuns.create("benchmark").executionTask {
-            configureBenchmarkTests()
-
-            enabled = !project.hasProperty("disable-tests")
-        }
+        configureTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     sourceSets {
@@ -93,7 +45,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation("org.openjdk.jmh:jmh-core:1.25.1")
-                api("org.slf4j:slf4j-simple:1.7.30")
+                api("org.slf4j:slf4j-simple:${io.kinference.gradle.Versions.slf4j}")
                 implementation(kotlin("test-junit5"))
 
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")

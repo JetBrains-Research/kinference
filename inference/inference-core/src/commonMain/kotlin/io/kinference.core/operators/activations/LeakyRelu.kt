@@ -1,6 +1,8 @@
 package io.kinference.core.operators.activations
 
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
@@ -42,7 +44,7 @@ class LeakyReluVer6(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs
         override fun apply(value: Double): Double = if (value < 0) value * alpha else value
     }
 
-    override fun activate(input: NDArray): NDArray = when (val type = input.type) {
+    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
         DataType.FLOAT -> input.map(activateFloat)
         DataType.DOUBLE -> input.map(activateDouble)
         else -> error("Unsupported data type for this operation: $type")

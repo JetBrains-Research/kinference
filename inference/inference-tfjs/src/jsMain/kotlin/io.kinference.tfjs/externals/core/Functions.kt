@@ -1,5 +1,8 @@
 @file:JsModule("@tensorflow/tfjs-core")
+@file:JsNonModule
 package io.kinference.tfjs.externals.core
+
+import kotlin.js.Json
 
 
 internal external val add: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
@@ -12,7 +15,7 @@ internal external val reshape: (x: NDArrayTFJS, shape: Array<Int>) -> NDArrayTFJ
 
 internal external val gather: (x: NDArrayTFJS, indices: NDArrayTFJS, axis: Int, batchDims: Int) -> NDArrayTFJS
 
-internal external val moments: (x: NDArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> MomentsOutput
+internal external val moments: (x: NDArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> Json
 
 internal external val sum: (x: NDArrayTFJS, axis: Array<Int>?, keepDims: Boolean) -> NDArrayTFJS
 

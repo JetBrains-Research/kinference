@@ -1,14 +1,13 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 group = "io.kinference"
-version = "0.1.7"
+version = "0.1.14"
 
 plugins {
-    kotlin("multiplatform") version "1.5.31" apply false
+    kotlin("multiplatform") apply false
     idea apply true
-    id("io.gitlab.arturbosch.detekt") version ("1.18.1") apply true
+    id("io.gitlab.arturbosch.detekt") version ("1.20.0-RC2") apply true
     `maven-publish`
 }
 
@@ -16,6 +15,7 @@ allprojects {
     repositories {
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         mavenCentral()
+        maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
     }
 }
 
@@ -56,14 +56,17 @@ subprojects {
                 optIn("kotlin.ExperimentalUnsignedTypes")
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
             }
+
+            languageSettings {
+                apiVersion = "1.6"
+                languageVersion = "1.6"
+            }
         }
     }
 
     tasks.withType<KotlinJvmCompile> {
         kotlinOptions {
             jvmTarget = "11"
-            languageVersion = "1.5"
-            apiVersion = "1.5"
         }
     }
 
