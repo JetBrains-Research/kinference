@@ -9,8 +9,8 @@ interface TestDataLoader : DataLoader {
 
 object ResourcesTestDataLoader : TestDataLoader {
     private val mainPath =
-        ("${PlatformUtils.forPlatform("", "../../utils/test-utils")}/build/processedResources/" +
-        "${PlatformUtils.forPlatform("jsLegacy", "jvm")}/main").toPath()
+        ("${PlatformUtils.forPlatform("", "../../utils/test-utils/")}build/processedResources/" +
+        "${PlatformUtils.forPlatform("jsLegacy", "jvm")}/main/").toPath()
 
     override fun getFullPath(path: Path) = mainPath / path
 
