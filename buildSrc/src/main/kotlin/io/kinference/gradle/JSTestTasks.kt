@@ -23,7 +23,10 @@ fun KotlinJsTargetDsl.configureTests() {
         }
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions { configureTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions {
+        configureTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }
 
 fun KotlinJsPlatformTestRun.configureHeavyTests() {
@@ -44,7 +47,10 @@ fun KotlinJsTargetDsl.configureHeavyTests() {
             useChrome()
         }
     }
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions { configureHeavyTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
+        configureHeavyTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }
 
 fun KotlinJsPlatformTestRun.configureBenchmarkTests() {
@@ -67,5 +73,8 @@ fun KotlinJsTargetDsl.configureBenchmarkTests() {
         }
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions { configureBenchmarkTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
+        configureBenchmarkTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }
