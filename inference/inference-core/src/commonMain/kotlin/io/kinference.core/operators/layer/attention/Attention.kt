@@ -23,7 +23,7 @@ import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
-sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private fun attentionScore(
             scores: NDArray, values: NDArray, batchSize: Int, seqLen: Int, pastSeqLen: Int,
@@ -170,24 +170,24 @@ sealed class Attention(info: OperatorInfo, attributes: Map<String, Attribute<Any
 
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in AttentionVer1.VERSION.asRange() -> AttentionVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in AttentionVer1.VERSION.asRange() -> AttentionVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Attention operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Attention(INFO, attributes, inputs, outputs) {
+class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Attention(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
 
-        private val ATTRIBUTES_INFO = listOf(
+        val ATTRIBUTES_INFO = listOf(
             AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),
             AttributeInfo("unidirectional", setOf(AttributeProto.AttributeType.INT), false, default = 0)
         )
 
-        private val INPUTS_INFO = listOf(
+        val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false),
             IOInfo(1, TYPE_CONSTRAINTS, "weight", optional = false),
             IOInfo(2, TYPE_CONSTRAINTS, "bias", optional = false),
@@ -195,13 +195,13 @@ class AttentionVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String
             IOInfo(4, TYPE_CONSTRAINTS, "past", optional = true)
         )
 
-        private val OUTPUTS_INFO = listOf(
+        val OUTPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false),
             IOInfo(1, TYPE_CONSTRAINTS, "present", optional = true)
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         internal fun initQueryKeyValue(
             input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int,

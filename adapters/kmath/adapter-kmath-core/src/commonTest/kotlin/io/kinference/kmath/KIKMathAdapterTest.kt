@@ -96,7 +96,7 @@ class KIKMathAdapterTest {
                 node = mutableListOf(NodeProto(input = mutableListOf("input"), mutableListOf("output"), opType = "Identity"))
             )
         )
-        val modelAdapter = KIKMathModelAdapter(KIModel(modelProto))
+        val modelAdapter = KIKMathModelAdapter(KIModel(modelProto, optimize = false))
         val array = FloatArray(6) { it.toFloat() }
         val shape = intArrayOf(6)
         val inputArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })

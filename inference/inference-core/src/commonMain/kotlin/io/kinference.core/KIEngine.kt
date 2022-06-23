@@ -5,7 +5,10 @@ import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.model.KIModel
+import io.kinference.core.optimizer.rules.DequantizeMatMulInteger
+import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.*
+import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.*
@@ -23,9 +26,9 @@ object KIEngine : InferenceEngine<KIONNXData<*>> {
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.TILED)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray): KIModel {
+    override fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        return KIModel(modelScheme)
+        return KIModel(modelScheme, optimize)
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> = when (type) {
@@ -33,4 +36,6 @@ object KIEngine : InferenceEngine<KIONNXData<*>> {
         ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_MAP -> KIONNXMap.create(MapProto.decode(protoReader(bytes)))
     }
+
+    val optimizerRules = setOf(DequantizeMatMulInteger, DequantizeQAttention)
 }

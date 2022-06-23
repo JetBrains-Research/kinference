@@ -9,7 +9,7 @@ import io.kinference.primitives.types.DataType
 import kotlin.math.exp
 import kotlin.time.ExperimentalTime
 
-sealed class Sigmoid(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+sealed class Sigmoid(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
         val activateFloat = object : FloatMap {
             override fun apply(value: Float): Float = 1.0f / (1.0f + exp(-value))
@@ -21,15 +21,15 @@ sealed class Sigmoid(info: OperatorInfo, attributes: Map<String, Attribute<Any>>
 
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SigmoidVer6.VERSION.asRange() -> SigmoidVer6(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in SigmoidVer6.VERSION.asRange() -> SigmoidVer6(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Sigmoid operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class SigmoidVer6(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Sigmoid(INFO, attributes, inputs, outputs) {
+class SigmoidVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Sigmoid(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

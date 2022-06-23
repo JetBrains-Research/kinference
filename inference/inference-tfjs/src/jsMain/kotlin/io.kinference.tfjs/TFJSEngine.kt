@@ -23,9 +23,9 @@ object TFJSEngine : InferenceEngine<TFJSData<*>> {
     private val TFJS_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
     private fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), TFJS_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray): TFJSModel {
+    override fun loadModel(bytes: ByteArray, optimize: Boolean): TFJSModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        return TFJSModel(modelScheme)
+        return TFJSModel(modelScheme, optimize)
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> = when (type) {

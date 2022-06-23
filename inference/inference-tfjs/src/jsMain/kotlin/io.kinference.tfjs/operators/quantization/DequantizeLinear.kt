@@ -11,20 +11,20 @@ import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.core.*
 import io.kinference.tfjs.externals.extensions.*
 
-sealed class DequantizeLinear(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class DequantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in DequantizeLinearVer10.VERSION.asRange() -> DequantizeLinearVer10(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in DequantizeLinearVer10.VERSION.asRange() -> DequantizeLinearVer10(name, attributes, inputs, outputs)
             else -> error("Unsupported version of DequantizeLinear operator: $version")
         }
     }
 }
 
-class DequantizeLinearVer10(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : DequantizeLinear(INFO, attributes, inputs, outputs) {
+class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : DequantizeLinear(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.INT8,
