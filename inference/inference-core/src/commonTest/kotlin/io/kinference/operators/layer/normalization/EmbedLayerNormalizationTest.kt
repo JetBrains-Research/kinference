@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class EmbedLayerNormalizationTest {
-    private fun getTargetPath(dirName: String) = "/embed_layer_normalization/$dirName/"
+    private fun getTargetPath(dirName: String) = "embed_layer_normalization/$dirName/"
 
     @Test
     fun test_embedding_layer_normalization_defaults() = TestRunner.runTest {

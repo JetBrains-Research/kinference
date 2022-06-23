@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class GatherNDTest {
-    private fun getTargetPath(dirName: String) = "/gather_nd/$dirName/"
+    private fun getTargetPath(dirName: String) = "gather_nd/$dirName/"
 
     @Test
     fun test_gather_nd_float32()  = TestRunner.runTest {

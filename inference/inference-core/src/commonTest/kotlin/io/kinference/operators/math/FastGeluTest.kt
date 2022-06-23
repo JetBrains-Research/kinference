@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class FastGeluTest {
-    private fun getTargetPath(dirName: String) = "/fastgelu/$dirName/"
+    private fun getTargetPath(dirName: String) = "fastgelu/$dirName/"
 
     @Test
     fun test_fast_GELU_with_bias() = TestRunner.runTest {

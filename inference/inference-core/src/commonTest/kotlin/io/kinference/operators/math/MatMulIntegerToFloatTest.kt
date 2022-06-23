@@ -8,7 +8,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class MatMulIntegerTestToFloatTest {
-    private fun getTargetPath(dirName: String) = "/matmul_integer_to_float/$dirName/"
+    private fun getTargetPath(dirName: String) = "matmul_integer_to_float/$dirName/"
 
     @Test
     fun test_matmul_integer_to_float()  = TestRunner.runTest {

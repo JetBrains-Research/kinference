@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class LSTMLayerTest {
-    private fun getTargetPath(dirName: String) = "/lstm/$dirName/"
+    private fun getTargetPath(dirName: String) = "lstm/$dirName/"
 
     @Test
     fun test_LSTM_defaults() = TestRunner.runTest {

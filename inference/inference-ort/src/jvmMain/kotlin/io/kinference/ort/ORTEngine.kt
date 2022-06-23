@@ -10,7 +10,9 @@ import io.kinference.ort.model.ORTModel
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.CommonDataLoader
 import okio.Buffer
+import okio.Path
 
 typealias ORTData<T> = ONNXData<T, ORTBackend>
 
@@ -34,6 +36,15 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         val session = OrtEnvironment.getEnvironment().createSession(bytes, options)
         return ORTModel(session)
     }
+
+    override suspend fun loadModel(path: Path): ORTModel {
+        val env = OrtEnvironment.getEnvironment()
+        val options = OrtSession.SessionOptions()
+        val session = env.createSession(path.toString(), options)
+        return ORTModel(session)
+    }
+
+    override suspend fun loadData(path: Path, type: ONNXDataType): ORTData<*> = loadData(CommonDataLoader.bytes(path), type)
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> = when (type) {
         ONNXDataType.ONNX_TENSOR -> ORTTensor.create(TensorProto.decode(protoReader(bytes)))

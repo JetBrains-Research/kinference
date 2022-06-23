@@ -9,7 +9,10 @@ import io.kinference.data.*
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.*
+import io.kinference.utils.CommonDataLoader
 import okio.Buffer
+import okio.Path
+import okio.Path.Companion.toPath
 import kotlin.time.ExperimentalTime
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
@@ -33,4 +36,6 @@ object KIEngine : InferenceEngine<KIONNXData<*>> {
         ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_MAP -> KIONNXMap.create(MapProto.decode(protoReader(bytes)))
     }
+    override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
+    override suspend fun loadModel(path: Path) = loadModel(CommonDataLoader.bytes(path))
 }

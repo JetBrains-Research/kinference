@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class ReduceSumTest {
-    private fun getTargetPath(dirName: String) = "/reduce_sum/$dirName/"
+    private fun getTargetPath(dirName: String) = "reduce_sum/$dirName/"
 
     @Test
     fun test_reduce_sum_default_axes_keepdims_example()  = TestRunner.runTest {

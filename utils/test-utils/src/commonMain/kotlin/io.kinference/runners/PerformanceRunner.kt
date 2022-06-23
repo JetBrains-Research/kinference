@@ -5,6 +5,8 @@ import io.kinference.data.*
 import io.kinference.model.Model
 import io.kinference.profiler.Profilable
 import io.kinference.utils.*
+import okio.Path
+import okio.Path.Companion.toPath
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -12,13 +14,12 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
     private suspend fun runPerformanceFromS3(name: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false): List<PerformanceResults> {
-        val toFolder = name.replace(":", "/")
+        val toFolder = name.replace(":", "/").toPath()
         return runPerformanceFromFolder(S3TestDataLoader, toFolder, count, warmup, withProfiling)
     }
 
     private suspend fun runPerformanceFromResources(testPath: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false): List<PerformanceResults> {
-        val path = "build/processedResources/${TestRunner.forPlatform("js", "jvm")}/main/${testPath}"
-        return runPerformanceFromFolder(ResourcesTestDataLoader, path, count, warmup, withProfiling)
+        return runPerformanceFromFolder(ResourcesTestDataLoader, testPath.toPath(), count, warmup, withProfiling)
     }
 
 //    data class ONNXDataWithName(val data: Map<String, ONNXData<*>>, val test: String)
@@ -27,7 +28,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
     @OptIn(ExperimentalTime::class)
     private suspend fun runPerformanceFromFolder(
         loader: TestDataLoader,
-        path: String,
+        path: Path,
         count: Int = 10,
         warmup: Int = 3,
         withProfiling: Boolean = false
@@ -36,14 +37,14 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
 
         lateinit var model: Model<T>
         val modelLoadTime = measureTime {
-            model = engine.loadModel(loader.bytes(TestDataLoader.Path(path, "model.onnx")))
+            model = engine.loadModel(loader.getFullPath(path / "model.onnx"))
         }
         logger.info { "Model load time: $modelLoadTime" }
 
-        val fileInfo = loader.text(TestDataLoader.Path(path, "descriptor.txt")).lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
+        val fileInfo = loader.text(path / "descriptor.txt").lines().map { AccuracyRunner.ONNXTestDataInfo.fromString(it) }
         val datasets = fileInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }.map { (group, files) ->
             val inputFiles = files.filter { file -> "input" in file.path }
-            val inputs = inputFiles.map { loader.bytes(TestDataLoader.Path(path, it.path)) to it.type }
+            val inputs = inputFiles.map { loader.bytes(path / it.path) to it.type }
             ONNXDataWithName(inputs, group)
         }
 
@@ -62,7 +63,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
                 lateinit var outputs: Map<String, T>
                 val time = measureTime {
                     outputs = model.predict(inputs, withProfiling)
-                }.inMilliseconds.toLong()
+                }.inWholeMilliseconds
                 times[i] = time
 
                 outputs.values.forEach { engine.postprocessData(it) }

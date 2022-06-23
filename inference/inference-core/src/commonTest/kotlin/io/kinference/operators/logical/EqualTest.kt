@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class EqualTest {
-    private fun getTargetPath(dirName: String) = "/equal/$dirName/"
+    private fun getTargetPath(dirName: String) = "equal/$dirName/"
 
     @Test
     fun test_equal() = TestRunner.runTest {

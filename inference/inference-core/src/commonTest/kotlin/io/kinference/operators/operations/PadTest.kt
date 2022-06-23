@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class PadTest {
-    private fun getTargetPath(dirName: String) = "/pad/$dirName/"
+    private fun getTargetPath(dirName: String) = "pad/$dirName/"
 
     @Test
     fun test_constant_pad()  = TestRunner.runTest {

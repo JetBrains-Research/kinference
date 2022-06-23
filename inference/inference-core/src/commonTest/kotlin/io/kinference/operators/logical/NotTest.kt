@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class NotTest {
-    private fun getTargetPath(dirName: String) = "/not/$dirName/"
+    private fun getTargetPath(dirName: String) = "not/$dirName/"
 
     @Test
     fun test_not_for_2d_tensor() = TestRunner.runTest {

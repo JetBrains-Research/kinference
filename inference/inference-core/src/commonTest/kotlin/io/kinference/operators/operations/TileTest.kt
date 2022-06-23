@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class TileTest {
-    private fun getTargetPath(dirName: String) = "/tile/$dirName/"
+    private fun getTargetPath(dirName: String) = "tile/$dirName/"
 
     @Test
     fun test_tile() = TestRunner.runTest {

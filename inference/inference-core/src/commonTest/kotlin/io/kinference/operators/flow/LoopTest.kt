@@ -7,6 +7,6 @@ import kotlin.test.Test
 class LoopTest {
     @Test
     fun test_loop() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/loop/")
+        KIAccuracyRunner.runFromResources("loop/")
     }
 }

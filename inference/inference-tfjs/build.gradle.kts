@@ -28,6 +28,7 @@ kotlin {
 
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
+                api(project(":utils:common-utils"))
 
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
             }

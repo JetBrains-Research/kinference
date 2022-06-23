@@ -17,6 +17,7 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":serialization"))
                 api(project(":utils:logger"))
+                api(project(":utils:common-utils"))
             }
         }
 

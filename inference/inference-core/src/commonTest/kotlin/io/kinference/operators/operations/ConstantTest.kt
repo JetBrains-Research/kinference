@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class ConstantTest {
-    private fun getTargetPath(dirName: String) = "/constant/$dirName/"
+    private fun getTargetPath(dirName: String) = "constant/$dirName/"
 
     @Test
     fun test_constant() = TestRunner.runTest {

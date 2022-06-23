@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class RangeTest {
-    private fun getTargetPath(dirName: String) = "/range/$dirName/"
+    private fun getTargetPath(dirName: String) = "range/$dirName/"
 
     @Test
     fun test_range_float_positive_delta() = TestRunner.runTest {

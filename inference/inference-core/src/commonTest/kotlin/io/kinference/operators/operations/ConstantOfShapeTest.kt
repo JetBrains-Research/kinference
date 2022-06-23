@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class ConstantOfShapeTest {
-    private fun getTargetPath(dirName: String) = "/constant_of_shape/$dirName/"
+    private fun getTargetPath(dirName: String) = "constant_of_shape/$dirName/"
 
     @Test
     fun test_ones() = TestRunner.runTest {

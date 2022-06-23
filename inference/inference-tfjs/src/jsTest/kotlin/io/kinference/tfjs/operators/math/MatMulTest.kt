@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class MatMulTest {
-    private fun getTargetPath(dirName: String) = "/matmul/$dirName/"
+    private fun getTargetPath(dirName: String) = "matmul/$dirName/"
 
     @Test
     fun test_matmul_2D()  = TestRunner.runTest {

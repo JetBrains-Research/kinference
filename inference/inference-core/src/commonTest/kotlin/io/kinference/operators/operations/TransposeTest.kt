@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class TransposeTest {
-    private fun getTargetPath(dirName: String) = "/transpose/$dirName/"
+    private fun getTargetPath(dirName: String) = "transpose/$dirName/"
 
     @Test
     fun test_transpose_all_permutations_0() = TestRunner.runTest {

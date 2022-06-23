@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class TopKTest {
-    private fun getTargetPath(dirName: String) = "/top_k/$dirName/"
+    private fun getTargetPath(dirName: String) = "top_k/$dirName/"
 
     @Test
     fun test_top_k()  = TestRunner.runTest {

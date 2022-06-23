@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class GRULayerTest {
-    private fun getTargetPath(dirName: String) = "/gru/$dirName/"
+    private fun getTargetPath(dirName: String) = "gru/$dirName/"
 
     @Test
     fun test_GRU_defaults() = TestRunner.runTest {

@@ -8,6 +8,6 @@ class IfTest {
 
     @Test
     fun test_if() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/if/")
+        KIAccuracyRunner.runFromResources("if/")
     }
 }

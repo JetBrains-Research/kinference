@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class MulTest {
-    private fun getTargetPath(dirName: String) = "/mul/$dirName/"
+    private fun getTargetPath(dirName: String) = "mul/$dirName/"
 
     @Test
     fun test_mul()  = TestRunner.runTest {

@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class LogSoftmaxTest {
-    private fun getTargetPath(dirName: String) = "/log_softmax/$dirName/"
+    private fun getTargetPath(dirName: String) = "log_softmax/$dirName/"
 
     @Test
     fun test_log_softmax_axis_0() = TestRunner.runTest {

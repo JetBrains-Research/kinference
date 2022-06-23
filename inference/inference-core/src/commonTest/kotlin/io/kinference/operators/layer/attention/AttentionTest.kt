@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 
 class AttentionTest {
-    private fun getTargetPath(dirName: String) = "/attention/$dirName/"
+    private fun getTargetPath(dirName: String) = "attention/$dirName/"
 
     @OptIn(ExperimentalTime::class)
     @Test

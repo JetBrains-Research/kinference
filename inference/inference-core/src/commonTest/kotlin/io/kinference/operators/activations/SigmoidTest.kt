@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SigmoidTest {
-    private fun getTargetPath(dirName: String) = "/sigmoid/$dirName/"
+    private fun getTargetPath(dirName: String) = "sigmoid/$dirName/"
 
     @Test
     fun test_sigmoid_example() = TestRunner.runTest {

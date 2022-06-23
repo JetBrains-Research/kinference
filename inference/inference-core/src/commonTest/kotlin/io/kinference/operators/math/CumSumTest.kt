@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class CumSumTest {
-    private fun getTargetPath(dirName: String) = "/cumsum/$dirName/"
+    private fun getTargetPath(dirName: String) = "cumsum/$dirName/"
 
     @Test
     fun test_cumulative_sum_for_1d_data() = TestRunner.runTest {

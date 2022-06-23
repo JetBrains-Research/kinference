@@ -25,12 +25,14 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                implementation("com.squareup.okio:okio:3.0.0")
 
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-ir"))
                 api(project(":ndarray"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
+                api(project(":utils:common-utils"))
 
                 api(project(":serialization"))
             }

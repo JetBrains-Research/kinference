@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class TanhTest {
-    private fun getTargetPath(dirName: String) = "/tanh/$dirName/"
+    private fun getTargetPath(dirName: String) = "tanh/$dirName/"
 
     @Test
     fun test_tanh_example() = TestRunner.runTest {

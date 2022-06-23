@@ -7,6 +7,6 @@ import kotlin.test.Test
 class ErfTest {
     @Test
     fun test_erf() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/erf/")
+        KIAccuracyRunner.runFromResources("erf/")
     }
 }

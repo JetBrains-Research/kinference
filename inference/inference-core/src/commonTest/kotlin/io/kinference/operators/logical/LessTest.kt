@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class LessTest {
-    private fun getTargetPath(dirName: String) = "/less/$dirName/"
+    private fun getTargetPath(dirName: String) = "less/$dirName/"
 
     @Test
     fun test_less() = TestRunner.runTest {

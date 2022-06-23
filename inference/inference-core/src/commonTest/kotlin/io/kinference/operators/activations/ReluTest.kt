@@ -7,6 +7,6 @@ import kotlin.test.Test
 class ReluTest {
     @Test
     fun test_relu() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/relu/")
+        KIAccuracyRunner.runFromResources("relu/")
     }
 }

@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class DequantizeLinearTest {
-    private fun getTargetPath(dirName: String) = "/dequantize_linear/$dirName/"
+    private fun getTargetPath(dirName: String) = "dequantize_linear/$dirName/"
 
     @Test
     fun test_linear_dequantization_defaults()  = TestRunner.runTest {
