@@ -31,38 +31,39 @@ private fun <T : ONNXData<*, *>> Graph<T>.findPathRec(targetOpTypes: List<String
     if (currentOp == targetOpTypes.size && path.size == targetOpTypes.size) return true
 
     val op = operators[startIdx]
-    if (!visited.contains(op.name)) visited.add(operators[startIdx].name)
-    if (targetOpTypes[currentOp] == operators[startIdx].type)
-        path.add(OperatorLocation(operators[startIdx], startIdx))
+    if (!visited.contains(op.name)) visited.add(op.name)
+    if (targetOpTypes[currentOp] == op.type) {
+        path.add(OperatorLocation(op, startIdx))
+    }
     else
         return false
 
     val successors = operators.successorsOf(startIdx)
-    for (i in successors.indices) {
-        if (!visited.contains(successors[i].operator.name)) {
-            if (this.findPathRec(targetOpTypes, successors[i].idx, currentOp + 1, visited, path)) {
+    if (successors.isEmpty() && this.outputs.map { it.name }.containsAll(op.outputs)) return true
+
+    for (successor in successors) {
+        if (!visited.contains(successor.operator.name)) {
+            if (this.findPathRec(targetOpTypes, successor.idx, currentOp + 1, visited, path))
                 return true
-            }
         }
     }
     path.removeLast()
     return false
 }
 
-fun <T : ONNXData<*, *>> Graph<T>.findPath(targetOpTypes: List<String>, startIdx: Int): List<OperatorLocation<T>>? {
+fun <T : ONNXData<*, *>> Graph<T>.findPath(targetOpTypes: List<String>, startIdx: Int): List<Operator<T, T>>? {
     if (operators[startIdx].type != targetOpTypes[0]) return null
 
     val path = ArrayList<OperatorLocation<T>>()
 
     val visited = ArrayList<String>()
     val found = this.findPathRec(targetOpTypes, startIdx, 0, visited, path)
-    return if (found) path else null
+    return if (found) path.map { it.operator } else null
 }
-
 
 class GraphOptimizer<T : ONNXData<*, *>>(val graph: Graph<T>) {
     class OptimizationReport {
-        val report = HashMap<String, Int>()
+        private val report = HashMap<String, Int>()
 
         fun append(rule: OptimizerRule<*>) {
             if (rule.name in report.keys)

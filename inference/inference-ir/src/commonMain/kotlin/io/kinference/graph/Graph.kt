@@ -9,7 +9,6 @@ import io.kinference.types.ValueInfo
 import io.kinference.utils.LoggerFactory
 import io.kinference.utils.Stack
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.Synchronized
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
@@ -108,7 +107,6 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             }
         }
 
-        //initializers = proto.initializer.apply { prepareInput(i) }
         initializers = ArrayList<T>(proto.initializer.size).apply {
             for (i in proto.initializer)
                 this.add(prepareInput(i))
@@ -137,20 +135,20 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             this.add(i, op)
             valueOrderInfo.incOrderFrom(i)
         }
+
+        val namesToRemove = names.toHashSet()
         val newOperators = ArrayList(_operators)
-        var lastRemovedIdx = -1
-        var removed = 0
-        for (name in names) {
+        var lastIdx = -1
+        val toRemove = ArrayList<Int>(0)
+        for (name in namesToRemove) {
             val i = newOperators.indexOfFirst { it.name == name }
-            if (i == -1) return
-            val op = newOperators[i]
-            if (names.contains(op.name)) {
-                if (lastRemovedIdx < i) lastRemovedIdx = i
-                newOperators.removeOperator(i)
-                ++removed
-            }
+            if (i == -1) error("Cannot remove $name operator. Operator $name was not found")
+            if (lastIdx < i) lastIdx = i
+            toRemove.add(i)
         }
-        newOperators.addOperator(lastRemovedIdx, to)
+        for (op in toRemove.sortedDescending()) newOperators.removeOperator(op)
+        newOperators.addOperator(lastIdx - namesToRemove.size + 1, to)
+
         _operators = newOperators
     }
 
@@ -162,14 +160,14 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     private fun GraphValueOrderInfo.decOrderFrom(targetOrder: Int) {
         for (name in this.names()) {
             val order = valueOrderInfo.getOrder(name)
-            if (order > targetOrder) valueOrderInfo.putOrder(name, order - 1)
+            if (order >= targetOrder) valueOrderInfo.putOrder(name, order - 1)
         }
     }
 
     private fun GraphValueOrderInfo.incOrderFrom(targetOrder: Int) {
         for (name in this.names()) {
             val order = valueOrderInfo.getOrder(name)
-            if (order < targetOrder) valueOrderInfo.putOrder(name, order + 1)
+            if (order <= targetOrder) valueOrderInfo.putOrder(name, order + 1)
         }
     }
 
@@ -208,12 +206,11 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             }
 
             contexts.profiling.profile("${operator.info.type}:cleanup") {
-               // cleanupUntilOrder(contexts.graph!!, i)
-//                contexts.graph!!.cleanupUntilOrder(i)
+                cleanupUntilOrder(contexts.graph!!, i)
                 outputs.zip(operator.outputs) { output, variable ->
                     if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
                     if (variable.isNotEmpty()) {
-                        contexts.graph!!.putValue(variable, output!!.rename(name = variable) as T)
+                        contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
                     }
                 }
             }

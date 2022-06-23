@@ -13,30 +13,39 @@ fun IntNDArray.toFloatNDArray(): FloatNDArray {
     val intPointer = this.array.pointer()
     return FloatNDArray(this.shape) { intPointer.getAndIncrement().toFloat() }
 }
-object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize MatMulInteger") {
+object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize MatMulInteger", type = RuleType.MERGE) {
     override fun shouldApply(graph: Graph<KIONNXData<*>>, name: String): Boolean {
-        graph.operators.singleOrNull() { it.name == name } ?: return false
         val op = graph.operators.indexOfFirst { it.name == name }
-        val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), op)
-        val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), op)
-        return firstPath != null && secondPath != null && firstPath.last().idx == secondPath.last().idx
+        if (op == -1) return false
+
+        val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), op) ?: return false
+        val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), op) ?: return false
+        return firstPath.first().name == secondPath.first().name && firstPath.last().name == secondPath.last().name
     }
 
-    fun dequantizeMatMulInteger(graph: Graph<KIONNXData<*>>, dynamicQLin: DynamicQuantizeLinear, matMulInt: MatMulInteger, mul: Mul, nextMul: Mul): MatMul {
-        val matmulB = graph.findInitializer(matMulInt.inputs[1])!!
-        val matmulZeroB = graph.findInitializer(matMulInt.inputs[3])
-        val scaleB = graph.findInitializer(mul.inputs[1])!!.data as NumberNDArray
-        val dequantB = (matmulB.data as NumberNDArray).withZeroPoint(matmulZeroB!!.data as NumberNDArray).toFloatNDArray().times(scaleB).asTensor("optimized_${matmulB.name}")
-        graph.addInitializer(dequantB)
-        return MatMul("MatMul_${matMulInt.name}", 1, emptyMap(), dynamicQLin.inputs + dequantB.name!!, nextMul.outputs)
+    fun dequantizeMatMulInteger(graph: Graph<KIONNXData<*>>, dynamicQLin: DynamicQuantizeLinear, matMulInt: MatMulInteger, mul: Mul, nextMul: Mul): MatMul? {
+        val matMulRight = graph.findInitializer(matMulInt.inputs[1])
+        val matMulZeroRight = graph.findInitializer(matMulInt.inputs[3])?.data as? NumberNDArray
+        val scaleRight = graph.findInitializer(mul.inputs[1])?.data as? NumberNDArray
+        if (matMulRight?.data == null || matMulZeroRight == null || scaleRight == null) return null
+
+        val newName = "${PREFIX}_${matMulRight.name}"
+        val dequantizedRight = (matMulRight.data as NumberNDArray).withZeroPoint(matMulZeroRight).toFloatNDArray().times(scaleRight)
+        graph.addInitializer(dequantizedRight.asTensor(newName))
+        return MatMul(
+            name = "${PREFIX}_${matMulInt.name}",
+            version = 1, attributes = emptyMap(),
+            inputs = dynamicQLin.inputs + newName,
+            outputs = nextMul.outputs
+        )
     }
 
     override fun transform(graph: Graph<KIONNXData<*>>, name: String) {
         val opIdx = graph.operators.indexOfFirst { it.name == name }
-        val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), opIdx)!!.map { it.operator }
-        val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), opIdx)!!.map { it.operator }
+        val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), opIdx)!!
+        val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), opIdx)!!
         val operator = dequantizeMatMulInteger(graph, secondPath[0] as DynamicQuantizeLinear, secondPath[1] as MatMulInteger, firstPath[1] as Mul, firstPath[2] as Mul)
-        val names = firstPath.map { it.name } + secondPath.dropLast(1).map { it.name }
+        val names = firstPath.map { it.name }.drop(1) + secondPath.dropLast(1).map { it.name }
         graph.mergeOperators(names, operator as Operator<KIONNXData<*>, KIONNXData<*>>)
     }
 }
