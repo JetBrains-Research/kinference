@@ -15,13 +15,13 @@ jobs:
           java-version: 11
           server-id: github
           settings-path: ${{ github.workspace }}
-      - name: Setup xvfb
-        run: sudo apt-get install xvfb
+      - name: Setup firefox
+        run: sudo apt-get install firefox
       - name: Run tests with Gradle
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest jsLegacyTest jsIrTest -x inference:inference-ort-gpu:jvmTest --console=plain
+        run: ./gradlew --no-daemon jvmTest jsLegacyTest jsIrTest -x inference:inference-ort-gpu:jvmTest --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2
@@ -29,6 +29,6 @@ jobs:
         with:
           name: test-report
           path: |
-            build/**/test-results/**/* |
-            build/**/reports/**/*
+            **/build/**/test-results/**/* |
+            **/build/**/reports/**/*
 

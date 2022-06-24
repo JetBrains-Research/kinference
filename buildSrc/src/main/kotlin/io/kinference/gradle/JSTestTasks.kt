@@ -19,7 +19,7 @@ fun KotlinJsTargetDsl.configureTests() {
     testRuns["test"].configureAllExecutions{
         configureTests()
         executionTask.get().useKarma {
-            useChrome()
+            useFirefoxHeadless()
         }
     }
 
@@ -44,7 +44,7 @@ fun KotlinJsTargetDsl.configureHeavyTests() {
     testRuns.create("heavy").configureAllExecutions{
         configureHeavyTests()
         executionTask.get().useKarma {
-            useChrome()
+            useFirefoxHeadless()
         }
     }
     (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
@@ -69,7 +69,7 @@ fun KotlinJsTargetDsl.configureBenchmarkTests() {
     testRuns.create("benchmark").configureAllExecutions {
         configureBenchmarkTests()
         executionTask.get().useKarma {
-            useChrome()
+            useFirefoxHeadless()
         }
     }
 
