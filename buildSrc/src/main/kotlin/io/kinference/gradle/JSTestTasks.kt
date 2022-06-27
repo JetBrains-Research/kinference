@@ -6,6 +6,16 @@ import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.KotlinJsPlatformTestRun
 
+fun KotlinJsPlatformTestRun.configureBrowsers() {
+    executionTask.get().useKarma {
+        if (this@configureBrowsers.target.project.hasProperty("ci")) {
+            useFirefox()
+        } else {
+            useChrome()
+        }
+    }
+}
+
 fun KotlinJsPlatformTestRun.configureTests() {
     filter {
         excludeTestsMatching("*.heavy_*")
@@ -18,9 +28,7 @@ fun KotlinJsPlatformTestRun.configureTests() {
 fun KotlinJsTargetDsl.configureTests() {
     testRuns["test"].configureAllExecutions{
         configureTests()
-        executionTask.get().useKarma {
-            useFirefox()
-        }
+        configureBrowsers()
     }
 
     (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions {
@@ -43,9 +51,7 @@ fun KotlinJsPlatformTestRun.configureHeavyTests() {
 fun KotlinJsTargetDsl.configureHeavyTests() {
     testRuns.create("heavy").configureAllExecutions{
         configureHeavyTests()
-        executionTask.get().useKarma {
-            useFirefox()
-        }
+        configureBrowsers()
     }
     (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
         configureHeavyTests()
@@ -68,9 +74,7 @@ fun KotlinJsPlatformTestRun.configureBenchmarkTests() {
 fun KotlinJsTargetDsl.configureBenchmarkTests() {
     testRuns.create("benchmark").configureAllExecutions {
         configureBenchmarkTests()
-        executionTask.get().useKarma {
-            useFirefox()
-        }
+        configureBrowsers()
     }
 
     (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
