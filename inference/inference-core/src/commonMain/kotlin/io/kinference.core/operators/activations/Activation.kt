@@ -14,11 +14,12 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 abstract class Activation protected constructor(
+    name: String,
     info: OperatorInfo,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
 
     open fun activate(input: KITensor, contexts: Contexts<KIONNXData<*>>): KITensor = this.activate(input.data, contexts).asTensor()
     abstract fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray

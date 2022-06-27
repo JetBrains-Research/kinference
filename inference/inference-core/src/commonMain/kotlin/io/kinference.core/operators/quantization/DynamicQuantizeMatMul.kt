@@ -13,19 +13,19 @@ import io.kinference.ndarray.extensions.matmul
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
-sealed class DynamicQuantizeMatMul(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class DynamicQuantizeMatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in DynamicQuantizeMatMulVer11.VERSION.asRange() -> DynamicQuantizeMatMulVer11(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in DynamicQuantizeMatMulVer11.VERSION.asRange() -> DynamicQuantizeMatMulVer11(name, attributes, inputs, outputs)
             else -> error("Unsupported version of DynamicQuantizeMatMul operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class DynamicQuantizeMatMulVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeMatMul(INFO, attributes, inputs, outputs) {
+class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeMatMul(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val BYTES_TYPES = setOf(
             TensorProto.DataType.INT8,

@@ -19,14 +19,17 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
 
+    private var _operators: ArrayList<Operator<T, T>>
     val operators: List<Operator<T, T>>
+        get() = _operators
+
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
-    protected val valueOrderInfo = GraphValueOrderInfo()
+    val valueOrderInfo = GraphValueOrderInfo()
 
-    val initializers: List<T>
-    private val initNames = proto.initializer.map { it.name }
+    protected val initializers: MutableList<T>
+    val initNames = proto.initializer.map { it.name }
 
     private data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -53,7 +56,7 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     }
 
     init {
-        operators = ArrayList(proto.node.size)
+        _operators = ArrayList(proto.node.size)
         val nodes = HashMap<String, Node>().apply {
             for (nodeProto in proto.node) {
                 val node = Node(nodeProto)
@@ -90,28 +93,82 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
                 if (ready) {
                     node.visited = true
                     stack.pop()
-                    operators.add(factory.create(node.proto, opSetRegistry))
+                    _operators.add(factory.create(node.proto, opSetRegistry))
                     valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
                     order++
                 }
             } else stack.pop()
         }
 
-        if (operators.size != proto.node.size) {
+        if (_operators.size != proto.node.size) {
             logger.warning {
                 "Count of used operators ${operators.size} not equals count of operators in model ${proto.node.size}. " +
                     "Remove unused operators from model for more performance!"
             }
         }
 
-        initializers = proto.initializer.map { prepareInput(it) }
+        initializers = ArrayList<T>(proto.initializer.size).apply {
+            for (i in proto.initializer)
+                this.add(prepareInput(i))
+        }
     }
 
     abstract fun prepareInput(proto: TensorProto): T
 
+    fun addInitializer(initializer: T) {
+        require(!initializers.any { it.name == initializer.name }) { "Initializer with name ${initializer.name} already exists" }
+        initializers.add(initializer)
+        valueOrderInfo.putOrder(initializer.name!!, Int.MAX_VALUE)
+    }
+
+    fun findInitializer(name: String): T? {
+        return initializers.find { it.name == name }
+    }
+
+    fun mergeOperators(names: List<String>, to: Operator<T, T>) {
+        fun MutableList<Operator<T, T>>.removeOperator(i: Int) {
+            this.removeAt(i)
+            valueOrderInfo.decOrderFrom(i)
+        }
+
+        fun MutableList<Operator<T, T>>.addOperator(i: Int, op: Operator<T, T>) {
+            this.add(i, op)
+            valueOrderInfo.incOrderFrom(i)
+        }
+
+        val namesToRemove = names.toHashSet()
+        val newOperators = ArrayList(_operators)
+        var lastIdx = -1
+        val toRemove = ArrayList<Int>(0)
+        for (name in namesToRemove) {
+            val i = newOperators.indexOfFirst { it.name == name }
+            if (i == -1) error("Cannot remove $name operator. Operator $name was not found")
+            if (lastIdx < i) lastIdx = i
+            toRemove.add(i)
+        }
+        for (op in toRemove.sortedDescending()) newOperators.removeOperator(op)
+        newOperators.addOperator(lastIdx - namesToRemove.size + 1, to)
+
+        _operators = newOperators
+    }
+
     private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
         val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
         putOrder(otherNames, order)
+    }
+
+    private fun GraphValueOrderInfo.decOrderFrom(targetOrder: Int) {
+        for (name in this.names()) {
+            val order = valueOrderInfo.getOrder(name)
+            if (order >= targetOrder) valueOrderInfo.putOrder(name, order - 1)
+        }
+    }
+
+    private fun GraphValueOrderInfo.incOrderFrom(targetOrder: Int) {
+        for (name in this.names()) {
+            val order = valueOrderInfo.getOrder(name)
+            if (order <= targetOrder) valueOrderInfo.putOrder(name, order + 1)
+        }
     }
 
     val availableInputs: List<String> = inputs.map { it.name }
@@ -142,17 +199,16 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             contexts.execution?.checkCancelled?.invoke()
 
             lateinit var outputs: List<T?>
-            contexts.profiling.profile(operator.info.name) { profilingContext ->
+            contexts.profiling.profile(operator.info.type) { profilingContext ->
                 outputs = operator.applyWithCheck(
                     Contexts(contexts.graph, profilingContext, contexts.execution),
                     operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
             }
 
-            contexts.profiling.profile("${operator.info.name}:cleanup") {
+            contexts.profiling.profile("${operator.info.type}:cleanup") {
                 cleanupUntilOrder(contexts.graph!!, i)
-//                contexts.graph!!.cleanupUntilOrder(i)
                 outputs.zip(operator.outputs) { output, variable ->
-                    if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.name}' operator" }
+                    if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
                     if (variable.isNotEmpty()) {
                         contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
                     }

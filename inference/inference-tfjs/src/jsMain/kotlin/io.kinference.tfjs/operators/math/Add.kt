@@ -10,19 +10,19 @@ import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.externals.extensions.plus
 import io.kinference.tfjs.externals.extensions.tidy
 
-sealed class Add(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(info, attributes, inputs, outputs) {
+sealed class Add(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in AddVer7.VERSION.asRange() -> AddVer7(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in AddVer7.VERSION.asRange() -> AddVer7(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Add operator: $version")
         }
     }
 }
 
-class AddVer7(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Add(INFO, attributes, inputs, outputs) {
+class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Add(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,

@@ -18,23 +18,24 @@ import kotlin.collections.HashMap
 import kotlin.time.ExperimentalTime
 
 sealed class ZipMap(
+    name: String,
     info: OperatorInfo,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KIONNXSequence>(info, attributes, inputs, outputs) {
+) : Operator<KITensor, KIONNXSequence>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ZipMapVer1.VERSION.asRange() -> ZipMapVer1(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in ZipMapVer1.VERSION.asRange() -> ZipMapVer1(name, attributes, inputs, outputs)
             else -> error("Unsupported version of ZipMap operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class ZipMapVer1(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ZipMap(INFO, attributes, inputs, outputs) {
+class ZipMapVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ZipMap(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val OUT_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING, TensorProto.DataType.FLOAT)
 

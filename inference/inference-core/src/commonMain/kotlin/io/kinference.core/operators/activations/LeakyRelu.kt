@@ -9,19 +9,19 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
 
-sealed class LeakyRelu(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+sealed class LeakyRelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in LeakyReluVer6.VERSION.asRange() -> LeakyReluVer6(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in LeakyReluVer6.VERSION.asRange() -> LeakyReluVer6(name, attributes, inputs, outputs)
             else -> error("Unsupported version of LeakyRelu operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class LeakyReluVer6(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : LeakyRelu(INFO, attributes, inputs, outputs) {
+class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : LeakyRelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

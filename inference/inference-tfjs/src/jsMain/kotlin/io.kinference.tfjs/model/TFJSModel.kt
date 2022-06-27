@@ -11,9 +11,10 @@ import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
+class TFJSModel(proto: ModelProto, optimize: Boolean = false) : Model<TFJSData<*>> {
     init {
         setDefaultBackend()
+        if (optimize) logger.info { "No available optimizations for TFJS backend" }
     }
 
     private val opSet = OperatorSetRegistry(proto.opSetImport)

@@ -16,19 +16,19 @@ import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class Gemm(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(info, attributes, inputs, outputs) {
+sealed class Gemm(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in GemmVer11.VERSION.asRange() -> GemmVer11(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in GemmVer11.VERSION.asRange() -> GemmVer11(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Gemm operator: $version")
         }
     }
 }
 
 @ExperimentalTime
-class GemmVer11(attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Gemm(INFO, attributes, inputs, outputs) {
+class GemmVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Gemm(name, INFO, attributes, inputs, outputs) {
     private val alpha: Double by attribute { it: Number -> it.toDouble() }
     private val beta: Double by attribute { it: Number -> it.toDouble() }
 

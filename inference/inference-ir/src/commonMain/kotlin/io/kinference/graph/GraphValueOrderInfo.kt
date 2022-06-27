@@ -17,4 +17,8 @@ class GraphValueOrderInfo {
     fun getOrder(name: String): Int {
         return orders.getOrElse(name) { Int.MAX_VALUE }
     }
+
+    fun names(): Set<String> {
+        return orders.keys
+    }
 }

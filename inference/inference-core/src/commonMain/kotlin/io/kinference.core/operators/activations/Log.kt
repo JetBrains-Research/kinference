@@ -9,12 +9,12 @@ import io.kinference.primitives.types.DataType
 import kotlin.math.ln
 import kotlin.time.ExperimentalTime
 
-sealed class Log(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(info, attributes, inputs, outputs) {
+sealed class Log(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
 
-        operator fun invoke(version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in LogVer6.VERSION.asRange() -> LogVer6(attributes, inputs, outputs)
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
+            in LogVer6.VERSION.asRange() -> LogVer6(name, attributes, inputs, outputs)
             else -> error("Unsupported version of Log operator: $version")
         }
 
@@ -29,7 +29,7 @@ sealed class Log(info: OperatorInfo, attributes: Map<String, Attribute<Any>>, in
 }
 
 @ExperimentalTime
-class LogVer6(attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Log(INFO, attributes, inputs, outputs) {
+class LogVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Log(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
