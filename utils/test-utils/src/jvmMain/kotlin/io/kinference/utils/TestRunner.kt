@@ -8,7 +8,3 @@ actual object TestRunner {
         runBlocking { block() }
     }
 }
-
-actual object PlatformUtils {
-    actual val platform: Platform = Platform.JVM
-}
