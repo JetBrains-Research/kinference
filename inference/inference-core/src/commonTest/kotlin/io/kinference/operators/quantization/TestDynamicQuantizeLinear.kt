@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 
 class TestDynamicQuantizeLinear {
-    private fun getTargetPath(dirName: String) = "/dynamic_quantize_linear/$dirName/"
+    private fun getTargetPath(dirName: String) = "dynamic_quantize_linear/$dirName/"
 
     @OptIn(ExperimentalTime::class)
     @Test

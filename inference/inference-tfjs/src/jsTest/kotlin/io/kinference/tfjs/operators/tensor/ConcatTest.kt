@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class ConcatTest {
-    private fun getTargetPath(dirName: String) = "/concat/$dirName/"
+    private fun getTargetPath(dirName: String) = "concat/$dirName/"
 
     @Test
     fun test_concat_1D_axis_0()  = TestRunner.runTest {

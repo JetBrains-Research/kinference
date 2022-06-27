@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SplitTest {
-    private fun getTargetPath(dirName: String) = "/split/$dirName/"
+    private fun getTargetPath(dirName: String) = "split/$dirName/"
 
     @Test
     fun test_split_into_equal_parts_1D() = TestRunner.runTest {

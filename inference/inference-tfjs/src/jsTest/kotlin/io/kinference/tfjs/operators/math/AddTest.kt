@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class AddTest {
-    private fun getTargetPath(dirName: String) = "/add/$dirName/"
+    private fun getTargetPath(dirName: String) = "add/$dirName/"
 
     @Test
     fun test_add()  = TestRunner.runTest {

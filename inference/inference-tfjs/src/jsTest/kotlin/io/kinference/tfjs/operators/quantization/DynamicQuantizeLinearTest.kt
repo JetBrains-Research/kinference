@@ -6,7 +6,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class DynamicQuantizeLinearTest {
-    private fun getTargetPath(dirName: String) = "/dynamic_quantize_linear/$dirName/"
+    private fun getTargetPath(dirName: String) = "dynamic_quantize_linear/$dirName/"
 
     @Test
     fun test_dynamic_quantize_linear_default()  = TestRunner.runTest {

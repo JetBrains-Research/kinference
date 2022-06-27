@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class TestDynamicQuantizeLSTM {
-    private fun getTargetPath(dirName: String) = "/dynamic_quantize_lstm/$dirName/"
+    private fun getTargetPath(dirName: String) = "dynamic_quantize_lstm/$dirName/"
 
     @Test
     fun test_LSTM_defaults()  = TestRunner.runTest {

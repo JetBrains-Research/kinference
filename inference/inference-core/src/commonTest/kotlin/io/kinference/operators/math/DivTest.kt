@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class DivTest {
-    private fun getTargetPath(dirName: String) = "/div/$dirName/"
+    private fun getTargetPath(dirName: String) = "div/$dirName/"
 
     @Test
     fun test_div() = TestRunner.runTest {

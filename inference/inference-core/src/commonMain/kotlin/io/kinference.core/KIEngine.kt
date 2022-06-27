@@ -8,11 +8,12 @@ import io.kinference.core.model.KIModel
 import io.kinference.core.optimizer.rules.DequantizeMatMulInteger
 import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.*
-import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.*
+import io.kinference.utils.CommonDataLoader
 import okio.Buffer
+import okio.Path
 import kotlin.time.ExperimentalTime
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
@@ -38,4 +39,6 @@ object KIEngine : InferenceEngine<KIONNXData<*>> {
     }
 
     val optimizerRules = setOf(DequantizeMatMulInteger, DequantizeQAttention)
+    override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
+    override suspend fun loadModel(path: Path, optimize: Boolean) = loadModel(CommonDataLoader.bytes(path), optimize)
 }

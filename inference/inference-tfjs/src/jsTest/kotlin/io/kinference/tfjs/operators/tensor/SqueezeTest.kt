@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SqueezeTest {
-    private fun getTargetPath(dirName: String) = "/squeeze/$dirName/"
+    private fun getTargetPath(dirName: String) = "squeeze/$dirName/"
 
     @Test
     fun test_squeeze() = TestRunner.runTest {

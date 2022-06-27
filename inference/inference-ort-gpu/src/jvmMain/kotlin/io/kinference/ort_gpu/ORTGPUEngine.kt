@@ -2,7 +2,6 @@ package io.kinference.ort_gpu
 
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
-import ai.onnxruntime.providers.CoreMLFlags
 import io.kinference.BackendInfo
 import io.kinference.InferenceEngine
 import io.kinference.data.ONNXData
@@ -13,8 +12,10 @@ import io.kinference.ort_gpu.model.ORTGPUModel
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.CommonDataLoader
 import okio.Buffer
-import java.util.*
+import okio.Path
+import okio.Path.Companion.toPath
 
 typealias ORTGPUData<T> = ONNXData<T, ORTGPUBackend>
 
@@ -40,8 +41,18 @@ object ORTGPUEngine : InferenceEngine<ORTGPUData<*>> {
         return ORTGPUModel(session)
     }
 
+    override suspend fun loadModel(path: Path, optimize: Boolean): ORTGPUModel {
+        val env = OrtEnvironment.getEnvironment()
+        val options = OrtSession.SessionOptions()
+        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        val session = env.createSession(path.toString(), options)
+        return ORTGPUModel(session)
+    }
+
     override fun loadData(bytes: ByteArray, type: ONNXDataType)= when (type) {
         ONNXDataType.ONNX_TENSOR -> ORTGPUTensor.create(TensorProto.decode(protoReader(bytes)))
         else -> error("$type construction is not supported in OnnxRuntime Java API")
     }
+
+    override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
 }

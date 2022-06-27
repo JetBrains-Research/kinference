@@ -6,7 +6,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class QAttentionTest {
-    private fun getTargetPath(dirName: String) = "/qattention/$dirName/"
+    private fun getTargetPath(dirName: String) = "qattention/$dirName/"
 
     @Test
     fun test_quantized_attention_defaults()  = TestRunner.runTest {

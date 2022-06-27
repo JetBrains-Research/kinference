@@ -6,6 +6,16 @@ import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.KotlinJsPlatformTestRun
 
+fun KotlinJsPlatformTestRun.configureBrowsers() {
+    executionTask.get().useKarma {
+        if (this@configureBrowsers.target.project.hasProperty("ci")) {
+            useFirefox()
+        } else {
+            useChrome()
+        }
+    }
+}
+
 fun KotlinJsPlatformTestRun.configureTests() {
     filter {
         excludeTestsMatching("*.heavy_*")
@@ -18,12 +28,13 @@ fun KotlinJsPlatformTestRun.configureTests() {
 fun KotlinJsTargetDsl.configureTests() {
     testRuns["test"].configureAllExecutions{
         configureTests()
-        executionTask.get().useKarma {
-            useChrome()
-        }
+        configureBrowsers()
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions { configureTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions {
+        configureTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }
 
 fun KotlinJsPlatformTestRun.configureHeavyTests() {
@@ -40,11 +51,12 @@ fun KotlinJsPlatformTestRun.configureHeavyTests() {
 fun KotlinJsTargetDsl.configureHeavyTests() {
     testRuns.create("heavy").configureAllExecutions{
         configureHeavyTests()
-        executionTask.get().useKarma {
-            useChrome()
-        }
+        configureBrowsers()
     }
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions { configureHeavyTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
+        configureHeavyTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }
 
 fun KotlinJsPlatformTestRun.configureBenchmarkTests() {
@@ -62,10 +74,11 @@ fun KotlinJsPlatformTestRun.configureBenchmarkTests() {
 fun KotlinJsTargetDsl.configureBenchmarkTests() {
     testRuns.create("benchmark").configureAllExecutions {
         configureBenchmarkTests()
-        executionTask.get().useKarma {
-            useChrome()
-        }
+        configureBrowsers()
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions { configureBenchmarkTests() }
+    (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
+        configureBenchmarkTests()
+        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
+    }
 }

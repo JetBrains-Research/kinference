@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class FlattenTest {
-    private fun getTargetPath(dirName: String) = "/flatten/$dirName/"
+    private fun getTargetPath(dirName: String) = "flatten/$dirName/"
 
     @Test
     fun test_flatten_axis_0() = TestRunner.runTest {

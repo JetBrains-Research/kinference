@@ -20,6 +20,7 @@ kotlin {
                 api(project(":serialization"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
+                api(project(":utils:common-utils"))
 
                 api(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))

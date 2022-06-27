@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class GemmTest {
-    private fun getTargetPath(dirName: String) = "/gemm/$dirName/"
+    private fun getTargetPath(dirName: String) = "gemm/$dirName/"
 
     @Test
     fun test_gemm_all_attributes() = TestRunner.runTest {

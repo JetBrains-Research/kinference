@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class BiasGeluTest {
-    private fun getTargetPath(dirName: String) = "/biasgelu/$dirName/"
+    private fun getTargetPath(dirName: String) = "biasgelu/$dirName/"
 
     @Test
     fun test_bias_GELU_with_1d_data()  = TestRunner.runTest {

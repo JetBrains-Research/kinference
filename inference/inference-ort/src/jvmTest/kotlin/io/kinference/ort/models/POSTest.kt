@@ -9,11 +9,11 @@ import kotlin.time.ExperimentalTime
 class POSTest {
     @Test
     fun heavy_test_pos_tagger() = TestRunner.runTest {
-        ORTTestEngine.ORTAccuracyRunner.runFromResources("/pos_tagger/")
+        ORTTestEngine.ORTAccuracyRunner.runFromResources("pos_tagger/")
     }
 
     @Test
     fun benchmark_test_pos_tagger_performance() = TestRunner.runTest {
-        ORTTestEngine.ORTPerformanceRunner.runFromResources("/pos_tagger/")
+        ORTTestEngine.ORTPerformanceRunner.runFromResources("pos_tagger/")
     }
 }

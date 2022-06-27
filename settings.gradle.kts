@@ -12,6 +12,7 @@ include(":inference:inference-tfjs")
 include(":utils:test-utils")
 include(":utils:logger")
 include(":utils:model-profiler")
+include(":utils:common-utils")
 
 include(":adapters:multik:adapter-multik-core")
 include(":adapters:multik:adapter-multik-ort")

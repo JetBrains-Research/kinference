@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class ArgMaxTest {
-    private fun getTargetPath(dirName: String) = "/argmax/$dirName/"
+    private fun getTargetPath(dirName: String) = "argmax/$dirName/"
 
     @Test
     fun test_argmax_default_axis_example() = TestRunner.runTest {

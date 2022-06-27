@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class GreaterTest {
-    private fun getTargetPath(dirName: String) = "/greater/$dirName/"
+    private fun getTargetPath(dirName: String) = "greater/$dirName/"
 
     @Test
     fun test_greater() = TestRunner.runTest {

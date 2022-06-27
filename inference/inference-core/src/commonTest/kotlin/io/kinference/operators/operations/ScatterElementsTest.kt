@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class ScatterElementsTest {
-    private fun getTargetPath(dirName: String) = "/scatter_elements/$dirName/"
+    private fun getTargetPath(dirName: String) = "scatter_elements/$dirName/"
 
     @Test
     fun test_scatter_elements_with_axis() = TestRunner.runTest {

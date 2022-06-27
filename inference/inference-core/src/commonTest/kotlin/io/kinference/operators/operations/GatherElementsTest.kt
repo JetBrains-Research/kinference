@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class GatherElementsTest {
-    private fun getTargetPath(dirName: String) = "/gather_elements/$dirName/"
+    private fun getTargetPath(dirName: String) = "gather_elements/$dirName/"
 
     @Test
     fun test_gather_elements_0() = TestRunner.runTest {

@@ -7,6 +7,6 @@ import kotlin.test.Test
 class GeluTest {
     @Test
     fun test_GELU() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/gelu/")
+        KIAccuracyRunner.runFromResources("gelu/")
     }
 }

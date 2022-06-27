@@ -10,11 +10,11 @@ import kotlin.time.ExperimentalTime
 class POSTest {
     @Test
     fun heavy_test_pos_tagger() = TestRunner.runTest {
-        KIAccuracyRunner.runFromResources("/pos_tagger/")
+        KIAccuracyRunner.runFromResources("pos_tagger/")
     }
 
     @Test
     fun benchmark_test_pos_tagger_performance() = TestRunner.runTest {
-        KIPerformanceRunner.runFromResources("/pos_tagger/")
+        KIPerformanceRunner.runFromResources("pos_tagger/")
     }
 }

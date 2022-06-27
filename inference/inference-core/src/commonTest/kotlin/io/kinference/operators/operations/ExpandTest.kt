@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class ExpandTest {
-    private fun getTargetPath(dirName: String) = "/expand/$dirName/"
+    private fun getTargetPath(dirName: String) = "expand/$dirName/"
 
     @Test
     fun test_expand_dim_unchanged() = TestRunner.runTest {

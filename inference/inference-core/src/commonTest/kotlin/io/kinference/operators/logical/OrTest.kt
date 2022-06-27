@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class OrTest {
-    private fun getTargetPath(dirName: String) = "/or/$dirName/"
+    private fun getTargetPath(dirName: String) = "or/$dirName/"
 
     @Test
     fun test_or_2d() = TestRunner.runTest {

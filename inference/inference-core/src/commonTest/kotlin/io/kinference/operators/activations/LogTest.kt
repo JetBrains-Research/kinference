@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class LogTest {
-    private fun getTargetPath(dirName: String) = "/log/$dirName/"
+    private fun getTargetPath(dirName: String) = "log/$dirName/"
 
     @Test
     fun test_log() = TestRunner.runTest {

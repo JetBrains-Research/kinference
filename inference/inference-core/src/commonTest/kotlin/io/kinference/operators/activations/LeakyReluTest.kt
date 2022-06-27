@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class LeakyReluTest {
-    private fun getTargetPath(dirName: String) = "/leakyrelu/$dirName/"
+    private fun getTargetPath(dirName: String) = "leakyrelu/$dirName/"
 
     @Test
     fun test_leaky_relu() =

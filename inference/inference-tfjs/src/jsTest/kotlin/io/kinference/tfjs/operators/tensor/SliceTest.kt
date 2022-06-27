@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SliceTest {
-    private fun getTargetPath(dirName: String) = "/slice/$dirName/"
+    private fun getTargetPath(dirName: String) = "slice/$dirName/"
 
     @Test
     fun test_slice() = TestRunner.runTest {

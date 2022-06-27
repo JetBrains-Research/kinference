@@ -16,14 +16,14 @@ jobs:
           server-id: github
           settings-path: ${{ github.workspace }}
 
-      - name: Setup xvfb
-        run: sudo apt-get install xvfb
+      - name: Setup Firefox anx Xvfb
+        run: sudo apt-get install firefox xvfb
 
       - name: Run heavy tests with Gradle
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew -Pci --no-daemon jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest --console=plain
 
       - name: Upload Build Results
         uses: actions/upload-artifact@v2
@@ -31,6 +31,6 @@ jobs:
         with:
           name: test-report
           path: |
-            build/**/test-results/**/* |
-            build/**/reports/**/*
+            **/build/**/test-results/**/* |
+            **/build/**/reports/**/*
 
