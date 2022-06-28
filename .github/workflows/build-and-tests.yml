@@ -24,13 +24,6 @@ jobs:
           cache: 'gradle'
           check-latest: true
 
-      - name: Setup Node 14 for JS tests
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: kotlin-js-store/yarn.lock
-
       - name: Setup Firefox and Xvfb for tests
         run: sudo apt-get update && sudo apt-get install firefox xvfb -y -f
 
