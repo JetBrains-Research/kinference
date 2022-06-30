@@ -25,25 +25,24 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
     private val ORT_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), ORT_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): Model<ORTData<*>> {
+    override fun loadModel(bytes: ByteArray): Model<ORTData<*>> {
         val env = OrtEnvironment.getEnvironment()
         val options = OrtSession.SessionOptions()
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
 
         val session = env.createSession(bytes, options)
         return ORTModel(session)
     }
 
     fun loadModel(bytes: ByteArray, options: OrtSession.SessionOptions): Model<ORTData<*>> {
-
         val session = OrtEnvironment.getEnvironment().createSession(bytes, options)
         return ORTModel(session)
     }
 
-    override suspend fun loadModel(path: Path, optimize: Boolean): ORTModel {
+    override suspend fun loadModel(path: Path): ORTModel {
         val env = OrtEnvironment.getEnvironment()
         val options = OrtSession.SessionOptions()
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         val session = env.createSession(path.toString(), options)
         return ORTModel(session)
     }

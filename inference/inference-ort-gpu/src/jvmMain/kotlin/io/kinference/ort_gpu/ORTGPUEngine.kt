@@ -15,7 +15,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
-import okio.Path.Companion.toPath
 
 typealias ORTGPUData<T> = ONNXData<T, ORTGPUBackend>
 
@@ -35,16 +34,16 @@ object ORTGPUEngine : InferenceEngine<ORTGPUData<*>> {
         options.addCUDA()
     }
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): Model<ORTGPUData<*>> {
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+    override fun loadModel(bytes: ByteArray): Model<ORTGPUData<*>> {
+        options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         val session = env.createSession(bytes)
         return ORTGPUModel(session)
     }
 
-    override suspend fun loadModel(path: Path, optimize: Boolean): ORTGPUModel {
+    override suspend fun loadModel(path: Path): ORTGPUModel {
         val env = OrtEnvironment.getEnvironment()
         val options = OrtSession.SessionOptions()
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         val session = env.createSession(path.toString(), options)
         return ORTGPUModel(session)
     }
