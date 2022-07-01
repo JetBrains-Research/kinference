@@ -34,13 +34,13 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest -x inference:inference-ort-gpu:jvmTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest -x inference:inference-ort-gpu:jvmTest -x adapters:kmath:adapter-kmath-ort-gpu:jvmTest --console=plain
 
       - name: Run heavy tests
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew -Pci jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew -Pci jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest -x adapters:kmath:adapter-kmath-ort-gpu:jvmHeavyTest --console=plain
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
