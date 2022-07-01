@@ -29,7 +29,7 @@ class KIKMathAdapterTest {
     fun test_kmath_adapter_convert_to_onnx_tensor() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedTensor = KIKMathTensorAdapter.toONNXData(KMathTensor("test", kmathArray))
         val expectedTensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor("test")
         assertKIEquals(expectedTensor, convertedTensor)
@@ -41,7 +41,7 @@ class KIKMathAdapterTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
 
-        val kmathArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
+        val kmathArray = KMathTensor("", BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
         val kmathSequence = KMathSequence("", listOf(kmathArray))
         val kmathMap = mapOf(0 to kmathSequence, 1 to kmathSequence, 2 to kmathSequence)
         val convertedMap = KIKMathMapAdapter.toONNXData(KMathMap("test", kmathMap as Map<Any, KIKMathData<*>>))
@@ -63,7 +63,7 @@ class KIKMathAdapterTest {
     fun test_kmath_adapter_convert_to_onnx_sequence() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
+        val kmathArray = KMathTensor("", BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
         val kmathSeq = KMathSequence("", List(4) { KMathSequence("", listOf(kmathArray)) })
         val convertedSeq = KIKMathSequenceAdapter.toONNXData(kmathSeq)
 
@@ -80,9 +80,9 @@ class KIKMathAdapterTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, createArray(shape, array), shape).asTensor()
-        val expectedArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
+        val expectedArray = KMathTensor("", BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
         val convertedArray = KIKMathTensorAdapter.fromONNXData(tensor)
-        NDStructure.contentEquals(expectedArray.data, convertedArray.data)
+        StructureND.contentEquals(expectedArray.data as StructureND<Int>, convertedArray.data as StructureND<Int>)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -99,9 +99,9 @@ class KIKMathAdapterTest {
         val modelAdapter = KIKMathModelAdapter(KIModel(modelProto, optimize = false))
         val array = FloatArray(6) { it.toFloat() }
         val shape = intArrayOf(6)
-        val inputArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val inputArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val result = modelAdapter.predict(listOf(KMathTensor("input", inputArray)))
-        NDStructure.contentEquals(inputArray, result.values.first().data as NDStructure<*>)
+        StructureND.contentEquals(inputArray, result.values.first().data as StructureND<Float>)
     }
 
     companion object {

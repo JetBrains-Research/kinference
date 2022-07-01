@@ -13,6 +13,6 @@ object Versions {
     const val ONNXRuntime = "1.11.0-1.patched"
     const val TFJS = "3.9.0"
 
-    const val kmath = "0.2.1"
+    const val kmath = "0.3.0"
     const val multik = "0.0.1"
 }

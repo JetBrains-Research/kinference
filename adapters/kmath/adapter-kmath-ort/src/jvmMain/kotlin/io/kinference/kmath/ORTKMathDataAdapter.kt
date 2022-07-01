@@ -12,9 +12,9 @@ import space.kscience.kmath.structures.Buffer
 import java.nio.*
 
 sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
-    class KMathTensor(name: String?, override val data: NDStructure<*>) : ORTKMathData<NDStructure<*>>(name) {
+    class KMathTensor(name: String?, override val data: StructureND<*>) : ORTKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-        override fun rename(name: String): ORTKMathData<NDStructure<*>> = KMathTensor(name, data)
+        override fun rename(name: String): ORTKMathData<StructureND<*>> = KMathTensor(name, data)
     }
 
     class KMathMap(name: String?, override val data: Map<Any, ORTKMathData<*>>) : ORTKMathData<Map<Any, ORTKMathData<*>>>(name) {
@@ -63,7 +63,7 @@ object ORTKMathTensorAdapter : ONNXDataAdapter<ORTKMathData.KMathTensor, ORTTens
             }
             else -> error("Unsupported data type: $type")
         }
-        return ORTKMathData.KMathTensor(data.name ?: "", NDBuffer(DefaultStrides(info.shape.toIntArray()), buffer))
+        return ORTKMathData.KMathTensor(data.name ?: "", BufferND(DefaultStrides(info.shape.toIntArray()), buffer))
     }
 
     override fun toONNXData(data: ORTKMathData.KMathTensor): ORTTensor {
@@ -113,4 +113,4 @@ object ORTKMathSequenceAdapter : ONNXDataAdapter<ORTKMathData.KMathSequence, ORT
     }
 }
 
-private fun Any.toScalarBuffer() = NDBuffer(DefaultStrides(IntArray(0)), Buffer.auto(1) { this })
+private fun Any.toScalarBuffer() = BufferND(DefaultStrides(IntArray(0)), Buffer.auto(1) { this })
