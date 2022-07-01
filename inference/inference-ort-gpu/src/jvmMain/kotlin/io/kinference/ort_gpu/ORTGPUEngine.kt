@@ -35,16 +35,20 @@ object ORTGPUEngine : InferenceEngine<ORTGPUData<*>> {
         options.addCUDA()
     }
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): Model<ORTGPUData<*>> {
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+    override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTGPUModel {
+        if (optimize)
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        else
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
         val session = env.createSession(bytes)
         return ORTGPUModel(session)
     }
 
     override suspend fun loadModel(path: Path, optimize: Boolean): ORTGPUModel {
-        val env = OrtEnvironment.getEnvironment()
-        val options = OrtSession.SessionOptions()
-        if (optimize) options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        if (optimize)
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        else
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
         val session = env.createSession(path.toString(), options)
         return ORTGPUModel(session)
     }
