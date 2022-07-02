@@ -19,5 +19,5 @@ abstract class ONNXModelAdapter<SourceType : BaseONNXData<*>, TargetType : ONNXD
         return result
     }
 
-    open fun finalizeData(data: Collection<TargetType>) = Unit
+    protected open fun finalizeData(data: Collection<TargetType>) = Unit
 }
