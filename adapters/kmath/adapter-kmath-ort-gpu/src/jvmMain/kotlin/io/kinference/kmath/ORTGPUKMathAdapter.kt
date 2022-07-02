@@ -17,9 +17,9 @@ class ORTGPUKMathAdapter(model: ORTGPUModel) : ONNXModelAdapter<ORTGPUKMathData<
     override fun finalizeData(data: Collection<ORTGPUData<*>>) {
         for (element in data) {
             when (element.type) {
-                ONNXDataType.ONNX_TENSOR -> (element.data as ORTGPUTensor).data.close()
-                ONNXDataType.ONNX_SEQUENCE-> (element.data as ORTGPUSequence).data.close()
-                ONNXDataType.ONNX_MAP -> (element.data as ORTGPUMap).data.close()
+                ONNXDataType.ONNX_TENSOR -> (element as ORTGPUTensor).data.close()
+                ONNXDataType.ONNX_SEQUENCE-> (element as ORTGPUSequence).data.close()
+                ONNXDataType.ONNX_MAP -> (element as ORTGPUMap).data.close()
             }
         }
     }

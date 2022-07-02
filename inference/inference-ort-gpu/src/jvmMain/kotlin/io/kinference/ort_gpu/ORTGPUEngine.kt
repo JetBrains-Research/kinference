@@ -6,7 +6,6 @@ import io.kinference.BackendInfo
 import io.kinference.InferenceEngine
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.model.Model
 import io.kinference.ort_gpu.data.tensor.ORTGPUTensor
 import io.kinference.ort_gpu.model.ORTGPUModel
 import io.kinference.protobuf.ProtobufReader
@@ -15,7 +14,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
-import okio.Path.Companion.toPath
 
 typealias ORTGPUData<T> = ONNXData<T, ORTGPUBackend>
 
