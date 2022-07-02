@@ -11,8 +11,13 @@ abstract class ONNXModelAdapter<SourceType : BaseONNXData<*>, TargetType : ONNXD
     protected abstract val adapters: Map<ONNXDataType, ONNXDataAdapter<SourceType, TargetType>>
 
     open fun predict(inputs: List<SourceType>, profile: Boolean = false): Map<String, SourceType> {
-        val onnxInputs = inputs.map{ adapters[it.type]!!.toONNXData(it) }
-        val result = model.predict(onnxInputs, profile)
-        return result.mapValues { adapters[it.value.type]!!.fromONNXData(it.value) }
+        val onnxInputs = inputs.map { adapters[it.type]!!.toONNXData(it) }
+        val onnxResult = model.predict(onnxInputs, profile)
+        val result = onnxResult.mapValues { adapters[it.value.type]!!.fromONNXData(it.value) }
+        finalizeData(onnxInputs)
+        finalizeData(onnxResult.values)
+        return result
     }
+
+    open fun finalizeData(data: Collection<TargetType>) = Unit
 }
