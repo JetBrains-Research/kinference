@@ -1,5 +1,5 @@
 import io.kinference.gradle.configureBenchmarkTests
-import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.configureGpuTests
 import io.kinference.gradle.Versions
 
 group = rootProject.group
@@ -7,7 +7,7 @@ version = rootProject.version
 
 kotlin {
     jvm {
-        configureHeavyTests()
+        configureGpuTests()
         configureBenchmarkTests()
     }
 

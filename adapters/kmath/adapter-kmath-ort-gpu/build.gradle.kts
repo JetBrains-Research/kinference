@@ -1,4 +1,4 @@
-import io.kinference.gradle.configureTests
+import io.kinference.gradle.configureGpuTests
 import io.kinference.gradle.Versions
 
 group = rootProject.group
@@ -10,7 +10,7 @@ repositories {
 
 kotlin {
     jvm {
-        configureTests()
+        configureGpuTests()
     }
 
     sourceSets {
@@ -37,6 +37,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
+                implementation(kotlin("test-junit5"))
                 api("org.slf4j:slf4j-simple:${Versions.slf4j}")
             }
         }
