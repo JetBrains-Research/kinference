@@ -1,17 +1,17 @@
-package io.kinference.ort_gpu.data.tensor
+package io.kinference.ort.data.tensor
 
 import ai.onnxruntime.*
 import io.kinference.data.*
 import io.kinference.ndarray.extensions.primitiveFromTiledArray
-import io.kinference.ort_gpu.ORTGPUBackend
+import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
 import java.nio.*
 
-class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor, ORTGPUBackend>(name, data) {
-    override val backend: ORTGPUBackend = ORTGPUBackend
+class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor, ORTBackend>(name, data) {
+    override val backend: ORTBackend = ORTBackend
 
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-    override fun rename(name: String): ORTGPUTensor = ORTGPUTensor(name, data)
+    override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
     val shape: LongArray
         get() = data.info.shape
@@ -64,7 +64,7 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
     }
 
     companion object {
-        fun create(proto: TensorProto): ORTGPUTensor {
+        fun create(proto: TensorProto): ORTTensor {
             val type = proto.dataType ?: TensorProto.DataType.UNDEFINED
             val array = when {
                 proto.isTiled() -> primitiveFromTiledArray(proto.arrayData!!)
@@ -74,73 +74,67 @@ class ORTGPUTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<On
             }
             requireNotNull(array) { "Array value should be initialized" }
 
-            return ORTGPUTensor(array, type, proto.dims.toLongArray(), proto.name)
+            return ORTTensor(array, type, proto.dims.toLongArray(), proto.name)
         }
 
         private fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
 
-        operator fun invoke(array: DoubleArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: DoubleArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = DoubleBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: FloatArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: FloatArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = FloatBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: IntArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: IntArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = IntBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: ByteArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: ByteArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = ByteBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: LongArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: LongArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = LongBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        operator fun invoke(array: ShortArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: ShortArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = ShortBuffer.wrap(array)
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        /*operator fun invoke(array: List<String>, dims: LongArray, name: String? = null): ORTGPUTensor {
-            val typedArray = array.toTypedArray()
-            val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), typedArray, dims)
-            return ORTGPUTensor(name, onnxTensor)
-        }*/
-
-        operator fun invoke(array: UByteArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: UByteArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = ByteBuffer.allocateDirect(array.size).apply {
                 for (number in array) put(number.toByte())
             }
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.UINT8)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
         private const val BYTE_ONE = (1).toByte()
         private const val BYTE_ZERO = (0).toByte()
 
-        operator fun invoke(array: BooleanArray, dims: LongArray, name: String? = null): ORTGPUTensor {
+        operator fun invoke(array: BooleanArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = ByteBuffer.allocateDirect(array.size).order(ByteOrder.LITTLE_ENDIAN)
             for (bool in array) buffer.put(if (bool) BYTE_ONE else BYTE_ZERO)
             buffer.rewind()
             val onnxTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), buffer, dims, OnnxJavaType.BOOL)
-            return ORTGPUTensor(name, onnxTensor)
+            return ORTTensor(name, onnxTensor)
         }
 
-        private operator fun invoke(value: Any, type: TensorProto.DataType, dims: LongArray = LongArray(0), name: String? = null): ORTGPUTensor =
+        private operator fun invoke(value: Any, type: TensorProto.DataType, dims: LongArray = LongArray(0), name: String? = null): ORTTensor =
             when(type) {
                 TensorProto.DataType.DOUBLE -> invoke(value as DoubleArray, dims, name)
                 TensorProto.DataType.FLOAT -> invoke(value as FloatArray, dims, name)

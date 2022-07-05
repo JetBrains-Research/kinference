@@ -1,21 +1,20 @@
-package io.kinference.ort_gpu.utils
+package io.kinference.ort.utils
 
 import ai.onnxruntime.*
 import io.kinference.data.ONNXDataType
-import io.kinference.ort_gpu.ORTGPUData
-import io.kinference.ort_gpu.data.tensor.ORTGPUTensor
+import io.kinference.ort.ORTData
+import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
-import kotlin.math.abs
 
-object ORTGPUAssertions {
+object ORTAssertions {
     @OptIn(ExperimentalUnsignedTypes::class)
-    fun assertEquals(expected: ORTGPUData<*>, actual: ORTGPUData<*>, delta: Double) {
+    fun assertEquals(expected: ORTData<*>, actual: ORTData<*>, delta: Double) {
         require(expected.type == ONNXDataType.ONNX_TENSOR && actual.type == ONNXDataType.ONNX_TENSOR)
-        assertTensorEquals(expected as ORTGPUTensor, actual as ORTGPUTensor, delta)
+        assertTensorEquals(expected as ORTTensor, actual as ORTTensor, delta)
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    fun assertTensorEquals(expected: ORTGPUTensor, actual: ORTGPUTensor, delta: Double) {
+    fun assertTensorEquals(expected: ORTTensor, actual: ORTTensor, delta: Double) {
         kotlin.test.assertEquals(expected.data.info.type, actual.data.info.type, "Types of tensors ${expected.name} do not match")
         ArrayAssertions.assertArrayEquals(expected.shape.toTypedArray(), actual.shape.toTypedArray(), "Shapes are incorrect")
 
