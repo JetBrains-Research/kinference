@@ -49,7 +49,7 @@ object KIMultikTensorAdapter : ONNXDataAdapter<KIMultikData.MultikTensor, KITens
             is DoubleNDArray -> MemoryViewDoubleArray(ndArray.array.toArray())
             else -> error("${ndArray.type} type is not supported by Multik")
         } as MemoryView<Number>
-        val multikArray = NDArray(view, shape = ndArray.shape, dtype = dtype, dim = dimensionOf(ndArray.rank))
+        val multikArray = NDArray(view, shape = ndArray.shape/*, dtype = dtype*/, dim = dimensionOf(ndArray.rank))
         return KIMultikData.MultikTensor(data.name, multikArray)
     }
 
@@ -90,6 +90,7 @@ fun MultikDataType.resolveKIDataType() = when (this) {
     MultikDataType.LongDataType -> DataType.LONG
     MultikDataType.FloatDataType -> DataType.FLOAT
     MultikDataType.DoubleDataType -> DataType.DOUBLE
+    else -> error("Unknown multik data type")
 }
 
 fun DataType.resolveMultikDataType() = when (this) {
