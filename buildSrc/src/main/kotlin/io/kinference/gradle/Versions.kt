@@ -14,5 +14,5 @@ object Versions {
     const val TFJS = "3.9.0"
 
     const val kmath = "0.3.0"
-    const val multik = "0.0.1"
+    const val multik = "0.1.1"
 }

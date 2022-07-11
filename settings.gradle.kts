@@ -16,6 +16,7 @@ include(":utils:common-utils")
 
 include(":adapters:multik:adapter-multik-core")
 include(":adapters:multik:adapter-multik-ort")
+include(":adapters:multik:adapter-multik-ort-gpu")
 
 include(":adapters:kmath:adapter-kmath-core")
 include(":adapters:kmath:adapter-kmath-ort")

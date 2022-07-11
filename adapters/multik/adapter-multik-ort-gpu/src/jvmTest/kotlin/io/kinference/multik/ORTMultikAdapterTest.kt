@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class ORTMultikAdapterTest {
     @Test
-    fun test_multik_adapter_convert_to_onnx_data() {
+    fun gpu_test_multik_adapter_convert_to_onnx_data() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Int, D3>(MemoryViewIntArray(array), shape = shape/*, dtype = DataType.IntDataType*/, dim = D3)
@@ -25,7 +25,7 @@ class ORTMultikAdapterTest {
     }
 
     @Test
-    fun test_multik_adapter_convert_from_onnx_data() {
+    fun gpu_test_multik_adapter_convert_from_onnx_data() {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensorData = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
