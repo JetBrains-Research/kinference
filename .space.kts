@@ -15,7 +15,7 @@ job("KInference / Build and Test") {
 
         shellScript("Run tests") {
             content = """
-                xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest --console=plain
+                xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest jsTest --console=plain
             """.trimIndent()
         }
 
