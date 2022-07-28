@@ -1,4 +1,4 @@
-package io.kinference.multik
+package multik
 
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.map.KIONNXMap

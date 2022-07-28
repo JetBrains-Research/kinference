@@ -7,11 +7,11 @@ import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.ArrayAssertions
+import multik.KIMultikData
+import multik.KIMultikTensorAdapter
 import org.jetbrains.kotlinx.multik.ndarray.data.*
-import org.junit.jupiter.api.Test
 import kotlin.math.abs
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class KIMultikAdapterTest {
     @Test

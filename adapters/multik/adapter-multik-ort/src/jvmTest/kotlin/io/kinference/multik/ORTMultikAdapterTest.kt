@@ -5,9 +5,9 @@ import io.kinference.ndarray.toLongArray
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
 import org.jetbrains.kotlinx.multik.ndarray.data.*
-import org.junit.jupiter.api.Test
 import java.nio.IntBuffer
 import kotlin.math.abs
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

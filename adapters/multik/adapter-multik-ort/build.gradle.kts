@@ -13,6 +13,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":inference:inference-api"))
+                api("org.jetbrains.kotlinx:multik-core:${Versions.multik}")
             }
         }
 
@@ -27,8 +28,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 api(project(":inference:inference-ort"))
-                api("org.jetbrains.kotlinx:multik-api:${Versions.multik}")
-                api("org.jetbrains.kotlinx:multik-default:${Versions.multik}")
             }
         }
 
