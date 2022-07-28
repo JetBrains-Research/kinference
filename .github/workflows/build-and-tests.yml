@@ -13,7 +13,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-data
-          key: test-data
+          key: test-data-${{ hashFiles('buildSrc/src/main/**/s3/S3Dependency.kt') }}
 
 
       - name: Set up JDK 11
