@@ -18,10 +18,6 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutableNDArray {
-        return MutableStringNDArray(Array(strides.linearSize) { "" }, strides)
-    }
-
     override fun view(vararg axes: Int): NDArray {
         TODO("Not yet implemented")
     }

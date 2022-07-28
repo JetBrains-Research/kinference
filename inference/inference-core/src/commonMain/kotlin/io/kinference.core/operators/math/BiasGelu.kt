@@ -55,7 +55,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
                 input as FloatNDArray
                 bias as FloatNDArray
 
-                val output = input.allocateNDArray(input.strides)
+                val output = MutableFloatNDArray(input.strides)
 
                 val inputPointer = input.array.pointer()
                 val outputPointer = output.array.pointer()
@@ -79,7 +79,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
                 input as DoubleNDArray
                 bias as DoubleNDArray
 
-                val output = input.allocateNDArray(input.strides)
+                val output = MutableDoubleNDArray(input.strides)
 
                 val inputPointer = input.array.pointer()
                 val outputPointer = output.array.pointer()

@@ -90,7 +90,7 @@ fun NDArray.as2DList(): List<NDArray> {
     val matrixSize = matrixStrides.linearSize
 
     return List(strides.linearSize / matrixSize) { index ->
-        allocateNDArray(matrixStrides).apply {
+        allocateNDArray(type, matrixStrides).apply {
             val start = matrixSize * index
             copyFrom(0, this@as2DList, start, start + matrixSize)
         }

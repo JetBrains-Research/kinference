@@ -59,12 +59,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         return this
     }
 
-    override fun erf(): MutableNumberNDArray {
-        return this.mapMutable(object : PrimitiveMap {
-            override fun apply(value: PrimitiveType): PrimitiveType = erfFor(value)
-        })
-    }
-
     override operator fun plusAssign(other: NDArray) {
         other as PrimitiveNDArray
 

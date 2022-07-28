@@ -65,10 +65,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutableBooleanNDArray {
-        return MutableBooleanNDArray(BooleanTiledArray(strides), strides)
-    }
-
     override fun reshapeView(newShape: IntArray): NDArray {
         return BooleanNDArray(array, Strides(newShape))
     }
@@ -195,7 +191,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun expand(shape: IntArray): MutableNDArray {
         val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
-        val output = allocateNDArray(Strides(outputShape))
+        val output = allocateNDArray(type, Strides(outputShape))
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutableBooleanNDArray
             val input = inputs[0] as BooleanNDArray
@@ -300,7 +296,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = allocateNDArray(outputStrides)
+        val outputArray = allocateNDArray(type, outputStrides) as BooleanNDArray
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {

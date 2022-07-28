@@ -98,7 +98,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val input = inputs[0]!!.data as NumberNDArray
         val inputScale = inputs[3]!!.data as NumberNDArray
         val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArray?
-        val dequantInput = input.dequantize(inputZeroPoint, inputScale)
+        val dequantInput = input.dequantize(inputZeroPoint, inputScale as FloatNDArray)
 
         val weights = inputs[1]!!
         val weightsScale = inputs[4]!!

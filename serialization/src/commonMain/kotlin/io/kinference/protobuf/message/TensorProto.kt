@@ -2,7 +2,7 @@ package io.kinference.protobuf.message
 
 import com.squareup.wire.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.extensions.createArray
+import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.ndarray.extensions.createPrimitiveArray
 import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.*
@@ -109,7 +109,7 @@ class TensorProto(
         }
 
         private fun makeArray(arrayFormat: ArrayFormat, type: DataType, shape: IntArray, init: (Int) -> Any) = when (arrayFormat) {
-            ArrayFormat.TILED -> createArray(type.resolveLocalDataType(), shape, init)
+            ArrayFormat.TILED -> createTiledArray(type.resolveLocalDataType(), shape, init)
             ArrayFormat.PRIMITIVE -> createPrimitiveArray(type.resolveLocalDataType(), shape, init)
             ArrayFormat.OTHER -> error("Cannot read the array. Please, specify tensor backing array type as either TILED or PRIMITIVE")
         }

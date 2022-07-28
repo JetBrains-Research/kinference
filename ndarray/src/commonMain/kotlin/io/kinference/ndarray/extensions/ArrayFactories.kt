@@ -5,7 +5,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 
-inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
+inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
     return when (type) {
         DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
         DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
@@ -35,7 +35,7 @@ inline fun <reified T> createPrimitiveArray(type: DataType, shape: IntArray, noi
     }
 }
 
-fun createArray(shape: IntArray, array: Any): Any {
+fun createTiledArray(shape: IntArray, array: Any): Any {
     return when (array) {
         is DoubleArray -> DoubleTiledArray(shape) { array[it] }
         is FloatArray -> FloatTiledArray(shape) { array[it] }

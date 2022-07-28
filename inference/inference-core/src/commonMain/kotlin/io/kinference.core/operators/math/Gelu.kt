@@ -7,6 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.map
+import io.kinference.ndarray.extensions.erf
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
@@ -22,14 +23,14 @@ sealed class Gelu(name: String, info: OperatorInfo, attributes: Map<String, Attr
                     array as MutableFloatNDArray
                     val pointer = array.array.pointer()
                     pointer.map(array.linearSize) {
-                        0.5f * it * (1.0f + array.erfFor(it / SQRT2.toFloat()))
+                        0.5f * it * (1.0f + erf(it / SQRT2.toFloat()))
                     }
                 }
                 DataType.DOUBLE -> {
                     array as MutableDoubleNDArray
                     val pointer = array.array.pointer()
                     pointer.map(array.linearSize) {
-                        0.5 * it * (1.0 + array.erfFor(it / SQRT2))
+                        0.5 * it * (1.0 + erf(it / SQRT2))
                     }
                 }
                 else -> throw IllegalStateException("Unsupported data type: $type")

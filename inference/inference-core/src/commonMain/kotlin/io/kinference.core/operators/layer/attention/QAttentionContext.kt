@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.core.graph.KIContext
+import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.Operator
 import io.kinference.protobuf.message.TypeProto
@@ -31,7 +32,7 @@ object QAttentionContext: ContextPrepare() {
         val headSize = shape[1] / 3 / numHeads
         val newShape = intArrayOf(shape[0], 3, numHeads, headSize)
 
-        val dequantData = (tensor.data as NumberNDArray).dequantize(zeroPoint?.data, scale.data)
+        val dequantData = (tensor.data as NumberNDArray).dequantize(zeroPoint?.data as NumberNDArray?, scale.data as FloatNDArray)
 
         return dequantData.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor("prepared_${tensor.name}")
     }

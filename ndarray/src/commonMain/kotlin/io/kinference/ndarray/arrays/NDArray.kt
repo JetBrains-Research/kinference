@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -22,8 +23,6 @@ interface NDArray {
 
     fun singleValue(): Any
 
-    fun allocateNDArray(strides: Strides): MutableNDArray
-
     fun view(vararg axes: Int): NDArray
     @Deprecated(message = "Use reshape() instead", replaceWith = ReplaceWith("reshape()"))
     fun reshapeView(newShape: IntArray): NDArray
@@ -34,7 +33,7 @@ interface NDArray {
     fun copyIfNotMutable(): MutableNDArray
 
     fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray
-    fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
+    fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(type, strides))
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
@@ -61,14 +60,10 @@ interface MutableNDArray : NDArray {
 }
 
 interface NumberNDArray : NDArray {
-    override fun allocateNDArray(strides: Strides): MutableNumberNDArray
-
-    fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int? = null): NDArray
-
     override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
     override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray
-    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
+    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(type, strides))
 
     override fun row(row: Int): MutableNumberNDArray
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
@@ -78,9 +73,10 @@ interface NumberNDArray : NDArray {
     fun max(axis: Int, keepDims: Boolean): NumberNDArray
     fun sum(): Any
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
-    fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray
+    fun erf(): NumberNDArray
 
-    fun erfFor(value: Any): Any
+    fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray = error("Only supported for INT, BYTE and UBYTE types")
+    fun dequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, axis: Int? = null): NumberNDArray = error("Only supported for BYTE and UBYTE types")
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
@@ -116,8 +112,6 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
 
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray
-
-    fun erf(): MutableNumberNDArray
 
     operator fun plusAssign(other: NDArray)
     operator fun minusAssign(other: NDArray)

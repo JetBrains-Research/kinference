@@ -3,9 +3,8 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
-import io.kinference.ndarray.arrays.MutableNumberNDArray
-import io.kinference.ndarray.arrays.NDArray
 import kotlin.time.ExperimentalTime
 
 sealed class Erf(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
@@ -31,5 +30,5 @@ class ErfVer9(name: String, attributes: Map<String, Attribute<Any>> = emptyMap()
         private val INFO = OperatorInfo("Erf", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = (input.toMutable() as MutableNumberNDArray).erf()
+    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = (input as NumberNDArray).erf()
 }

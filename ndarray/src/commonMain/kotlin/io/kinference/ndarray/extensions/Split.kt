@@ -52,7 +52,7 @@ fun NDArray.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true):
 }
 
 fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableNDArray {
-    val dst = this.allocateNDArray(splitStrides)
+    val dst = allocateNDArray(type, splitStrides)
     val len = beforeAxisDims * fragmentSize
     if (fromAxisDims == fragmentSize) {
         dst.copyFrom(0, this, 0, len)
@@ -73,7 +73,7 @@ fun NDArray.splitParts(parts: Int, strides: Strides): List<MutableNDArray> {
     var offset = 0
     val partSize = strides.linearSize
     return List(parts) {
-        val newArray = allocateNDArray(strides)
+        val newArray = allocateNDArray(type, strides)
         newArray.copyFrom(0, this, offset, offset + partSize)
         offset += partSize
         newArray
