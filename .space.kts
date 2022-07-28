@@ -15,13 +15,13 @@ job("KInference / Build and Test") {
 
         shellScript("Run tests") {
             content = """
-                xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest -x inference:inference-ort-gpu:jvmTest -x adapters:kmath:adapter-kmath-ort-gpu:jvmTest --console=plain
+                xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest --console=plain
             """.trimIndent()
         }
 
         shellScript("Run heavy tests") {
             content = """
-                xvfb-run --auto-servernum ./gradlew -Pci jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest -x inference:inference-ort-gpu:jvmHeavyTest --console=plain
+                xvfb-run --auto-servernum ./gradlew -Pci jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest --console=plain
             """.trimIndent()
         }
     }
