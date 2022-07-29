@@ -13,7 +13,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-data
-          key: test-data
+          key: test-data-${{ hashFiles('buildSrc/src/main/**/s3/S3Dependency.kt') }}
 
 
       - name: Set up JDK 11
@@ -34,7 +34,7 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest --console=plain
+        run: xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest jsTest --console=plain
 
       - name: Run heavy tests
         env:
