@@ -110,7 +110,7 @@ class TensorProto(
 
         private fun makeArray(arrayFormat: ArrayFormat, type: DataType, shape: IntArray, init: (Int) -> Any) = when (arrayFormat) {
             ArrayFormat.TILED -> createTiledArray(type.resolveLocalDataType(), shape, init)
-            ArrayFormat.PRIMITIVE -> createPrimitiveArray(type.resolveLocalDataType(), shape, init)
+            ArrayFormat.PRIMITIVE -> createPrimitiveArray(type.resolveLocalDataType(), shape.fold(1, Int::times), init)
             ArrayFormat.OTHER -> error("Cannot read the array. Please, specify tensor backing array type as either TILED or PRIMITIVE")
         }
 

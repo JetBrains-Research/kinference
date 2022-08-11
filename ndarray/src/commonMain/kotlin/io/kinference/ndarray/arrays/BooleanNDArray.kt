@@ -60,6 +60,16 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(newArray, newStrides)
     }
 
+    override fun get(index: IntArray): Boolean {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
+    }
+
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as Boolean
+    }
+
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
@@ -212,7 +222,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         val ndIndexSize = shape.size
         var totalElements = 0
         val inputPointer = array.pointer()
-        val indicesArray = LongArray(linearSize * ndIndexSize)
+        val indicesArray = IntArray(linearSize * ndIndexSize)
         this.ndIndexed { ndIndex ->
             if (inputPointer.getAndIncrement()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
@@ -224,7 +234,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         val resultPointer = indicesByDim.pointer()
         for (i in 0 until ndIndexSize)
             for (j in 0 until totalElements) {
-                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.set(indicesArray[j * ndIndexSize + i].toLong())
                 resultPointer.increment()
             }
         return LongNDArray(indicesByDim, nonZeroStrides)

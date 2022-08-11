@@ -11,8 +11,8 @@ import io.kinference.types.ValueTypeInfo
 import io.kinference.data.ONNXDataType
 import io.kinference.kmath.KIKMathData.*
 import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.ndarray.extensions.createNDArray
+import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.*
 import io.kinference.utils.ArrayAssertions
@@ -31,7 +31,7 @@ class KIKMathAdapterTest {
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedTensor = KIKMathTensorAdapter.toONNXData(KMathTensor("test", kmathArray))
-        val expectedTensor = createNDArray(DataType.INT, createTiledArray(shape, array), shape).asTensor("test")
+        val expectedTensor = createNDArray(DataType.INT, tiledFromPrimitiveArray(shape, array), shape).asTensor("test")
         assertKIEquals(expectedTensor, convertedTensor)
     }
 
@@ -79,7 +79,7 @@ class KIKMathAdapterTest {
     fun test_kmath_adapter_convert_from_onnx_tensor() {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
-        val tensor = createNDArray(DataType.INT, createTiledArray(shape, array), shape).asTensor()
+        val tensor = createNDArray(DataType.INT, tiledFromPrimitiveArray(shape, array), shape).asTensor()
         val expectedArray = KMathTensor("", NDBuffer(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
         val convertedArray = KIKMathTensorAdapter.fromONNXData(tensor)
         NDStructure.contentEquals(expectedArray.data, convertedArray.data)

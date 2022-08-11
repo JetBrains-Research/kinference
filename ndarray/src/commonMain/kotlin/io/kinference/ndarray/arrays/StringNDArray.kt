@@ -18,6 +18,16 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[0]
     }
 
+    override fun get(index: IntArray): String {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
+    }
+
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as String
+    }
+
     override fun view(vararg axes: Int): NDArray {
         TODO("Not yet implemented")
     }

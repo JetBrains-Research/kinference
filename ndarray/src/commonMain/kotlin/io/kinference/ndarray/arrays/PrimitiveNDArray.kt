@@ -62,6 +62,16 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     final override var strides: Strides = strides
         protected set
 
+    override fun get(index: IntArray): PrimitiveType {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
+    }
+
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as PrimitiveType
+    }
+
 
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
@@ -1196,7 +1206,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val ndIndexSize = shape.size
         var totalElements = 0
         val inputPointer = array.pointer()
-        val indicesArray = LongArray(linearSize * ndIndexSize)
+        val indicesArray = IntArray(linearSize * ndIndexSize)
         this.ndIndexed { ndIndex ->
             if (inputPointer.getAndIncrement() != (0).toPrimitive()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
@@ -1208,7 +1218,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val resultPointer = indicesByDim.pointer()
         for (i in 0 until ndIndexSize)
             for (j in 0 until totalElements) {
-                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.set(indicesArray[j * ndIndexSize + i].toLong())
                 resultPointer.increment()
             }
         return LongNDArray(indicesByDim, nonZeroStrides)
@@ -1637,6 +1647,14 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     companion object {
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return PrimitiveNDArray(strides).apply { this.ndIndexed { init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return PrimitiveNDArray(shape).apply { this.ndIndexed { init(it) } }
         }
     }
 }

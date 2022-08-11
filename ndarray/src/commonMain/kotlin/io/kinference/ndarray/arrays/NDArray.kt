@@ -21,6 +21,9 @@ interface NDArray {
     val rank: Int
         get() = shape.size
 
+    operator fun get(index: IntArray): Any
+    operator fun set(index: IntArray, value: Any)
+
     fun singleValue(): Any
 
     fun view(vararg axes: Int): NDArray
@@ -52,6 +55,7 @@ interface MutableNDArray : NDArray {
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
+
     fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
     fun clean()
