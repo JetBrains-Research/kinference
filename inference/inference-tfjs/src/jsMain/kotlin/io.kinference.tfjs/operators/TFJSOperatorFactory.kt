@@ -32,6 +32,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
+        "Expand" -> Expand(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
