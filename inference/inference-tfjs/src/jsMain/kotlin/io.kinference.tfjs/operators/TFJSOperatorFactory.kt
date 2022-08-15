@@ -12,6 +12,7 @@ import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
+import io.kinference.tfjs.operators.logical.Less
 import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
@@ -52,6 +53,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Slice" -> Slice(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
+        "Less" -> Less(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }

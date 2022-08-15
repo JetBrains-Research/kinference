@@ -10,8 +10,8 @@ import io.kinference.ndarray.arrays.pointers.acceptDouble
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
+import kotlin.time.ExperimentalTime
 
 sealed class Less(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -19,7 +19,7 @@ sealed class Less(name: String, info: OperatorInfo, attributes: Map<String, Attr
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in LessVer7.VERSION.asRange() -> LessVer7(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Greater operator: $version")
+            else -> error("Unsupported version of Less operator: $version")
         }
     }
 }
@@ -39,7 +39,7 @@ class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 7)
-        private val INFO = OperatorInfo("Greater", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("Less", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
         infix fun NDArray.less(other: NDArray): NDArray {
             require(this.type == other.type) { "Arrays must have same types" }
