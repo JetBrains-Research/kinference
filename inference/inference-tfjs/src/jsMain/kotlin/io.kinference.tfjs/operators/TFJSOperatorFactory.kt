@@ -4,7 +4,6 @@ import io.kinference.attribute.Attribute
 import io.kinference.attribute.AttributeFactory
 import io.kinference.graph.Graph
 import io.kinference.operator.*
-import io.kinference.operator.Operator
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
@@ -34,6 +33,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)
+        "Range" -> Range(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
