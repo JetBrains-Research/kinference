@@ -51,6 +51,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "Slice" -> Slice(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
+        "Tile" -> Tile(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }

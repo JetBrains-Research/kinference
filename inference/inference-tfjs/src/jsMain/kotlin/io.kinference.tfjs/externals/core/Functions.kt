@@ -67,9 +67,13 @@ internal external val slice: (x: NDArrayTFJS, begin: Array<Int>, size: Array<Int
 
 internal external val reverse: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
 
-internal external val stridedSlice: (x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
-                                     endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int) -> NDArrayTFJS
+internal external val stridedSlice: (
+    x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
+    endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int
+) -> NDArrayTFJS
 
 internal external val squeeze: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
 
 internal external val argMax: (x: NDArrayTFJS, axis: Int) -> NDArrayTFJS
+
+internal external val tile: (x: NDArrayTFJS, reps: Array<Int>) -> NDArrayTFJS

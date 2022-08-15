@@ -122,3 +122,5 @@ fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = st
 fun NDArrayTFJS.squeeze(axes: Array<Int>? = null) = squeeze(this, axes)
 
 fun NDArrayTFJS.argmax(axis: Int = 0) = argMax(this, axis)
+
+fun NDArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
