@@ -30,6 +30,7 @@ external fun tensor(values: Array<Float>, shape: Array<Int>, dtype: String): NDA
 external fun tensor(values: Array<Double>, shape: Array<Int>, dtype: String): NDArrayTFJS
 external fun tensor(values: Array<Byte>, shape: Array<Int>, dtype: String): NDArrayTFJS
 external fun tensor(values: Array<UByte>, shape: Array<Int>, dtype: String): NDArrayTFJS
+external fun tensor(values: Array<Boolean>, shape: Array<Int>, dtype: String): NDArrayTFJS
 
 external fun range(start: Number, stop: Number, step: Number?, dtype: String?): NDArrayTFJS
 

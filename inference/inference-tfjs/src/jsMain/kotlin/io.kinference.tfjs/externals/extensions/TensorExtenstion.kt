@@ -13,6 +13,8 @@ fun NDArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntAr
 
 fun NDArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()
 
+fun NDArrayTFJS.dataBool() = dataSync().unsafeCast<Array<Boolean>>()
+
 operator fun NDArrayTFJS.plus(other: NDArrayTFJS) = io.kinference.tfjs.externals.core.add(this, other)
 
 operator fun NDArrayTFJS.minus(other: NDArrayTFJS) = sub(this, other)
@@ -124,3 +126,5 @@ fun NDArrayTFJS.squeeze(axes: Array<Int>? = null) = squeeze(this, axes)
 fun NDArrayTFJS.argmax(axis: Int = 0) = argMax(this, axis)
 
 fun NDArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
+
+fun NDArrayTFJS.less(other: NDArrayTFJS) = less(this, other)
