@@ -125,6 +125,8 @@ fun NDArrayTFJS.slice(begin: Array<Int>) = slice(this, begin, null)
 
 fun NDArrayTFJS.reverse(axes: Array<Int>) = reverse(this, axes)
 
+fun NDArrayTFJS.reverse(axis: Int) = reverse(this, arrayOf(axis))
+
 fun NDArrayTFJS.reverse() = reverse(this, null)
 
 fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = stridedSlice(this, start, end, step, 0, 0, 0, 0, 0)
