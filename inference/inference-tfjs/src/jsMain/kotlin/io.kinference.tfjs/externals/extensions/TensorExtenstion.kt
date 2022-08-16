@@ -9,6 +9,8 @@ fun tensor(values: IntArray, shape: Array<Int>, dtype: String): NDArrayTFJS = te
 
 fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): NDArrayTFJS = tensor(values.unsafeCast<Uint8Array>(), shape, dtype)
 
+fun scalar(value: Boolean) = scalar(value, "bool")
+
 fun NDArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntArray>()
 
 fun NDArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()
@@ -58,6 +60,8 @@ fun NDArrayTFJS.transpose(permutation: Array<Int>) = transpose(this, permutation
 fun NDArrayTFJS.unstack(axis: Int = 0) = unstack(this, axis)
 
 fun Array<NDArrayTFJS>.stack(axis: Int = 0) = stack(this, axis)
+
+fun Collection<NDArrayTFJS>.stack(axis: Int = 0) = this.toTypedArray().stack(axis)
 
 fun NDArrayTFJS.stack(vararg tensors: NDArrayTFJS, axis: Int = 0) = stack(arrayOf(this, *tensors), axis)
 

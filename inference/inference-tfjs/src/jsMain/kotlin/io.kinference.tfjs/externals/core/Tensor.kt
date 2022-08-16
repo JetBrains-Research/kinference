@@ -37,3 +37,4 @@ external fun range(start: Number, stop: Number, step: Number?, dtype: String?): 
 external fun fill(shape: Array<Int>, value: Number, dtype: String): NDArrayTFJS
 
 external fun scalar(value: Number, dtype: String): NDArrayTFJS
+internal external fun scalar(value: Boolean, dtype: String): NDArrayTFJS

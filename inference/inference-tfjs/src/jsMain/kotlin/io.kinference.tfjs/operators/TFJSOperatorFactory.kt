@@ -9,6 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.flow.Loop
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
@@ -31,6 +32,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "Add" -> Add(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
+        "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
@@ -54,6 +56,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
+        "Loop" -> Loop(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }
