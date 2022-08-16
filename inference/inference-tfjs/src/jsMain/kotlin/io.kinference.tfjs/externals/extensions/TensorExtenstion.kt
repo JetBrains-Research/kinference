@@ -11,6 +11,10 @@ fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): NDArrayTFJS = 
 
 fun scalar(value: Boolean) = scalar(value, "bool")
 
+fun scalar(value: Float) = scalar(value, "float32")
+
+fun scalar(value: Int) = scalar(value, "int32")
+
 fun NDArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntArray>()
 
 fun NDArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()

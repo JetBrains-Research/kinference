@@ -48,6 +48,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
+        "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Gather" -> Gather(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Concat" -> Concat(name, version, attributes, inputs, outputs)
