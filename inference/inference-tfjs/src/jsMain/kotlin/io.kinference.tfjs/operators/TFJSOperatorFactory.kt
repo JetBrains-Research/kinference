@@ -10,6 +10,7 @@ import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.operators.flow.Loop
+import io.kinference.tfjs.operators.flow.Where
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
@@ -59,6 +60,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
         "Loop" -> Loop(name, version, attributes, inputs, outputs)
+        "Where" -> Where(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }

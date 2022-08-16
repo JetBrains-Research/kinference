@@ -81,3 +81,5 @@ internal external val tile: (x: NDArrayTFJS, reps: Array<Int>) -> NDArrayTFJS
 internal external val less: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val equal: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val where: (condition: NDArrayTFJS, a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
