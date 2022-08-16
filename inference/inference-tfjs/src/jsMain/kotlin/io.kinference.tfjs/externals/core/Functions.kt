@@ -79,3 +79,5 @@ internal external val argMax: (x: NDArrayTFJS, axis: Int) -> NDArrayTFJS
 internal external val tile: (x: NDArrayTFJS, reps: Array<Int>) -> NDArrayTFJS
 
 internal external val less: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val equal: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS

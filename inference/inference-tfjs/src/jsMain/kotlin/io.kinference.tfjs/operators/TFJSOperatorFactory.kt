@@ -13,6 +13,7 @@ import io.kinference.tfjs.operators.flow.Loop
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
+import io.kinference.tfjs.operators.logical.Equal
 import io.kinference.tfjs.operators.logical.Less
 import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
@@ -35,6 +36,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
+        "Equal" -> Equal(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)

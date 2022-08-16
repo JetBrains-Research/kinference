@@ -132,3 +132,5 @@ fun NDArrayTFJS.argmax(axis: Int = 0) = argMax(this, axis)
 fun NDArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
 
 fun NDArrayTFJS.less(other: NDArrayTFJS) = less(this, other)
+
+fun NDArrayTFJS.equal(other: NDArrayTFJS) = equal(this, other)
