@@ -4,10 +4,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.primitives.types.DataType
 
-fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
-    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
-}
-
 private fun computeGatherShape(shape: IntArray, axis: Int, indices: NDArray): IntArray {
     val newShape = IntArray(shape.size + indices.rank - 1)
     shape.copyInto(newShape, 0, 0, axis)
@@ -17,7 +13,7 @@ private fun computeGatherShape(shape: IntArray, axis: Int, indices: NDArray): In
     return newShape
 }
 
-fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
+private fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArray {
     val newShape = computeGatherShape(shape, axis, indices)
     return allocateNDArray(type, newShape)
 }

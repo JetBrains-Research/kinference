@@ -7,6 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -56,6 +57,6 @@ class DequantizeLinearVer1(name: String, attributes: Map<String, Attribute<Any>>
 
         require(zeroPoint == null || scale.shape.contentEquals(zeroPoint.shape)) { "Zero point and scale tensors should have the same dims" }
 
-        return listOf(input.dequantize(zeroPoint as? NumberNDArray, scale, axis).asTensor("y"))
+        return listOf(input.tryDequantize(zeroPoint as? NumberNDArray, scale, axis).asTensor("y"))
     }
 }

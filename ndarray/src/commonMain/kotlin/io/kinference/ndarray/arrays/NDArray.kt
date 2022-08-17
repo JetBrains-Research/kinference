@@ -79,8 +79,8 @@ interface NumberNDArray : NDArray {
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
     fun erf(): NumberNDArray
 
-    fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray = error("Only supported for INT, BYTE and UBYTE types")
-    fun dequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, axis: Int? = null): NumberNDArray = error("Only supported for BYTE and UBYTE types")
+    //fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray = error("Operation is not supported for $type")
+   // fun dequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, axis: Int? = null): NumberNDArray = error("Operation is not supported for $type")
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray

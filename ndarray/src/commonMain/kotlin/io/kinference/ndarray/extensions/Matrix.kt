@@ -90,8 +90,8 @@ fun quantizeMatMul(
             }
         }
     } else {
-        val leftDequantized = left.dequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
-        val rightDequantized = right.dequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
+        val leftDequantized = left.tryDequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
+        val rightDequantized = right.tryDequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
 
         leftDequantized.matmul(rightDequantized, dest) { other, dest -> this.dot(other, dest, coroutineContext) }
     }

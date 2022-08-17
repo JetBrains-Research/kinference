@@ -60,8 +60,8 @@ class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<A
 
         val bias = inputs[6]?.data as? FloatNDArray
 
-        val leftDequant = left.dequantize(leftZeroPoint, leftScale)
-        val rightDequant = right.dequantize(rightZeroPoint, rightScale)
+        val leftDequant = left.tryDequantize(leftZeroPoint, leftScale)
+        val rightDequant = right.tryDequantize(rightZeroPoint, rightScale)
 
         val outputArray = leftDequant.matmul(rightDequant, contexts.execution.asCoroutineContext())
 

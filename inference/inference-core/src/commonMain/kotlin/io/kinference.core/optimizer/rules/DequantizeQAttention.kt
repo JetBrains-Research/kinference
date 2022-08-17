@@ -7,6 +7,7 @@ import io.kinference.core.operators.quantization.DynamicQuantizeLinear
 import io.kinference.graph.Graph
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
 import io.kinference.optimizer.*
 
@@ -22,7 +23,7 @@ object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttentio
         val weightsZero = graph.findInitializer(op.inputs[7])!!.data as NumberNDArray
         val numHeads = op.getAttribute<Number>("num_heads").toInt()
 
-        val weights = (weightsQuant.data as NumberNDArray).dequantize(weightsZero, weightsScale).asTensor("${PREFIX}_${weightsQuant.name}")
+        val weights = (weightsQuant.data as NumberNDArray).tryDequantize(weightsZero, weightsScale).asTensor("${PREFIX}_${weightsQuant.name}")
         graph.addInitializer(weights)
         graph.addInitializer(AttentionContext.prepareWeights(weights, numHeads))
         inputs.add(1, weights.name!!)

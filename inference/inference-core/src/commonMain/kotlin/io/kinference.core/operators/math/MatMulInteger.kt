@@ -13,6 +13,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.extensions.tryZeroPoint
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
@@ -81,7 +82,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
             val preparedTensor = if (zeroPoint == null)
                 (tensor.data as NumberNDArray).toIntNDArray()
             else
-                (tensor.data as NumberNDArray).withZeroPoint(zeroPoint.data as NumberNDArray)
+                (tensor.data as NumberNDArray).tryZeroPoint(zeroPoint.data as NumberNDArray)
 
             return preparedTensor.asTensor("prepared_${tensor.name}")
         }

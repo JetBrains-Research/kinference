@@ -26,6 +26,10 @@ fun NDArray.indexAxis(axis: Int): Int {
     return if (axis < 0) rank + axis else axis
 }
 
+fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
+}
+
 val NDArray.rows: Array<MutableNDArray>
     get() = Array(shape[0]) { i -> row(i) }
 
@@ -183,4 +187,23 @@ fun NDArray.isTransposeReshape(permutation: IntArray): Boolean {
         lastPermutedAxis = permutation[idx]
     }
     return true
+}
+
+fun NumberNDArray.tryDequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, axis: Int? = null): FloatNDArray {
+    require(this.type == zeroPoint?.type) { "Input data and zero point should have the same data type." }
+    return when {
+        this is ByteNDArray && zeroPoint is ByteNDArray -> this.dequantize(zeroPoint, scale, axis)
+        this is UByteNDArray && zeroPoint is UByteNDArray -> this.dequantize(zeroPoint, scale, axis)
+        else -> error("Dequantization is only supported for BYTE and UBYTE types. Current type = ${this.type}.")
+    }
+}
+
+fun NumberNDArray.tryZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
+    require(this.type == zeroPoint.type) { "Input data and zero point should have the same data type." }
+    return when {
+        this is ByteNDArray && zeroPoint is ByteNDArray -> this.withZeroPoint(zeroPoint)
+        this is UByteNDArray && zeroPoint is UByteNDArray -> this.withZeroPoint(zeroPoint)
+        this is IntNDArray && zeroPoint is IntNDArray -> this.withZeroPoint(zeroPoint)
+        else -> error("Zero point is only supported for BYTE, UBYTE and INT types. Current type = ${this.type}.")
+    }
 }
