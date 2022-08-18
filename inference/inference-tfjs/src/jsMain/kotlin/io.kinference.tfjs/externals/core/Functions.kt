@@ -95,3 +95,5 @@ internal external val logicalNot: (x: NDArrayTFJS) -> NDArrayTFJS
 internal external val pad: (x: NDArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> NDArrayTFJS
 
 internal external val gatherND: (x: NDArrayTFJS, indices: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val leakyRelu: (x: NDArrayTFJS, alpha: Number) -> NDArrayTFJS

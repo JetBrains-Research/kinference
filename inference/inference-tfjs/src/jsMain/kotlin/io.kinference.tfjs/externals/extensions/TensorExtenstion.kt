@@ -161,3 +161,5 @@ fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(th
 fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Boolean) = pad(this, paddings, constantValue)
 
 fun NDArrayTFJS.gatherNd(indices: NDArrayTFJS) = gatherND(this, indices)
+
+fun NDArrayTFJS.leakyRelu(alpha: Number) = leakyRelu(this, alpha)

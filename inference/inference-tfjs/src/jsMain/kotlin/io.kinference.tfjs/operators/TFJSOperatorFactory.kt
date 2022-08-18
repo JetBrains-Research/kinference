@@ -64,6 +64,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Where" -> Where(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
+        "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }
