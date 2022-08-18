@@ -17,6 +17,11 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     constructor(strides: Strides) : this(PrimitiveTiledArray(strides), strides)
     constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
 
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as PrimitiveType
+    }
+
     override fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
         val offsetBlocks = offset / array.blockSize

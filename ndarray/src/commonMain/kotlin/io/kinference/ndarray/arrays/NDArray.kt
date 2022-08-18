@@ -22,7 +22,6 @@ interface NDArray {
         get() = shape.size
 
     operator fun get(index: IntArray): Any
-    operator fun set(index: IntArray, value: Any)
 
     fun singleValue(): Any
 
@@ -51,6 +50,8 @@ interface NDArray {
 }
 
 interface MutableNDArray : NDArray {
+    operator fun set(index: IntArray, value: Any)
+
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))

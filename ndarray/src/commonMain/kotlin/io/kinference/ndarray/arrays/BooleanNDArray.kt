@@ -65,11 +65,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array[linearIndex]
     }
 
-    override fun set(index: IntArray, value: Any) {
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
-        array[linearIndex] = value as Boolean
-    }
-
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
@@ -405,6 +400,11 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
+
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as Boolean
+    }
 
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }

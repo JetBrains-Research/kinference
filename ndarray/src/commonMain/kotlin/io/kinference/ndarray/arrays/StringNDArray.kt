@@ -23,11 +23,6 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[linearIndex]
     }
 
-    override fun set(index: IntArray, value: Any) {
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
-        array[linearIndex] = value as String
-    }
-
     override fun view(vararg axes: Int): NDArray {
         TODO("Not yet implemented")
     }
@@ -99,6 +94,11 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
 
 class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(Array(shape.reduce(Int::times)) { "" }, Strides(shape))
+
+    override fun set(index: IntArray, value: Any) {
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as String
+    }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         TODO("Not yet implemented")

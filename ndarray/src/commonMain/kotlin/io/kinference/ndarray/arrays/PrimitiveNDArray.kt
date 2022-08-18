@@ -67,12 +67,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return array[linearIndex]
     }
 
-    override fun set(index: IntArray, value: Any) {
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
-        array[linearIndex] = value as PrimitiveType
-    }
-
-
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
