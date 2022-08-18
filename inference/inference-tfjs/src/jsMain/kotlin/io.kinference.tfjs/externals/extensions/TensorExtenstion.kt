@@ -57,6 +57,8 @@ fun NDArrayTFJS.sqrt() = io.kinference.tfjs.externals.core.sqrt(this)
 
 fun Array<NDArrayTFJS>.sum() = addN(this)
 
+fun NDArrayTFJS.add(tensors: Array<NDArrayTFJS>) = addN(arrayOf(this, *tensors))
+
 fun NDArrayTFJS.add(vararg tensors: NDArrayTFJS) = addN(arrayOf(this, *tensors))
 
 fun NDArrayTFJS.transpose(permutation: Array<Int>) = transpose(this, permutation)
@@ -139,6 +141,10 @@ fun NDArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
 
 fun NDArrayTFJS.less(other: NDArrayTFJS) = less(this, other)
 
+fun NDArrayTFJS.greater(other: NDArrayTFJS) = greater(this, other)
+
+fun NDArrayTFJS.greaterEqual(other: NDArrayTFJS) = greaterEqual(this, other)
+
 fun NDArrayTFJS.equal(other: NDArrayTFJS) = equal(this, other)
 
 fun NDArrayTFJS.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition, this, other)
@@ -149,3 +155,9 @@ fun NDArrayTFJS.not(): NDArrayTFJS {
     require(this.dtype == "bool") { "Accepted only bool type" }
     return logicalNot(this)
 }
+
+fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(this, paddings, constantValue)
+
+fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Boolean) = pad(this, paddings, constantValue)
+
+fun NDArrayTFJS.gatherNd(indices: NDArrayTFJS) = gatherND(this, indices)
