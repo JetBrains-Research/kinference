@@ -90,7 +90,10 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
             require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
-            val modified = inputs.drop(2).requireNoNulls().toMutableList()
+            val modified = inputs.drop(2).requireNoNulls().map {
+                it.data.clone().asTensor(it.name)
+            }.toMutableList()
+
             val modifiedCount = modified.size
 
             val scansCount = body.outputs.size - 1 - modifiedCount
@@ -134,7 +137,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             return@tidy (modified.map { it.data } + stackedScans).toTypedArray()
         }
 
-        return outputs.zip(body.outputs.drop(1)).map { (data, info) -> data.asTensor(info.name) }
+        return outputs.zip(this.outputs).map { (data, name) -> data.asTensor(name) }
     }
 
 }

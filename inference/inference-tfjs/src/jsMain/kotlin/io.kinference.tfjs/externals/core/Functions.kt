@@ -83,3 +83,5 @@ internal external val less: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 internal external val equal: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val where: (condition: NDArrayTFJS, a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val clone: (x: NDArrayTFJS) -> NDArrayTFJS

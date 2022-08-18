@@ -142,3 +142,5 @@ fun NDArrayTFJS.less(other: NDArrayTFJS) = less(this, other)
 fun NDArrayTFJS.equal(other: NDArrayTFJS) = equal(this, other)
 
 fun NDArrayTFJS.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition, this, other)
+
+fun NDArrayTFJS.clone() = clone(this)
