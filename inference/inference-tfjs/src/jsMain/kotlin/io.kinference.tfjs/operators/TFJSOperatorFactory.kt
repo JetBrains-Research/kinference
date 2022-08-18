@@ -14,8 +14,7 @@ import io.kinference.tfjs.operators.flow.Where
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
-import io.kinference.tfjs.operators.logical.Equal
-import io.kinference.tfjs.operators.logical.Less
+import io.kinference.tfjs.operators.logical.*
 import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
@@ -63,6 +62,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Less" -> Less(name, version, attributes, inputs, outputs)
         "Loop" -> Loop(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
+        "Not" -> Not(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }

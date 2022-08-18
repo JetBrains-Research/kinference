@@ -144,3 +144,8 @@ fun NDArrayTFJS.equal(other: NDArrayTFJS) = equal(this, other)
 fun NDArrayTFJS.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition, this, other)
 
 fun NDArrayTFJS.clone() = clone(this)
+
+fun NDArrayTFJS.not(): NDArrayTFJS {
+    require(this.dtype == "bool") { "Accepted only bool type" }
+    return logicalNot(this)
+}
