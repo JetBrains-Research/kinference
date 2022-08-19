@@ -6,6 +6,7 @@ import io.kinference.BackendInfo
 import io.kinference.InferenceEngine
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
+import io.kinference.model.Model
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.ort.model.ORTModel
 import io.kinference.protobuf.ProtobufReader
@@ -33,7 +34,12 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         options.addCUDA()
     }
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
+    override fun loadModel(bytes: ByteArray): Model<ORTData<*>> {
+        val session = env.createSession(bytes)
+        return ORTModel(session)
+    }
+
+    fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
         if (optimize)
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         else
@@ -42,11 +48,16 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
-    override suspend fun loadModel(path: Path, optimize: Boolean): ORTModel {
+    fun loadModel(path: Path, optimize: Boolean): ORTModel {
         if (optimize)
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         else
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+        val session = env.createSession(path.toString(), options)
+        return ORTModel(session)
+    }
+
+    override suspend fun loadModel(path: Path): Model<ORTData<*>> {
         val session = env.createSession(path.toString(), options)
         return ORTModel(session)
     }

@@ -47,6 +47,28 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
+    fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
+        val env = OrtEnvironment.getEnvironment()
+        val options = OrtSession.SessionOptions()
+        if (optimize)
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        else
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+        val session = env.createSession(bytes)
+        return ORTModel(session)
+    }
+
+    fun loadModel(path: Path, optimize: Boolean): ORTModel {
+        val env = OrtEnvironment.getEnvironment()
+        val options = OrtSession.SessionOptions()
+        if (optimize)
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        else
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+        val session = env.createSession(path.toString(), options)
+        return ORTModel(session)
+    }
+
     override suspend fun loadData(path: Path, type: ONNXDataType): ORTData<*> = loadData(CommonDataLoader.bytes(path), type)
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> = when (type) {
