@@ -80,6 +80,7 @@ class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.Tenso
                 DataType.INT32 -> invoke((value as IntNDArray).array.toArray(), resolvedType, value.shape, name)
                 DataType.UINT8 -> invoke((value as UByteNDArray).array.toArray(), resolvedType, value.shape, name)
                 DataType.INT64 -> invoke((value as LongNDArray).array.toArray(), resolvedType, value.shape, name)
+                DataType.BOOL  -> invoke((value as BooleanNDArray).array.toArray(), resolvedType, value.shape, name)
                 else -> error("Unsupported type")
             }
         }

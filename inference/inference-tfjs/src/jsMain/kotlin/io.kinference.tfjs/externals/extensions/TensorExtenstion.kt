@@ -9,6 +9,8 @@ fun tensor(values: IntArray, shape: Array<Int>, dtype: String): NDArrayTFJS = te
 
 fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): NDArrayTFJS = tensor(values.unsafeCast<Uint8Array>(), shape, dtype)
 
+fun tensor(values: Array<Boolean>, shape: Array<Int>) = tensor(values, shape, "bool")
+
 fun scalar(value: Boolean) = scalar(value, "bool")
 
 fun scalar(value: Float) = scalar(value, "float32")
