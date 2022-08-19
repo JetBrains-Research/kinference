@@ -2,11 +2,18 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.primitives.types.DataType
 
+private fun emptyStringArrFromShape(shape: IntArray) = Array(shape.fold(1, Int::times)) { "" }
+private fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times)) { "" }
+
 open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
-    constructor(shape: IntArray) : this(Array(shape.reduce(Int::times)) { "" }, Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> String) : this(Array<String>(shape.reduce(Int::times), init), Strides(shape))
+    constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(emptyStringArrFromShape(strides.shape), strides)
+    constructor(strides: Strides, init: (Int) -> String) : this(initStringArr(strides.shape, init), strides)
 
     override val type: DataType = DataType.ALL
 
@@ -89,11 +96,27 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> String): StringNDArray {
+            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> String): StringNDArray {
+            return MutableStringNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): StringNDArray {
+            return StringNDArray(emptyStringArrFromShape(shape), Strides(shape))
+        }
     }
 }
 
+operator fun StringNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> String): StringNDArray {
+    return StringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+}
+
 class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
-    constructor(shape: IntArray) : this(Array(shape.reduce(Int::times)) { "" }, Strides(shape))
+    constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
 
     override fun set(index: IntArray, value: Any) {
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }

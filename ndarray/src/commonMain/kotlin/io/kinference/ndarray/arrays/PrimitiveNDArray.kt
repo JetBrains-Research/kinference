@@ -12,7 +12,7 @@ import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.js.JsName
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -62,7 +62,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     final override var strides: Strides = strides
         protected set
 
-    override fun get(index: IntArray): PrimitiveType {
+    override operator fun get(index: IntArray): PrimitiveType {
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         return array[linearIndex]
     }
@@ -1590,13 +1590,21 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-            return PrimitiveNDArray(strides).apply { this.ndIndexed { init(it) } }
+            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-            return PrimitiveNDArray(shape).apply { this.ndIndexed { init(it) } }
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): PrimitiveNDArray {
+            return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
         }
     }
+}
+
+operator fun PrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+    return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
 }
 
 @GenerateNameFromPrimitives

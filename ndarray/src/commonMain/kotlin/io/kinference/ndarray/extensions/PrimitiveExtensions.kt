@@ -6,14 +6,17 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
-import io.kinference.ndarray.arrays.tiled.FloatTiledArray
-import io.kinference.ndarray.arrays.tiled.IntTiledArray
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.*
+
+operator fun PrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> PrimitiveType): PrimitiveNDArray {
+    return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+}
 
 fun erf(value: PrimitiveType): PrimitiveType {
     val sign = value.toDouble().sign

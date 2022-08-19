@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import io.kinference.primitives.types.PrimitiveType
 import kotlin.math.abs
 import kotlin.ranges.reversed
 
@@ -395,7 +396,23 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
                 BooleanNDArray(strides) { pointer.getAndIncrement() }
             }
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): BooleanNDArray {
+            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): BooleanNDArray {
+            return MutableBooleanNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): BooleanNDArray {
+            return BooleanNDArray(BooleanTiledArray(shape), Strides(shape))
+        }
     }
+}
+
+operator fun BooleanNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> Boolean): BooleanNDArray {
+    return BooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {

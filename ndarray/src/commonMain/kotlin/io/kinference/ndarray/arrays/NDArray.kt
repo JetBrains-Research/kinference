@@ -121,3 +121,6 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     operator fun timesAssign(other: NDArray)
     operator fun divAssign(other: NDArray)
 }
+
+operator fun NDArray.get(vararg index: Int) = this[index]
+operator fun MutableNDArray.set(vararg index: Int, value: Any) { this[index] = value }
