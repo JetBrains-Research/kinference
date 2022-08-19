@@ -10,7 +10,6 @@ import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveType
 import kotlin.math.abs
 import kotlin.ranges.reversed
 
@@ -62,6 +61,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     override fun get(index: IntArray): Boolean {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         return array[linearIndex]
     }
@@ -417,9 +417,13 @@ operator fun BooleanNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> B
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
-    constructor(strides: Strides) : this(BooleanTiledArray(strides.shape), strides)
+    constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(BooleanTiledArray(strides), strides)
+    constructor(strides: Strides, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
 
     override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         array[linearIndex] = value as Boolean
     }
@@ -543,5 +547,21 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         fun scalar(value: Boolean): MutableBooleanNDArray {
             return MutableBooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): MutableBooleanNDArray {
+            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): MutableBooleanNDArray {
+            return MutableBooleanNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): MutableBooleanNDArray {
+            return MutableBooleanNDArray(BooleanTiledArray(shape), Strides(shape))
+        }
     }
+}
+
+operator fun MutableBooleanNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> Boolean): MutableNDArray {
+    return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
 }

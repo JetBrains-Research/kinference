@@ -4,8 +4,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.extensions.applyWithBroadcast
-import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 
@@ -18,6 +17,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
 
     override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         array[linearIndex] = value as PrimitiveType
     }
@@ -210,5 +210,20 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
+        operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+        }
     }
+}
+
+operator fun MutablePrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+    return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
 }

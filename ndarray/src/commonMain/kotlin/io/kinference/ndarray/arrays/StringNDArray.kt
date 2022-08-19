@@ -26,6 +26,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
     }
 
     override fun get(index: IntArray): String {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         return array[linearIndex]
     }
@@ -117,8 +118,13 @@ operator fun StringNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> St
 
 class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(emptyStringArrFromShape(strides.shape), strides)
+    constructor(strides: Strides, init: (Int) -> String) : this(initStringArr(strides.shape, init), strides)
 
     override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         array[linearIndex] = value as String
     }
@@ -160,5 +166,21 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         fun scalar(value: String): MutableStringNDArray {
             return MutableStringNDArray(arrayOf(value), Strides.EMPTY)
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> String): MutableStringNDArray {
+            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> String): MutableStringNDArray {
+            return MutableStringNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): MutableStringNDArray {
+            return MutableStringNDArray(emptyStringArrFromShape(shape), Strides(shape))
+        }
     }
+}
+
+operator fun MutableStringNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> String): MutableStringNDArray {
+    return MutableStringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
 }
