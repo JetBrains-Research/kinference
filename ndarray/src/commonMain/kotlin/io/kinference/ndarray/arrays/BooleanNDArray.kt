@@ -196,7 +196,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun expand(shape: IntArray): MutableNDArray {
         val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
-        val output = allocateNDArray(type, Strides(outputShape))
+        val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutableBooleanNDArray
             val input = inputs[0] as BooleanNDArray
@@ -301,7 +301,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = allocateNDArray(type, outputStrides) as BooleanNDArray
+        val outputArray = MutableBooleanNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {
@@ -400,6 +400,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
+    constructor(strides: Strides) : this(BooleanTiledArray(strides.shape), strides)
 
     override fun set(index: IntArray, value: Any) {
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }

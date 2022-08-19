@@ -17,7 +17,7 @@ class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroP
         destination: MutableNumberNDArray,
         executionContext: ExecutionContext?
     ) {
-        require(weights is QuantizedLSTMWeights) { "Unsupported operation" }
+        require(weights is QuantizedLSTMWeights) { "Cannot cast ${weights::class} to QuantizedLSTMWeights" }
         quantizeMatMul(
             data,
             weights.data,

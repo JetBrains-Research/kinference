@@ -755,7 +755,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val countDims = shape[actualAxis]
 
         val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
-        val outputArray = allocateNDArray(type, Strides(outputShape)) as PrimitiveNDArray
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         val inputPointer = this.array.pointer()
 
@@ -801,7 +801,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
 
         val outputShape = if (keepDims) outputShapeWithKeepDims else shape.sliceArray(shape.indices.minus(axesToReduce))
-        val outputArray = allocateNDArray(type, Strides(outputShape)) as PrimitiveNDArray
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         val axisToStop = axesToReduce.maxOrNull()!! + 1
         val blockToApply = computeBlockSize(fromDim = axisToStop)
@@ -845,7 +845,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val actualAxis = indexAxis(axis)
         val outputStrides = Strides(shape.copyOf().apply { set(actualAxis, k) })
 
-        val outputArray = allocateNDArray(type, outputStrides) as PrimitiveNDArray
+        val outputArray = PrimitiveNDArray(outputStrides)
         val indicesArray = MutableLongNDArray(outputStrides)
 
         val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
@@ -1125,7 +1125,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun expand(shape: IntArray): MutablePrimitiveNDArray {
         val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
-        val output = allocateNDArray(type, Strides(outputShape)) as MutablePrimitiveNDArray
+        val output = MutablePrimitiveNDArray(Strides(outputShape))
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutablePrimitiveNDArray
             val input = inputs[0] as PrimitiveNDArray
@@ -1171,7 +1171,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             outputShape[axis] += pad.first + pad.second
         }
 
-        val outputArray = allocateNDArray(type, Strides(outputShape)) as MutablePrimitiveNDArray
+        val outputArray = MutablePrimitiveNDArray(Strides(outputShape))
         val constant = (constantValue?.singleValue() ?: (0).toPrimitive()) as PrimitiveType
 
         fun recurrentCopyInput(axis: Int, input: PrimitiveNDArray, output: MutablePrimitiveNDArray) {
@@ -1350,7 +1350,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
                 this[idx] *= repeats[idx]
             }
         }
-        val outputArray = allocateNDArray(type, Strides(outputShape)) as PrimitiveNDArray
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         var axisToStop = -1
         for (idx in repeats.indices) {
@@ -1511,7 +1511,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = allocateNDArray(type, outputStrides) as PrimitiveNDArray
+        val outputArray = PrimitiveNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {

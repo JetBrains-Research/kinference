@@ -107,14 +107,14 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
-        val output = allocateNDArray(input.type, input.strides)
+        val output = MutableFloatNDArray(input.strides)
         input.normalize(
             skip = inputs[1]!!.data as FloatNDArray,
             gamma = inputs[2]!!.data as FloatNDArray,
             beta = inputs[3]!!.data as FloatNDArray,
             bias = inputs.getOrNull(4)?.data as FloatNDArray?,
             epsilon = epsilon,
-            dst = output as MutableFloatNDArray
+            dst = output
         )
         return listOf(output.asTensor())
     }
