@@ -65,6 +65,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
         "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
+        "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }
