@@ -31,7 +31,7 @@ internal external val mul: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val addN: (tensors: Array<NDArrayTFJS>) -> NDArrayTFJS
 
-internal external val transpose: (x: NDArrayTFJS, perm: Array<Int>) -> NDArrayTFJS
+internal external val transpose: (x: NDArrayTFJS, perm: Array<Int>?) -> NDArrayTFJS
 
 internal external val unstack: (x: NDArrayTFJS, axis: Int) -> Array<NDArrayTFJS>
 

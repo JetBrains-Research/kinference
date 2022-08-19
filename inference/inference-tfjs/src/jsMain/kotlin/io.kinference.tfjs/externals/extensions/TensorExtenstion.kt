@@ -61,7 +61,9 @@ fun NDArrayTFJS.add(tensors: Array<NDArrayTFJS>) = addN(arrayOf(this, *tensors))
 
 fun NDArrayTFJS.add(vararg tensors: NDArrayTFJS) = addN(arrayOf(this, *tensors))
 
-fun NDArrayTFJS.transpose(permutation: Array<Int>) = transpose(this, permutation)
+fun NDArrayTFJS.transpose() = transpose(this, null)
+
+fun NDArrayTFJS.transpose(permutation: Array<Int>? = null) = transpose(this, permutation)
 
 fun NDArrayTFJS.unstack(axis: Int = 0) = unstack(this, axis)
 
