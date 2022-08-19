@@ -9,11 +9,18 @@ kotlin {
         configureTests()
     }
 
+    js(IR) {
+        browser()
+        configureTests()
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(project(":inference:inference-api"))
+                api(project(":inference:inference-core"))
                 api(project(":ndarray"))
+                api("org.jetbrains.kotlinx:multik-core:${Versions.multik}")
             }
         }
 
@@ -22,14 +29,6 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
                 implementation(project(":utils:test-utils"))
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                api(project(":inference:inference-core"))
-                api("org.jetbrains.kotlinx:multik-api:${Versions.multik}")
-                api("org.jetbrains.kotlinx:multik-default:${Versions.multik}")
             }
         }
 

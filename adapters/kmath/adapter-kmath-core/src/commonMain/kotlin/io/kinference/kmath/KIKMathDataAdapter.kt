@@ -15,9 +15,9 @@ import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
 sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
-    class KMathTensor(name: String?, override val data: NDStructure<*>) : KIKMathData<NDStructure<*>>(name) {
+    class KMathTensor(name: String?, override val data: StructureND<*>) : KIKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-        override fun rename(name: String): KIKMathData<NDStructure<*>> = KMathTensor(name, data)
+        override fun rename(name: String): KIKMathData<StructureND<*>> = KMathTensor(name, data)
     }
 
     class KMathMap(name: String?, override val data: Map<Any, KIKMathData<*>>) : KIKMathData<Map<Any, KIKMathData<*>>>(name) {
@@ -81,7 +81,7 @@ object KIKMathTensorAdapter : ONNXDataAdapter<KIKMathData.KMathTensor, KITensor>
             }
             else -> error("Unsupported data type $type")
         }
-        return KIKMathData.KMathTensor(data.name, NDBuffer(DefaultStrides(array.shape), buffer))
+        return KIKMathData.KMathTensor(data.name, BufferND(DefaultStrides(array.shape), buffer))
     }
 
     override fun toONNXData(data: KIKMathData.KMathTensor): KITensor {

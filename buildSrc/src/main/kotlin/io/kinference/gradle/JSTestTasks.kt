@@ -31,7 +31,7 @@ fun KotlinJsTargetDsl.configureTests() {
         configureBrowsers()
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.get("test")?.configureAllExecutions {
+    (this as? KotlinJsTarget)?.irTarget?.testRuns?.get("test")?.configureAllExecutions {
         configureTests()
         executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
     }
