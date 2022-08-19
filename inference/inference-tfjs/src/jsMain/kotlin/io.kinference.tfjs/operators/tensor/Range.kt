@@ -48,7 +48,8 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
             val limit = inputs[1]!!.data
             val delta = inputs[2]!!.data
 
-            require(start.dtype == limit.dtype && limit.dtype == delta.dtype) { "Нада" }
+            require(start.dtype == limit.dtype && limit.dtype == delta.dtype)
+                { "Input tensors must have equal dtype, present: start: ${start.dtype}, limit: ${limit.dtype}, delta: ${delta.dtype}" }
 
             val startNumber = if (start.dtype == "float32") start.dataFloat().first() else start.dataInt().first()
             val limitNumber = if (limit.dtype == "float32") limit.dataFloat().first() else limit.dataInt().first()

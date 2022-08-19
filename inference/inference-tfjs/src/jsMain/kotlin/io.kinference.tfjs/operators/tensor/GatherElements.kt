@@ -76,7 +76,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
 
             val otherRelevantIndices = List(paddedIndices.rank - 1) { axis ->
                 if (axis == actualAxis) {
-                    // do nothing for
+                    // do nothing for operator axis
                     null
                 } else {
                     // Make range for axis

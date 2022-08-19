@@ -18,7 +18,7 @@ sealed class Expand(name: String, info: OperatorInfo, attributes: Map<String, At
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in ExpandVer8.VERSION.asRange() -> ExpandVer8(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+            else -> error("Unsupported version of Expand operator: $version")
         }
     }
 }
