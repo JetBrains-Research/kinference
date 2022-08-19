@@ -51,8 +51,8 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
 
     private val alpha: Float by attribute()
 
-    private val transposeLeft: Boolean by attribute("transA") { it: Long -> it == 1L }
-    private val transposeRight: Boolean by attribute("transB") { it: Long -> it == 1L }
+    private val transposeLeft: Boolean by attribute("transA") { it: Number -> it.toInt() == 1 }
+    private val transposeRight: Boolean by attribute("transB") { it: Number -> it.toInt() == 1 }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
