@@ -7,9 +7,6 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import kotlin.jvm.JvmName
 
-private fun emptyStringArrFromShape(shape: IntArray) = Array(shape.fold(1, Int::times)) { "" }
-private fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times), init)
-
 open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
     constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
@@ -121,6 +118,9 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         operator fun invoke(vararg shape: Int, init: (IntArray) -> String): StringNDArray {
             return invoke(shape, init)
         }
+
+        internal fun emptyStringArrFromShape(shape: IntArray) = Array(shape.fold(1, Int::times)) { "" }
+        internal fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times), init)
     }
 }
 
