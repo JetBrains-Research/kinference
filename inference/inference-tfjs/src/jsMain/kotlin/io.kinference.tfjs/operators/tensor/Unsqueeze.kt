@@ -3,7 +3,6 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -37,12 +36,16 @@ class UnsqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         private val INFO = OperatorInfo("Unsqueeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
+    private val axes: Array<Int> by attribute { array: LongArray -> Array(array.size) { array[it].toInt() } }
+
+    private fun Int.indexAxis(limitAxis: Int) = if (this < 0) this + limitAxis else this
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        require(axes.size == axes.toSet().size) { "Axes must contains only unique elements, present: ${axes.joinToString(prefix = "[", postfix = "]")}" }
+
         val outputs = tidy {
             val input = inputs[0]!!.data
-            val actualAxes = axes.map { input.indexAxis(it) }.sorted()
+            val actualAxes = axes.map { it.indexAxis(input.rank + axes.size) }.sorted()
             val newShape = input.shape.toMutableList()
             for (axis in actualAxes) {
                 newShape.add(axis, 1)

@@ -53,6 +53,12 @@ class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.Tenso
                 IntNDArray(tiledArray, strides)
             }
 
+            "bool" -> {
+                val array = data.dataBool()
+                val tiledArray = BooleanTiledArray(shapeIntArray) { array[it] }
+                BooleanNDArray(tiledArray, strides)
+            }
+
             else -> error("Unsupported type")
         }
     }
@@ -74,6 +80,7 @@ class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.Tenso
                 DataType.INT32 -> invoke((value as IntNDArray).array.toArray(), resolvedType, value.shape, name)
                 DataType.UINT8 -> invoke((value as UByteNDArray).array.toArray(), resolvedType, value.shape, name)
                 DataType.INT64 -> invoke((value as LongNDArray).array.toArray(), resolvedType, value.shape, name)
+                DataType.BOOL  -> invoke((value as BooleanNDArray).array.toArray(), resolvedType, value.shape, name)
                 else -> error("Unsupported type")
             }
         }
@@ -87,6 +94,7 @@ class TFJSTensor(name: String?, data: NDArrayTFJS, val info: ValueTypeInfo.Tenso
                 DataType.UINT8 -> tensor((value as UByteArray).toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
                 DataType.INT8  -> tensor((value as ByteArray).toTypedArray(), typedDims, "int32").asTensor(nameNotNull)
                 DataType.INT64 -> tensor((value as LongArray).toIntArray(), typedDims, "int32").asTensor(nameNotNull)
+                DataType.BOOL -> tensor((value as BooleanArray).toTypedArray(), typedDims, "bool").asTensor(nameNotNull)
                 else -> error("Unsupported type")
             }
         }

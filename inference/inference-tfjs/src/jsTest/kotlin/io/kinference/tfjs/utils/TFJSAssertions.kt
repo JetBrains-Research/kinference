@@ -6,8 +6,7 @@ import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.externals.extensions.dataFloat
-import io.kinference.tfjs.externals.extensions.dataInt
+import io.kinference.tfjs.externals.extensions.*
 import io.kinference.utils.ArrayAssertions
 import kotlin.test.assertEquals
 
@@ -28,11 +27,19 @@ object TFJSAssertions {
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
+
             "int32" -> {
                 val expectedArray = expected.data.dataInt()
                 val actualArray = actual.data.dataInt()
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
+            "bool" -> {
+                val expectedArray = expected.data.dataBool()
+                val actualArray = actual.data.dataBool()
+
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.name} does not match")
             }
         }
     }

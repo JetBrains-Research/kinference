@@ -9,9 +9,19 @@ fun tensor(values: IntArray, shape: Array<Int>, dtype: String): NDArrayTFJS = te
 
 fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): NDArrayTFJS = tensor(values.unsafeCast<Uint8Array>(), shape, dtype)
 
+fun tensor(values: Array<Boolean>, shape: Array<Int>) = tensor(values, shape, "bool")
+
+fun scalar(value: Boolean) = scalar(value, "bool")
+
+fun scalar(value: Float) = scalar(value, "float32")
+
+fun scalar(value: Int) = scalar(value, "int32")
+
 fun NDArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntArray>()
 
 fun NDArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()
+
+fun NDArrayTFJS.dataBool() = dataSync().unsafeCast<Array<Boolean>>()
 
 operator fun NDArrayTFJS.plus(other: NDArrayTFJS) = io.kinference.tfjs.externals.core.add(this, other)
 
@@ -49,13 +59,19 @@ fun NDArrayTFJS.sqrt() = io.kinference.tfjs.externals.core.sqrt(this)
 
 fun Array<NDArrayTFJS>.sum() = addN(this)
 
+fun NDArrayTFJS.add(tensors: Array<NDArrayTFJS>) = addN(arrayOf(this, *tensors))
+
 fun NDArrayTFJS.add(vararg tensors: NDArrayTFJS) = addN(arrayOf(this, *tensors))
 
-fun NDArrayTFJS.transpose(permutation: Array<Int>) = transpose(this, permutation)
+fun NDArrayTFJS.transpose() = transpose(this, null)
+
+fun NDArrayTFJS.transpose(permutation: Array<Int>? = null) = transpose(this, permutation)
 
 fun NDArrayTFJS.unstack(axis: Int = 0) = unstack(this, axis)
 
 fun Array<NDArrayTFJS>.stack(axis: Int = 0) = stack(this, axis)
+
+fun Collection<NDArrayTFJS>.stack(axis: Int = 0) = this.toTypedArray().stack(axis)
 
 fun NDArrayTFJS.stack(vararg tensors: NDArrayTFJS, axis: Int = 0) = stack(arrayOf(this, *tensors), axis)
 
@@ -115,6 +131,8 @@ fun NDArrayTFJS.slice(begin: Array<Int>) = slice(this, begin, null)
 
 fun NDArrayTFJS.reverse(axes: Array<Int>) = reverse(this, axes)
 
+fun NDArrayTFJS.reverse(axis: Int) = reverse(this, arrayOf(axis))
+
 fun NDArrayTFJS.reverse() = reverse(this, null)
 
 fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = stridedSlice(this, start, end, step, 0, 0, 0, 0, 0)
@@ -122,3 +140,30 @@ fun NDArrayTFJS.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = st
 fun NDArrayTFJS.squeeze(axes: Array<Int>? = null) = squeeze(this, axes)
 
 fun NDArrayTFJS.argmax(axis: Int = 0) = argMax(this, axis)
+
+fun NDArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
+
+fun NDArrayTFJS.less(other: NDArrayTFJS) = less(this, other)
+
+fun NDArrayTFJS.greater(other: NDArrayTFJS) = greater(this, other)
+
+fun NDArrayTFJS.greaterEqual(other: NDArrayTFJS) = greaterEqual(this, other)
+
+fun NDArrayTFJS.equal(other: NDArrayTFJS) = equal(this, other)
+
+fun NDArrayTFJS.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition, this, other)
+
+fun NDArrayTFJS.clone() = clone(this)
+
+fun NDArrayTFJS.not(): NDArrayTFJS {
+    require(this.dtype == "bool") { "Accepted only bool type" }
+    return logicalNot(this)
+}
+
+fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(this, paddings, constantValue)
+
+fun NDArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Boolean) = pad(this, paddings, constantValue)
+
+fun NDArrayTFJS.gatherNd(indices: NDArrayTFJS) = gatherND(this, indices)
+
+fun NDArrayTFJS.leakyRelu(alpha: Number) = leakyRelu(this, alpha)

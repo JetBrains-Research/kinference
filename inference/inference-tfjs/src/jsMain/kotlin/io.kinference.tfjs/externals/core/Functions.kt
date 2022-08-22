@@ -31,7 +31,7 @@ internal external val mul: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
 
 internal external val addN: (tensors: Array<NDArrayTFJS>) -> NDArrayTFJS
 
-internal external val transpose: (x: NDArrayTFJS, perm: Array<Int>) -> NDArrayTFJS
+internal external val transpose: (x: NDArrayTFJS, perm: Array<Int>?) -> NDArrayTFJS
 
 internal external val unstack: (x: NDArrayTFJS, axis: Int) -> Array<NDArrayTFJS>
 
@@ -67,9 +67,33 @@ internal external val slice: (x: NDArrayTFJS, begin: Array<Int>, size: Array<Int
 
 internal external val reverse: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
 
-internal external val stridedSlice: (x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
-                                     endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int) -> NDArrayTFJS
+internal external val stridedSlice: (
+    x: NDArrayTFJS, begin: Array<Int>, end: Array<Int>, strides: Array<Int>?, beginMask: Int,
+    endMask: Int, ellipsisMask: Int, newAxisMask: Int, shrinkAxisMask: Int
+) -> NDArrayTFJS
 
 internal external val squeeze: (x: NDArrayTFJS, axis: Array<Int>?) -> NDArrayTFJS
 
 internal external val argMax: (x: NDArrayTFJS, axis: Int) -> NDArrayTFJS
+
+internal external val tile: (x: NDArrayTFJS, reps: Array<Int>) -> NDArrayTFJS
+
+internal external val less: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val greater: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val greaterEqual: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val equal: (a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val where: (condition: NDArrayTFJS, a: NDArrayTFJS, b: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val clone: (x: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val logicalNot: (x: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val pad: (x: NDArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> NDArrayTFJS
+
+internal external val gatherND: (x: NDArrayTFJS, indices: NDArrayTFJS) -> NDArrayTFJS
+
+internal external val leakyRelu: (x: NDArrayTFJS, alpha: Number) -> NDArrayTFJS
