@@ -8,10 +8,9 @@ inline fun <reified T> createTiledArray(type: DataType, vararg shape: Int, noinl
     return createTiledArray(type, shape, init)
 }
 
-fun tiledFromPrimitiveArray(array: Any, vararg shape: Int): Any {
+fun tiledFromPrimitiveArray(vararg shape: Int, array: Any): Any {
     return tiledFromPrimitiveArray(shape, array)
 }
-
 
 fun createMutableNDArray(type: DataType, value: Any, vararg shape: Int): MutableNDArray {
     return createMutableNDArray(type, value, Strides(shape))

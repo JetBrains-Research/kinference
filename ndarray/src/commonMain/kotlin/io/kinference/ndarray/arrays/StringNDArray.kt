@@ -4,9 +4,11 @@ import io.kinference.ndarray.Strides
 import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.primitives.types.DataType
+import io.kinference.primitives.types.PrimitiveType
+import kotlin.jvm.JvmName
 
 private fun emptyStringArrFromShape(shape: IntArray) = Array(shape.fold(1, Int::times)) { "" }
-private fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times)) { "" }
+private fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times), init)
 
 open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
     constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
@@ -103,17 +105,23 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> String): StringNDArray {
-            return MutableStringNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): StringNDArray {
             return StringNDArray(emptyStringArrFromShape(shape), Strides(shape))
         }
-    }
-}
 
-operator fun StringNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> String): StringNDArray {
-    return StringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> String): StringNDArray {
+            return StringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> String): StringNDArray {
+            return invoke(shape, init)
+        }
+    }
 }
 
 class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
@@ -178,9 +186,15 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         operator fun invoke(vararg shape: Int): MutableStringNDArray {
             return MutableStringNDArray(emptyStringArrFromShape(shape), Strides(shape))
         }
-    }
-}
 
-operator fun MutableStringNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> String): MutableStringNDArray {
-    return MutableStringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> String): MutableStringNDArray {
+            return MutableStringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> String): MutableStringNDArray {
+            return invoke(shape, init)
+        }
+    }
 }

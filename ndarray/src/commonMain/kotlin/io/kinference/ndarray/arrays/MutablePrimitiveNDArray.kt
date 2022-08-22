@@ -7,6 +7,7 @@ import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
 open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
@@ -210,20 +211,27 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
+
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
         }
-    }
-}
 
-operator fun MutablePrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
-    return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+        }
+    }
 }

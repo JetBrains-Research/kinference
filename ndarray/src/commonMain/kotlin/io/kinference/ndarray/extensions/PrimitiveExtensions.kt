@@ -14,14 +14,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.*
 
-operator fun PrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> PrimitiveType): PrimitiveNDArray {
-    return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
-}
-
-operator fun MutablePrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> PrimitiveType): MutablePrimitiveNDArray {
-    return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
-}
-
 fun erf(value: PrimitiveType): PrimitiveType {
     val sign = value.toDouble().sign
     val doubleValue = abs(value.toDouble())

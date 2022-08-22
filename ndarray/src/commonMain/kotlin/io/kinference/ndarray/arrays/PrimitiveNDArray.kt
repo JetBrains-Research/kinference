@@ -13,6 +13,7 @@ import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
+import kotlin.jvm.JvmName
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -1595,17 +1596,23 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
         }
-    }
-}
 
-operator fun PrimitiveNDArray.Companion.invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-    return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): PrimitiveNDArray {
+            return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+        }
+    }
 }
 
 @GenerateNameFromPrimitives

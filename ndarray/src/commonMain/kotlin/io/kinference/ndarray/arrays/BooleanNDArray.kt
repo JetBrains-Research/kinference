@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import kotlin.jvm.JvmName
 import kotlin.math.abs
 import kotlin.ranges.reversed
 
@@ -402,17 +403,23 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): BooleanNDArray {
-            return MutableBooleanNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): BooleanNDArray {
             return BooleanNDArray(BooleanTiledArray(shape), Strides(shape))
         }
-    }
-}
 
-operator fun BooleanNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> Boolean): BooleanNDArray {
-    return BooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): BooleanNDArray {
+            return BooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): BooleanNDArray {
+            return invoke(shape, init)
+        }
+    }
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
@@ -553,15 +560,21 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): MutableBooleanNDArray {
-            return MutableBooleanNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): MutableBooleanNDArray {
             return MutableBooleanNDArray(BooleanTiledArray(shape), Strides(shape))
         }
-    }
-}
 
-operator fun MutableBooleanNDArray.Companion.invoke(vararg shape: Int, init: (Int) -> Boolean): MutableNDArray {
-    return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): MutableNDArray {
+            return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): BooleanNDArray {
+            return invoke(shape, init)
+        }
+    }
 }
