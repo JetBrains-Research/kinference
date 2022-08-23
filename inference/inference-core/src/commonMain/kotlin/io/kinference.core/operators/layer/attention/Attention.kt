@@ -116,7 +116,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
         private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
-            val mask = allocateNDArray(DataType.FLOAT, Strides(maskDataShape)) as MutableFloatNDArray
+            val mask = MutableFloatNDArray(Strides(maskDataShape))
             val maskOffset = seqLen * fullSeqLen
             repeat(batchSize) { i ->
                 if (this != null) {

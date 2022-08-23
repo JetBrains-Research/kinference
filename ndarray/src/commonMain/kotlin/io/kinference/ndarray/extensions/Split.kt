@@ -5,7 +5,7 @@ import io.kinference.ndarray.arrays.MutableNDArray
 import io.kinference.ndarray.arrays.NDArray
 import kotlin.math.ceil
 
-fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {
+private fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: Boolean): IntArray {
     val newShape: IntArray
     if (keepDims) {
         newShape = shape.copyOf()
@@ -51,8 +51,8 @@ fun NDArray.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true):
     }
 }
 
-fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableNDArray {
-    val dst = this.allocateNDArray(splitStrides)
+private fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableNDArray {
+    val dst = allocateNDArray(type, splitStrides)
     val len = beforeAxisDims * fragmentSize
     if (fromAxisDims == fragmentSize) {
         dst.copyFrom(0, this, 0, len)
@@ -66,14 +66,14 @@ fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: 
     return dst
 }
 
-fun NDArray.splitParts(parts: Int, strides: Strides): List<MutableNDArray> {
+private fun NDArray.splitParts(parts: Int, strides: Strides): List<MutableNDArray> {
     require(linearSize % parts == 0)
     require(strides.linearSize == linearSize / parts)
 
     var offset = 0
     val partSize = strides.linearSize
     return List(parts) {
-        val newArray = allocateNDArray(strides)
+        val newArray = allocateNDArray(type, strides)
         newArray.copyFrom(0, this, offset, offset + partSize)
         offset += partSize
         newArray

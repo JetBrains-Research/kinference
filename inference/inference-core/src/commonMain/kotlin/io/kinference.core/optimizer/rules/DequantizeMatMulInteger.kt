@@ -6,6 +6,7 @@ import io.kinference.core.operators.math.*
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear
 import io.kinference.graph.Graph
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.tryZeroPoint
 import io.kinference.operator.Operator
 import io.kinference.optimizer.*
 
@@ -30,7 +31,7 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
         if (matMulRight?.data == null || matMulZeroRight == null || scaleRight == null) return null
 
         val newName = "${PREFIX}_${matMulRight.name}"
-        val dequantizedRight = (matMulRight.data as NumberNDArray).withZeroPoint(matMulZeroRight).toFloatNDArray().times(scaleRight)
+        val dequantizedRight = (matMulRight.data as NumberNDArray).tryZeroPoint(matMulZeroRight).toFloatNDArray().times(scaleRight)
         graph.addInitializer(dequantizedRight.asTensor(newName))
         return MatMul(
             name = "${PREFIX}_${matMulInt.name}",

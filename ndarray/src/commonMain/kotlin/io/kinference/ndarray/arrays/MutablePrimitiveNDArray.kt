@@ -4,10 +4,10 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.extensions.applyWithBroadcast
-import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
 open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
@@ -16,6 +16,12 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
     constructor(strides: Strides) : this(PrimitiveTiledArray(strides), strides)
     constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
+
+    override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as PrimitiveType
+    }
 
     override fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
@@ -57,12 +63,6 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
 
         return this
-    }
-
-    override fun erf(): MutableNumberNDArray {
-        return this.mapMutable(object : PrimitiveMap {
-            override fun apply(value: PrimitiveType): PrimitiveType = erfFor(value)
-        })
     }
 
     override operator fun plusAssign(other: NDArray) {
@@ -210,6 +210,28 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     companion object {
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return invoke(Strides(shape), init)
+        }
+
+        operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
         }
     }
 }

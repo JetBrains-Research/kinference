@@ -12,7 +12,8 @@ import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -62,14 +63,18 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     final override var strides: Strides = strides
         protected set
 
+    override operator fun get(index: IntArray): PrimitiveType {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
+    }
 
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutablePrimitiveNDArray = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
-
+    @Deprecated("Use reshape() instead", replaceWith = ReplaceWith("reshape()"))
     override fun reshapeView(newShape: IntArray): NDArray {
         val newStrides = Strides(newShape)
 
@@ -93,85 +98,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             }
         }
         return destination
-    }
-
-    override fun erfFor(value: Any): PrimitiveType {
-        value as PrimitiveType
-        val sign = value.toDouble().sign
-        val doubleValue = abs(value.toDouble())
-        val t = 1 / (1 + ERF_P_VALUE * doubleValue)
-
-        val sum = t * (ERF_COEF[0] + t * (ERF_COEF[1] + t * (ERF_COEF[2] + t * (ERF_COEF[3] + t * ERF_COEF[4]))))
-
-        return (sign * (1.0 - sum * exp(-doubleValue * doubleValue))).toPrimitive()
-    }
-
-    override fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
-        zeroPoint as PrimitiveNDArray
-
-        return if (zeroPoint.linearSize == 1) {
-            val zero = zeroPoint.array.blocks[0][0].toInt()
-            val arr = IntTiledArray(this.strides)
-            arr.pointer().accept(array.pointer(), arr.size) { _, src -> src.toInt() - zero }
-            IntNDArray(arr, strides)
-        } else {
-            val arr = IntTiledArray(strides)
-            arr.pointer().acceptWithRecursive(this.array.pointer(), zeroPoint.array.pointer(), arr.size) { _, src, zero -> src.toInt() - zero.toInt() }
-            IntNDArray(arr, strides)
-        }
-    }
-
-    @Suppress("CAST_NEVER_SUCCEEDS")
-    override fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int?): NDArray {
-        scale as FloatNDArray
-        val zeros = (zeroPoint as? PrimitiveNDArray)?.array
-        val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
-
-        when {
-            canDequantizePerTensor(zeroPoint, scale) -> {
-                val zero = if (zeros == null) 0f else zeros.blocks[0][0].toFloat()
-                val sc = scale.array.blocks[0][0]
-
-                if (type == DataType.BYTE) {
-                    output.array.pointer().accept(this.array.pointer() as BytePointer, output.linearSize) { _, src ->
-                        (src.toFloat() - zero) * sc
-                    }
-                } else {
-                    output.array.pointer().accept(this.array.pointer() as UBytePointer, output.linearSize) { _, src ->
-                        (src.toFloat() - zero) * sc
-                    }
-                }
-            }
-            canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
-                val actualAxis = indexAxis(axis)
-                val blockCount = computeBlockSize(toDim = actualAxis)
-                val blockSize = computeBlockSize(fromDim = actualAxis + 1)
-                var outOffset = 0
-                repeat(blockCount) {
-                    val zeroPointer = zeros?.pointer()
-                    val scalePointer = scale.array.pointer()
-                    for (i in 0 until shape[actualAxis]) {
-                        val zero = zeroPointer?.getAndIncrement()?.toFloat() ?: 0f
-                        val sc = scalePointer.getAndIncrement()
-
-                        if (type == DataType.BYTE) {
-                            output.array.pointer(outOffset).accept(this.array.pointer(outOffset) as BytePointer, blockSize) { _, src ->
-                                (src.toFloat() - zero) * sc
-                            }
-                        } else {
-                            output.array.pointer(outOffset).accept(this.array.pointer(outOffset) as UBytePointer, blockSize) { _, src ->
-                                (src.toFloat() - zero) * sc
-                            }
-                        }
-
-                        outOffset += blockSize
-                    }
-                }
-            }
-            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
-        }
-
-        return output
     }
 
     override fun row(row: Int): MutableNumberNDArray {
@@ -304,6 +230,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         return output
+    }
+
+    override fun erf(): NumberNDArray {
+        return this.map(object : PrimitiveMap {
+            override fun apply(value: PrimitiveType): PrimitiveType = erf(value)
+        })
     }
 
     override fun plus(other: NumberNDArray): MutableNumberNDArray {
@@ -717,7 +649,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val countDims = shape[actualAxis]
 
         val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
-        val outputArray = allocateNDArray(DataType.INT, outputShape) as MutableIntNDArray
+        val outputArray = MutableIntNDArray(outputShape)
 
         val inputPointer = this.array.pointer()
 
@@ -825,7 +757,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val countDims = shape[actualAxis]
 
         val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
-        val outputArray = allocateNDArray(Strides(outputShape))
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         val inputPointer = this.array.pointer()
 
@@ -871,7 +803,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
 
         val outputShape = if (keepDims) outputShapeWithKeepDims else shape.sliceArray(shape.indices.minus(axesToReduce))
-        val outputArray = allocateNDArray(Strides(outputShape))
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         val axisToStop = axesToReduce.maxOrNull()!! + 1
         val blockToApply = computeBlockSize(fromDim = axisToStop)
@@ -912,14 +844,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
-
         val actualAxis = indexAxis(axis)
-
         val outputStrides = Strides(shape.copyOf().apply { set(actualAxis, k) })
 
-
-        val outputArray = allocateNDArray(outputStrides)
-        val indicesArray = allocateNDArray(DataType.LONG, outputStrides) as MutableLongNDArray
+        val outputArray = PrimitiveNDArray(outputStrides)
+        val indicesArray = MutableLongNDArray(outputStrides)
 
         val countIterations = shape.sliceArray(0 until actualAxis).fold(1) { acc, i -> acc * i }
         val countElements = shape.sliceArray((actualAxis + 1) until rank).fold(1) { acc, i -> acc * i }
@@ -1196,50 +1125,9 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return MutablePrimitiveNDArray(array.copyOf(), strides)
     }
 
-    @FilterPrimitives(exclude = [DataType.DOUBLE, DataType.FLOAT, DataType.BOOLEAN, DataType.BOOLEAN, DataType.INT, DataType.LONG, DataType.SHORT,
-        DataType.UINT, DataType.ULONG, DataType.USHORT])
-    @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
-    fun quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
-        val M = this.shape[0]
-
-        fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
-            for (rdBlockNum in 0 until destination.blocksInRow) {
-                body {
-                    for (i in 0 until M) {
-                        val dBlockOffset = i * destination.blocksInRow
-                        val lBlockOffset = i * this.blocksInRow
-
-                        var k = 0
-                        for (lBlockNum in 0 until this.blocksInRow) {
-                            val lBlock = this.array.blocks[lBlockOffset + lBlockNum]
-                            for (lInd in lBlock.indices) {
-                                val temp = lBlock[lInd].toInt() - zeroPointA
-                                val rBlockOffset = k * other.blocksInRow
-                                val rBlock = other.array.blocks[rBlockOffset + rdBlockNum]
-                                val dBlock = destination.array.blocks[dBlockOffset + rdBlockNum]
-                                for (idx in rBlock.indices) {
-                                    dBlock[idx] += (temp * (rBlock[idx].toInt() - zeroPointB)) * scale
-                                }
-                                k++
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (other.blocksInRow > 1) {
-            runBlocking(coroutineContext) { wrapper { launch { it() } } }
-        } else {
-            wrapper()
-        }
-
-        return destination
-    }
-
     override fun expand(shape: IntArray): MutablePrimitiveNDArray {
         val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
-        val output = allocateNDArray(Strides(outputShape))
+        val output = MutablePrimitiveNDArray(Strides(outputShape))
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutablePrimitiveNDArray
             val input = inputs[0] as PrimitiveNDArray
@@ -1260,7 +1148,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val ndIndexSize = shape.size
         var totalElements = 0
         val inputPointer = array.pointer()
-        val indicesArray = LongArray(linearSize * ndIndexSize)
+        val indicesArray = IntArray(linearSize * ndIndexSize)
         this.ndIndexed { ndIndex ->
             if (inputPointer.getAndIncrement() != (0).toPrimitive()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
@@ -1272,7 +1160,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val resultPointer = indicesByDim.pointer()
         for (i in 0 until ndIndexSize)
             for (j in 0 until totalElements) {
-                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.set(indicesArray[j * ndIndexSize + i].toLong())
                 resultPointer.increment()
             }
         return LongNDArray(indicesByDim, nonZeroStrides)
@@ -1285,7 +1173,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             outputShape[axis] += pad.first + pad.second
         }
 
-        val outputArray = allocateNDArray(Strides(outputShape))
+        val outputArray = MutablePrimitiveNDArray(Strides(outputShape))
         val constant = (constantValue?.singleValue() ?: (0).toPrimitive()) as PrimitiveType
 
         fun recurrentCopyInput(axis: Int, input: PrimitiveNDArray, output: MutablePrimitiveNDArray) {
@@ -1457,14 +1345,14 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun tile(repeats: IntArray): NumberNDArray {
         require(repeats.size == rank)
 
-        if (repeats.all() { it == 1 }) return this.toMutable()
+        if (repeats.all { it == 1 }) return this.toMutable()
 
         val outputShape = shape.copyOf().apply {
             for (idx in indices) {
                 this[idx] *= repeats[idx]
             }
         }
-        val outputArray = allocateNDArray(Strides(outputShape))
+        val outputArray = PrimitiveNDArray(Strides(outputShape))
 
         var axisToStop = -1
         for (idx in repeats.indices) {
@@ -1625,7 +1513,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = allocateNDArray(outputStrides)
+        val outputArray = PrimitiveNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {
@@ -1701,6 +1589,28 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     companion object {
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return invoke(Strides(shape), init)
+        }
+
+        operator fun invoke(vararg shape: Int): PrimitiveNDArray {
+            return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
+            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): PrimitiveNDArray {
+            return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
         }
     }
 }

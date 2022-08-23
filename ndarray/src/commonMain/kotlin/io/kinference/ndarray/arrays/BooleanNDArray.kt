@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import kotlin.jvm.JvmName
 import kotlin.math.abs
 import kotlin.ranges.reversed
 
@@ -60,13 +61,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(newArray, newStrides)
     }
 
+    override fun get(index: IntArray): Boolean {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
+    }
+
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
-    }
-
-    override fun allocateNDArray(strides: Strides): MutableBooleanNDArray {
-        return MutableBooleanNDArray(BooleanTiledArray(strides), strides)
     }
 
     override fun reshapeView(newShape: IntArray): NDArray {
@@ -195,7 +198,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun expand(shape: IntArray): MutableNDArray {
         val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
-        val output = allocateNDArray(Strides(outputShape))
+        val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutableBooleanNDArray
             val input = inputs[0] as BooleanNDArray
@@ -216,7 +219,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         val ndIndexSize = shape.size
         var totalElements = 0
         val inputPointer = array.pointer()
-        val indicesArray = LongArray(linearSize * ndIndexSize)
+        val indicesArray = IntArray(linearSize * ndIndexSize)
         this.ndIndexed { ndIndex ->
             if (inputPointer.getAndIncrement()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
@@ -228,7 +231,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         val resultPointer = indicesByDim.pointer()
         for (i in 0 until ndIndexSize)
             for (j in 0 until totalElements) {
-                resultPointer.set(indicesArray[j * ndIndexSize + i])
+                resultPointer.set(indicesArray[j * ndIndexSize + i].toLong())
                 resultPointer.increment()
             }
         return LongNDArray(indicesByDim, nonZeroStrides)
@@ -300,7 +303,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = allocateNDArray(outputStrides)
+        val outputArray = MutableBooleanNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {
@@ -394,11 +397,43 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
                 BooleanNDArray(strides) { pointer.getAndIncrement() }
             }
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): BooleanNDArray {
+            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): BooleanNDArray {
+            return invoke(Strides(shape), init)
+        }
+
+        operator fun invoke(vararg shape: Int): BooleanNDArray {
+            return BooleanNDArray(BooleanTiledArray(shape), Strides(shape))
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): BooleanNDArray {
+            return BooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): BooleanNDArray {
+            return invoke(shape, init)
+        }
     }
 }
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(BooleanTiledArray(strides), strides)
+    constructor(strides: Strides, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
+
+    override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as Boolean
+    }
 
     override fun viewMutable(vararg axes: Int): MutableNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
@@ -518,6 +553,28 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
     companion object {
         fun scalar(value: Boolean): MutableBooleanNDArray {
             return MutableBooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
+        }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): MutableBooleanNDArray {
+            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): MutableBooleanNDArray {
+            return invoke(Strides(shape), init)
+        }
+
+        operator fun invoke(vararg shape: Int): MutableBooleanNDArray {
+            return MutableBooleanNDArray(BooleanTiledArray(shape), Strides(shape))
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): MutableNDArray {
+            return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): BooleanNDArray {
+            return invoke(shape, init)
         }
     }
 }

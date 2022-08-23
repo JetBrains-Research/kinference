@@ -112,8 +112,10 @@ object Broadcasting {
 
         if (destination.shape.size == 1) {
             val broadcastSize = destination.shape.last()
-            val broadcastArraysWithOne = arraysWithOne.map { it.copy(value = it.value.allocateNDArray(Strides(intArrayOf(broadcastSize)))
-                .apply { fill(it.value.singleValue()) }) }
+            val broadcastArraysWithOne = arraysWithOne.map {
+                val value = allocateNDArray(it.value.type, Strides(intArrayOf(broadcastSize)))
+                it.copy(value = value.apply { fill(it.value.singleValue()) })
+            }
             val mergedInputs = broadcastArraysWithOne.plus(arraysWithoutOne).sortedBy { it.index }.map { it.value }
 
             return recurrentBack(mergedInputs, destination)

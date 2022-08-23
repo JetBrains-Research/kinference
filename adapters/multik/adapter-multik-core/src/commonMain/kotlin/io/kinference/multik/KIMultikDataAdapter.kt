@@ -9,8 +9,8 @@ import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
 import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.createArray
 import io.kinference.ndarray.extensions.createNDArray
+import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import org.jetbrains.kotlinx.multik.ndarray.data.*
@@ -54,7 +54,7 @@ object KIMultikTensorAdapter : ONNXDataAdapter<KIMultikData.MultikTensor, KITens
     }
 
     override fun toONNXData(data: KIMultikData.MultikTensor): KITensor {
-        val tiledArray = createArray(data.data.shape, data.data.data.data)
+        val tiledArray = tiledFromPrimitiveArray(data.data.shape, data.data.data.data)
         return createNDArray(data.data.dtype.resolveKIDataType(), tiledArray, data.data.shape).asTensor(data.name)
     }
 }

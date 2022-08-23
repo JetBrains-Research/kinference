@@ -11,11 +11,11 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     val info: BackendInfo
 
     fun loadData(bytes: ByteArray, type: ONNXDataType): ONNXData<*, *>
-    fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
+    fun loadModel(bytes: ByteArray): Model<T>
 
-    suspend fun loadModel(path: Path, optimize: Boolean = false): Model<T>
+    suspend fun loadModel(path: Path): Model<T>
     suspend fun loadData(path: Path, type: ONNXDataType): ONNXData<*, *>
 
-    suspend fun loadModel(path: String, optimize: Boolean = false): Model<T> = loadModel(path.toPath(), optimize)
+    suspend fun loadModel(path: String): Model<T> = loadModel(path.toPath())
     suspend fun loadData(path: String, type: ONNXDataType): ONNXData<*, *> = loadData(path.toPath(), type)
 }

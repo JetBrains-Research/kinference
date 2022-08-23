@@ -7,6 +7,6 @@ interface Model<T : ONNXData<*, *>> {
     fun predict(input: List<T>, profile: Boolean = false, executionContext: ExecutionContext? = null): Map<String, T>
 
     companion object {
-        fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: InferenceEngine<T>, optimize: Boolean = false) = engine.loadModel(bytes, optimize)
+        fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: InferenceEngine<T>) = engine.loadModel(bytes)
     }
 }

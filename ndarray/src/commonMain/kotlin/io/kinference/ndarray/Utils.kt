@@ -1,7 +1,5 @@
 package io.kinference.ndarray
 
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
 
@@ -70,7 +68,7 @@ fun IntArray.concat(value: Int): IntArray {
     return copy
 }
 
-const val MIN_BLOCK_SIZE = 512
+private const val MIN_BLOCK_SIZE = 512
 
 fun blockSizeByStrides(strides: Strides): Int {
     return when {

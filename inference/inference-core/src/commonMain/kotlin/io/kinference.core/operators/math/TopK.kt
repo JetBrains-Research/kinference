@@ -60,9 +60,9 @@ class TopKVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axis: Int by attribute() { it: Long -> it.toInt() }
-    private val largest: Boolean by attribute() { it: Number -> it.toInt() == 1 }
-    private val sorted: Boolean by attribute() { it: Number -> it.toInt() == 1 }
+    private val axis: Int by attribute { it: Long -> it.toInt() }
+    private val largest: Boolean by attribute { it: Number -> it.toInt() == 1 }
+    private val sorted: Boolean by attribute { it: Number -> it.toInt() == 1 }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArray

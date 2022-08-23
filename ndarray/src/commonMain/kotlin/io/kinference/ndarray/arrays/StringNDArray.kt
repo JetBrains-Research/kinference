@@ -2,11 +2,17 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.extensions.isScalar
+import io.kinference.ndarray.extensions.ndIndexed
 import io.kinference.primitives.types.DataType
+import io.kinference.primitives.types.PrimitiveType
+import kotlin.jvm.JvmName
 
 open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
-    constructor(shape: IntArray) : this(Array(shape.reduce(Int::times)) { "" }, Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> String) : this(Array<String>(shape.reduce(Int::times), init), Strides(shape))
+    constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(emptyStringArrFromShape(strides.shape), strides)
+    constructor(strides: Strides, init: (Int) -> String) : this(initStringArr(strides.shape, init), strides)
 
     override val type: DataType = DataType.ALL
 
@@ -18,8 +24,10 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[0]
     }
 
-    override fun allocateNDArray(strides: Strides): MutableNDArray {
-        return MutableStringNDArray(Array(strides.linearSize) { "" }, strides)
+    override fun get(index: IntArray): String {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        return array[linearIndex]
     }
 
     override fun view(vararg axes: Int): NDArray {
@@ -88,11 +96,46 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         fun scalar(value: String): StringNDArray {
             return StringNDArray(arrayOf(value), Strides.EMPTY)
         }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> String): StringNDArray {
+            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> String): StringNDArray {
+            return invoke(Strides(shape), init)
+        }
+
+        operator fun invoke(vararg shape: Int): StringNDArray {
+            return StringNDArray(emptyStringArrFromShape(shape), Strides(shape))
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> String): StringNDArray {
+            return StringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> String): StringNDArray {
+            return invoke(shape, init)
+        }
+
+        internal fun emptyStringArrFromShape(shape: IntArray) = Array(shape.fold(1, Int::times)) { "" }
+        internal fun initStringArr(shape: IntArray, init: (Int) -> String) = Array(shape.fold(1, Int::times), init)
     }
 }
 
 class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
-    constructor(shape: IntArray) : this(Array(shape.reduce(Int::times)) { "" }, Strides(shape))
+    constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
+    constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
+
+    constructor(strides: Strides) : this(emptyStringArrFromShape(strides.shape), strides)
+    constructor(strides: Strides, init: (Int) -> String) : this(initStringArr(strides.shape, init), strides)
+
+    override fun set(index: IntArray, value: Any) {
+        require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
+        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        array[linearIndex] = value as String
+    }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         TODO("Not yet implemented")
@@ -130,6 +173,28 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
     companion object {
         fun scalar(value: String): MutableStringNDArray {
             return MutableStringNDArray(arrayOf(value), Strides.EMPTY)
+        }
+
+        operator fun invoke(strides: Strides, init: (IntArray) -> String): MutableStringNDArray {
+            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+        }
+
+        operator fun invoke(shape: IntArray, init: (IntArray) -> String): MutableStringNDArray {
+            return MutableStringNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+        }
+
+        operator fun invoke(vararg shape: Int): MutableStringNDArray {
+            return MutableStringNDArray(emptyStringArrFromShape(shape), Strides(shape))
+        }
+
+        @JvmName("invokeVarArg")
+        operator fun invoke(vararg shape: Int, init: (Int) -> String): MutableStringNDArray {
+            return MutableStringNDArray(Array(shape.fold(1, Int::times), init), Strides(shape))
+        }
+
+        @JvmName("invokeNDVarArg")
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> String): MutableStringNDArray {
+            return invoke(shape, init)
         }
     }
 }

@@ -4,10 +4,13 @@ import io.kinference.*
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.graph.KIGraph
 import io.kinference.core.model.KIModel
 import io.kinference.core.optimizer.rules.DequantizeMatMulInteger
 import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.*
+import io.kinference.model.Model
+import io.kinference.optimizer.*
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.ArrayFormat
 import io.kinference.protobuf.message.*
@@ -21,15 +24,16 @@ typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
 @OptIn(ExperimentalTime::class)
-object KIEngine : InferenceEngine<KIONNXData<*>> {
+object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.TILED)
+    private val defaultOptRules = listOf(DequantizeMatMulInteger, DequantizeQAttention)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
+    override fun loadModel(bytes: ByteArray): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        return KIModel(modelScheme, optimize)
+        return KIModel(modelScheme)
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> = when (type) {
@@ -38,7 +42,21 @@ object KIEngine : InferenceEngine<KIONNXData<*>> {
         ONNXDataType.ONNX_MAP -> KIONNXMap.create(MapProto.decode(protoReader(bytes)))
     }
 
-    val optimizerRules = setOf(DequantizeMatMulInteger, DequantizeQAttention)
+    private fun parseOptLevel(level: OptLevel): List<OptimizerRule<KIONNXData<*>>> = when (level) {
+        OptLevel.NO_OPT -> emptyList()
+        OptLevel.DEFAULT, OptLevel.ALL -> defaultOptRules
+    }
+
+    override fun optimizeModel(model: Model<KIONNXData<*>>, level: OptLevel): Model<KIONNXData<*>> {
+        val rules = parseOptLevel(level)
+        return optimizeModel(model, rules)
+    }
+
+    override fun optimizeModel(model: Model<KIONNXData<*>>, rules: List<OptimizerRule<KIONNXData<*>>>): Model<KIONNXData<*>> {
+        val newGraph = GraphOptimizer((model as KIModel).graph).run(rules) as KIGraph
+        return KIModel(model.name, model.opSet, newGraph)
+    }
+
     override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
-    override suspend fun loadModel(path: Path, optimize: Boolean) = loadModel(CommonDataLoader.bytes(path), optimize)
+    override suspend fun loadModel(path: Path) = loadModel(CommonDataLoader.bytes(path))
 }

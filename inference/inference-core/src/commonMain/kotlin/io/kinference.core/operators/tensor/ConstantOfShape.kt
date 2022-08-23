@@ -8,6 +8,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -49,7 +50,7 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()
         val shape = IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }
-        val result = value.data.allocateNDArray(Strides(shape)).apply { fill(value.data.singleValue()) }
+        val result = allocateNDArray(value.data.type, Strides(shape)).apply { fill(value.data.singleValue()) }
         return listOf(result.asTensor("output"))
     }
 }

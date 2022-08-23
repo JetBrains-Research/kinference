@@ -26,6 +26,10 @@ fun NDArray.indexAxis(axis: Int): Int {
     return if (axis < 0) rank + axis else axis
 }
 
+fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
+    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
+}
+
 val NDArray.rows: Array<MutableNDArray>
     get() = Array(shape[0]) { i -> row(i) }
 
@@ -90,7 +94,7 @@ fun NDArray.as2DList(): List<NDArray> {
     val matrixSize = matrixStrides.linearSize
 
     return List(strides.linearSize / matrixSize) { index ->
-        allocateNDArray(matrixStrides).apply {
+        allocateNDArray(type, matrixStrides).apply {
             val start = matrixSize * index
             copyFrom(0, this@as2DList, start, start + matrixSize)
         }
@@ -156,32 +160,6 @@ fun NDArray.applyWithBroadcast(
     return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
 }
 
-private class NDIndexIterator(array: NDArray) : Iterator<LongArray> {
-    private val shape = array.shape.toLongArray()
-    private val indexSize = shape.size
-    private val maxElements = array.linearSize
-    private var elementsCounter = 0
-    private var currentIndex = LongArray(indexSize).apply { this[lastIndex] = -1L }
-
-    override fun hasNext(): Boolean = elementsCounter < maxElements
-
-    override fun next(): LongArray {
-        for (idx in indexSize - 1 downTo 0) {
-            if (currentIndex[idx] != shape[idx] - 1L) {
-                currentIndex[idx]++
-                break
-            }
-            currentIndex[idx] = 0
-        }
-        elementsCounter++
-        return currentIndex
-    }
-}
-
-fun NDArray.ndIndexed(func: (LongArray) -> Unit) {
-    return NDIndexIterator(this).forEach(func)
-}
-
 fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
     if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
 
@@ -209,4 +187,23 @@ fun NDArray.isTransposeReshape(permutation: IntArray): Boolean {
         lastPermutedAxis = permutation[idx]
     }
     return true
+}
+
+fun NumberNDArray.tryDequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, axis: Int? = null): FloatNDArray {
+    require(this.type == zeroPoint?.type) { "Input data and zero point should have the same data type." }
+    return when {
+        this is ByteNDArray && zeroPoint is ByteNDArray -> this.dequantize(zeroPoint, scale, axis)
+        this is UByteNDArray && zeroPoint is UByteNDArray -> this.dequantize(zeroPoint, scale, axis)
+        else -> error("Dequantization is only supported for BYTE and UBYTE types. Current type = ${this.type}.")
+    }
+}
+
+fun NumberNDArray.tryZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
+    require(this.type == zeroPoint.type) { "Input data and zero point should have the same data type." }
+    return when {
+        this is ByteNDArray && zeroPoint is ByteNDArray -> this.withZeroPoint(zeroPoint)
+        this is UByteNDArray && zeroPoint is UByteNDArray -> this.withZeroPoint(zeroPoint)
+        this is IntNDArray && zeroPoint is IntNDArray -> this.withZeroPoint(zeroPoint)
+        else -> error("Zero point is only supported for BYTE, UBYTE and INT types. Current type = ${this.type}.")
+    }
 }

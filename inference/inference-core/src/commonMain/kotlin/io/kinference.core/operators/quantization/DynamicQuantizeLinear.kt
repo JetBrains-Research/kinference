@@ -35,7 +35,7 @@ sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes:
             val outputZeroPoint = clip(round((-inputMin) / outputScale), 0f, 255f)
             val outputZeroPointScalar = createScalarNDArray(DataType.UBYTE, outputZeroPoint.toUByte())
 
-            val output = allocateNDArray(DataType.UBYTE, this.strides) as MutableUByteNDArray
+            val output = MutableUByteNDArray(this.strides)
 
             output.array.pointer().accept(this.array.pointer(), this.linearSize) { _: UByte, src: Float ->
                 clip((round(src / outputScale) + outputZeroPoint), 0f, 255f).toUByte()

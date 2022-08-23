@@ -17,7 +17,7 @@ fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArray, b: NumberNDArr
 
 fun NumberNDArray.matmul(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray {
     val outputShape = Broadcasting.broadcastShapeForMatmul(this.shape, other.shape)
-    val outputArray = allocateNDArray(Strides(outputShape))
+    val outputArray = allocateNDArray(type, Strides(outputShape)) as MutableNumberNDArray
     return matmul(other, outputArray) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) }
 }
 
@@ -27,10 +27,10 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
 
     if (rank <= 2 && other.rank <= 2) {
-        val actualThis = if (rank == 1) this.reshape(1.concat(shape)) as NumberNDArray else this
+        val actualThis = if (rank == 1) this.reshape(1.concat(shape)) else this
         val actualOther = if (other.rank == 1) this.reshape(other.shape.concat(1)) else other
 
-        return actualThis.dotFunc(actualOther as NumberNDArray, dest)
+        return actualThis.dotFunc(actualOther, dest)
     }
 
     Broadcasting.matmulWithBroadcast(this, other, dest, dotFunc)
@@ -42,7 +42,7 @@ fun quantizeMatMul(
     leftScale: FloatNDArray, rightScale: FloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): MutableFloatNDArray {
     val outputShape = Broadcasting.broadcastShapeForMatmul(left.shape, right.shape)
-    val outputArray = allocateNDArray(DataType.FLOAT, outputShape) as MutableFloatNDArray
+    val outputArray = MutableFloatNDArray(outputShape)
     return quantizeMatMul(left, right, leftZeroPoint, rightZeroPoint, leftScale, rightScale, outputArray, coroutineContext)
 }
 
@@ -50,7 +50,6 @@ fun quantizeMatMul(
     left: NumberNDArray, right: NumberNDArray, leftZeroPoint: NumberNDArray?, rightZeroPoint: NumberNDArray?,
     leftScale: FloatNDArray, rightScale: FloatNDArray, dest: MutableFloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): MutableFloatNDArray {
-
     if (canDequantizePerTensor(leftZeroPoint, leftScale) && canDequantizePerTensor(rightZeroPoint, rightScale)) {
         val leftScaleValue = leftScale.singleValue()
         val rightScaleValue = rightScale.singleValue()
@@ -71,7 +70,6 @@ fun quantizeMatMul(
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 left.matmul(right, dest) { other, dest ->
                     (this as ByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale, coroutineContext)
-
                 }
             }
 
@@ -92,8 +90,8 @@ fun quantizeMatMul(
             }
         }
     } else {
-        val leftDequantized = left.dequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
-        val rightDequantized = right.dequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
+        val leftDequantized = left.tryDequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
+        val rightDequantized = right.tryDequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
 
         leftDequantized.matmul(rightDequantized, dest) { other, dest -> this.dot(other, dest, coroutineContext) }
     }

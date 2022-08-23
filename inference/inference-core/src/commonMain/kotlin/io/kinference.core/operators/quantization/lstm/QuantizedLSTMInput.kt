@@ -17,19 +17,17 @@ class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroP
         destination: MutableNumberNDArray,
         executionContext: ExecutionContext?
     ) {
-        when(weights) {
-            is QuantizedLSTMWeights -> quantizeMatMul(
-                data,
-                weights.data,
-                zeroPoint,
-                weights.zeroPoint,
-                scale,
-                weights.scale,
-                destination as MutableFloatNDArray,
-                executionContext.asCoroutineContext()
-            )
-            else -> error("Unsupported operation")
-        }
+        require(weights is QuantizedLSTMWeights) { "Cannot cast ${weights::class} to QuantizedLSTMWeights" }
+        quantizeMatMul(
+            data,
+            weights.data,
+            zeroPoint,
+            weights.zeroPoint,
+            scale,
+            weights.scale,
+            destination as MutableFloatNDArray,
+            executionContext.asCoroutineContext()
+        )
     }
 
     override fun recreate(data: NumberNDArray): QuantizedLSTMInput {

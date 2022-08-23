@@ -8,6 +8,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -106,7 +107,7 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
-        val output = input.allocateNDArray(input.strides)
+        val output = MutableFloatNDArray(input.strides)
         input.normalize(
             skip = inputs[1]!!.data as FloatNDArray,
             gamma = inputs[2]!!.data as FloatNDArray,

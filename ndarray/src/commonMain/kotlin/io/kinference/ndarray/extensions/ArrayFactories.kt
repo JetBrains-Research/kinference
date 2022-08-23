@@ -5,7 +5,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 
-inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
+inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
     return when (type) {
         DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
         DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
@@ -19,23 +19,22 @@ inline fun <reified T> createArray(type: DataType, shape: IntArray, noinline ini
     }
 }
 
-inline fun <reified T> createPrimitiveArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
-    val linearSize = shape.fold(1, Int::times)
+inline fun <reified T> createPrimitiveArray(type: DataType, size: Int, noinline init: (Int) -> T): Any {
     return when (type) {
-        DataType.DOUBLE -> DoubleArray(linearSize) { init(it) as Double }
-        DataType.FLOAT -> FloatArray(linearSize) { init(it) as Float }
-        DataType.LONG -> LongArray(linearSize) { init(it) as Long }
-        DataType.INT -> IntArray(linearSize) { init(it) as Int }
-        DataType.SHORT -> ShortArray(linearSize) { init(it) as Short }
-        DataType.USHORT -> UShortArray(linearSize) { init(it) as UShort }
-        DataType.BOOLEAN -> BooleanArray(linearSize) { init(it) as Boolean }
-        DataType.BYTE -> ByteArray(linearSize) { init(it) as Byte }
-        DataType.UBYTE -> UByteArray(linearSize) { init(it) as UByte }
+        DataType.DOUBLE -> DoubleArray(size) { init(it) as Double }
+        DataType.FLOAT -> FloatArray(size) { init(it) as Float }
+        DataType.LONG -> LongArray(size) { init(it) as Long }
+        DataType.INT -> IntArray(size) { init(it) as Int }
+        DataType.SHORT -> ShortArray(size) { init(it) as Short }
+        DataType.USHORT -> UShortArray(size) { init(it) as UShort }
+        DataType.BOOLEAN -> BooleanArray(size) { init(it) as Boolean }
+        DataType.BYTE -> ByteArray(size) { init(it) as Byte }
+        DataType.UBYTE -> UByteArray(size) { init(it) as UByte }
         else -> error("Unsupported data type: $type")
     }
 }
 
-fun createArray(shape: IntArray, array: Any): Any {
+fun tiledFromPrimitiveArray(shape: IntArray, array: Any): Any {
     return when (array) {
         is DoubleArray -> DoubleTiledArray(shape) { array[it] }
         is FloatArray -> FloatTiledArray(shape) { array[it] }
@@ -91,7 +90,6 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
         DataType.BOOLEAN -> BooleanNDArray(value as BooleanTiledArray, strides)
         DataType.BYTE -> ByteNDArray(value as ByteTiledArray, strides)
         DataType.UBYTE -> UByteNDArray(value as UByteTiledArray, strides)
-        //else -> Array(size, init)
         else -> error("Unsupported data type $type")
     }
 }

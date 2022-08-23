@@ -9,6 +9,7 @@ import io.kinference.operator.*
 import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArray
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.computeBlockSize
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -74,7 +75,7 @@ class GatherNDVer11(name: String, attributes: Map<String, Attribute<Any>>, input
         val blockSize = input.computeBlockSize(fromDim = batchDims + indices.shape.last())
         val offsets = input.getOffsetsFromIndices(indices, batchDims)
         val outputShape = inferOutputShape(input.shape, indices.shape, batchDims)
-        val output = input.allocateNDArray(Strides(outputShape))
+        val output = allocateNDArray(input.type, Strides(outputShape))
         for ((i, offset) in offsets.withIndex()) {
             output.copyFrom(i * blockSize, input, offset, offset + blockSize)
         }

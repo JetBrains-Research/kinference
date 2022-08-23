@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.Strides
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -20,9 +21,9 @@ interface NDArray {
     val rank: Int
         get() = shape.size
 
-    fun singleValue(): Any
+    operator fun get(index: IntArray): Any
 
-    fun allocateNDArray(strides: Strides): MutableNDArray
+    fun singleValue(): Any
 
     fun view(vararg axes: Int): NDArray
     @Deprecated(message = "Use reshape() instead", replaceWith = ReplaceWith("reshape()"))
@@ -34,7 +35,7 @@ interface NDArray {
     fun copyIfNotMutable(): MutableNDArray
 
     fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray
-    fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
+    fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(type, strides))
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
@@ -49,10 +50,13 @@ interface NDArray {
 }
 
 interface MutableNDArray : NDArray {
+    operator fun set(index: IntArray, value: Any)
+
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
+
     fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
     fun clean()
@@ -61,14 +65,10 @@ interface MutableNDArray : NDArray {
 }
 
 interface NumberNDArray : NDArray {
-    override fun allocateNDArray(strides: Strides): MutableNumberNDArray
-
-    fun dequantize(zeroPoint: NDArray?, scale: NDArray, axis: Int? = null): NDArray
-
     override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
     override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray
-    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(strides))
+    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, allocateNDArray(type, strides))
 
     override fun row(row: Int): MutableNumberNDArray
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
@@ -78,9 +78,8 @@ interface NumberNDArray : NDArray {
     fun max(axis: Int, keepDims: Boolean): NumberNDArray
     fun sum(): Any
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
-    fun withZeroPoint(zeroPoint: NumberNDArray): IntNDArray
+    fun erf(): NumberNDArray
 
-    fun erfFor(value: Any): Any
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
@@ -117,10 +116,11 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
 
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 
-    fun erf(): MutableNumberNDArray
-
     operator fun plusAssign(other: NDArray)
     operator fun minusAssign(other: NDArray)
     operator fun timesAssign(other: NDArray)
     operator fun divAssign(other: NDArray)
 }
+
+operator fun NDArray.get(vararg index: Int) = this[index]
+operator fun MutableNDArray.set(vararg index: Int, value: Any) { this[index] = value }

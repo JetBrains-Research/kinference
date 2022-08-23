@@ -75,7 +75,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
 
         val actualAxis = data.indexAxis(axis)
         val actualIndices = getIndices(indices, data.shape[actualAxis])
-        val output = data.allocateNDArray(Strides(indices.shape))
+        val output = allocateNDArray(data.type, Strides(indices.shape))
         val blockSize = actualIndices.shape.last()
         val numBlocks = actualIndices.linearSize / blockSize
         val isLastDim = if (actualAxis != data.rank - 1) 1 else 0

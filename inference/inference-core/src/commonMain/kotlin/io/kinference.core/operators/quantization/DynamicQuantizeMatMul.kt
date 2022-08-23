@@ -10,6 +10,7 @@ import io.kinference.operator.*
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
@@ -56,7 +57,7 @@ class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute
         val rightZeroPoint = inputs[3]?.data as? NumberNDArray
         val bias = inputs[4]?.data as? FloatNDArray
 
-        val dequantRight = quantizedRight.dequantize(rightZeroPoint, rightScale) as NumberNDArray
+        val dequantRight = quantizedRight.tryDequantize(rightZeroPoint, rightScale) as NumberNDArray
 
         val output = left.matmul(dequantRight, contexts.execution.asCoroutineContext())
 

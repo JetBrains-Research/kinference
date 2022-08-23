@@ -1,6 +1,6 @@
 package io.kinference.protobuf.arrays
 
-import io.kinference.ndarray.extensions.createArray
+import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.protobuf.ProtobufReader
 import io.kinference.protobuf.arrays.PrimitiveArraySerializer.Companion.arraySerializer
 import io.kinference.protobuf.arrays.TiledArraySerializer.Companion.tiledSerializer
@@ -73,7 +73,7 @@ internal class TiledArrayContainer : ArrayContainer {
         if (!hasData()) return null
 
         if (!tiledInitialized) {
-            tiled = createArray(shape, array!!)
+            tiled = tiledFromPrimitiveArray(shape, array!!)
             _array = null
             tiledInitialized = true
         }
