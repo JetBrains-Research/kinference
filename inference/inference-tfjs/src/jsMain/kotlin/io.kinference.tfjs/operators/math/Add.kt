@@ -3,26 +3,27 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.plus
-import io.kinference.tfjs.externals.extensions.tidy
 
-sealed class Add(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Add(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in AddVer7.VERSION.asRange() -> AddVer7(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Add operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in AddVer7.VERSION.asRange() -> AddVer7(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Add operator: $version")
+            }
     }
 }
 
-class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Add(name, INFO, attributes, inputs, outputs) {
+class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Add(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -50,11 +51,8 @@ class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val left = inputs[0]!!
-            val right = inputs[1]!!
-            return@tidy arrayOf(left.data + right.data)
-        }
-        return listOf(outputs[0].asTensor("C"))
+        val left = inputs[0]!!.data as NumberNDArrayTFJS
+        val right = inputs[1]!!.data as NumberNDArrayTFJS
+        return listOf((left + right).asTensor("C"))
     }
 }

@@ -1,30 +1,31 @@
 package io.kinference.tfjs.operators.layer.normalization
 
-import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.fill
-import io.kinference.tfjs.externals.core.range
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class EmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class EmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in EmbedLayerNormalizationVer1.VERSION.asRange() -> EmbedLayerNormalizationVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of EmbedLayerNormalization operator: $version")
+            }
     }
 }
 
-class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : EmbedLayerNormalization(name, INFO, attributes, inputs, outputs) {
+class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    EmbedLayerNormalization(name, INFO, attributes, inputs, outputs) {
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -59,52 +60,47 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
     private val epsilon: Float by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val inputIds = inputs[0]!!.data
-            val segmentIds = inputs[1]?.data
-            val wordWeights = inputs[2]!!.data
-            val positionWeights = inputs[3]!!.data
-            val segmentWeights = inputs[4]?.data
-            val gamma = inputs[5]!!.data
-            val beta = inputs[6]!!.data
-            val mask = inputs[7]?.data
+        val inputIds = inputs[0]!!.data as NumberNDArrayTFJS
+        val segmentIds = inputs[1]?.data as? NumberNDArrayTFJS
+        val wordWeights = inputs[2]!!.data as NumberNDArrayTFJS
+        val positionWeights = inputs[3]!!.data as NumberNDArrayTFJS
+        val segmentWeights = inputs[4]?.data as? NumberNDArrayTFJS
+        val gamma = inputs[5]!!.data as NumberNDArrayTFJS
+        val beta = inputs[6]!!.data as NumberNDArrayTFJS
+        val mask = inputs[7]?.data as? NumberNDArrayTFJS
 
-            val (batchSize, seqLen) = inputIds.shape
-            val (_, hiddenSize) = wordWeights.shape
+        val (batchSize, seqLen) = inputIds.shape
+        val (_, hiddenSize) = wordWeights.shape
 
-            val outputShape = arrayOf(batchSize, seqLen, hiddenSize)
+        val outputShape = intArrayOf(batchSize, seqLen, hiddenSize)
 
-            val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape)
+        val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape)
 
-            val positionIds = range(0, inputIds.shape[1], 1, "int32").broadcastTo(inputIds.shape)
+        val positionIds = range(0, inputIds.shape[1], 1, "int32").toNDArray().broadcastTo(inputIds.shapeArray)
 
-            val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape)
+        val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape)
 
-
-            val segmentEmbedding =
-                if (segmentIds != null && segmentWeights != null) {
-                    segmentWeights.gather(segmentIds.flatten()).reshape(outputShape)
-                } else {
-                    null
-                }
-
-            val embedding = if (segmentEmbedding != null) {
-                wordEmbedding.add(positionEmbedding, segmentEmbedding)
-            } else {
-                wordEmbedding.plus(positionEmbedding)
-            }
-
-            val momentsOutput = embedding.moments(-1, true)
-            val mean = momentsOutput.mean
-            val variance = momentsOutput.variance
-
-            val epsilonTensor = tensor(floatArrayOf(epsilon), arrayOf(1), "float32")
-            val output = (embedding - mean) / (sqrt(variance + epsilonTensor)) * gamma + beta
-
-            val maskOutput = mask?.sum(1, false) ?: fill(arrayOf(batchSize), 0, "int32")
-            return@tidy arrayOf(output, maskOutput)
+        val segmentEmbedding = if (segmentIds != null && segmentWeights != null) {
+            segmentWeights.gather(segmentIds.flatten()).reshape(outputShape)
+        } else {
+            null
         }
 
-        return listOf(outputs[0].asTensor("output"), outputs[1].asTensor("mask_index"))
+        val embedding = if (segmentEmbedding != null) {
+            wordEmbedding.add(positionEmbedding, segmentEmbedding)
+        } else {
+            wordEmbedding.plus(positionEmbedding)
+        } as NumberNDArrayTFJS
+
+        val (mean, variance) = embedding.moments(axis = -1, keepDims = true)
+
+        val epsilonTensor = NumberNDArrayTFJS(tensor(floatArrayOf(epsilon), arrayOf(1), "float32"))
+        val output = (embedding - mean) / (variance + epsilonTensor).tfjs { it.sqrt() } * gamma + beta
+
+        val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
+
+        return listOf(output.asTensor("output"), maskOutput.asTensor("mask_index")).also {
+            closeAll(wordEmbedding, positionIds, positionEmbedding, segmentEmbedding, embedding, mean, variance, epsilonTensor)
+        }
     }
 }

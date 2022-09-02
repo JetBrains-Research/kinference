@@ -7,7 +7,6 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.createScalarNDArray
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType

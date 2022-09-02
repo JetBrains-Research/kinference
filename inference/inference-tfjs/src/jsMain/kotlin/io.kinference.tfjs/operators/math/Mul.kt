@@ -3,21 +3,22 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.tidy
-import io.kinference.tfjs.externals.extensions.times
 
-sealed class Mul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Mul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in MulVer7.VERSION.asRange() -> MulVer7(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Mul operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in MulVer7.VERSION.asRange() -> MulVer7(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Mul operator: $version")
+            }
     }
 }
 
@@ -49,7 +50,9 @@ class MulVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val result = tidy { arrayOf(inputs[0]!!.data * inputs[1]!!.data) }.first()
+        val left = inputs[0]!!.data as NumberNDArrayTFJS
+        val right = inputs[1]!!.data as NumberNDArrayTFJS
+        val result = left * right
         return listOf(result.asTensor("C"))
     }
 }

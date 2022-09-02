@@ -4,10 +4,9 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.model.ExecutionContext
-import io.kinference.ndarray.Strides
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.runBlocking
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -43,9 +42,9 @@ sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, A
             val matrixRows = (input.reshape(intArrayOf(rows, columns)) as NumberNDArray).rows
 
             fun MutableNumberNDArray.softmax() {
-                minusAssign(createScalarNDArray(input.type, max()))
+                minusAssign(createScalarNDArray(input.type, max()) as NumberNDArray)
                 mapMutable(exp(type))
-                divAssign(createScalarNDArray(input.type, sum()))
+                divAssign(createScalarNDArray(input.type, sum()) as NumberNDArray)
             }
 
             if (matrixRows.size > 128 && executionContext != null) {

@@ -6,7 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import io.kinference.ndarray.Strides
+import io.kinference.ndarray.arrays.Strides
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.allocateNDArray

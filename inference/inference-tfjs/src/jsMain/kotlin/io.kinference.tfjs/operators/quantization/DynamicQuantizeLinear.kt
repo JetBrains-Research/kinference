@@ -3,22 +3,23 @@ package io.kinference.tfjs.operators.quantization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.scalar
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.scalar
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in DynamicQuantizeLinearVer11.VERSION.asRange() -> DynamicQuantizeLinearVer11(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of DynamicQuantizeLinear operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in DynamicQuantizeLinearVer11.VERSION.asRange() -> DynamicQuantizeLinearVer11(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of DynamicQuantizeLinear operator: $version")
+            }
     }
 }
 
@@ -47,7 +48,7 @@ class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
-            val input = inputs[0]!!.data
+            val input = inputs[0]!!.data.tfjsArray
 
             val inputMin = min(input.min(), scalarZero)
             val inputMax = max(input.max(), scalarZero)

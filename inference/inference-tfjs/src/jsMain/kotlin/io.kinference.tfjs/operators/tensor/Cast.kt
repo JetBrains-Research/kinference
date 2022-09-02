@@ -5,11 +5,12 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.cast
-import io.kinference.tfjs.externals.extensions.tidy
+import io.kinference.ndarray.extensions.cast
+import io.kinference.ndarray.extensions.tidy
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -57,10 +58,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            return@tidy arrayOf(inputs[0]!!.data.cast(tfjsType))
-        }
-
-        return listOf(outputs[0].asTensor("output"))
+        val input = inputs[0]!!.data
+        return listOf(input.cast(tfjsType).asTensor("output"))
     }
 }

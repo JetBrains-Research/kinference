@@ -7,9 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -52,7 +50,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArray
-        val output = input.argmax(axis, keepDims, selectLastIndex)
+        val output = input.argmax(axis, keepDims, selectLastIndex) as IntNDArray
         val outputLong = MutableLongNDArray(output.strides)
         outputLong.array.pointer().accept(output.array.pointer(), output.linearSize) { _: Long, src: Int -> src.toLong() }
 

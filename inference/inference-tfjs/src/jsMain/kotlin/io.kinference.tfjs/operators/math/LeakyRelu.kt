@@ -3,27 +3,30 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.leakyRelu
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.leakyRelu
-import io.kinference.tfjs.externals.extensions.tidy
 import kotlin.time.ExperimentalTime
 
-sealed class LeakyRelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class LeakyRelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in LeakyReluVer6.VERSION.asRange() -> LeakyReluVer6(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of LeakyRelu operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in LeakyReluVer6.VERSION.asRange() -> LeakyReluVer6(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of LeakyRelu operator: $version")
+            }
     }
 }
 
 @ExperimentalTime
-class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : LeakyRelu(name, INFO, attributes, inputs, outputs) {
+class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
+    LeakyRelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -36,14 +39,11 @@ class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = empt
         private val INFO = OperatorInfo("LeakyRelu", ATTRIBUTE_INFO, INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    val alpha: Float by attribute()
+    private val alpha: Float by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            return@tidy arrayOf(input.leakyRelu(alpha))
-        }
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
 
-        return listOf(outputs[0].asTensor("Y"))
+        return listOf(input.leakyRelu(alpha).asTensor("Y"))
     }
 }

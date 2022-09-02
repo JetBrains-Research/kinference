@@ -7,8 +7,8 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.tidy
-import io.kinference.tfjs.externals.extensions.transpose
+import io.kinference.ndarray.extensions.tidy
+import io.kinference.ndarray.extensions.transpose
 import kotlin.time.ExperimentalTime
 
 sealed class Transpose(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -42,11 +42,8 @@ class TransposeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val perm: Array<Int>? by attributeOrNull { array: LongArray? -> array?.let { Array(array.size) { array[it].toInt() } } }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            return@tidy arrayOf(input.transpose(perm))
-        }
+        val output = inputs[0]!!.data.transpose(perm?.toIntArray())
 
-        return listOf(outputs[0].asTensor("transposed"))
+        return listOf(output.asTensor("transposed"))
     }
 }

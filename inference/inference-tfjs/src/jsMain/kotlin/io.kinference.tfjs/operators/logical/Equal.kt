@@ -3,12 +3,11 @@ package io.kinference.tfjs.operators.logical
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.extensions.equal
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.equal
-import io.kinference.tfjs.externals.extensions.tidy
 
 sealed class Equal(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -43,14 +42,9 @@ class EqualVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val left = inputs[0]!!.data
-            val right = inputs[1]!!.data
+        val left = inputs[0]!!.data
+        val right = inputs[1]!!.data
 
-
-            return@tidy arrayOf(left.equal(right))
-        }
-
-        return listOf(outputs[0].asTensor("C"))
+        return listOf(left.equal(right).asTensor("C"))
     }
 }

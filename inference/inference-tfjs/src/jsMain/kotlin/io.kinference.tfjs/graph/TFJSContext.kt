@@ -8,8 +8,8 @@ class TFJSGraphContext(base: TFJSGraphContext? = null) : GraphContext<TFJSData<*
     override fun removeValues(predicate: (String) -> Boolean) {
         val allToRemove = values.entries.filter { predicate(it.key) }
         allToRemove.forEach {
-            if (it.value is TFJSTensor) {
-                (it.value as TFJSTensor).data.dispose()
+            if (it.value is TFJSData<*>) {
+                it.value.close()
             }
         }
         values.entries.removeAll(allToRemove)

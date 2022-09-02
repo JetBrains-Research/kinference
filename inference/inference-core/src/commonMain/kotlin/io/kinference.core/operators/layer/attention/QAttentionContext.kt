@@ -9,7 +9,6 @@ import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
-import io.kinference.protobuf.message.TypeProto
 
 object QAttentionContext: ContextPrepare() {
     override fun appendContext(

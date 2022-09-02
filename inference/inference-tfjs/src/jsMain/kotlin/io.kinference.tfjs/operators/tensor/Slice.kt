@@ -3,24 +3,27 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SliceVer10.VERSION.asRange() -> SliceVer10(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in SliceVer10.VERSION.asRange() -> SliceVer10(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Constant operator: $version")
+            }
     }
 }
 
-class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(name, INFO, attributes, inputs, outputs) {
+class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Slice(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val DATA_TYPE_CONSTRAINTS = ALL_DATA_TYPES
         private val INDEX_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32)
@@ -43,67 +46,63 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
-                for ((idx, axis) in this.withIndex()) {
-                    set(idx, input.indexAxis(axis))
-                }
-            } ?: IntArray(input.shape.size) { it }
+        val input = inputs[0]!!.data
+        val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
+            for ((idx, axis) in this.withIndex()) {
+                set(idx, input.indexAxis(axis))
+            }
+        } ?: IntArray(input.shape.size) { it }
 
-            val incompleteStarts = inputs[1]!!.data.dataInt()
-            require(incompleteStarts.size == axes.size)
+        val incompleteStarts = inputs[1]!!.data.dataInt()
+        require(incompleteStarts.size == axes.size)
 
-            val incompleteEnds = inputs[2]!!.data.dataInt()
-            require(incompleteEnds.size == axes.size)
+        val incompleteEnds = inputs[2]!!.data.dataInt()
+        require(incompleteEnds.size == axes.size)
 
-            val incompleteSteps = inputs.getOrNull(4)?.data?.dataInt() ?: IntArray(axes.size) { 1 }
-            require(incompleteSteps.size == axes.size)
+        val incompleteSteps = inputs.getOrNull(4)?.data?.dataInt() ?: IntArray(axes.size) { 1 }
+        require(incompleteSteps.size == axes.size)
 
-            val starts = IntArray(input.shape.size)
-            val ends = IntArray(input.shape.size)
-            val steps = IntArray(input.shape.size)
+        val starts = IntArray(input.shape.size)
+        val ends = IntArray(input.shape.size)
+        val steps = IntArray(input.shape.size)
 
-            for (axis in input.shape.indices) {
-                val index = axes.indexOf(axis)
-                if (index == -1) {
-                    starts[axis] = 0
-                    ends[axis] = input.shape[axis]
-                    steps[axis] = 1
-                } else {
-                    val step = incompleteSteps[index]
-                    steps[axis] = step
-                    val start = incompleteStarts[index]
-                    val end = incompleteEnds[index]
-                    val dim = input.shape[axis]
+        for (axis in input.shape.indices) {
+            val index = axes.indexOf(axis)
+            if (index == -1) {
+                starts[axis] = 0
+                ends[axis] = input.shape[axis]
+                steps[axis] = 1
+            } else {
+                val step = incompleteSteps[index]
+                steps[axis] = step
+                val start = incompleteStarts[index]
+                val end = incompleteEnds[index]
+                val dim = input.shape[axis]
 
-                    if (step > 0) {
-                        if (start >= dim) {
-                            starts[axis] = 0
-                            ends[axis] = 0
-                            continue
-                        }
-
-                        val actualStart = if (start < 0) {
-                            start + dim
-                        } else start
-
-                        val actualEnd = if (end < 0) {
-                            end + dim
-                        } else end
-                        starts[axis] = actualStart
-                        ends[axis] = actualEnd
-                    } else {
-                        starts[axis] = start
-                        ends[axis] = end
+                if (step > 0) {
+                    if (start >= dim) {
+                        starts[axis] = 0
+                        ends[axis] = 0
+                        continue
                     }
+
+                    val actualStart = if (start < 0) {
+                        start + dim
+                    } else start
+
+                    val actualEnd = if (end < 0) {
+                        end + dim
+                    } else end
+                    starts[axis] = actualStart
+                    ends[axis] = actualEnd
+                } else {
+                    starts[axis] = start
+                    ends[axis] = end
                 }
             }
-            val output = input.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
-            return@tidy arrayOf(output)
         }
+        val output = input.slice(starts, ends, steps)
 
-
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 }

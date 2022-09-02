@@ -3,28 +3,29 @@ package io.kinference.tfjs.operators.quantization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.*
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class DequantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class DequantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in DequantizeLinearVer10.VERSION.asRange() -> DequantizeLinearVer10(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of DequantizeLinear operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in DequantizeLinearVer10.VERSION.asRange() -> DequantizeLinearVer10(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of DequantizeLinear operator: $version")
+            }
     }
 }
 
-class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : DequantizeLinear(name, INFO, attributes, inputs, outputs) {
+class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    DequantizeLinear(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.INT8,
@@ -51,11 +52,11 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
         internal val VERSION = VersionInfo(sinceVersion = 10)
         private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun canDequantizePerTensor(zeroPoint: NDArrayTFJS?, scale: NDArrayTFJS): Boolean {
+        private fun canDequantizePerTensor(zeroPoint: ArrayTFJS?, scale: ArrayTFJS): Boolean {
             return scale.size == 1 && (zeroPoint == null || zeroPoint.size == 1)
         }
 
-        private fun NDArrayTFJS.canDequantizePerAxis(axis: Int, zeroPoint: NDArrayTFJS?, scale: NDArrayTFJS): Boolean {
+        private fun ArrayTFJS.canDequantizePerAxis(axis: Int, zeroPoint: ArrayTFJS?, scale: ArrayTFJS): Boolean {
             return scale.rank == 1 && scale.size == shape[axis] && (zeroPoint == null || zeroPoint.rank == 1 && zeroPoint.size == shape[axis])
         }
     }
@@ -64,40 +65,38 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            val scale = inputs[1]!!.data
-            val zeroPoint = inputs.getOrNull(2)?.data
-            val actualAxis = input.indexAxis(axis)
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val scale = inputs[1]!!.data as NumberNDArrayTFJS
+        val zeroPoint = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
+        val actualAxis = input.indexAxis(axis)
 
-            require(zeroPoint == null || scale.shape.contentEquals(zeroPoint.shape)) { "Zero point and scale tensors should have the same dims" }
+        require(zeroPoint == null || scale.shape.contentEquals(zeroPoint.shape)) { "Zero point and scale tensors should have the same dims" }
 
-            val output = when {
-                canDequantizePerTensor(zeroPoint, scale) -> {
-                    val zero = zeroPoint ?: scalar(0, "int32")
-
-                    (input - zero) * scale
+        val output = when {
+            canDequantizePerTensor(zeroPoint, scale) -> {
+                val zero = zeroPoint ?: NumberNDArrayTFJS(scalar(0, "int32"))
+                ((input - zero) * scale).also {
+                    if (zeroPoint == null) zero.close()
                 }
-
-                input.canDequantizePerAxis(actualAxis, zeroPoint, scale) -> {
-                    val blockCount = input.computeBlockSize(toDim = actualAxis)
-                    val blockSize = input.computeBlockSize(fromDim = actualAxis + 1)
-                    val dim = input.shape[actualAxis]
-                    val preparedInput = input.reshape(arrayOf(blockCount, dim, blockSize))
-                    val preparedZP = zeroPoint?.reshape(arrayOf(1, dim, 1)) ?: fill(arrayOf(1, dim, 1), 0, "int32")
-                    val preparedScale = scale.reshape(arrayOf(1, dim, 1))
-
-                    val rawOutput = (preparedInput - preparedZP) * preparedScale
-                    rawOutput.reshape(input.shape)
-                }
-
-                else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors")
             }
 
-            return@tidy arrayOf(output)
-        }
+            input.canDequantizePerAxis(actualAxis, zeroPoint, scale) -> {
+                val blockCount = input.computeBlockSize(toDim = actualAxis)
+                val blockSize = input.computeBlockSize(fromDim = actualAxis + 1)
+                val dim = input.shape[actualAxis]
+                val preparedInput = input.reshape(intArrayOf(blockCount, dim, blockSize))
+                val preparedZP = zeroPoint?.reshape(intArrayOf(1, dim, 1)) ?: NumberNDArrayTFJS(fill(arrayOf(1, dim, 1), 0, "int32"))
+                val preparedScale = scale.reshape(intArrayOf(1, dim, 1))
 
-        return listOf(outputs.first().asTensor("y"))
+                val rawOutput = (preparedInput - preparedZP) * preparedScale
+                rawOutput.reshape(input.shape).also {
+                    closeAll(preparedInput, preparedScale, preparedZP, rawOutput)
+                }
+            }
+
+            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors")
+        }
+        return listOf(output.asTensor("y"))
     }
 }
 

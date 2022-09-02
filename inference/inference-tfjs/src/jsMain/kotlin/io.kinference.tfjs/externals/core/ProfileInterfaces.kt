@@ -1,5 +1,6 @@
 package io.kinference.tfjs.externals.core
 
+import io.kinference.ndarray.arrays.ArrayTFJS
 import kotlin.js.Promise
 
 interface ProfileInfo {
@@ -7,7 +8,7 @@ interface ProfileInfo {
     val newTensors: Int
     val peakBytes: Int
     val kernels: Array<KernelInfo>
-    val result: Array<NDArrayTFJS>
+    val result: Array<ArrayTFJS>
     val kernelNames: Array<String>
 }
 

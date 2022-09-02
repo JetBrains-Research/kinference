@@ -56,9 +56,9 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val actualOutputs = model.predict(inputs)
             check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
 
-            inputs.forEach { testEngine.postprocessData(it) }
-            expectedOutputs.forEach { testEngine.postprocessData(it) }
-            actualOutputs.values.forEach { testEngine.postprocessData(it) }
+            inputs.forEach { it.close() }
+            expectedOutputs.forEach { it.close() }
+            actualOutputs.values.forEach { it.close() }
         }
     }
 

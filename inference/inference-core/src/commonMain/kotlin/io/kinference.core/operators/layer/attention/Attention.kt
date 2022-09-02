@@ -3,19 +3,17 @@ package io.kinference.core.operators.layer.attention
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.ndarray.runBlocking
 import io.kinference.operator.*
 import io.kinference.core.operators.activations.Softmax
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
+import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlinx.coroutines.*
@@ -100,7 +98,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                             val maskVector = maskData?.view(batchNum)
 
                             concatStateChunk(pastMatrix, keyMatrix, presentMatrix)
-                            (queryMatrix as NumberNDArray).dotTransposedWithAlpha(alpha, presentMatrix as NumberNDArray, scoresMatrix as MutableNumberNDArray, executionContext.asCoroutineContext())
+                            (queryMatrix as FloatNDArray).dotTransposedWithAlpha(alpha, presentMatrix as NumberNDArray, scoresMatrix as MutableNumberNDArray, executionContext.asCoroutineContext())
 //                    gemm(seqLen, allSeqLen, headSize, alpha, queryMatrix as NumberNDArray, presentMatrix as NumberNDArray, 1.0, scoresMatrix, transposeB = true)
                             if (maskVector != null)
                                 scoresMatrix.plusAssign(maskVector)

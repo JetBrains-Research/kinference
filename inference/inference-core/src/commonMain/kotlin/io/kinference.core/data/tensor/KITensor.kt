@@ -1,7 +1,6 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.core.CoreBackend
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
@@ -9,12 +8,17 @@ import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 import io.kinference.data.ONNXTensor
+import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
 //TODO: support external data
 class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray, CoreBackend>(name, data) {
     constructor(data: NDArray, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
+
+    override fun close() {
+        data.close()
+    }
 
     operator fun minus(other: KITensor): KITensor {
         require(this.data is NumberNDArray && other.data is NumberNDArray)

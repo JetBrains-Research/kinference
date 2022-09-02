@@ -3,13 +3,14 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.dtype
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.tensor
-import io.kinference.tfjs.externals.extensions.*
+import io.kinference.ndarray.arrays.tensor
 
 sealed class ConstantOfShape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -43,17 +44,14 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
     private val value: TFJSTensor by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val shape = inputs[0]!!.data.dataInt().toTypedArray()
-            if (shape.contains(0)) {
-                return@tidy arrayOf(tensor(emptyArray<Int>(), shape, value.data.dtype))
-            }
-
-            val output = value.data.broadcastTo(shape)
-            return@tidy arrayOf(output)
+        val shape = inputs[0]!!.data.dataInt().toTypedArray()
+        val output = if (shape.contains(0)) {
+            tensor(emptyArray<Int>(), shape, value.data.dtype).toNDArray()
+        } else {
+            value.data.broadcastTo(shape)
         }
 
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 }
 

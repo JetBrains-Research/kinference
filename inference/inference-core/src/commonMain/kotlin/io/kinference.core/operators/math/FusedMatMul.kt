@@ -73,7 +73,7 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
         }) else right
 
         val output = actualLeft.matmul(actualRight, contexts.execution.asCoroutineContext())
-        output.timesAssign(createScalarNDArray(output.type, alpha))
+        output.timesAssign(createScalarNDArray(output.type, alpha) as NumberNDArray)
         return listOf(output.asTensor("Y"))
     }
 }

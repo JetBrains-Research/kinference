@@ -3,12 +3,13 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
 sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -43,34 +44,31 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         private val INFO = OperatorInfo("ArgMax", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axis: Int by attribute() { it: Number -> it.toInt() }
+    private val axis: Int by attribute { it: Number -> it.toInt() }
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() != 0 }
     private val selectLastIndex: Boolean by attribute("select_last_index") { it: Number -> it.toInt() != 0 }
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            val actualAxis = input.indexAxis(axis)
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val actualAxis = input.indexAxis(axis)
 
-            val output = if (selectLastIndex) {
-                val reversedInput = input.reverse(actualAxis)
-                val argMaxResult = reversedInput.argmax(actualAxis)
-                val axisDimension = scalar(input.shape[actualAxis] - 1)
-                axisDimension - argMaxResult
-            } else {
-                input.argmax(actualAxis)
+        val output = if (selectLastIndex) {
+            val reversedInput = input.reverse(actualAxis)
+            val argMaxResult = reversedInput.argmax(actualAxis)
+            val axisDimension = NumberNDArrayTFJS(scalar(input.shape[actualAxis] - 1))
+            (axisDimension - argMaxResult).also {
+                closeAll(reversedInput, argMaxResult, axisDimension)
             }
-
-            val normalizedOutput = if (keepDims) {
-                output.reshape(input.shape.copyOf().apply { this[actualAxis] = 1 })
-            } else {
-                output
-            }
-
-            return@tidy arrayOf(normalizedOutput)
+        } else {
+            input.argmax(actualAxis)
         }
 
-        return listOf(outputs[0].asTensor("reduced"))
+        val normalizedOutput = if (keepDims) {
+            output.reshape(input.shape.copyOf().apply { this[actualAxis] = 1 }).also { output.close() }
+        } else {
+            output
+        }
+        return listOf(normalizedOutput.asTensor("reduced"))
     }
 }

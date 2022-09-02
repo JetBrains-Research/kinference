@@ -3,25 +3,28 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.extensions.concat
+import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class Concat(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Concat(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 4)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ConcatVer4.VERSION.asRange() -> ConcatVer4(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Concat operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ConcatVer4.VERSION.asRange() -> ConcatVer4(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Concat operator: $version")
+            }
     }
 }
 
-class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Concat(name, INFO, attributes, inputs, outputs) {
+class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Concat(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -40,13 +43,11 @@ class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val inputsNotNull = inputs.requireNoNulls()
-            val actualAxis = inputsNotNull.first().data.indexAxis(axis)
-            val tensorsList = inputsNotNull.map { it.data }.toTypedArray()
-            return@tidy arrayOf(tensorsList.concat(actualAxis))
-        }
+        val inputsNotNull = inputs.requireNoNulls()
+        val actualAxis = inputsNotNull.first().data.indexAxis(axis)
+        val tensorsList = inputsNotNull.map { it.data }.toTypedArray()
+        val output = tensorsList.concat(actualAxis)
 
-        return listOf(outputs[0].asTensor("concat_result"))
+        return listOf(output.asTensor("concat_result"))
     }
 }

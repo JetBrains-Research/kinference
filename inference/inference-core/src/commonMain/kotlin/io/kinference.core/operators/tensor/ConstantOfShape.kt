@@ -5,9 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime

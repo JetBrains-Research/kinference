@@ -14,6 +14,10 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     override val backend = CoreBackend
 
+    override fun close() {
+        data.forEach { it.close() }
+    }
+
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
     val length: Int = data.size

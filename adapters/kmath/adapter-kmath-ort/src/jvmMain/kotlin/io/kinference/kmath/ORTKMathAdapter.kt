@@ -13,14 +13,4 @@ class ORTKMathAdapter(model: ORTModel) : ONNXModelAdapter<ORTKMathData<*>, ORTDa
         ONNXDataType.ONNX_SEQUENCE to ORTKMathSequenceAdapter,
         ONNXDataType.ONNX_MAP to ORTKMathMapAdapter
     ) as Map<ONNXDataType, ONNXDataAdapter<ORTKMathData<*>, ORTData<*>>>
-
-    override fun finalizeData(data: Collection<ORTData<*>>) {
-        for (element in data) {
-            when (element.type) {
-                ONNXDataType.ONNX_TENSOR -> (element as ORTTensor).data.close()
-                ONNXDataType.ONNX_SEQUENCE-> (element as ORTSequence).data.close()
-                ONNXDataType.ONNX_MAP -> (element as ORTMap).data.close()
-            }
-        }
-    }
 }

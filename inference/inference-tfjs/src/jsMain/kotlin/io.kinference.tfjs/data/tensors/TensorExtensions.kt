@@ -1,11 +1,16 @@
 package io.kinference.tfjs.data.tensors
 
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.toNDArray
+import io.kinference.ndarray.makeNDArray
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.externals.core.NDArrayTFJS
+import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.types.*
 
-fun NDArrayTFJS.asTensor(name: String? = null) =
-    TFJSTensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape.toIntArray()), dtype.tfTypeResolve()), name ?: ""))
+fun NDArray.asTensor(name: String? = null) =
+    TFJSTensor(this as NDArrayTFJS, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape), type.resolveProtoDataType()), name ?: ""))
+
+fun ArrayTFJS.asTensor(name: String? = null) = this.toNDArray().asTensor(name)
 
 fun String.tfTypeResolve(): TensorProto.DataType {
     return when (this) {

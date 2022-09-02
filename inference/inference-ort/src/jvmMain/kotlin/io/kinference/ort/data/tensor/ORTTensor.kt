@@ -15,6 +15,10 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         get() = data.info.shape
     override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
+    override fun close() {
+        data.close()
+    }
+
     fun toDoubleArray(): DoubleArray {
         require(data.info.type == OnnxJavaType.DOUBLE) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
         return data.doubleBuffer.array()

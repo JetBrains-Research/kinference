@@ -9,4 +9,8 @@ class ORTSequence(name: String?, override val data: OnnxSequence) : ONNXSequence
 
     override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
     override fun rename(name: String): ORTSequence = ORTSequence(name, data)
+
+    override fun close() {
+        data.close()
+    }
 }
