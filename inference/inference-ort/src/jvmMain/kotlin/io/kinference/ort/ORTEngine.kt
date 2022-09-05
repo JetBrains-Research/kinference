@@ -7,8 +7,7 @@ import io.kinference.data.*
 import io.kinference.model.Model
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.ort.model.ORTModel
-import io.kinference.protobuf.ProtobufReader
-import io.kinference.protobuf.arrays.ArrayFormat
+import io.kinference.protobuf.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
@@ -22,7 +21,7 @@ object ORTBackend : BackendInfo(name = "ONNXRuntime")
 object ORTEngine : InferenceEngine<ORTData<*>> {
     override val info: BackendInfo = ORTBackend
 
-    private val ORT_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.PRIMITIVE)
+    private val ORT_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = FlatTensorDecoder)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), ORT_READER_CONFIG)
 
     override fun loadModel(bytes: ByteArray): Model<ORTData<*>> {
@@ -72,7 +71,7 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
     override suspend fun loadData(path: Path, type: ONNXDataType): ORTData<*> = loadData(CommonDataLoader.bytes(path), type)
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> = when (type) {
-        ONNXDataType.ONNX_TENSOR -> ORTTensor.create(TensorProto.decode(protoReader(bytes)))
+        ONNXDataType.ONNX_TENSOR -> ORTTensor.create(protoReader(bytes).readTensor())
         else -> error("$type construction is not supported in OnnxRuntime Java API")
     }
 }

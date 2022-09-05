@@ -3,7 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.arrays.broadcastShape
 import io.kinference.ndarray.extensions.broadcastTo
 import io.kinference.ndarray.extensions.dataInt
 import io.kinference.operator.*
@@ -43,7 +43,7 @@ class ExpandVer8(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         val shape = inputs[1]!!.data
 
         val shapeArray = shape.dataInt()
-        val broadcastedShape = Broadcasting.broadcastShape(listOf(input.shape, shapeArray))
+        val broadcastedShape = broadcastShape(listOf(input.shape, shapeArray))
 
         val output = input.broadcastTo(broadcastedShape.toTypedArray())
 

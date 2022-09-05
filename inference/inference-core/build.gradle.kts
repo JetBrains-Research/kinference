@@ -37,7 +37,7 @@ kotlin {
                 api(project(":utils:model-profiler"))
                 api(project(":utils:common-utils"))
 
-                api(project(":serialization"))
+                api(project(":serialization:serializer-tiled"))
             }
         }
 

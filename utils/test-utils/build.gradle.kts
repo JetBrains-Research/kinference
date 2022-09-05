@@ -19,7 +19,7 @@ kotlin {
                // api(project(":ndarray:ndarray-core"))
 
                 api(project(":inference:inference-api"))
-                api(project(":serialization"))
+                api(project(":serialization:serializer-tiled"))
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
                 api(project(":utils:common-utils"))

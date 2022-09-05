@@ -2,7 +2,6 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.toNDArray
-import io.kinference.ndarray.makeNDArray
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.types.*

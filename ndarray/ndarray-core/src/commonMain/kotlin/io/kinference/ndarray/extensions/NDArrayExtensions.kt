@@ -3,31 +3,11 @@ package io.kinference.ndarray.extensions
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.ndarray.broadcasting.Broadcasting.broadcastShape
 import io.kinference.primitives.types.DataType
 import kotlin.collections.toIntArray
-import kotlin.ranges.reversed
-
-fun NDArray.isScalar() = shape.isEmpty()
-
-fun NDArray.canDequantizePerAxis(axis: Int, zeroPoint: NDArray?, scale: NDArray): Boolean {
-    return scale.rank == 1 && scale.linearSize == shape[axis] && (zeroPoint == null || zeroPoint.rank == 1 && zeroPoint.linearSize == shape[axis])
-}
-
-fun canDequantizePerTensor(zeroPoint: NDArray?, scale: NDArray): Boolean {
-    return scale.linearSize == 1 && (zeroPoint == null || zeroPoint.linearSize == 1)
-}
 
 fun NDArray.wrapOneDim(): NDArray {
     return this.reshape(1.concat(this.shape))
-}
-
-fun NDArray.indexAxis(axis: Int): Int {
-    return if (axis < 0) rank + axis else axis
-}
-
-fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
-    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
 val NDArray.rows: Array<MutableNDArray>
@@ -62,14 +42,6 @@ fun NDArray.unsqueeze(vararg axes: Int): NDArray {
     }
 
     return reshape(newShape.toIntArray())
-}
-
-fun NDArray.transpose(permutations: IntArray? = null): NDArray {
-    require(permutations.isNullOrEmpty() || permutations!!.size == rank) { "Axes permutations list size should match the number of axes" }
-    if (this.rank == 2) return this.transpose2D()
-
-    val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed().toIntArray() else permutations
-    return this.transpose(actualPerm!!)
 }
 
 fun Collection<NDArray>.concatenate(axis: Int): NDArray {

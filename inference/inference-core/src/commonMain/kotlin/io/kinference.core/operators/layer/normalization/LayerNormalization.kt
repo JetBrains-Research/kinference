@@ -5,13 +5,11 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.DoubleNDArray
-import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptTriple
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
-import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto.AttributeType

@@ -3,7 +3,6 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor

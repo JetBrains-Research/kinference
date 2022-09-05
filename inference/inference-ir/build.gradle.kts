@@ -13,7 +13,7 @@ kotlin {
             dependencies {
                 api(project(":inference:inference-api"))
                 api(project(":utils:logger"))
-                api(project(":serialization"))
+                api(project(":serialization:serializer-protobuf"))
                 api(project(":utils:model-profiler"))
             }
         }

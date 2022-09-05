@@ -2,13 +2,13 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 import io.kinference.ndarray.extensions.*
+import io.kinference.protobuf.toIntArray
 import io.ktor.utils.io.core.*
 
 class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data), Closeable {
@@ -98,10 +98,10 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             }
         }
 
-        private fun parseArray(proto: TensorProto) = when {
-            proto.isPrimitive() -> proto.arrayData
-            proto.isString() -> proto.stringData
-            else -> error("Unsupported data type ${proto.dataType}")
+        private fun parseArray(proto: TensorProto): Any {
+            val array = if (proto.isString()) proto.stringData else proto.arrayData
+            requireNotNull(array) { "Array value should be initialized" }
+            return array
         }
     }
 }

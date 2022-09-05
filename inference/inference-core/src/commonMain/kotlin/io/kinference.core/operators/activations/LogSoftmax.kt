@@ -4,7 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NDArray
-import io.kinference.ndarray.extensions.indexAxis
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime

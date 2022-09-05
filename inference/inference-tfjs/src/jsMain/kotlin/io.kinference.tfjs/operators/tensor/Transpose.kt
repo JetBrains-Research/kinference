@@ -3,12 +3,11 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.transpose
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.ndarray.extensions.tidy
-import io.kinference.ndarray.extensions.transpose
 import kotlin.time.ExperimentalTime
 
 sealed class Transpose(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {

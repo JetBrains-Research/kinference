@@ -251,7 +251,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun plus(other: NumberNDArray): MutableNumberNDArray {
-        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
     }
@@ -294,7 +294,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun minus(other: NumberNDArray): MutableNumberNDArray {
-        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return minus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
     }
@@ -351,7 +351,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun times(other: NumberNDArray): MutableNumberNDArray {
-        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
     }
@@ -395,7 +395,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun div(other: NumberNDArray): MutableNumberNDArray {
-        val destShape = Broadcasting.broadcastShape(listOf(this.shape, other.shape))
+        val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return div(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
     }
@@ -1088,7 +1088,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override fun expand(shape: IntArray): MutablePrimitiveNDArray {
-        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val outputShape = broadcastShape(listOf(this.shape, shape))
         val output = MutablePrimitiveNDArray(Strides(outputShape))
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutablePrimitiveNDArray
@@ -1307,7 +1307,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun tile(repeats: IntArray): NumberNDArray {
         require(repeats.size == rank)
 
-        if (repeats.all { it == 1 }) return this.toMutable()
+        if (repeats.all { it == 1 }) return this.toMutable(strides)
 
         val outputShape = shape.copyOf().apply {
             for (idx in indices) {

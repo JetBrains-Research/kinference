@@ -8,7 +8,6 @@ import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 import io.kinference.data.ONNXTensor
-import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
@@ -72,11 +71,10 @@ class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeI
             }
         }
 
-        private fun parseArray(proto: TensorProto) = when {
-            proto.isTiled() -> proto.arrayData
-            proto.isString() -> proto.stringData
-            proto.isPrimitive() -> tiledFromPrimitiveArray(proto.dims, proto.arrayData!!)
-            else -> error("Unsupported data type ${proto.dataType}")
+        private fun parseArray(proto: TensorProto): Any {
+            val array = if (proto.isString()) proto.stringData else proto.arrayData
+            requireNotNull(array) { "Array value should be initialized" }
+            return array
         }
     }
 }

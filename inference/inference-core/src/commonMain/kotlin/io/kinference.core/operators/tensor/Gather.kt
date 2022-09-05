@@ -5,8 +5,8 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.extensions.gather
-import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto

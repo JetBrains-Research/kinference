@@ -4,7 +4,6 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.KIOperatorFactory
 import io.kinference.core.operators.layer.attention.AttentionContext
-import io.kinference.core.operators.layer.attention.QAttentionContext
 import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.math.MatMulIntegerVer10

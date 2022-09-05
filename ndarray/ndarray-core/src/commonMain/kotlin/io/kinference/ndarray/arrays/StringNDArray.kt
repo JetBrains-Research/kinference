@@ -1,6 +1,5 @@
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.extensions.isScalar
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
 

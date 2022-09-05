@@ -6,7 +6,6 @@ import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.applyWithBroadcast
-import io.kinference.ndarray.extensions.isScalar
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
@@ -177,7 +176,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return destination
     }
 
-    infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(Broadcasting.broadcastShape(listOf(this.shape, other.shape))))
+    infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
 
     override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
         val actualAxis = indexAxis(axis)
@@ -204,7 +203,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     override fun expand(shape: IntArray): MutableNDArray {
-        val outputShape = Broadcasting.broadcastShape(listOf(this.shape, shape))
+        val outputShape = broadcastShape(listOf(this.shape, shape))
         val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
             destination as MutableBooleanNDArray

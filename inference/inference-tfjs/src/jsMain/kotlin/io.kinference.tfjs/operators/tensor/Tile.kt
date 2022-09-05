@@ -4,7 +4,6 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.dataInt
-import io.kinference.ndarray.extensions.tile
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor

@@ -16,19 +16,6 @@ fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
 }
 
 object Broadcasting {
-    fun broadcastShape(shapes: List<IntArray>): IntArray {
-        val totalShapeLength = shapes.maxOf { it.size }
-
-        return IntArray(totalShapeLength) { i ->
-            val dims = shapes.map { it.getOrNull(it.size - i - 1) ?: 1 }
-            val maxDim = dims.find { it != 1 } ?: 1
-
-            if (dims.any { it != 1 && it != maxDim }) error("Cannot broadcast shapes")
-
-            maxDim
-        }.reversedArray()
-    }
-
     fun broadcastShapeForMatmul(leftShape: IntArray, rightShape: IntArray): IntArray {
         val actualLeftShape = if (leftShape.size == 1) intArrayOf(1, leftShape[0]) else leftShape
         val actualRightShape = if (rightShape.size == 1) intArrayOf(1, rightShape[1]) else rightShape

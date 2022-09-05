@@ -19,21 +19,10 @@ fun IntArray.toUByteArray() = UByteArray(this.size) { this[it].toUByte() }
 fun IntArray.toBooleanArray() = BooleanArray(this.size) { this[it] != 0 }
 fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
 
-fun IntArray?.isNullOrEmpty() = this == null || this.isEmpty()
-fun LongArray?.isNullOrEmpty() = this == null || this.isEmpty()
-
 fun Collection<Number>.toFloatArray(): FloatArray {
     val array = FloatArray(this.size)
     for ((i, element) in this.withIndex()) {
         array[i] = element.toFloat()
-    }
-    return array
-}
-
-fun IntProgression.toIntArray(): IntArray {
-    val array = IntArray(this.count())
-    for ((i, element) in this.withIndex()) {
-        array[i] = element
     }
     return array
 }
