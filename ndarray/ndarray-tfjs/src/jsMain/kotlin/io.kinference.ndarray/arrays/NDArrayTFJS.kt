@@ -1,8 +1,8 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
+import io.kinference.utils.Closeable
 import io.kinference.primitives.types.DataType
-import io.ktor.utils.io.core.*
 
 abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray, Closeable {
     var tfjsArray = tfjsArray

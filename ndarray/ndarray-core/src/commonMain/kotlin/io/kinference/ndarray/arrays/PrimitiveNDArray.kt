@@ -8,9 +8,9 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.runBlocking
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmName

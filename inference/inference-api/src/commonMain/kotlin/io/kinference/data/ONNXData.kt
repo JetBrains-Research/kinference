@@ -1,7 +1,7 @@
 package io.kinference.data
 
 import io.kinference.BackendInfo
-import io.ktor.utils.io.core.*
+import io.kinference.utils.Closeable
 
 interface BaseONNXData<T> {
     val name: String?

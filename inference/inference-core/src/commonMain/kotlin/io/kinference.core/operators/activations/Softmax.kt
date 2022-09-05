@@ -4,12 +4,12 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.model.ExecutionContext
-import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.*
 import kotlin.math.exp
 import kotlin.math.min

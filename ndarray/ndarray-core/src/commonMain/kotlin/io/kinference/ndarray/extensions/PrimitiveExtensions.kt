@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

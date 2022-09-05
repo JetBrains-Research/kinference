@@ -8,9 +8,8 @@ import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.seq.TFJSSequence.Companion.extractTypeInfo
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.ktor.utils.io.core.*
 
-class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, TFJSData<*>>, TFJSBackend>(name, data), Closeable {
+class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, TFJSData<*>>, TFJSBackend>(name, data) {
     constructor(data: Map<Any, TFJSData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
 
     override val backend = TFJSBackend

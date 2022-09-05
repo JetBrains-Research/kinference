@@ -1,9 +1,8 @@
 package io.kinference.ndarray
 
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.moments
-import io.kinference.ndarray.extensions.toNDArray
-import io.ktor.utils.io.core.*
+import io.kinference.ndarray.arrays.ArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.utils.Closeable
 
 data class MomentsOutput(
     val mean: NumberNDArrayTFJS,

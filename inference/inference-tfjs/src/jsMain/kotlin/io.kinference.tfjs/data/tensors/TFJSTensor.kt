@@ -9,9 +9,8 @@ import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 import io.kinference.ndarray.extensions.*
 import io.kinference.protobuf.toIntArray
-import io.ktor.utils.io.core.*
 
-class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data), Closeable {
+class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data) {
     constructor(data: NDArrayTFJS, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     override val backend = TFJSBackend

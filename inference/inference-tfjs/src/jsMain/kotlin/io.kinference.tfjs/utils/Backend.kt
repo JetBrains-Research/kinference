@@ -1,6 +1,6 @@
 package io.kinference.tfjs.utils
 
-import io.kinference.ndarray.runBlocking
+import io.kinference.utils.runBlocking
 import io.kinference.tfjs.externals.backend.cpu.MathBackendCPU
 import io.kinference.tfjs.externals.backend.webgl.MathBackendWebGL
 import io.kinference.tfjs.externals.core.*

@@ -11,8 +11,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.ktor:ktor-io:2.1.0")
                 implementation("com.squareup.okio:okio:3.0.0")
+                api(project(":utils:common-utils"))
             }
         }
     }

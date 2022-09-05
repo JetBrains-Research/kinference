@@ -1,4 +1,4 @@
-package io.kinference.ndarray
+package io.kinference.utils
 
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext

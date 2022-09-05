@@ -2,11 +2,11 @@ package io.kinference.core.operators.layer.recurrent.gru
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.activations.Activation
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 

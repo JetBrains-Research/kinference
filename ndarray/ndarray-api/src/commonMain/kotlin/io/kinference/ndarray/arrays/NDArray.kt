@@ -1,7 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.primitives.types.DataType
-import io.ktor.utils.io.core.*
+import io.kinference.utils.Closeable
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.min

@@ -12,10 +12,10 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
-import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.*
 import kotlin.math.min
 import kotlin.math.sqrt

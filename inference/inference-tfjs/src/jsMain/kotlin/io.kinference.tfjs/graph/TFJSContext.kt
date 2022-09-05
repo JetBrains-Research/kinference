@@ -7,11 +7,7 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 class TFJSGraphContext(base: TFJSGraphContext? = null) : GraphContext<TFJSData<*>>(base) {
     override fun removeValues(predicate: (String) -> Boolean) {
         val allToRemove = values.entries.filter { predicate(it.key) }
-        allToRemove.forEach {
-            if (it.value is TFJSData<*>) {
-                it.value.close()
-            }
-        }
+        allToRemove.forEach { it.value.close() }
         values.entries.removeAll(allToRemove)
     }
 }
