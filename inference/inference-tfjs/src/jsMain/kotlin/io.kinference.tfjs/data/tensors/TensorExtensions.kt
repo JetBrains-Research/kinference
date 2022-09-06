@@ -16,6 +16,6 @@ fun String.tfTypeResolve(): TensorProto.DataType {
         "float32" -> TensorProto.DataType.FLOAT
         "int32" -> TensorProto.DataType.INT32
         "bool" -> TensorProto.DataType.BOOL
-        else -> error("Unsupported type")
+        else -> error("Unsupported type $this")
     }
 }

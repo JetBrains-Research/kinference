@@ -91,7 +91,7 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
                 DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32")).asTensor(nameNotNull)
                 DataType.INT64 -> NumberNDArrayTFJS(tensor((value as LongArray).toIntArray(), typedDims, "int32")).asTensor(nameNotNull)
                 DataType.BOOL -> BooleanNDArrayTFJS(tensor((value as BooleanArray).toTypedArray(), typedDims, "bool")).asTensor(nameNotNull)
-                else -> error("Unsupported type")
+                else -> error("Unsupported type: $type")
             }
         }
 

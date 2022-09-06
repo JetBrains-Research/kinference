@@ -43,7 +43,7 @@ fun tiledFromPrimitiveArray(shape: IntArray, array: Any): Any {
         is BooleanArray -> BooleanTiledArray(shape) { array[it] }
         is ByteArray -> ByteTiledArray(shape) { array[it] }
         is UByteArray -> UByteTiledArray(shape) { array[it] }
-        else -> error("Unsupported data type")
+        else -> error("Unsupported array type: ${array::class.simpleName}")
     }
 }
 
@@ -57,7 +57,7 @@ fun primitiveFromTiledArray(array: Any): Any {
         is BooleanTiledArray -> array.toArray()
         is ByteTiledArray -> array.toArray()
         is UByteTiledArray -> array.toArray()
-        else -> error("Unsupported data type")
+        else -> error("Unsupported array type: ${array::class.simpleName}")
     }
 }
 

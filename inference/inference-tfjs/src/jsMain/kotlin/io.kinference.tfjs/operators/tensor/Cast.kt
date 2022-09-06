@@ -40,7 +40,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     private val toType: Int by attribute("to") { it: Long -> it.toInt() }
 
-    private val tfjsType = when(TensorProto.DataType.fromValue(toType)) {
+    private val tfjsType = when(val type = TensorProto.DataType.fromValue(toType)) {
         TensorProto.DataType.INT64, TensorProto.DataType.UINT64,
         TensorProto.DataType.INT32, TensorProto.DataType.UINT32,
         TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
@@ -52,7 +52,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
         TensorProto.DataType.COMPLEX64, TensorProto.DataType.COMPLEX128 -> "complex64"
         TensorProto.DataType.STRING -> "string"
-        else -> error("Unsupported type")
+        else -> error("Unsupported type: $type")
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {

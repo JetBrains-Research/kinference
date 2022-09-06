@@ -13,7 +13,7 @@ fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
 fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].toNDArray() }
 
 inline fun <T, V> T.innerCast(func: (V) -> V): T {
-    this as? V ?: error { "Cannot cast" }
+    this as? V ?: error { "Cannot perform cast" }
     return func(this) as T
 }
 
