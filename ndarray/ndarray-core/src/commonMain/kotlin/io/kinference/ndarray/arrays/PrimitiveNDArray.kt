@@ -67,7 +67,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override operator fun get(index: IntArray): PrimitiveType {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         return array[linearIndex]
     }
 

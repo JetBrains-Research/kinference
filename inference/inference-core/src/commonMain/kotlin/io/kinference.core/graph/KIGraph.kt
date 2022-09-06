@@ -17,7 +17,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIONNXData<*>>(proto, opSetRegistry, KIOperatorFactory) {
-    private val preparedTensorsContext = KIContext()
+    private val preparedTensorsContext = GraphContext<KIONNXData<*>>()
 
     init {
         initializers as List<KITensor>
@@ -34,7 +34,7 @@ class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIO
     }
 
     override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
-        val context = KIContext(root as? KIContext)
+        val context = GraphContext(root)
         context.mergeContext(preparedTensorsContext)
         return context
     }

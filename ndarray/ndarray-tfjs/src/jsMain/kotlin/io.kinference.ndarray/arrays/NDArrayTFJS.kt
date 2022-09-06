@@ -11,7 +11,7 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray, Closeable {
     override val strides
         get() = Strides(tfjsArray.shape.toIntArray())
 
-    override val type: DataType = tfjsArray.dtype.resolveDataType()
+    override val type: DataType = tfjsArray.dtype.resolveTFJSDataType()
 
     override fun close() {
         tfjsArray.dispose()
@@ -23,7 +23,3 @@ val NDArrayTFJS.dtype: String
 
 val NDArrayTFJS.shapeArray: Array<Int>
     get() = tfjsArray.shape
-
-fun <T : Closeable> closeAll(arrays: Array<T>) = arrays.forEach { it.close() }
-fun <T : Closeable> closeAll(arrays: List<T>) = arrays.forEach { it.close() }
-fun <T : Closeable> closeAll(vararg array: T?) = array.forEach { it?.close() }

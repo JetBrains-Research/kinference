@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.*
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
+import io.kinference.graph.GraphContext
 import io.kinference.operator.Operator
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
@@ -13,7 +14,7 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
     private val logger = LoggerFactory.create("LSTM Initializer")
 
     @OptIn(ExperimentalTime::class)
-    override fun appendContext(context: KIContext, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)
@@ -33,7 +34,7 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
             .transpose(intArrayOf(0, 2, 1, 3)).asTensor("prepared_${tensor.name}")
     }
 
-    private fun appendWeights(tensor: KITensor?, context: KIContext) {
+    private fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make the weights part of the model, otherwise the LSTM will be slow" }
         } else {
@@ -42,7 +43,7 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
         }
     }
 
-    private fun appendBias(tensor: KITensor?, context: KIContext) {
+    private fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make bias part of the model, otherwise LSTM will be slow" }
         } else {
@@ -51,7 +52,7 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
         }
     }
 
-    private fun appendPeepholes(tensor: KITensor?, context: KIContext) {
+    private fun appendPeepholes(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make peepholes part of the model, otherwise LSTM will be slow" }
         } else {

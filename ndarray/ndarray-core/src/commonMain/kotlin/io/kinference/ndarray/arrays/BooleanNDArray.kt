@@ -67,7 +67,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun get(index: IntArray): Boolean {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         return array[linearIndex]
     }
 

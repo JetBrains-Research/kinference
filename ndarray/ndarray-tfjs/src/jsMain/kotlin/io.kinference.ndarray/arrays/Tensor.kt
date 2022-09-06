@@ -53,3 +53,4 @@ external fun fill(shape: Array<Int>, value: Number, dtype: String): ArrayTFJS
 
 external fun scalar(value: Number, dtype: String): ArrayTFJS
 internal external fun scalar(value: Boolean, dtype: String): ArrayTFJS
+external fun zeros(shape: Array<Int>, dtype: String): ArrayTFJS

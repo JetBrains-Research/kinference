@@ -22,7 +22,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
 
     override fun get(index: IntArray): String {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         return array[linearIndex]
     }
 
@@ -138,7 +138,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
 
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         array[linearIndex] = value as String
     }
 

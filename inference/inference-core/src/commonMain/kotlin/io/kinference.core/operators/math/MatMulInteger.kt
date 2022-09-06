@@ -5,10 +5,8 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.ContextPrepare
-import io.kinference.core.graph.KIContext
 import io.kinference.data.ONNXData
-import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
+import io.kinference.graph.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
@@ -68,7 +66,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
     }
 
     object MatMulIntegerPrepare : ContextPrepare() {
-        override fun appendContext(context: KIContext, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+        override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
             val leftTensor = initTensorByDefaultName("A", operator, initializers)
             val rightTensor = initTensorByDefaultName("B", operator, initializers)
             val leftZeroPoint = initTensorByDefaultName("a_zero_point", operator, initializers)
@@ -87,7 +85,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
             return preparedTensor.asTensor("prepared_${tensor.name}")
         }
 
-        private fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, context: KIContext) {
+        private fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, context: GraphContext<KIONNXData<*>>) {
             if (tensor != null) {
                 val preparedTensor = prepareTensor(tensor, zeroPoint)
                 context.putValue(preparedTensor.name!!, preparedTensor)

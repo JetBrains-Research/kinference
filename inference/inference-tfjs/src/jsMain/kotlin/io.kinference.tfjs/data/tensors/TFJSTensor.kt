@@ -63,11 +63,9 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        @Suppress("UNCHECKED_CAST")
         fun create(proto: TensorProto): TFJSTensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
-            requireNotNull(array) { "Array value should be initialized" }
 
             return TFJSTensor(array, type, proto.dims, proto.name)
         }

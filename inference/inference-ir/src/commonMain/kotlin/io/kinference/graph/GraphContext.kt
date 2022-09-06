@@ -2,9 +2,9 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 
-abstract class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null) {
-    protected val values = HashMap<String, T>()
-    protected val shapes = HashMap<String, Int>()
+class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null) {
+    private val values = HashMap<String, T>()
+    private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
         return values.contains(name) && (base?.hasValue(name) ?: true)
@@ -32,7 +32,11 @@ abstract class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T
         shapes[name] = shape
     }
 
-    abstract fun removeValues(predicate: (String) -> Boolean)
+    fun removeValues(predicate: (String) -> Boolean) {
+        val allToRemove = values.entries.filter { predicate(it.key) }
+        allToRemove.forEach { it.value.close() }
+        values.entries.removeAll(allToRemove)
+    }
 
     fun getShape(name: String): Int {
         return shapes[name] ?: base?.getShape(name) ?: error("'$name' not found in context shapes")

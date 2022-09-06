@@ -102,7 +102,8 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         return MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {
-        TODO("Not yet implemented")
+        require(value is Boolean)
+        tfjsArray.bufferSync().set(value, *index)
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
@@ -114,7 +115,10 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
-        TODO("Not yet implemented")
+        val offsetFrom = strides.index(from)
+        val offsetTo = strides.index(to)
+        val buffer = tfjsArray.bufferSync()
+        ndIndexed(offsetFrom, offsetTo) { buffer.set(value, *it) }
     }
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
@@ -122,7 +126,9 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     }
 
     override fun clean() {
-        TODO("Not yet implemented")
+        val zerosArray = tensor(Array(linearSize) { false }, shapeArray, "bool")
+        zerosArray.dispose()
+        tfjsArray = zerosArray
     }
 
     override fun viewMutable(vararg axes: Int): MutableNDArray {

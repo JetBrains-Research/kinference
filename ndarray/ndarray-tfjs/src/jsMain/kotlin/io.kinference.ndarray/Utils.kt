@@ -3,7 +3,7 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
-fun String.resolveDataType(): DataType {
+fun String.resolveTFJSDataType(): DataType {
     return when (this) {
         "float32" -> DataType.FLOAT
         "int32" -> DataType.INT
@@ -24,4 +24,4 @@ fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
     }
 }
 
-fun makeNDArray(tfjsArray: ArrayTFJS, type: String) = makeNDArray(tfjsArray, type.resolveDataType())
+fun makeNDArray(tfjsArray: ArrayTFJS, type: String) = makeNDArray(tfjsArray, type.resolveTFJSDataType())

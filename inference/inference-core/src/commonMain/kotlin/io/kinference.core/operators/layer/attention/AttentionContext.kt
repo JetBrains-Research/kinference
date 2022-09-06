@@ -4,6 +4,7 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.*
+import io.kinference.graph.GraphContext
 import io.kinference.operator.Operator
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
@@ -12,7 +13,7 @@ import kotlin.time.ExperimentalTime
 internal object AttentionContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.attention.AttentionContext")
 
-    override fun appendContext(context: KIContext, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("weight", operator, initializers)
         val biasInit = initTensorByDefaultName("bias", operator, initializers)
         val numHeads = operator.getAttribute<Long>("num_heads").toInt()
@@ -36,7 +37,7 @@ internal object AttentionContext: ContextPrepare() {
         return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
-    private fun appendWeights(tensor: KITensor?, context: KIContext, numHeads: Int) {
+    private fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
         if (tensor == null) {
             logger.warning { "Make the weights part of the model, otherwise the Attention will be slow" }
         } else {
@@ -45,7 +46,7 @@ internal object AttentionContext: ContextPrepare() {
         }
     }
 
-    private fun appendBias(tensor: KITensor?, context: KIContext, numHeads: Int) {
+    private fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
         if (tensor == null) {
             logger.warning { "Make the bias part of the model, otherwise the Attention will be slow\n" }
         } else {

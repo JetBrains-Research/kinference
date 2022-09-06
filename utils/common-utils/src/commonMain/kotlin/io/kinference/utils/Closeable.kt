@@ -23,3 +23,7 @@ inline fun <C : Closeable, T> C.use(func: (C) -> T): T {
         if (!isClosed) close()
     }
 }
+
+fun <T : Closeable> closeArrays(arrays: Array<T>) = arrays.forEach { it.close() }
+fun <T : Closeable> closeAll(arrays: List<T>) = arrays.forEach { it.close() }
+fun <T : Closeable> closeAll(vararg array: T?) = array.forEach { it?.close() }
