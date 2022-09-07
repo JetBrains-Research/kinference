@@ -12,12 +12,12 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return tfjsArray.bufferSync().get(*index) as Boolean
     }
 
-    override fun singleValue(): Any {
+    override fun singleValue(): Boolean {
         require(this.linearSize == 1) { "NDArrays has more than 1 value" }
         return tfjsArray.dataSync()[0] as Boolean
     }
 
-    override fun view(vararg axes: Int): NDArray {
+    override fun view(vararg axes: Int): BooleanNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
@@ -25,21 +25,21 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         TODO("Not yet implemented")
     }
 
-    override fun reshape(strides: Strides): NDArray {
+    override fun reshape(strides: Strides): BooleanNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape.toTypedArray())
         return BooleanNDArrayTFJS(result)
     }
 
-    override fun toMutable(newStrides: Strides): MutableNDArray {
+    override fun toMutable(newStrides: Strides): MutableBooleanNDArrayTFJS {
         val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
         return MutableBooleanNDArrayTFJS(tensor)
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutableBooleanNDArrayTFJS{
         return this as? MutableBooleanNDArrayTFJS ?: MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun clone(): NDArray {
+    override fun clone(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.clone())
     }
 
@@ -55,16 +55,16 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         TODO("Not yet implemented")
     }
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray {
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArrayTFJS {
         val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
         return MutableBooleanNDArrayTFJS(result)
     }
 
-    override fun expand(shape: IntArray): MutableNDArray {
+    override fun expand(shape: IntArray): MutableBooleanNDArrayTFJS {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): MutableBooleanNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
@@ -72,22 +72,22 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         TODO("Not yet implemented")
     }
 
-    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+    override fun concatenate(others: List<NDArray>, axis: Int): MutableBooleanNDArrayTFJS {
         val otherArrays = Array(others.size) { (others[it] as BooleanNDArrayTFJS).tfjsArray }
         val result = tfjsArray.concat(*otherArrays, axis = axis)
         return MutableBooleanNDArrayTFJS(result)
     }
 
-    override fun tile(repeats: IntArray): NDArray {
+    override fun tile(repeats: IntArray): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.tile(repeats.toTypedArray()))
     }
 
-    override fun transpose(permutations: IntArray): NDArray {
+    override fun transpose(permutations: IntArray): BooleanNDArrayTFJS {
         val result = tfjsArray.transpose(strides.shape.toTypedArray())
         return BooleanNDArrayTFJS(result)
     }
 
-    override fun transpose2D(): NDArray {
+    override fun transpose2D(): BooleanNDArrayTFJS {
         val newShape = tfjsArray.shape.reversedArray()
         return BooleanNDArrayTFJS(tfjsArray.transpose(newShape))
     }
@@ -98,7 +98,7 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
 }
 
 class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsArray), MutableNDArray {
-    override fun clone(): MutableNDArray {
+    override fun clone(): MutableBooleanNDArrayTFJS {
         return MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {
