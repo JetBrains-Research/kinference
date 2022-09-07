@@ -4,6 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.equal
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -42,9 +43,12 @@ class EqualVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val left = inputs[0]!!.data
-        val right = inputs[1]!!.data
+        val output = tidyNDArray {
+            val left = inputs[0]!!.data
+            val right = inputs[1]!!.data
+            return@tidyNDArray left.equal(right)
+        }
 
-        return listOf(left.equal(right).asTensor("C"))
+        return listOf(output.asTensor("C"))
     }
 }

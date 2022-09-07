@@ -9,8 +9,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 
 sealed class EmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -74,34 +73,34 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
         val (_, hiddenSize) = wordWeights.shape
 
         val outputShape = intArrayOf(batchSize, seqLen, hiddenSize)
+        val outputs = tidyNDArrays {
+            val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape)
 
-        val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape)
+            val positionIds = range(0, inputIds.shape[1], 1, "int32").toNDArray().broadcastTo(inputIds.shapeArray)
 
-        val positionIds = range(0, inputIds.shape[1], 1, "int32").toNDArray().broadcastTo(inputIds.shapeArray)
+            val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape)
 
-        val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape)
+            val segmentEmbedding = if (segmentIds != null && segmentWeights != null) {
+                segmentWeights.gather(segmentIds.flatten()).reshape(outputShape)
+            } else {
+                null
+            }
 
-        val segmentEmbedding = if (segmentIds != null && segmentWeights != null) {
-            segmentWeights.gather(segmentIds.flatten()).reshape(outputShape)
-        } else {
-            null
+            val embedding = if (segmentEmbedding != null) {
+                wordEmbedding.add(positionEmbedding, segmentEmbedding)
+            } else {
+                wordEmbedding.plus(positionEmbedding)
+            }
+
+            val (mean, variance) = embedding.moments(axis = -1, keepDims = true)
+
+            val epsilonTensor = NumberNDArrayTFJS(tensor(floatArrayOf(epsilon), arrayOf(1), "float32"))
+            val output = (embedding - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
+
+            val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
+            return@tidyNDArrays arrayOf(output, maskOutput)
         }
 
-        val embedding = if (segmentEmbedding != null) {
-            wordEmbedding.add(positionEmbedding, segmentEmbedding)
-        } else {
-            wordEmbedding.plus(positionEmbedding)
-        } as NumberNDArrayTFJS
-
-        val (mean, variance) = embedding.moments(axis = -1, keepDims = true)
-
-        val epsilonTensor = NumberNDArrayTFJS(tensor(floatArrayOf(epsilon), arrayOf(1), "float32"))
-        val output = (embedding - mean) / (variance + epsilonTensor).tfjs { it.sqrt() } * gamma + beta
-
-        val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
-
-        return listOf(output.asTensor("output"), maskOutput.asTensor("mask_index")).also {
-            closeAll(wordEmbedding, positionIds, positionEmbedding, segmentEmbedding, embedding, mean, variance, epsilonTensor)
-        }
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

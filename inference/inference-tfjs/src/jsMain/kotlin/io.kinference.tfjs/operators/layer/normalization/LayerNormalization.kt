@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 
 sealed class LayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -69,14 +68,13 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
         val actualAxis = input.indexAxis(axis)
         val axesForMoments = Array(input.rank - actualAxis) { actualAxis + it }
 
-        val (mean, variance) = input.moments(axesForMoments, keepDims = true)
-
-        val epsilonTensor = NumberNDArrayTFJS(epsilonScalar)
-        val normalizedInput = (input - mean) / (variance + epsilonTensor).tfjs { it.sqrt() } * scale + bias
-
-        return listOf(normalizedInput.asTensor("Y")).also {
-            closeAll(mean, variance)
+        val output = tidyNDArray {
+            val (mean, variance) = input.moments(axesForMoments, keepDims = true)
+            val epsilonTensor = NumberNDArrayTFJS(epsilonScalar)
+            return@tidyNDArray (input - mean) / (variance + epsilonTensor).sqrt() * scale + bias
         }
+
+        return listOf(output.asTensor("Y"))
     }
 }
 

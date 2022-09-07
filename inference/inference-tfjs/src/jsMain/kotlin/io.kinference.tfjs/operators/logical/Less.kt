@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.less
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -43,9 +44,12 @@ class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val left = inputs[0]!!.data as NumberNDArrayTFJS
-        val right = inputs[1]!!.data as NumberNDArrayTFJS
+        val output = tidyNDArray {
+            val left = inputs[0]!!.data as NumberNDArrayTFJS
+            val right = inputs[1]!!.data as NumberNDArrayTFJS
+            return@tidyNDArray left.less(right)
+        }
 
-        return listOf(left.less(right).asTensor("C"))
+        return listOf(output.asTensor("C"))
     }
 }

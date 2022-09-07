@@ -4,14 +4,12 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
-import io.kinference.ndarray.extensions.matMul
-import io.kinference.ndarray.extensions.scalar
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 import kotlin.time.ExperimentalTime
 
 sealed class FusedMatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -64,11 +62,11 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
         val left = inputs[0]!!.data as NumberNDArrayTFJS
         val right = inputs[1]!!.data as NumberNDArrayTFJS
 
-        val matMulResult = left.matMul(right, transposeLeft, transposeRight)
-        val scalar = NumberNDArrayTFJS(scalar(alpha))
-        val output = matMulResult * scalar
-        return listOf(output.asTensor("Y")).also {
-            closeAll(matMulResult, scalar)
+        val output = tidyNDArray {
+            val matMulResult = left.matMul(right, transposeLeft, transposeRight)
+            val scalar = NumberNDArrayTFJS(scalar(alpha))
+            return@tidyNDArray matMulResult * scalar
         }
+        return listOf(output.asTensor("Y"))
     }
 }

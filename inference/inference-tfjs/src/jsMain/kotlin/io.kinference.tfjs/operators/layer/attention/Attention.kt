@@ -8,9 +8,7 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
+import io.kinference.tfjs.data.tensors.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -19,88 +17,95 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
     companion object {
         internal fun NDArrayTFJS?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): NumberNDArrayTFJS {
-            val fullSeqLen = pastSeqLen + seqLen
-            val output = when {
-                this != null && this.rank == 1 -> {
-                    val maskIndices = this.dataInt()
-                    val outputArray = FloatArray(batchSize * fullSeqLen)
+            return tidyNDArray {
+                val fullSeqLen = pastSeqLen + seqLen
+                val output = when {
+                    this != null && this.rank == 1 -> {
+                        val maskIndices = this.dataInt()
+                        val outputArray = FloatArray(batchSize * fullSeqLen)
+                        repeat(batchSize) { batch ->
+                            val startIdx = maskIndices[batch]
+                            val batchStartIdx = fullSeqLen * batch
+                            outputArray.fill(-10000f, batchStartIdx + startIdx, batchStartIdx + fullSeqLen)
+
+                            if (this.shape[0] == 2 * batchSize) {
+                                val endIdx = maskIndices[batch + batchSize]
+                                outputArray.fill(-10000f, batchStartIdx, batchStartIdx + min(endIdx, fullSeqLen))
+                            }
+                        }
+                        NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
+                    }
+
+                    this != null && this.rank == 2 -> {
+                        val maskIndices = this.dataInt()
+                        val outputArray = FloatArray(batchSize * fullSeqLen)
+                        for (idx in maskIndices.indices) {
+                            val src = maskIndices[idx]
+                            outputArray[idx] = if (src > 0) 0f else -10000f
+                        }
+                        NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
+                    }
+
+                    else -> error("Unsupported mask")
+                }
+
+                val broadcastedOutput = output.broadcastTo(arrayOf(batchSize, seqLen, fullSeqLen))
+
+                val outputWithUnidir = if (unidir) {
+                    val outputData = broadcastedOutput.dataFloat()
                     repeat(batchSize) { batch ->
-                        val startIdx = maskIndices[batch]
-                        val batchStartIdx = fullSeqLen * batch
-                        outputArray.fill(-10000f, batchStartIdx + startIdx, batchStartIdx + fullSeqLen)
-
-                        if (this.shape[0] == 2 * batchSize) {
-                            val endIdx = maskIndices[batch + batchSize]
-                            outputArray.fill(-10000f, batchStartIdx, batchStartIdx + min(endIdx, fullSeqLen))
+                        repeat(seqLen - 1) { seqIdx ->
+                            val startIdx = pastSeqLen + seqIdx + 1
+                            val offsetIdx = seqIdx * fullSeqLen + batch * seqLen * fullSeqLen
+                            for (idx in offsetIdx + startIdx until offsetIdx + fullSeqLen) {
+                                outputData[idx] -= 10000f
+                            }
                         }
                     }
-                    NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
-                }
-
-                this != null && this.rank == 2 -> {
-                    val maskIndices = this.dataInt()
-                    val outputArray = FloatArray(batchSize * fullSeqLen)
-                    for (idx in maskIndices.indices) {
-                        val src = maskIndices[idx]
-                        outputArray[idx] = if (src > 0) 0f else -10000f
-                    }
-                    NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
-                }
-
-                else -> error("Unsupported mask")
-            }
-
-            val broadcastedOutput = output.broadcastTo(arrayOf(batchSize, seqLen, fullSeqLen))
-
-            return if (unidir) {
-                val outputData = broadcastedOutput.dataFloat()
-                repeat(batchSize) { batch ->
-                    repeat(seqLen - 1) { seqIdx ->
-                        val startIdx = pastSeqLen + seqIdx + 1
-                        val offsetIdx = seqIdx * fullSeqLen + batch * seqLen * fullSeqLen
-                        for (idx in offsetIdx + startIdx until offsetIdx + fullSeqLen) {
-                            outputData[idx] -= 10000f
-                        }
-                    }
-                }
-                NumberNDArrayTFJS(tensor(outputData, broadcastedOutput.shapeArray, "float32")).also { closeAll(broadcastedOutput, output) }
-            } else broadcastedOutput.also { output.close() }
+                    NumberNDArrayTFJS(tensor(outputData, broadcastedOutput.shapeArray, "float32"))
+                } else broadcastedOutput
+                return@tidyNDArray outputWithUnidir
+            } as NumberNDArrayTFJS
         }
 
         internal fun normalizedScores(
             unidir: Boolean, queries: NumberNDArrayTFJS, maskIndices: NumberNDArrayTFJS?, batchSize: Int,
             seqLen: Int, pastSeqLen: Int, headSize: Int, present: NumberNDArrayTFJS
         ): NumberNDArrayTFJS {
-            val fullSeqLen = pastSeqLen + seqLen
-            val maskData = maskIndices.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen).reshape(intArrayOf(batchSize, 1, seqLen, fullSeqLen))
+            return tidyNDArray {
+                val fullSeqLen = pastSeqLen + seqLen
+                val maskData = maskIndices.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen).reshape(intArrayOf(batchSize, 1, seqLen, fullSeqLen))
 
-            val alpha = NumberNDArrayTFJS(scalar(1.0f / sqrt(headSize.toFloat()), "float32"))
-            val scoreData = queries.matMul(present, transposeRight = true).times(alpha).plus(maskData)
+                val alpha = NumberNDArrayTFJS(scalar(1.0f / sqrt(headSize.toFloat()), "float32"))
+                val scoreData = queries.matMul(present, transposeRight = true).times(alpha).plus(maskData)
 
-            return (scoreData as NumberNDArrayTFJS).softmax().also {
-                closeAll(maskData, alpha, scoreData)
-            }
+                return@tidyNDArray scoreData.softmax()
+            } as NumberNDArrayTFJS
         }
 
         internal fun attentionScore(
             scores: NumberNDArrayTFJS, batchSize: Int, seqLen: Int,
             hiddenSize: Int, present: NumberNDArrayTFJS
         ): NDArrayTFJS {
-            return scores.matMul(present).transpose(intArrayOf(0, 2, 1, 3)).reshape(intArrayOf(batchSize, seqLen, hiddenSize))
+            return tidyNDArray {
+                val output = scores.matMul(present)
+                val newShape = intArrayOf(batchSize, seqLen, hiddenSize)
+                return@tidyNDArray output.transpose(intArrayOf(0, 2, 1, 3)).reshape(newShape)
+            }
         }
 
         internal fun getScores(
             unidir: Boolean, q: NumberNDArrayTFJS, k: NumberNDArrayTFJS, v: NumberNDArrayTFJS, mask: NumberNDArrayTFJS?,
             past: NumberNDArrayTFJS?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Array<NDArrayTFJS> {
-            val present = k.stack(v, axis = 0)
-            val pastSeqLen = if (past != null) past.shape[3] else 0
-            val headSize = hiddenSize / numHeads
-            val presentWithPast = past?.concat(present, axis = 3) ?: present
-            val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else presentWithPast.unstack(0)
-            val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, presentKeys)
-            return arrayOf(attentionScore(scores, batchSize, seqLen, hiddenSize, presentValue), presentWithPast).also {
-                closeAll(scores, present, presentKeys, presentValue)
+            return tidyNDArrays {
+                val present = k.stack(v, axis = 0)
+                val pastSeqLen = if (past != null) past.shape[3] else 0
+                val headSize = hiddenSize / numHeads
+                val presentWithPast = past?.concat(present, axis = 3) ?: present
+                val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else presentWithPast.unstack(0)
+                val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, presentKeys)
+                return@tidyNDArrays arrayOf(attentionScore(scores, batchSize, seqLen, hiddenSize, presentValue), presentWithPast)
             }
         }
 
@@ -140,22 +145,23 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
+        @Suppress("UNCHECKED_CAST")
         internal fun initQueryKeyValue(input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS, numHeads: Int): Array<NumberNDArrayTFJS> {
-            val (batchSize, seqLen, inputHidden) = input.shape
-            val headSize = inputHidden / numHeads
-            val weightsPrepared = weights
-                .reshape(intArrayOf(inputHidden, 1, 3, numHeads, headSize))
-                .transpose(intArrayOf(2, 1, 3, 0, 4))
-                .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
-            val biasPrepared = bias.reshape(intArrayOf(3, 1, numHeads, 1, headSize))
-            val inputPrepared = input
-                .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
-                .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
+            return tidyNDArrays {
+                val (batchSize, seqLen, inputHidden) = input.shape
+                val headSize = inputHidden / numHeads
+                val weightsPrepared = weights
+                    .reshape(intArrayOf(inputHidden, 1, 3, numHeads, headSize))
+                    .transpose(intArrayOf(2, 1, 3, 0, 4))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
+                val biasPrepared = bias.reshape(intArrayOf(3, 1, numHeads, 1, headSize))
+                val inputPrepared = input
+                    .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
 
-            val output = inputPrepared.matMul(weightsPrepared).plus(biasPrepared) as NumberNDArrayTFJS
-            return output.unstack(0).also {
-                closeAll(weightsPrepared, biasPrepared, inputPrepared, output)
-            }
+                val output = inputPrepared.matMul(weightsPrepared).plus(biasPrepared)
+                return@tidyNDArrays output.unstack(0)
+            } as Array<NumberNDArrayTFJS>
         }
     }
 
@@ -171,12 +177,11 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
 
         val (batchSize, seqLen, hiddenSize) = input.shape
 
-        val (queries, keys, values) = initQueryKeyValue(input, weights, bias, numHeads)
-
-        val outputs = getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
-
-        return listOf(outputs[0].asTensor(), outputs[1].asTensor()).also {
-            closeAll(queries, keys, values)
+        val outputs = tidyNDArrays {
+            val (queries, keys, values) = initQueryKeyValue(input, weights, bias, numHeads)
+            return@tidyNDArrays getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         }
+
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

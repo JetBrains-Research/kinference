@@ -3,7 +3,9 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.transpose
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -41,7 +43,10 @@ class TransposeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val perm: Array<Int>? by attributeOrNull { array: LongArray? -> array?.let { Array(array.size) { array[it].toInt() } } }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val output = inputs[0]!!.data.transpose(perm?.toIntArray())
+        val output = tidyNDArray {
+            val input = inputs[0]!!.data
+            return@tidyNDArray input.transpose(perm?.toIntArray()) as NDArrayTFJS
+        }
 
         return listOf(output.asTensor("transposed"))
     }

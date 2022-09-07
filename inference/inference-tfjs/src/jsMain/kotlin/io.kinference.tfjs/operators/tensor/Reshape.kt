@@ -3,7 +3,9 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -41,19 +43,21 @@ class ReshapeVer5(name: String, attributes: Map<String, Attribute<Any>>, inputs:
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
         val shape = inputs[1]!!.data
+        val output = tidyNDArray {
+            val shapeData = shape.dataInt().copyOf()
 
-        val shapeData = shape.dataInt().copyOf()
+            for ((i, axisShape) in shapeData.withIndex()) {
+                if (axisShape == 0) shapeData[i] = input.shape[i]
+            }
 
-        for ((i, axisShape) in shapeData.withIndex()) {
-            if (axisShape == 0) shapeData[i] = input.shape[i]
+            val negativeIdx = shapeData.indexOf(-1)
+            if (negativeIdx != -1) {
+                val elementsCount = shapeData.filter { it != -1 }.fold(1, Int::times)
+                shapeData[negativeIdx] = input.linearSize / elementsCount
+            }
+            return@tidyNDArray input.reshape(shapeData) as NDArrayTFJS
         }
 
-        val negativeIdx = shapeData.indexOf(-1)
-        if (negativeIdx != -1) {
-            val elementsCount = shapeData.filter { it != -1 }.fold(1, Int::times)
-            shapeData[negativeIdx] = input.linearSize / elementsCount
-        }
-
-        return listOf(input.reshape(shapeData).asTensor("reshaped"))
+        return listOf(output.asTensor("reshaped"))
     }
 }

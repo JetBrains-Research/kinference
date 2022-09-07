@@ -9,8 +9,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.data.tensors.*
 import io.kinference.tfjs.graph.TFJSGraph
 
 sealed class Loop(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -71,7 +70,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         val modifiedInputs = outputs.slice(1 until 1 + body.inputs.size - 2)
         val newScans = outputs.drop(1 + body.inputs.size - 2)
 
-        modified.onEach { it.close() }.clear()
+        modified.clear()
         modified.addAll(modifiedInputs)
 
         require(newScans.size == scans.size) { "Loop subgraph didn't provide expected output count" }
@@ -83,57 +82,59 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val maxTripCount = inputs[0]?.data?.dataInt()?.first()
-        val keepGoing = inputs[1]?.data?.dataBool()?.first()
+        val outputs = tidyNDArrays {
+            val maxTripCount = inputs[0]?.data?.dataInt()?.first()
+            val keepGoing = inputs[1]?.data?.dataBool()?.first()
 
-        require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
+            require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
-        val modified = inputs.drop(2).requireNoNulls().map {
-            it.data.clone().asTensor(it.name)
-        }.toMutableList()
+            val modified = inputs.drop(2).requireNoNulls().map {
+                (it.data.clone() as NDArrayTFJS).asTensor(it.name)
+            }.toMutableList()
 
-        val modifiedCount = modified.size
+            val modifiedCount = modified.size
 
-        val scansCount = body.outputs.size - 1 - modifiedCount
-        val scans = List(scansCount) { ArrayList<TFJSTensor>() }
+            val scansCount = body.outputs.size - 1 - modifiedCount
+            val scans = List(scansCount) { ArrayList<TFJSTensor>() }
 
-        var counter = 0
-        var condition = keepGoing ?: true
+            var counter = 0
+            var condition = keepGoing ?: true
 
-        contexts as Contexts<TFJSData<*>>
-        when {
-            maxTripCount == null && keepGoing == null -> {
-                while (true) {
-                    condition = inner(contexts, body, counter, condition, modified, scans)
-                    counter += 1
+            contexts as Contexts<TFJSData<*>>
+            when {
+                maxTripCount == null && keepGoing == null -> {
+                    while (true) {
+                        condition = inner(contexts, body, counter, condition, modified, scans)
+                        counter += 1
+                    }
+                }
+
+                maxTripCount == null && keepGoing != null -> {
+                    while (condition) {
+                        condition = inner(contexts, body, counter, condition, modified, scans)
+                        counter += 1
+                    }
+                }
+
+                maxTripCount != null && keepGoing == null -> {
+                    for (counter in 0 until maxTripCount) {
+                        condition = inner(contexts, body, counter, condition, modified, scans)
+                    }
+                }
+
+                maxTripCount != null && keepGoing != null -> {
+                    for (counter in 0 until maxTripCount) {
+                        if (!condition) break
+                        condition = inner(contexts, body, counter, condition, modified, scans)
+                    }
                 }
             }
 
-            maxTripCount == null && keepGoing != null -> {
-                while (condition) {
-                    condition = inner(contexts, body, counter, condition, modified, scans)
-                    counter += 1
-                }
-            }
+            val stackedScans = scans.map { scan -> scan.map { tensor -> tensor.data }.stack(axis = 0) }
 
-            maxTripCount != null && keepGoing == null -> {
-                for (counter in 0 until maxTripCount) {
-                    condition = inner(contexts, body, counter, condition, modified, scans)
-                }
-            }
-
-            maxTripCount != null && keepGoing != null -> {
-                for (counter in 0 until maxTripCount) {
-                    if (!condition) break
-                    condition = inner(contexts, body, counter, condition, modified, scans)
-                }
-            }
+            return@tidyNDArrays (modified.map { it.data } + stackedScans).toTypedArray()
         }
 
-        val stackedScans = scans.map { scan -> scan.map { tensor -> tensor.data }.stack(axis = 0) }
-
-        val outputs = (modified.map { it.data } + stackedScans).toTypedArray()
-
-        return outputs.zip(this.outputs).map { (data, name) -> data.asTensor(name) }
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

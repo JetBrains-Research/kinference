@@ -4,10 +4,10 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 import kotlin.math.sqrt
 
 sealed class BiasGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -49,9 +49,11 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val bias = inputs[1]!!.data as NumberNDArrayTFJS
-        val sum = input + bias
-        val erfSum = (sum / SQRT2).erf()
-        val output = (erfSum + scalarOne) * scalarHalfOne * sum
-        return listOf(output.asTensor("C")).also { closeAll(sum, erfSum) }
+
+        val output = tidyNDArray {
+            val sum = input + bias
+            return@tidyNDArray ((sum / SQRT2).erf() + scalarOne) * scalarHalfOne * sum
+        }
+        return listOf(output.asTensor("C"))
     }
 }

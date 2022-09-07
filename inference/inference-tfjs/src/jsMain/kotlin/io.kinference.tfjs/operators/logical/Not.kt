@@ -4,7 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.BooleanNDArrayTFJS
-import io.kinference.ndarray.extensions.not
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -40,8 +40,11 @@ class NotVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val input = inputs[0]!!.data as BooleanNDArrayTFJS
+        val output = tidyNDArray {
+            val input = inputs[0]!!.data as BooleanNDArrayTFJS
+            return@tidyNDArray input.not()
+        }
 
-        return listOf(input.not().asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 }

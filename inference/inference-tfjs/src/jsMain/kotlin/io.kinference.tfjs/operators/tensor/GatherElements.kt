@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 import kotlin.time.ExperimentalTime
 
 sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -59,55 +58,53 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
 
         // replace negative indices
         val limitByAxis = input.shape[actualAxis]
-        val indicesGreaterOrEqualZero = indices.greaterEqual(NumberNDArrayTFJS(scalar(0))) // Bool tensor
-        val actualIndices = indices.where(indicesGreaterOrEqualZero, NumberNDArrayTFJS(indices.tfjsArray + scalar(limitByAxis)))
+        val output = tidyNDArray {
+            val indicesGreaterOrEqualZero = indices.greaterEqual(NumberNDArrayTFJS(scalar(0))) // Bool tensor
+            val actualIndices = indices.where(indicesGreaterOrEqualZero, NumberNDArrayTFJS(indices.tfjsArray + scalar(limitByAxis)))
 
-        // Zero pad indices to GatherND style
-        val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1)) as NDArrayTFJS
-        val padArray = Array(reshapedIndices.rank) {
-            if (it != reshapedIndices.rank - 1) {
-                arrayOf(0, 0)
-            } else {
-                arrayOf(actualAxis, input.rank - actualAxis - 1)
-            }
-        }
-        val paddedIndices = reshapedIndices.pad(padArray, 0) as NumberNDArrayTFJS
-
-        // Add relevant values to indices for GatherND
-        val baseRangeShape = Array(paddedIndices.rank) { 1 }
-        val baseRangePad = Array(paddedIndices.rank) { arrayOf(0, 0) }
-
-        val otherRelevantIndices = List(paddedIndices.rank - 1) { axis ->
-            if (axis == actualAxis) {
-                // do nothing for operator axis
-                null
-            } else {
-                // Make range for axis
-                val range = NumberNDArrayTFJS(range(0, paddedIndices.shape[axis], 1, "int32"))
-                val rangeShape = baseRangeShape.copyOf().apply { set(axis, paddedIndices.shape[axis]) }
-                //reshape to [1,...,paddedIndices.shape[axis],...,1]
-                // reshapedRange.rank == paddedIndices.rank
-                val reshapedRange = range.reshape(rangeShape.toIntArray())
-
-                val rangePadding = baseRangePad.copyOf().apply { set(baseRangePad.lastIndex, arrayOf(axis, input.rank - axis - 1)) }
-                // padding to [1,...,paddedIndices.shape[axis],...,input.rank]
-                val paddedRange = reshapedRange.pad(rangePadding, 0)
-
-                // broadcast to paddedIndices
-                paddedRange.broadcastTo(paddedIndices.shapeArray).also {
-                    closeAll(range, reshapedRange)
+            // Zero pad indices to GatherND style
+            val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1)) as NDArrayTFJS
+            val padArray = Array(reshapedIndices.rank) {
+                if (it != reshapedIndices.rank - 1) {
+                    arrayOf(0, 0)
+                } else {
+                    arrayOf(actualAxis, input.rank - actualAxis - 1)
                 }
             }
-        }.filterNotNull().toTypedArray()
+            val paddedIndices = reshapedIndices.pad(padArray, 0) as NumberNDArrayTFJS
 
-        // Adding relevant indices for GatherND
-        val indicesForGatherNd = paddedIndices.add(otherRelevantIndices)
+            // Add relevant values to indices for GatherND
+            val baseRangeShape = Array(paddedIndices.rank) { 1 }
+            val baseRangePad = Array(paddedIndices.rank) { arrayOf(0, 0) }
 
-        val result = input.gatherNd(indicesForGatherNd)
+            val otherRelevantIndices = List(paddedIndices.rank - 1) { axis ->
+                if (axis == actualAxis) {
+                    // do nothing for operator axis
+                    null
+                } else {
+                    // Make range for axis
+                    val range = NumberNDArrayTFJS(range(0, paddedIndices.shape[axis], 1, "int32"))
+                    val rangeShape = baseRangeShape.copyOf().apply { set(axis, paddedIndices.shape[axis]) }
+                    //reshape to [1,...,paddedIndices.shape[axis],...,1]
+                    // reshapedRange.rank == paddedIndices.rank
+                    val reshapedRange = range.reshape(rangeShape.toIntArray())
 
-        return listOf(result.asTensor("output")).also {
-            closeAll(indicesGreaterOrEqualZero, actualIndices, reshapedIndices, paddedIndices, indicesForGatherNd)
+                    val rangePadding = baseRangePad.copyOf().apply { set(baseRangePad.lastIndex, arrayOf(axis, input.rank - axis - 1)) }
+                    // padding to [1,...,paddedIndices.shape[axis],...,input.rank]
+                    val paddedRange = reshapedRange.pad(rangePadding, 0)
+
+                    // broadcast to paddedIndices
+                    paddedRange.broadcastTo(paddedIndices.shapeArray)
+                }
+            }.filterNotNull().toTypedArray()
+
+            // Adding relevant indices for GatherND
+            val indicesForGatherNd = paddedIndices.add(otherRelevantIndices)
+
+            return@tidyNDArray input.gatherNd(indicesForGatherNd)
         }
+
+        return listOf(output.asTensor("output"))
     }
 }
 

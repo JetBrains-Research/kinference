@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 
 sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -54,21 +53,21 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val actualAxis = input.indexAxis(axis)
 
-        val output = if (selectLastIndex) {
-            val reversedInput = input.reverse(actualAxis)
-            val argMaxResult = reversedInput.argmax(actualAxis)
-            val axisDimension = NumberNDArrayTFJS(scalar(input.shape[actualAxis] - 1))
-            (axisDimension - argMaxResult).also {
-                closeAll(reversedInput, argMaxResult, axisDimension)
+        val normalizedOutput = tidyNDArray {
+            val output = if (selectLastIndex) {
+                val reversedInput = input.reverse(actualAxis)
+                val argMaxResult = reversedInput.argmax(actualAxis)
+                val axisDimension = NumberNDArrayTFJS(scalar(input.shape[actualAxis] - 1))
+                axisDimension - argMaxResult
+            } else {
+                input.argmax(actualAxis)
             }
-        } else {
-            input.argmax(actualAxis)
-        }
 
-        val normalizedOutput = if (keepDims) {
-            output.reshape(input.shape.copyOf().apply { this[actualAxis] = 1 }).also { output.close() }
-        } else {
-            output
+            return@tidyNDArray if (keepDims) {
+                output.reshape(input.shape.copyOf().apply { this[actualAxis] = 1 })
+            } else {
+                output
+            }
         }
         return listOf(normalizedOutput.asTensor("reduced"))
     }

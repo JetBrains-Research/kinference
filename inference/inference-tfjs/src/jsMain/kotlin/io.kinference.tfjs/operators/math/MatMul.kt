@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.matMul
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -73,14 +74,13 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val left = inputs[0]!!.data as NumberNDArrayTFJS
-        val right = inputs[1]!!.data as NumberNDArrayTFJS
-        val (leftActual, rightActual) = expandTensors(left, right)
+        val output = tidyNDArray {
+            val left = inputs[0]!!.data as NumberNDArrayTFJS
+            val right = inputs[1]!!.data as NumberNDArrayTFJS
+            val (leftActual, rightActual) = expandTensors(left, right)
 
-        val output = leftActual.matMul(rightActual)
-        return listOf(output.asTensor("Y")).also {
-            if (leftActual !== left) leftActual.close()
-            if (rightActual !== right) rightActual.close()
+            return@tidyNDArray leftActual.matMul(rightActual)
         }
+        return listOf(output.asTensor("Y"))
     }
 }

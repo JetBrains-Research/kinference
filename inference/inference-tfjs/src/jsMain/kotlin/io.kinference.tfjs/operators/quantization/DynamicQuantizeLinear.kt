@@ -7,8 +7,7 @@ import io.kinference.ndarray.arrays.scalar
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.data.tensors.*
 
 sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -60,9 +59,9 @@ class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute
             val quantInput = ((input / outputScale).round() + outputZeroPoint).clip(0f, 255f).cast("int32")
 
             return@tidy arrayOf(quantInput, outputScale, outputZeroPoint)
-        }
+        }.getNDArrays()
 
-        return listOf(outputs[0].asTensor("y"), outputs[1].asTensor("y_scale"), outputs[2].asTensor("y_zero_point"))
+        return outputs.asNamedOutputs(this.outputs)
     }
 }
 

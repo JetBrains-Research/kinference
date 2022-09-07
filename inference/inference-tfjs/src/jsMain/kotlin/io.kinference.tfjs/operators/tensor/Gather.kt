@@ -53,17 +53,18 @@ class GatherVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         val actualAxis = data.indexAxis(axis)
         val dim = data.shape[actualAxis]
 
-        val indicesData = indices.dataInt().copyOf()
-        for (idx in indicesData.indices) {
-            val value = indicesData[idx]
-            if (value < 0) indicesData[idx] = value + dim
-        }
-        val preparedIndices = tensor(indicesData, indices.shapeArray, indices.dtype).toNDArray()
+        val output = tidyNDArray {
+            val indicesData = indices.dataInt().copyOf()
+            for (idx in indicesData.indices) {
+                val value = indicesData[idx]
+                if (value < 0) indicesData[idx] = value + dim
+            }
+            val preparedIndices = tensor(indicesData, indices.shapeArray, indices.dtype).toNDArray()
 
-        val output = data.gather(preparedIndices, actualAxis)
-        return listOf(output.asTensor("output")).also {
-            preparedIndices.close()
+            return@tidyNDArray data.gather(preparedIndices, actualAxis)
         }
+
+        return listOf(output.asTensor("output"))
     }
 }
 

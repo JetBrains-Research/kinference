@@ -6,8 +6,8 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.types.*
 
-fun NDArray.asTensor(name: String? = null) =
-    TFJSTensor(this as NDArrayTFJS, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape), type.resolveProtoDataType()), name ?: ""))
+fun <T : NDArrayTFJS> T.asTensor(name: String? = null) =
+    TFJSTensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape), type.resolveProtoDataType()), name ?: ""))
 
 fun ArrayTFJS.asTensor(name: String? = null) = this.toNDArray().asTensor(name)
 
@@ -18,4 +18,8 @@ fun String.tfTypeResolve(): TensorProto.DataType {
         "bool" -> TensorProto.DataType.BOOL
         else -> error("Unsupported type $this")
     }
+}
+
+fun <T : NDArrayTFJS> Array<T>.asNamedOutputs(names: List<String>): List<TFJSTensor> {
+    return this.zip(names).map { (data, name) -> data.asTensor(name) }
 }

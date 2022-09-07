@@ -12,13 +12,6 @@ fun ArrayTFJS.toNDArray() = makeNDArray(this, dtype)
 fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
 fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].toNDArray() }
 
-inline fun <T, V> T.innerCast(func: (V) -> V): T {
-    this as? V ?: error { "Cannot perform cast" }
-    return func(this) as T
-}
-
-inline fun <T : NumberNDArray> T.tfjs(func: (NumberNDArrayTFJS) -> NumberNDArrayTFJS): T = innerCast(func)
-
 fun <T : NDArrayTFJS> T.dataInt() = tfjsArray.dataInt()
 fun <T : NDArrayTFJS> T.dataFloat() = tfjsArray.dataFloat()
 fun <T : NDArrayTFJS> T.dataBool() = tfjsArray.dataBool()

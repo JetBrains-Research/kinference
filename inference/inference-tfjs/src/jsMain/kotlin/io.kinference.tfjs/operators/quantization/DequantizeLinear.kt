@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 
 sealed class DequantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -73,29 +72,27 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
 
         require(zeroPoint == null || scale.shape.contentEquals(zeroPoint.shape)) { "Zero point and scale tensors should have the same dims" }
 
-        val output = when {
-            canDequantizePerTensor(zeroPoint, scale) -> {
-                val zero = zeroPoint ?: NumberNDArrayTFJS(scalar(0, "int32"))
-                ((input - zero) * scale).also {
-                    if (zeroPoint == null) zero.close()
+        val output = tidyNDArray {
+            return@tidyNDArray when {
+                canDequantizePerTensor(zeroPoint, scale) -> {
+                    val zero = zeroPoint ?: NumberNDArrayTFJS(scalar(0, "int32"))
+                    (input - zero) * scale
                 }
-            }
 
-            input.canDequantizePerAxis(actualAxis, zeroPoint, scale) -> {
-                val blockCount = input.computeBlockSize(toDim = actualAxis)
-                val blockSize = input.computeBlockSize(fromDim = actualAxis + 1)
-                val dim = input.shape[actualAxis]
-                val preparedInput = input.reshape(intArrayOf(blockCount, dim, blockSize))
-                val preparedZP = zeroPoint?.reshape(intArrayOf(1, dim, 1)) ?: NumberNDArrayTFJS(fill(arrayOf(1, dim, 1), 0, "int32"))
-                val preparedScale = scale.reshape(intArrayOf(1, dim, 1))
+                input.canDequantizePerAxis(actualAxis, zeroPoint, scale) -> {
+                    val blockCount = input.computeBlockSize(toDim = actualAxis)
+                    val blockSize = input.computeBlockSize(fromDim = actualAxis + 1)
+                    val dim = input.shape[actualAxis]
+                    val preparedInput = input.reshape(intArrayOf(blockCount, dim, blockSize))
+                    val preparedZP = zeroPoint?.reshape(intArrayOf(1, dim, 1)) ?: NumberNDArrayTFJS(fill(arrayOf(1, dim, 1), 0, "int32"))
+                    val preparedScale = scale.reshape(intArrayOf(1, dim, 1))
 
-                val rawOutput = (preparedInput - preparedZP) * preparedScale
-                rawOutput.reshape(input.shape).also {
-                    closeAll(preparedInput, preparedScale, preparedZP, rawOutput)
+                    val rawOutput = (preparedInput - preparedZP) * preparedScale
+                    rawOutput.reshape(input.shape)
                 }
-            }
 
-            else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors")
+                else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors")
+            }
         }
         return listOf(output.asTensor("y"))
     }

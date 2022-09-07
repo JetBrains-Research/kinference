@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.matMul
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -51,20 +52,16 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
         val right = inputs[1]!!.data as NumberNDArrayTFJS
         val leftZP = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
         val rightZP = inputs.getOrNull(3)?.data as? NumberNDArrayTFJS
+        val output = tidyNDArray {
+            val leftWithZp = if (leftZP != null) left - leftZP else left
+            val rightWithZp = if (rightZP != null) right - rightZP else right
 
-        val leftWithZp = if (leftZP != null) left - leftZP else left
-        val rightWithZp = if (rightZP != null) right - rightZP else right
+            val (leftExpanded, rightExpanded) = MatMul.expandTensors(leftWithZp, rightWithZp)
 
-        val (leftExpanded, rightExpanded) = MatMul.expandTensors(leftWithZp as NumberNDArrayTFJS, rightWithZp as NumberNDArrayTFJS)
-
-        val output = leftExpanded.matMul(rightExpanded)
-
-        return listOf(output.asTensor("Y")).also {
-            if (leftExpanded !== leftWithZp) leftExpanded.close()
-            if (rightExpanded !== rightWithZp) rightExpanded.close()
-            if (leftWithZp !== left) leftWithZp.close()
-            if (rightWithZp !== right) rightWithZp.close()
+            return@tidyNDArray leftExpanded.matMul(rightExpanded)
         }
+
+        return listOf(output.asTensor("Y"))
     }
 }
 

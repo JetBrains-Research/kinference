@@ -12,7 +12,8 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.ndarray.arrays.tensor
 
-sealed class ConstantOfShape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class ConstantOfShape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 9)
 
@@ -24,7 +25,8 @@ sealed class ConstantOfShape(name: String, info: OperatorInfo, attributes: Map<S
 }
 
 
-class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ConstantOfShape(name, INFO, attributes, inputs, outputs) {
+class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
+    : ConstantOfShape(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
@@ -44,11 +46,13 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
     private val value: TFJSTensor by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val shape = inputs[0]!!.data.dataInt().toTypedArray()
-        val output = if (shape.contains(0)) {
-            tensor(emptyArray<Int>(), shape, value.data.dtype).toNDArray()
-        } else {
-            value.data.broadcastTo(shape)
+        val output = tidyNDArray {
+            val shape = inputs[0]!!.data.dataInt().toTypedArray()
+            if (shape.contains(0)) {
+                return@tidyNDArray tensor(emptyArray<Int>(), shape, value.data.dtype).toNDArray()
+            }
+
+            return@tidyNDArray value.data.broadcastTo(shape)
         }
 
         return listOf(output.asTensor("output"))

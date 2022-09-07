@@ -4,7 +4,7 @@ import io.kinference.ndarray.*
 import io.kinference.utils.Closeable
 import io.kinference.primitives.types.DataType
 
-abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray, Closeable {
+abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
     var tfjsArray = tfjsArray
         protected set
 

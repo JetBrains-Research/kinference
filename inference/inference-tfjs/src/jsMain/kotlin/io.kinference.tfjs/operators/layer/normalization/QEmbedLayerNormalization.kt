@@ -9,8 +9,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 
 sealed class QEmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -94,44 +93,43 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
         val (_, hiddenSize) = wordEmbedding.shape
 
         val outputShape = intArrayOf(batchSize, seqLen, hiddenSize)
+        val outputs = tidyNDArrays {
+            val dequantWordEmbedding = (wordEmbedding - wordEmbeddingZeroPoint) * wordEmbeddingScale
+            val dequantPositionEmbedding = (positionEmbedding - positionEmbeddingZeroPoint) * positionEmbeddingScale
+            val dequantSegmentEmbedding = if (segmentEmbedding != null && segmentEmbeddingZeroPoint != null && segmentEmbeddingScale != null) {
+                (segmentEmbedding - segmentEmbeddingZeroPoint) * segmentEmbeddingScale
+            } else {
+                null
+            }
 
-        val dequantWordEmbedding = (wordEmbedding - wordEmbeddingZeroPoint) * wordEmbeddingScale
-        val dequantPositionEmbedding = (positionEmbedding - positionEmbeddingZeroPoint) * positionEmbeddingScale
-        val dequantSegmentEmbedding = if (segmentEmbedding != null && segmentEmbeddingZeroPoint != null && segmentEmbeddingScale != null) {
-            (segmentEmbedding - segmentEmbeddingZeroPoint) * segmentEmbeddingScale
-        } else {
-            null
+            val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape)
+
+            val positionIds = NumberNDArrayTFJS(range(0, inputIds.shape[1], 1, "int32")).broadcastTo(inputIds.shapeArray)
+            val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape)
+
+            val segmentResult = if (dequantSegmentEmbedding != null && segmentIds != null) {
+                dequantSegmentEmbedding.gather(segmentIds.flatten()).reshape(outputShape)
+            } else {
+                null
+            }
+
+            val result = if (segmentResult != null) {
+                wordResult.add(positionResult, segmentResult)
+            } else {
+                wordResult + positionResult
+            }
+
+            val (mean, variance) = result.moments(axis = -1, keepDims = true)
+
+            val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon))
+            val dequantGamma = (gamma - gammaZeroPoint) * gammaScale
+            val dequantBeta = (beta - betaZeroPoint) * betaScale
+            val output = (result - mean) / (variance + epsilonTensor).sqrt() * dequantGamma + dequantBeta
+
+            val maskOutput = mask?.sum(1, false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
+
+            return@tidyNDArrays arrayOf(output, maskOutput)
         }
-
-        val wordResult = (dequantWordEmbedding as NumberNDArrayTFJS).gather(inputIds.flatten()).reshape(outputShape)
-
-        val positionIds = NumberNDArrayTFJS(range(0, inputIds.shape[1], 1, "int32")).broadcastTo(inputIds.shapeArray)
-        val positionResult = (dequantPositionEmbedding as NumberNDArrayTFJS).gather(positionIds.flatten()).reshape(outputShape)
-
-        val segmentResult = if (dequantSegmentEmbedding != null && segmentIds != null) {
-            (dequantSegmentEmbedding as NumberNDArrayTFJS).gather(segmentIds.flatten()).reshape(outputShape)
-        } else {
-            null
-        }
-
-        val result = if (segmentResult != null) {
-            wordResult.add(positionResult, segmentResult)
-        } else {
-            wordResult + positionResult
-        } as NumberNDArrayTFJS
-
-        val (mean, variance) = result.moments(axis = -1, keepDims = true)
-
-        val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon))
-        val dequantGamma = (gamma - gammaZeroPoint) * gammaScale
-        val dequantBeta = (beta - betaZeroPoint) * betaScale
-        val output = (result - mean) / (variance + epsilonTensor).tfjs { it.sqrt() } * dequantGamma + dequantBeta
-
-        val maskOutput = mask?.sum(1, false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
-
-        return listOf(output.asTensor("output"), maskOutput.asTensor("mask_index")).also {
-            closeAll(dequantWordEmbedding, dequantPositionEmbedding, dequantSegmentEmbedding, wordResult, positionIds)
-            closeAll(positionResult, segmentResult, result, mean, variance, epsilonTensor, dequantBeta, dequantGamma)
-        }
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

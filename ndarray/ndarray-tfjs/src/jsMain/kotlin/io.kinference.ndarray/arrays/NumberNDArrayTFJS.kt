@@ -6,8 +6,8 @@ import io.kinference.primitives.types.PrimitiveType
 import kotlin.coroutines.CoroutineContext
 
 open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
-    override fun get(index: IntArray): PrimitiveType {
-        return tfjsArray.bufferSync().get(*index) as PrimitiveType
+    override fun get(index: IntArray): Number {
+        return tfjsArray.bufferSync().get(*index) as Number
     }
 
     override fun singleValue(): Number {
@@ -15,8 +15,8 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return tfjsArray.dataSync()[0] as Number
     }
 
-    override fun copyIfNotMutable(): MutableNumberNDArray {
-        return this as? MutableNumberNDArray ?: MutableNumberNDArrayTFJS(tfjsArray.clone())
+    override fun copyIfNotMutable(): MutableNumberNDArrayTFJS {
+        return this as? MutableNumberNDArrayTFJS ?: MutableNumberNDArrayTFJS(tfjsArray.clone())
     }
 
     override fun clone(): NumberNDArrayTFJS {
@@ -54,7 +54,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.transpose(newShape))
     }
 
-    override fun toMutable(newStrides: Strides): MutableNumberNDArray {
+    override fun toMutable(newStrides: Strides): MutableNumberNDArrayTFJS {
         val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
         return MutableNumberNDArrayTFJS(tensor)
     }
@@ -76,7 +76,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun min(): Any {
+    override fun min(): Number {
         TODO("Not yet implemented")
     }
 
@@ -85,7 +85,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(mins)
     }
 
-    override fun max(): Any {
+    override fun max(): Number {
         TODO("Not yet implemented")
     }
 
@@ -94,11 +94,11 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(max)
     }
 
-    override fun sum(): PrimitiveType {
-        return tfjsArray.sum().dataSync()[0] as PrimitiveType
+    override fun sum(): Number {
+        return tfjsArray.sum().dataSync()[0] as Number
     }
 
-    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray {
+    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArrayTFJS {
         val result = tfjsArray.cumsum(axis, exclusive, reverse)
         return MutableNumberNDArrayTFJS(result)
     }
@@ -107,47 +107,47 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
-    override fun plus(other: NumberNDArray): MutableNumberNDArray {
+    override fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.plus(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
-    override fun minus(other: NumberNDArray): MutableNumberNDArray {
+    override fun minus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.minus(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
-    override fun times(other: NumberNDArray): MutableNumberNDArray {
+    override fun times(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.times(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun times(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun times(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
-    override fun div(other: NumberNDArray): MutableNumberNDArray {
+    override fun div(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.div(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    override fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
-    override fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArray {
+    override fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
@@ -167,7 +167,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         cOffset: Int,
         transposeA: Boolean,
         transposeB: Boolean
-    ): MutableNDArray {
+    ): MutableNumberNDArrayTFJS {
         TODO("Not yet implemented")
     }
 
@@ -176,7 +176,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(result)
     }
 
-    override fun reduceSum(axes: IntArray, keepDims: Boolean): NumberNDArray {
+    override fun reduceSum(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
         val sum = tfjsArray.sum(axes.toTypedArray(), keepDims)
         return NumberNDArrayTFJS(sum)
     }

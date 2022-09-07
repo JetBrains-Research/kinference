@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
@@ -48,61 +49,63 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
-        val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
-            for ((idx, axis) in this.withIndex()) {
-                set(idx, input.indexAxis(axis))
-            }
-        } ?: IntArray(input.shape.size) { it }
+        val output = tidyNDArray {
+            val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
+                for ((idx, axis) in this.withIndex()) {
+                    set(idx, input.indexAxis(axis))
+                }
+            } ?: IntArray(input.shape.size) { it }
 
-        val incompleteStarts = inputs[1]!!.data.dataInt()
-        require(incompleteStarts.size == axes.size)
+            val incompleteStarts = inputs[1]!!.data.dataInt()
+            require(incompleteStarts.size == axes.size)
 
-        val incompleteEnds = inputs[2]!!.data.dataInt()
-        require(incompleteEnds.size == axes.size)
+            val incompleteEnds = inputs[2]!!.data.dataInt()
+            require(incompleteEnds.size == axes.size)
 
-        val incompleteSteps = inputs.getOrNull(4)?.data?.dataInt() ?: IntArray(axes.size) { 1 }
-        require(incompleteSteps.size == axes.size)
+            val incompleteSteps = inputs.getOrNull(4)?.data?.dataInt() ?: IntArray(axes.size) { 1 }
+            require(incompleteSteps.size == axes.size)
 
-        val starts = IntArray(input.shape.size)
-        val ends = IntArray(input.shape.size)
-        val steps = IntArray(input.shape.size)
+            val starts = IntArray(input.shape.size)
+            val ends = IntArray(input.shape.size)
+            val steps = IntArray(input.shape.size)
 
-        for (axis in input.shape.indices) {
-            val index = axes.indexOf(axis)
-            if (index == -1) {
-                starts[axis] = 0
-                ends[axis] = input.shape[axis]
-                steps[axis] = 1
-            } else {
-                val step = incompleteSteps[index]
-                steps[axis] = step
-                val start = incompleteStarts[index]
-                val end = incompleteEnds[index]
-                val dim = input.shape[axis]
-
-                if (step > 0) {
-                    if (start >= dim) {
-                        starts[axis] = 0
-                        ends[axis] = 0
-                        continue
-                    }
-
-                    val actualStart = if (start < 0) {
-                        start + dim
-                    } else start
-
-                    val actualEnd = if (end < 0) {
-                        end + dim
-                    } else end
-                    starts[axis] = actualStart
-                    ends[axis] = actualEnd
+            for (axis in input.shape.indices) {
+                val index = axes.indexOf(axis)
+                if (index == -1) {
+                    starts[axis] = 0
+                    ends[axis] = input.shape[axis]
+                    steps[axis] = 1
                 } else {
-                    starts[axis] = start
-                    ends[axis] = end
+                    val step = incompleteSteps[index]
+                    steps[axis] = step
+                    val start = incompleteStarts[index]
+                    val end = incompleteEnds[index]
+                    val dim = input.shape[axis]
+
+                    if (step > 0) {
+                        if (start >= dim) {
+                            starts[axis] = 0
+                            ends[axis] = 0
+                            continue
+                        }
+
+                        val actualStart = if (start < 0) {
+                            start + dim
+                        } else start
+
+                        val actualEnd = if (end < 0) {
+                            end + dim
+                        } else end
+                        starts[axis] = actualStart
+                        ends[axis] = actualEnd
+                    } else {
+                        starts[axis] = start
+                        ends[axis] = end
+                    }
                 }
             }
+            return@tidyNDArray input.slice(starts, ends, steps) as NDArrayTFJS
         }
-        val output = input.slice(starts, ends, steps)
 
         return listOf(output.asTensor("output"))
     }

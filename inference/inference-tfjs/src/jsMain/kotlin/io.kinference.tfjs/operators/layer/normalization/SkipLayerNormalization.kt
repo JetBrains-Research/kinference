@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
 
 sealed class SkipLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -65,19 +64,18 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
         val gamma = inputs[2]!!.data as NumberNDArrayTFJS
         val beta = inputs[3]!!.data as NumberNDArrayTFJS
         val bias = inputs.getOrNull(4)?.data as? NumberNDArrayTFJS
+        val out = tidyNDArray {
+            val skippedInput = if (bias != null) {
+                input.add(skip, bias.broadcastTo(input.shapeArray))
+            } else {
+                input.plus(skip)
+            }
 
-        val skippedInput = if (bias != null) {
-            input.add(skip, bias.broadcastTo(input.shapeArray))
-        } else {
-            input.plus(skip)
-        } as NumberNDArrayTFJS
+            val (mean, variance) = skippedInput.moments(axis = -1, keepDims = true)
 
-        val (mean, variance) = skippedInput.moments(axis = -1, keepDims = true)
-
-        val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon, "float32"))
-        val output = (skippedInput - mean) / (variance + epsilonTensor).tfjs { it.sqrt() } * gamma + beta
-        return listOf(output.asTensor("output")).also {
-            closeAll(mean, variance, epsilonTensor, skippedInput)
+            val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon, "float32"))
+            return@tidyNDArray (skippedInput - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
         }
+        return listOf(out.asTensor("output"))
     }
 }

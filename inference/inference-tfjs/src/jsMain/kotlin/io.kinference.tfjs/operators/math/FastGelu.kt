@@ -3,10 +3,8 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArrayTFJS
-import io.kinference.ndarray.arrays.scalar
-import io.kinference.ndarray.extensions.tanh
-import io.kinference.ndarray.extensions.tfjs
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
@@ -48,15 +46,16 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val input = inputs.first()!!.data as NumberNDArrayTFJS
-        val bias = inputs.getOrNull(1)?.data as? NumberNDArrayTFJS
+        val output = tidyNDArray {
+            val input = inputs.first()!!.data as NumberNDArrayTFJS
+            val bias = inputs.getOrNull(1)?.data as? NumberNDArrayTFJS
 
-        val inputWithBias = if (bias != null) input + bias else input
-        val output = inputWithBias * (COEF_1 + COEF_1 * (inputWithBias * (COEF_2 * inputWithBias * inputWithBias + COEF_3)).tfjs { it.tanh() })
+            val inputWithBias = if (bias != null) input + bias else input
 
-        return listOf(output.asTensor("Y")).also {
-            if (bias != null) inputWithBias.close()
+            return@tidyNDArray inputWithBias * (COEF_1 + COEF_1 * (inputWithBias * (COEF_2 * inputWithBias * inputWithBias + COEF_3)).tanh())
         }
+
+        return listOf(output.asTensor("Y"))
     }
 }
 

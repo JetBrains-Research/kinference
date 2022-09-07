@@ -8,9 +8,7 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.closeAll
+import io.kinference.tfjs.data.tensors.*
 
 sealed class QAttention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -57,29 +55,28 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
+        @Suppress("UNCHECKED_CAST")
         private fun initQueryKeyValue(
             input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS,
             numHeads: Int, inputZeroPoint: NumberNDArrayTFJS?,
             weightsZeroPoint: NumberNDArrayTFJS?, deqScale: NumberNDArray
         ): Array<NumberNDArrayTFJS> {
-            val (batchSize, seqLen, inputHidden) = input.shape
-            val headSize = inputHidden / numHeads
-            val weightsWithZP = if (weightsZeroPoint != null) weights.minus(weightsZeroPoint) else weights
-            val inputWithZP = if (inputZeroPoint != null) input.minus(inputZeroPoint) else input
-            val weightsPrepared = (weightsWithZP as NumberNDArrayTFJS)
-                .reshape(intArrayOf(inputHidden, 1, 3, numHeads, headSize))
-                .transpose(intArrayOf(2, 1, 3, 0, 4))
-                .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
-            val biasPrepared = bias.reshape(intArrayOf(3, 1, numHeads, 1, headSize))
-            val inputPrepared = (inputWithZP as NumberNDArrayTFJS)
-                .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
-                .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
-            val output = inputPrepared.matMul(weightsPrepared).times(deqScale).plus(biasPrepared) as NumberNDArrayTFJS
-            return output.unstack(0).also {
-                if (weightsZeroPoint != null) weightsWithZP.close()
-                if (inputZeroPoint != null) inputWithZP.close()
-                closeAll(weightsPrepared, biasPrepared, inputPrepared, output)
-            }
+            return tidyNDArrays {
+                val (batchSize, seqLen, inputHidden) = input.shape
+                val headSize = inputHidden / numHeads
+                val weightsWithZP = if (weightsZeroPoint != null) weights.minus(weightsZeroPoint) else weights
+                val inputWithZP = if (inputZeroPoint != null) input.minus(inputZeroPoint) else input
+                val weightsPrepared = weightsWithZP
+                    .reshape(intArrayOf(inputHidden, 1, 3, numHeads, headSize))
+                    .transpose(intArrayOf(2, 1, 3, 0, 4))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
+                val biasPrepared = bias.reshape(intArrayOf(3, 1, numHeads, 1, headSize))
+                val inputPrepared = inputWithZP
+                    .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
+                    .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
+                val output = inputPrepared.matMul(weightsPrepared).times(deqScale).plus(biasPrepared)
+                return@tidyNDArrays output.unstack(0)
+            } as Array<NumberNDArrayTFJS>
         }
     }
 
@@ -98,15 +95,14 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val past = inputs.getOrNull(8)?.data as? NumberNDArrayTFJS
 
         val (batchSize, seqLen, hiddenSize) = input.shape
-        val fullScale = inputScale * weightsScale
 
-        val (queries, keys, values) = initQueryKeyValue(input, weights, bias, numHeads, inputZP, weightsZP, fullScale)
-
-        val outputs = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
-
-        return listOf(outputs[0].asTensor(), outputs[1].asTensor()).also {
-            closeAll(queries, keys, values)
+        val outputs = tidyNDArrays {
+            val fullScale = inputScale * weightsScale
+            val (queries, keys, values) = initQueryKeyValue(input, weights, bias, numHeads, inputZP, weightsZP, fullScale)
+            return@tidyNDArrays Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         }
+
+        return outputs.asNamedOutputs(this.outputs)
     }
 }
 

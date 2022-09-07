@@ -4,8 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.broadcastShape
-import io.kinference.ndarray.extensions.broadcastTo
-import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -42,10 +41,12 @@ class ExpandVer8(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         val input = inputs[0]!!.data
         val shape = inputs[1]!!.data
 
-        val shapeArray = shape.dataInt()
-        val broadcastedShape = broadcastShape(listOf(input.shape, shapeArray))
+        val output = tidyNDArray {
+            val shapeArray = shape.dataInt()
+            val broadcastedShape = broadcastShape(listOf(input.shape, shapeArray))
 
-        val output = input.broadcastTo(broadcastedShape.toTypedArray())
+            return@tidyNDArray input.broadcastTo(broadcastedShape.toTypedArray())
+        }
 
         return listOf(output.asTensor("output"))
     }

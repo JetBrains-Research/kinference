@@ -5,6 +5,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.leakyRelu
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -42,8 +43,11 @@ class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = empt
     private val alpha: Float by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val outputs = tidyNDArray {
+            val input = inputs[0]!!.data as NumberNDArrayTFJS
+            return@tidyNDArray input.leakyRelu(alpha)
+        }
 
-        return listOf(input.leakyRelu(alpha).asTensor("Y"))
+        return listOf(outputs.asTensor("Y"))
     }
 }
