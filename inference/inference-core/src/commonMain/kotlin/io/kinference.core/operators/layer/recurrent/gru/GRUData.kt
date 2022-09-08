@@ -3,7 +3,7 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
 class GRUDefaultGate(private val weights: NumberNDArray, private val recurrentWeights: NumberNDArray, private val bias: NumberNDArray?, batchSize: Int, hiddenSize: Int, dataType: DataType) {

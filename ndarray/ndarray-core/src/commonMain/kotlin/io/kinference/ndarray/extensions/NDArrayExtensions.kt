@@ -10,9 +10,6 @@ fun NDArray.wrapOneDim(): NDArray {
     return this.reshape(1.concat(this.shape))
 }
 
-val NDArray.rows: Array<MutableNDArray>
-    get() = Array(shape[0]) { i -> row(i) }
-
 val NumberNDArray.rows: Array<MutableNumberNDArray>
     get() = Array(shape[0]) { i -> row(i) }
 
@@ -166,7 +163,7 @@ fun NumberNDArray.tryDequantize(zeroPoint: NumberNDArray?, scale: FloatNDArray, 
     return when {
         this is ByteNDArray && zeroPoint is ByteNDArray -> this.dequantize(zeroPoint, scale, axis)
         this is UByteNDArray && zeroPoint is UByteNDArray -> this.dequantize(zeroPoint, scale, axis)
-        else -> error("Dequantization is only supported for BYTE and UBYTE types. Current type = ${this.type}.")
+        else -> error("Dequantization is only supported for BYTE and UBYTE types. Current type = $type.")
     }
 }
 
@@ -176,6 +173,6 @@ fun NumberNDArray.tryZeroPoint(zeroPoint: NumberNDArray): IntNDArray {
         this is ByteNDArray && zeroPoint is ByteNDArray -> this.withZeroPoint(zeroPoint)
         this is UByteNDArray && zeroPoint is UByteNDArray -> this.withZeroPoint(zeroPoint)
         this is IntNDArray && zeroPoint is IntNDArray -> this.withZeroPoint(zeroPoint)
-        else -> error("Zero point is only supported for BYTE, UBYTE and INT types. Current type = ${this.type}.")
+        else -> error("Zero point is only supported for BYTE, UBYTE and INT types. Current type = $type.")
     }
 }

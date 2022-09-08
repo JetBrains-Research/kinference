@@ -97,3 +97,21 @@ fun quantizeMatMul(
 
     return dest
 }
+
+
+fun NumberNDArray.gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
+                       ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray {
+    return when (type) {
+        DataType.DOUBLE -> (this as DoubleNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.FLOAT -> (this as FloatNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.INT -> (this as IntNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.LONG -> (this as LongNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.BYTE -> (this as ByteNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.UBYTE -> (this as UByteNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.SHORT -> (this as ShortNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.USHORT -> (this as UShortNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.UINT -> (this as UIntNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        DataType.ULONG -> (this as ULongNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
+        else -> error("Unsupported data type: $type.")
+    }
+}

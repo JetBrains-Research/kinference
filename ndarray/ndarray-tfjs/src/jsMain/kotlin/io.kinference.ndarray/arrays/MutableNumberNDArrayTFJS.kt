@@ -34,10 +34,6 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         TODO("Not yet implemented")
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
-        TODO("Not yet implemented")
-    }
-
     override fun minusAssign(other: NDArray) {
         val otherTFJS = (other as NDArrayTFJS).tfjsArray
         val result = tfjsArray.minus(otherTFJS)
@@ -64,10 +60,6 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         val result = tfjsArray.div(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
-    }
-
-    override fun viewMutable(vararg axes: Int): MutableNumberNDArray {
-        TODO("Not yet implemented")
     }
 }
 

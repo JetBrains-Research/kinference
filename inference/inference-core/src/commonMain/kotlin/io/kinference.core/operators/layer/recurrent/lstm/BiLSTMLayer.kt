@@ -4,6 +4,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.core.operators.activations.Activation
 import io.kinference.model.ExecutionContext
+import io.kinference.ndarray.extensions.view
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 

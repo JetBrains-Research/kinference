@@ -5,6 +5,7 @@ import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.map
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 import kotlin.time.ExperimentalTime

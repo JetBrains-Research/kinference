@@ -17,14 +17,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return tfjsArray.dataSync()[0] as Boolean
     }
 
-    override fun view(vararg axes: Int): BooleanNDArrayTFJS {
-        TODO("Not yet implemented")
-    }
-
-    override fun reshapeView(newShape: IntArray): NDArray {
-        TODO("Not yet implemented")
-    }
-
     override fun reshape(strides: Strides): BooleanNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape.toTypedArray())
         return BooleanNDArrayTFJS(result)
@@ -41,14 +33,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
 
     override fun clone(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.clone())
-    }
-
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
-        TODO("Not yet implemented")
-    }
-
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray {
-        TODO("Not yet implemented")
     }
 
     override fun row(row: Int): MutableNDArray {
@@ -106,10 +90,6 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         tfjsArray.bufferSync().set(value, *index)
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
-        TODO("Not yet implemented")
-    }
-
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
         TODO("Not yet implemented")
     }
@@ -129,9 +109,5 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         val zerosArray = tensor(Array(linearSize) { false }, shapeArray, "bool")
         zerosArray.dispose()
         tfjsArray = zerosArray
-    }
-
-    override fun viewMutable(vararg axes: Int): MutableNDArray {
-        TODO("Not yet implemented")
     }
 }

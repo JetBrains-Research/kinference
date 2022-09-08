@@ -2,7 +2,7 @@ package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
 class LSTMGate(private val weights: AbstractLSTMWeights,

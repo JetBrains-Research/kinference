@@ -7,6 +7,7 @@ import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMWeights
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
+import io.kinference.ndarray.extensions.view
 import kotlin.time.ExperimentalTime
 
 class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroPoint: NumberNDArray): AbstractLSTMInput(data) {

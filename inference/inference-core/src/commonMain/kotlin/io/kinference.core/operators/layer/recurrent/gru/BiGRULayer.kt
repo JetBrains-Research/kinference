@@ -3,6 +3,7 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.ndarray.extensions.view
 import io.kinference.primitives.types.DataType
 
 class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hiddenSize, activations, "bidirectional") {

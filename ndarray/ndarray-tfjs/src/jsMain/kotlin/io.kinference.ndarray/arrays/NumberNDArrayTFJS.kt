@@ -2,7 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.applyIf
 import io.kinference.ndarray.extensions.*
-import io.kinference.primitives.types.PrimitiveType
 import kotlin.coroutines.CoroutineContext
 
 open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
@@ -21,10 +20,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
 
     override fun clone(): NumberNDArrayTFJS {
         return NumberNDArrayTFJS(tfjsArray.clone())
-    }
-
-    override fun reshapeView(newShape: IntArray): NDArray {
-        TODO("Not yet implemented")
     }
 
     override fun expand(shape: IntArray): MutableNumberNDArrayTFJS {
@@ -57,14 +52,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     override fun toMutable(newStrides: Strides): MutableNumberNDArrayTFJS {
         val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
         return MutableNumberNDArrayTFJS(tensor)
-    }
-
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray {
-        TODO("Not yet implemented")
-    }
-
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray {
-        TODO("Not yet implemented")
     }
 
     override fun row(row: Int): MutableNumberNDArray {
@@ -151,26 +138,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         TODO("Not yet implemented")
     }
 
-    override fun gemm(
-        m: Int,
-        n: Int,
-        k: Int,
-        alpha: Double,
-        lda: Int,
-        b: NDArray,
-        ldb: Int,
-        beta: Double,
-        c: MutableNDArray,
-        ldc: Int,
-        aOffset: Int,
-        bOffset: Int,
-        cOffset: Int,
-        transposeA: Boolean,
-        transposeB: Boolean
-    ): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
-    }
-
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
         val result = tfjsArray.argmax(axis)
         return NumberNDArrayTFJS(result)
@@ -192,10 +159,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
 
     override fun reshape(shape: IntArray): NumberNDArrayTFJS {
         return reshape(Strides(shape))
-    }
-
-    override fun view(vararg axes: Int): NumberNDArrayTFJS {
-        TODO("Not yet implemented")
     }
 
     override fun transpose(permutations: IntArray): NumberNDArrayTFJS {

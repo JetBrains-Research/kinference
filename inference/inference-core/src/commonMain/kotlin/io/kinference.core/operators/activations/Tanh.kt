@@ -6,6 +6,7 @@ import io.kinference.operator.*
 import io.kinference.core.operators.math.tanh
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.map
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 

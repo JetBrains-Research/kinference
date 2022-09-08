@@ -1,9 +1,9 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.core.operators.activations.Activation
 import io.kinference.model.ExecutionContext
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
 import kotlin.time.ExperimentalTime

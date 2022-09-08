@@ -26,7 +26,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[linearIndex]
     }
 
-    override fun view(vararg axes: Int): NDArray {
+    fun view(vararg axes: Int): NDArray {
         TODO("Not yet implemented")
     }
 
@@ -36,10 +36,6 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
 
     override fun close() = Unit
 
-    override fun reshapeView(newShape: IntArray): NDArray {
-        return StringNDArray(array, Strides(newShape))
-    }
-
     override fun toMutable(newStrides: Strides): MutableNDArray {
         return MutableStringNDArray(array.copyOf(), newStrides)
     }
@@ -48,12 +44,11 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return MutableStringNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
+    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
-
+    fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
 
     override fun row(row: Int): MutableNDArray {
         TODO("Not yet implemented")
@@ -142,7 +137,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         array[linearIndex] = value as String
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         TODO("Not yet implemented")
     }
 
@@ -171,7 +166,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         TODO("Not yet implemented")
     }
 
-    override fun viewMutable(vararg axes: Int): MutableNDArray {
+    fun viewMutable(vararg axes: Int): MutableNDArray {
         TODO("Not yet implemented")
     }
 

@@ -41,7 +41,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun close() = Unit
 
-    override fun view(vararg axes: Int): NDArray {
+    fun view(vararg axes: Int): NDArray {
         for ((i, axis) in axes.withIndex()) {
             require(shape[i] > axis)
         }
@@ -76,10 +76,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun reshapeView(newShape: IntArray): NDArray {
-        return BooleanNDArray(array, Strides(newShape))
-    }
-
     override fun toMutable(newStrides: Strides): MutableNDArray {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }
@@ -88,7 +84,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
+    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
         function as BooleanMap
         destination as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
@@ -98,7 +94,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return destination
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableBooleanNDArray(strides))
+    fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableBooleanNDArray(strides))
 
     override fun row(row: Int): MutableNDArray {
         val rowLength: Int = linearSize / shape[0]
@@ -183,7 +179,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
         val inputs = others.toMutableList().also { it.add(0, this) }
         val resultShape = shape.copyOf()
-        resultShape[actualAxis] = inputs.sumBy { it.shape[actualAxis] }
+        resultShape[actualAxis] = inputs.sumOf { it.shape[actualAxis] }
 
         val result = MutableBooleanNDArray(resultShape)
         val resultPointer = result.array.pointer()
@@ -441,7 +437,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array[linearIndex] = value as Boolean
     }
 
-    override fun viewMutable(vararg axes: Int): MutableNDArray {
+    fun viewMutable(vararg axes: Int): MutableNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
         val offsetBlocks = offset / array.blockSize
 
@@ -460,7 +456,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
         function as BooleanMap
         for (index in 0 until linearSize) {
             array[index] = function.apply(array[index])

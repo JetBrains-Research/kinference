@@ -4,6 +4,7 @@ import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.MutableNumberNDArray
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.extensions.view
 
 class DefaultLSTMInput(data: NumberNDArray): AbstractLSTMInput(data) {
     override fun view(vararg axes: Int): DefaultLSTMInput = DefaultLSTMInput(data.view(*axes))

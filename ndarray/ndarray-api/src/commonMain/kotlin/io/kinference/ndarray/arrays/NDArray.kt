@@ -6,8 +6,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.min
 
-interface PrimitiveToPrimitiveFunction
-
 interface NDArray : Closeable {
     val type: DataType
 
@@ -24,18 +22,12 @@ interface NDArray : Closeable {
 
     fun singleValue(): Any
 
-    fun view(vararg axes: Int): NDArray
-    @Deprecated(message = "Use reshape() instead", replaceWith = ReplaceWith("reshape()"))
-    fun reshapeView(newShape: IntArray): NDArray
     fun reshape(strides: Strides): NDArray
     fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
     fun toMutable(newStrides: Strides = strides): MutableNDArray
 
     fun copyIfNotMutable(): MutableNDArray
     fun clone(): NDArray
-
-    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray
-    fun map(function: PrimitiveToPrimitiveFunction): MutableNDArray
 
     fun row(row: Int): MutableNDArray
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
@@ -52,22 +44,16 @@ interface NDArray : Closeable {
 interface MutableNDArray : NDArray {
     operator fun set(index: IntArray, value: Any)
 
-    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray
-
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
 
     fun fillByArrayValue(array: NDArray, index: Int, from: Int = 0, to: Int = linearSize)
 
     fun clean()
-
-    fun viewMutable(vararg axes: Int): MutableNDArray
 }
 
 interface NumberNDArray : NDArray {
     override fun toMutable(newStrides: Strides): MutableNumberNDArray
-
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNumberNDArray
 
     override fun row(row: Int): MutableNumberNDArray
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
@@ -95,9 +81,6 @@ interface NumberNDArray : NDArray {
 
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
 
-    fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
-             ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray
-
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
     fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
     fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, NumberNDArray>
@@ -105,16 +88,10 @@ interface NumberNDArray : NDArray {
     override fun reshape(strides: Strides): NumberNDArray
     override fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
 
-    override fun view(vararg axes: Int): NumberNDArray
-
     override fun transpose(permutations: IntArray): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray
-
-    override fun viewMutable(vararg axes: Int): MutableNumberNDArray
-
     operator fun plusAssign(other: NDArray)
     operator fun minusAssign(other: NDArray)
     operator fun timesAssign(other: NDArray)
