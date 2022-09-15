@@ -21,8 +21,8 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return BooleanNDArrayTFJS(result)
     }
 
-    override fun toMutable(newStrides: Strides): MutableBooleanNDArrayTFJS {
-        val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
+    override fun toMutable(): MutableBooleanNDArrayTFJS {
+        val tensor = tfjsArray.clone()
         return MutableBooleanNDArrayTFJS(tensor)
     }
 

@@ -76,7 +76,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun toMutable(newStrides: Strides): MutableNDArrayCore {
+    override fun toMutable(): MutableNDArrayCore {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }
 

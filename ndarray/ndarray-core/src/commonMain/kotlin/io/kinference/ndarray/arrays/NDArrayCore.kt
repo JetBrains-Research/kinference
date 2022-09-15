@@ -16,7 +16,7 @@ interface NDArrayCore : NDArray {
     override fun reshape(strides: Strides): NDArrayCore
     override fun reshape(shape: IntArray): NDArrayCore = reshape(Strides(shape))
 
-    override fun toMutable(newStrides: Strides): MutableNDArrayCore
+    override fun toMutable(): MutableNDArrayCore
 
     override fun transpose(permutations: IntArray): NDArrayCore
 
@@ -54,7 +54,7 @@ interface NumberNDArrayCore : NDArrayCore, NumberNDArray {
         transposeB: Boolean
     ): MutableNDArrayCore
 
-    override fun toMutable(newStrides: Strides): MutableNumberNDArrayCore
+    override fun toMutable(): MutableNumberNDArrayCore
 
     override fun reshape(strides: Strides): NumberNDArrayCore
     override fun reshape(shape: IntArray): NumberNDArrayCore = reshape(Strides(shape))

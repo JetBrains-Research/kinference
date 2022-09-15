@@ -35,8 +35,8 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         TODO("Not yet implemented")
     }
 
-    override fun toMutable(newStrides: Strides): MutableNumberNDArrayTFJS {
-        val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
+    override fun toMutable(): MutableNumberNDArrayTFJS {
+        val tensor = tfjsArray.clone()
         return MutableNumberNDArrayTFJS(tensor)
     }
 

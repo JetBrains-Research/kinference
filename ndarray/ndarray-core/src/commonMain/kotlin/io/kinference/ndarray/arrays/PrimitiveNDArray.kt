@@ -78,7 +78,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return PrimitiveNDArray(array.copyOf(), Strides(shape))
     }
 
-    override fun toMutable(newStrides: Strides): MutableNumberNDArrayCore = MutablePrimitiveNDArray(array.copyOf(), newStrides)
+    override fun toMutable(): MutableNumberNDArrayCore = MutablePrimitiveNDArray(array.copyOf(), strides)
 
     override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutablePrimitiveNDArray {
         function as PrimitiveMap
@@ -1316,7 +1316,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun tile(repeats: IntArray): NumberNDArray {
         require(repeats.size == rank)
 
-        if (repeats.all { it == 1 }) return this.toMutable(strides)
+        if (repeats.all { it == 1 }) return this.toMutable()
 
         val outputShape = shape.copyOf().apply {
             for (idx in indices) {

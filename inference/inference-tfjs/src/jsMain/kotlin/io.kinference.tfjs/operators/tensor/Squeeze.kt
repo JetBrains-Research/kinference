@@ -37,14 +37,6 @@ class SqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
         internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("Squeeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        private fun NDArrayTFJS.getAxes(axes: IntArray?) {
-            val actualAxes = if (!axes.isNullOrEmpty()) {
-                axes!!.map { this.indexAxis(it) }
-            } else {
-                this.shape.withIndex().filter { it.value == 1 }.map { it.index }
-            }
-        }
     }
 
     private val axes: LongArray? by attributeOrNull()

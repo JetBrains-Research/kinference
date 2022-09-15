@@ -40,8 +40,8 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
 
     override fun close() = Unit
 
-    override fun toMutable(newStrides: Strides): MutableNDArrayCore {
-        return MutableStringNDArray(array.copyOf(), newStrides)
+    override fun toMutable(): MutableNDArrayCore {
+        return MutableStringNDArray(array.copyOf(), strides)
     }
 
     override fun copyIfNotMutable(): MutableNDArray {

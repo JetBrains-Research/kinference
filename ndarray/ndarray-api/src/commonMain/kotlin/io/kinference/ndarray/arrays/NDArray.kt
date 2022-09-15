@@ -24,7 +24,7 @@ interface NDArray : Closeable {
 
     fun reshape(strides: Strides): NDArray
     fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
-    fun toMutable(newStrides: Strides = strides): MutableNDArray
+    fun toMutable(): MutableNDArray
 
     fun squeeze(vararg axes: Int): NDArray
     fun unsqueeze(vararg axes: Int): NDArray
@@ -59,7 +59,7 @@ interface MutableNDArray : NDArray {
 }
 
 interface NumberNDArray : NDArray {
-    override fun toMutable(newStrides: Strides): MutableNumberNDArray
+    override fun toMutable(): MutableNumberNDArray
 
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
 
