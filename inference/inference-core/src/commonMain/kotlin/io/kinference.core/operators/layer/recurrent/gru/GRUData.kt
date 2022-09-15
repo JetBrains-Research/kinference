@@ -6,11 +6,18 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
-class GRUDefaultGate(private val weights: NumberNDArray, private val recurrentWeights: NumberNDArray, private val bias: NumberNDArray?, batchSize: Int, hiddenSize: Int, dataType: DataType) {
-    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
+class GRUDefaultGate(
+    private val weights: NumberNDArrayCore,
+    private val recurrentWeights: NumberNDArrayCore,
+    private val bias: NumberNDArrayCore?,
+    batchSize: Int,
+    hiddenSize: Int,
+    dataType: DataType
+) {
+    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
     fun compute(
-        input: NumberNDArray,
+        input: NumberNDArrayCore,
         hiddenState: GRUHiddenState,
         activationFunction: PrimitiveToPrimitiveFunction,
         numDirection: Int,
@@ -29,7 +36,16 @@ class GRUDefaultGate(private val weights: NumberNDArray, private val recurrentWe
     fun getVector(batchNum: Int) = gateData.view(batchNum)
 }
 
-class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWeights: NumberNDArray, wBias: NumberNDArray?, rBias: NumberNDArray?, batchSize: Int, hiddenSize: Int, dataType: DataType, private val linearBeforeReset: Boolean) {
+class GRUHiddenGate(
+    private val weights: NumberNDArrayCore,
+    private val recurrentWeights: NumberNDArrayCore,
+    wBias: NumberNDArrayCore?,
+    rBias: NumberNDArrayCore?,
+    batchSize: Int,
+    hiddenSize: Int,
+    dataType: DataType,
+    private val linearBeforeReset: Boolean
+) {
 
     private val bias: NumberNDArray?
     private val weightsBias: NumberNDArray?
@@ -52,11 +68,11 @@ class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWei
         }
     }
 
-    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
-    private val tempData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArray
+    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
+    private val tempData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
     fun compute(
-        input: NumberNDArray,
+        input: NumberNDArrayCore,
         hiddenState: GRUHiddenState,
         gates: GRUGates,
         activationFunction: PrimitiveToPrimitiveFunction,
@@ -70,7 +86,7 @@ class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWei
             computeDefault(input, hiddenState, gates, activationFunction, numDirection, batchNum, executionContext)
 
     private fun computeDefault(
-        input: NumberNDArray,
+        input: NumberNDArrayCore,
         hiddenState: GRUHiddenState,
         gates: GRUGates,
         activationFunction: PrimitiveToPrimitiveFunction,
@@ -90,7 +106,7 @@ class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWei
     }
 
     private fun computeWithReset(
-        input: NumberNDArray,
+        input: NumberNDArrayCore,
         hiddenState: GRUHiddenState,
         gates: GRUGates,
         activationFunction: PrimitiveToPrimitiveFunction,
@@ -114,7 +130,10 @@ class GRUHiddenGate(private val weights: NumberNDArray, private val recurrentWei
 
 data class GRUGates(val update: GRUDefaultGate, val reset: GRUDefaultGate, val hidden: GRUHiddenGate) {
     companion object {
-        fun create(weights: NumberNDArray, recurrentWeights: NumberNDArray, bias: NumberNDArray?, batchSize: Int, hiddenSize: Int, dataType: DataType, linearBeforeReset: Boolean): GRUGates {
+        fun create(
+            weights: NumberNDArrayCore, recurrentWeights: NumberNDArrayCore, bias: NumberNDArrayCore?,
+            batchSize: Int, hiddenSize: Int, dataType: DataType, linearBeforeReset: Boolean
+        ): GRUGates {
             val updateGate = GRUDefaultGate(
                 weights.view(0),
                 recurrentWeights.view(0),
@@ -143,11 +162,11 @@ data class GRUGates(val update: GRUDefaultGate, val reset: GRUDefaultGate, val h
 
 }
 
-class GRUHiddenState(initHiddenState: NumberNDArray?, private val dataType: DataType, numDirection: Int, batchSize: Int, hiddenSize: Int) {
-    private val stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArray
-    private val tempData = allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArray
+class GRUHiddenState(initHiddenState: NumberNDArrayCore?, private val dataType: DataType, numDirection: Int, batchSize: Int, hiddenSize: Int) {
+    private val stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+    private val tempData = allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
-    val data: NumberNDArray
+    val data: NumberNDArrayCore
         get() = stateData
 
     fun compute(gates: GRUGates, numDirection: Int, batchNum: Int) {

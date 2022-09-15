@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.toIntArray

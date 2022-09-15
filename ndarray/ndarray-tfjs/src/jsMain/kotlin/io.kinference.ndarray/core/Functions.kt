@@ -47,9 +47,9 @@ internal external val softmax: (logits: ArrayTFJS, dim: Int) -> ArrayTFJS
 
 internal external val erf: (x: ArrayTFJS) -> ArrayTFJS
 
-internal external val min: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean) -> ArrayTFJS
+internal external val min: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean?) -> ArrayTFJS
 
-internal external val max: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean) -> ArrayTFJS
+internal external val max: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean?) -> ArrayTFJS
 
 internal external val round: (x: ArrayTFJS) -> ArrayTFJS
 
@@ -100,4 +100,4 @@ internal external val leakyRelu: (x: ArrayTFJS, alpha: Number) -> ArrayTFJS
 
 internal external val cumsum: (x: ArrayTFJS, axis: Int, exclusive: Boolean, reverse: Boolean) -> ArrayTFJS
 
-internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> ArrayTFJS
+internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<ArrayTFJS, ArrayTFJS>

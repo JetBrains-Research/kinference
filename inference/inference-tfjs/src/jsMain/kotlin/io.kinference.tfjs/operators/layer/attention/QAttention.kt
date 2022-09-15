@@ -74,7 +74,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
                 val inputPrepared = inputWithZP
                     .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
                     .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
-                val output = inputPrepared.matMul(weightsPrepared).times(deqScale).plus(biasPrepared)
+                val output = inputPrepared.matmul(weightsPrepared).times(deqScale).plus(biasPrepared)
                 return@tidyNDArrays output.unstack(0)
             } as Array<NumberNDArrayTFJS>
         }

@@ -11,15 +11,14 @@ abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>,
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
-        bias: NumberNDArray?,
+        bias: NumberNDArrayCore?,
         sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?,
-        initialCellState: NumberNDArray?,
-        peepholes: NumberNDArray?,
+        initialHiddenState: NumberNDArrayCore?,
+        initialCellState: NumberNDArrayCore?,
+        peepholes: NumberNDArrayCore?,
         dataType: DataType,
         executionContext: ExecutionContext? = null
-    )
-    : Triple<NumberNDArray, NumberNDArray, NumberNDArray>
+    ): LSTMLayerOutput
 
     companion object {
         fun create(hiddenSize: Int, activations: List<String>, direction: String) =

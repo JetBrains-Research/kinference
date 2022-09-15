@@ -77,7 +77,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 val maskData = maskIndices.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen).reshape(intArrayOf(batchSize, 1, seqLen, fullSeqLen))
 
                 val alpha = NumberNDArrayTFJS(scalar(1.0f / sqrt(headSize.toFloat()), "float32"))
-                val scoreData = queries.matMul(present, transposeRight = true).times(alpha).plus(maskData)
+                val scoreData = queries.matmul(present, transposeRight = true).times(alpha).plus(maskData)
 
                 return@tidyNDArray scoreData.softmax()
             } as NumberNDArrayTFJS
@@ -88,7 +88,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             hiddenSize: Int, present: NumberNDArrayTFJS
         ): NDArrayTFJS {
             return tidyNDArray {
-                val output = scores.matMul(present)
+                val output = scores.matmul(present)
                 val newShape = intArrayOf(batchSize, seqLen, hiddenSize)
                 return@tidyNDArray output.transpose(intArrayOf(0, 2, 1, 3)).reshape(newShape)
             }
@@ -99,11 +99,11 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             past: NumberNDArrayTFJS?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Array<NDArrayTFJS> {
             return tidyNDArrays {
-                val present = k.stack(v, axis = 0)
+                val present = k.stack(listOf(v), axis = 0)
                 val pastSeqLen = if (past != null) past.shape[3] else 0
                 val headSize = hiddenSize / numHeads
-                val presentWithPast = past?.concat(present, axis = 3) ?: present
-                val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else presentWithPast.unstack(0)
+                val presentWithPast = past?.concat(listOf(present), axis = 3) ?: present
+                val (presentKeys, presentValue) = if (past == null) arrayOf(k, v) else (presentWithPast as NumberNDArrayTFJS).unstack(0)
                 val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, presentKeys)
                 return@tidyNDArrays arrayOf(attentionScore(scores, batchSize, seqLen, hiddenSize, presentValue), presentWithPast)
             }
@@ -159,7 +159,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
                     .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
                     .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
 
-                val output = inputPrepared.matMul(weightsPrepared).plus(biasPrepared)
+                val output = inputPrepared.matmul(weightsPrepared).plus(biasPrepared)
                 return@tidyNDArrays output.unstack(0)
             } as Array<NumberNDArrayTFJS>
         }

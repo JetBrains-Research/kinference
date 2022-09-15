@@ -58,10 +58,9 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
 
             val (leftExpanded, rightExpanded) = MatMul.expandTensors(leftWithZp, rightWithZp)
 
-            return@tidyNDArray leftExpanded.matMul(rightExpanded)
+            return@tidyNDArray leftExpanded.matmul(rightExpanded)
         }
 
         return listOf(output.asTensor("Y"))
     }
 }
-

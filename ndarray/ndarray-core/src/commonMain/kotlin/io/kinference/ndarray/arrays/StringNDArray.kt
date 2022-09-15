@@ -3,7 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
 
-open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
+open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCore {
     constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
 
@@ -26,7 +26,11 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return array[linearIndex]
     }
 
-    fun view(vararg axes: Int): NDArray {
+    override fun view(vararg axes: Int): NDArrayCore {
+        TODO("Not yet implemented")
+    }
+
+    override fun row(i: Int): MutableNDArray {
         TODO("Not yet implemented")
     }
 
@@ -36,7 +40,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
 
     override fun close() = Unit
 
-    override fun toMutable(newStrides: Strides): MutableNDArray {
+    override fun toMutable(newStrides: Strides): MutableNDArrayCore {
         return MutableStringNDArray(array.copyOf(), newStrides)
     }
 
@@ -44,21 +48,17 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return MutableStringNDArray(array, strides)
     }
 
-    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore {
         TODO("Not yet implemented")
     }
 
-    fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
-
-    override fun row(row: Int): MutableNDArray {
-        TODO("Not yet implemented")
-    }
+    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
 
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+    override fun concat(others: List<NDArray>, axis: Int): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
@@ -84,7 +84,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
         return StringNDArray(array, strides)
     }
 
-    override fun transpose(permutations: IntArray): NDArray {
+    override fun transpose(permutations: IntArray): NDArrayCore {
         TODO("Not yet implemented")
     }
 
@@ -124,7 +124,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArray {
     }
 }
 
-class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArray {
+class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPTY): StringNDArray(array, strides), MutableNDArrayCore {
     constructor(shape: IntArray) : this(emptyStringArrFromShape(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> String) : this(initStringArr(shape, init), Strides(shape))
 
@@ -137,7 +137,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         array[linearIndex] = value as String
     }
 
-    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore {
         TODO("Not yet implemented")
     }
 
@@ -166,7 +166,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         TODO("Not yet implemented")
     }
 
-    fun viewMutable(vararg axes: Int): MutableNDArray {
+    override fun viewMutable(vararg axes: Int): MutableNDArrayCore {
         TODO("Not yet implemented")
     }
 

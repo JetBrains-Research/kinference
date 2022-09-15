@@ -7,7 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -65,7 +65,7 @@ class TopKVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     private val sorted: Boolean by attribute { it: Number -> it.toInt() == 1 }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs.first()!!.data as NumberNDArray
+        val input = inputs.first()!!.data as NumberNDArrayCore
         val k = (inputs[1]!!.data as LongNDArray).singleValue().toInt()
 
         val (values, indices) = input.topK(axis, k, largest, sorted)

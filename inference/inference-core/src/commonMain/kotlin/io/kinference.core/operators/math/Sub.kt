@@ -6,6 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -53,7 +54,7 @@ class SubVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val result = (inputs[0]!!.data as NumberNDArray) - (inputs[1]!!.data as NumberNDArray)
+        val result = (inputs[0]!!.data as NumberNDArrayCore) - (inputs[1]!!.data as NumberNDArrayCore)
         return listOf(result.asTensor("C"))
     }
 }

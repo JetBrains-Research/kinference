@@ -74,14 +74,14 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
 
         val outputShape = intArrayOf(batchSize, seqLen, hiddenSize)
         val outputs = tidyNDArrays {
-            val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape)
+            val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val positionIds = range(0, inputIds.shape[1], 1, "int32").toNDArray().broadcastTo(inputIds.shapeArray)
 
-            val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape)
+            val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val segmentEmbedding = if (segmentIds != null && segmentWeights != null) {
-                segmentWeights.gather(segmentIds.flatten()).reshape(outputShape)
+                segmentWeights.gather(segmentIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
             } else {
                 null
             }

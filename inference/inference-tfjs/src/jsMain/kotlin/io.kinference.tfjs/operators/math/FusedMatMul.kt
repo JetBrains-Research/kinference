@@ -63,7 +63,7 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
         val right = inputs[1]!!.data as NumberNDArrayTFJS
 
         val output = tidyNDArray {
-            val matMulResult = left.matMul(right, transposeLeft, transposeRight)
+            val matMulResult = left.matmul(right, transposeLeft, transposeRight)
             val scalar = NumberNDArrayTFJS(scalar(alpha))
             return@tidyNDArray matMulResult * scalar
         }

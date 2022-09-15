@@ -17,7 +17,7 @@ sealed class Gelu(name: String, info: OperatorInfo, attributes: Map<String, Attr
     companion object {
         private val SQRT2 = sqrt(2.0)
 
-        fun gelu(array: MutableNumberNDArray): NumberNDArray {
+        fun gelu(array: MutableNumberNDArrayCore): NumberNDArrayCore {
             when (val type = array.type) {
                 DataType.FLOAT -> {
                     array as MutableFloatNDArray
@@ -66,7 +66,7 @@ class GeluVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data as NumberNDArray
+        val input = inputs[0]!!.data as NumberNDArrayCore
         return listOf(gelu(input.toMutable()).asTensor("Y"))
     }
 }

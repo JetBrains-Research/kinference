@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
@@ -49,7 +49,7 @@ class CumSumVer11(name: String, attributes: Map<String, Attribute<Any>> = emptyM
     private val reverse by attribute { r: Number -> r.toInt() != 0 }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data as NumberNDArray
+        val input = inputs[0]!!.data as NumberNDArrayCore
         val axis = (inputs[1]!!.data.singleValue() as Number).toInt()
         return listOf(input.cumulativeSum(axis, exclusive, reverse).asTensor("y"))
     }

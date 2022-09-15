@@ -7,22 +7,18 @@ import io.kinference.primitives.types.DataType
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArray, b: NumberNDArray, beta: Double, c: MutableNDArray,
-         aOffset: Int = 0, bOffset: Int = 0, cOffset: Int = 0, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray {
+fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArrayCore, b: NumberNDArrayCore, beta: Double, c: MutableNDArrayCore,
+         aOffset: Int = 0, bOffset: Int = 0, cOffset: Int = 0, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArrayCore {
     val lda = if (transposeA) m else k
     val ldb = if (transposeB) k else n
     return a.gemm(m, n, k, alpha, lda, b, ldb, beta, c, n, aOffset, bOffset, cOffset, transposeA, transposeB)
 }
 
-fun NumberNDArray.matmul(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray {
-    val outputShape = Broadcasting.broadcastShapeForMatmul(this.shape, other.shape)
-    val outputArray = allocateNDArray(type, Strides(outputShape)) as MutableNumberNDArray
-    return matmul(other, outputArray) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) }
-}
 
-private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArray,
-                                 dotFunc: NumberNDArray.(NumberNDArray, MutableNumberNDArray) -> MutableNumberNDArray
-): MutableNumberNDArray {
+internal fun NumberNDArrayCore.matmul(
+    other: NumberNDArrayCore, dest: MutableNumberNDArrayCore,
+    dotFunc: NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
+): MutableNumberNDArrayCore {
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
 
     if (rank <= 2 && other.rank <= 2) {
@@ -37,7 +33,7 @@ private fun NumberNDArray.matmul(other: NumberNDArray, dest: MutableNumberNDArra
 }
 
 fun quantizeMatMul(
-    left: NumberNDArray, right: NumberNDArray, leftZeroPoint: NumberNDArray?, rightZeroPoint: NumberNDArray?,
+    left: NumberNDArrayCore, right: NumberNDArrayCore, leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
     leftScale: FloatNDArray, rightScale: FloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): MutableFloatNDArray {
     val outputShape = Broadcasting.broadcastShapeForMatmul(left.shape, right.shape)
@@ -46,7 +42,7 @@ fun quantizeMatMul(
 }
 
 fun quantizeMatMul(
-    left: NumberNDArray, right: NumberNDArray, leftZeroPoint: NumberNDArray?, rightZeroPoint: NumberNDArray?,
+    left: NumberNDArrayCore, right: NumberNDArrayCore, leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
     leftScale: FloatNDArray, rightScale: FloatNDArray, dest: MutableFloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): MutableFloatNDArray {
     if (canDequantizePerTensor(leftZeroPoint, leftScale) && canDequantizePerTensor(rightZeroPoint, rightScale)) {
@@ -96,22 +92,4 @@ fun quantizeMatMul(
     }
 
     return dest
-}
-
-
-fun NumberNDArray.gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray,
-                       ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArray {
-    return when (type) {
-        DataType.DOUBLE -> (this as DoubleNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.FLOAT -> (this as FloatNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.INT -> (this as IntNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.LONG -> (this as LongNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.BYTE -> (this as ByteNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.UBYTE -> (this as UByteNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.SHORT -> (this as ShortNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.USHORT -> (this as UShortNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.UINT -> (this as UIntNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        DataType.ULONG -> (this as ULongNDArray).gemm(m, n, k, alpha, lda, b, ldb, beta, c, ldc, aOffset, bOffset, cOffset, transposeA, transposeB)
-        else -> error("Unsupported data type: $type.")
-    }
 }

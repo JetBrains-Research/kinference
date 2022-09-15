@@ -8,8 +8,8 @@ import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.createScalarNDArray
-import io.kinference.ndarray.extensions.matmul
 import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -59,8 +59,8 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
     private val transposeRight: Boolean by attribute("transB") { it: Long -> it == 1L }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val left = inputs[0]!!.data as NumberNDArray
-        val right = inputs[1]!!.data as NumberNDArray
+        val left = inputs[0]!!.data as NumberNDArrayCore
+        val right = inputs[1]!!.data as NumberNDArrayCore
 
         val actualLeft = if (transposeLeft) left.transpose(left.shape.indices.toIntArray().apply {
             this[lastIndex]--

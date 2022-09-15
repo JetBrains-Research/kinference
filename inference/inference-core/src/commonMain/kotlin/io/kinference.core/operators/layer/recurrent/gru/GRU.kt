@@ -5,8 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -96,12 +95,12 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
         val initialHiddenState = inputs.getOrNull(5)
 
         val (output, lastState) = gruLayer.apply(
-            input.data as NumberNDArray,
-            preparedWeights.data as NumberNDArray,
-            preparedRecurrentWeights.data as NumberNDArray,
-            preparedBias?.data as NumberNDArray?,
+            input.data as NumberNDArrayCore,
+            preparedWeights.data as NumberNDArrayCore,
+            preparedRecurrentWeights.data as NumberNDArrayCore,
+            preparedBias?.data as NumberNDArrayCore?,
             sequenceLens?.data as IntNDArray?,
-            initialHiddenState?.data as NumberNDArray?,
+            initialHiddenState?.data as NumberNDArrayCore?,
             input.data.type,
             linearBeforeReset,
             contexts

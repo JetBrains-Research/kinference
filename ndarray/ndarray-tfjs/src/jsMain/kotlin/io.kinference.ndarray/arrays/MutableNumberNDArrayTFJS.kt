@@ -2,6 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.PrimitiveType
+import kotlin.coroutines.CoroutineContext
 
 class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArray), MutableNumberNDArray {
     override fun set(index: IntArray, value: Any) {
@@ -20,7 +21,14 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
-        TODO("Not yet implemented")
+        other as MutableNumberNDArrayTFJS
+        val buffer = tfjsArray.bufferSync()
+        val otherData = other.tfjsArray.dataSync()
+        val startIndex = strides.index(offset)
+        val iterator = NDIndexIterator(strides, from = startIndex)
+        for (i in startInOther until endInOther) {
+            buffer.set(otherData[i], *iterator.next())
+        }
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
@@ -31,7 +39,8 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
     }
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
-        TODO("Not yet implemented")
+        val value = (array as NDArrayTFJS).tfjsArray.dataSync()[index]
+        fill(value as Number, from, to)
     }
 
     override fun minusAssign(other: NDArray) {

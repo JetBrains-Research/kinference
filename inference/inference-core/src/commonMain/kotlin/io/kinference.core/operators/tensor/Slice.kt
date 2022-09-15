@@ -5,8 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
@@ -150,6 +149,6 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
             }
         }
 
-        return listOf(data.data.slice(starts, ends, steps).asTensor("output"))
+        return listOf((data.data.slice(starts, ends, steps) as NDArrayCore).asTensor("output"))
     }
 }

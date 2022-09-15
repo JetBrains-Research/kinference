@@ -29,12 +29,12 @@ fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): In
     return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
 }
 
-fun NDArray.transpose(permutations: IntArray? = null): NDArray {
+fun <T : NDArray> T.transpose(permutations: IntArray? = null): T {
     require(permutations.isNullOrEmpty() || permutations!!.size == rank) { "Axes permutations list size should match the number of axes" }
-    if (this.rank == 2) return this.transpose2D()
+    if (this.rank == 2) return this.transpose2D() as T
 
     val actualPerm = if (permutations.isNullOrEmpty()) shape.indices.reversed().toIntArray() else permutations
-    return this.transpose(actualPerm!!)
+    return this.transpose(actualPerm!!) as T
 }
 
 fun broadcastShape(shapes: List<IntArray>): IntArray {

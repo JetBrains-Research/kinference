@@ -3,6 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.applyIf
 import io.kinference.ndarray.extensions.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {
@@ -34,37 +35,13 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         TODO("Not yet implemented")
     }
 
-    override fun concatenate(others: List<NDArray>, axis: Int): MutableNumberNDArrayTFJS {
-        val otherArrays = Array(others.size) { (others[it] as NumberNDArrayTFJS).tfjsArray }
-        val result = tfjsArray.concat(*otherArrays, axis = axis)
-        return MutableNumberNDArrayTFJS(result)
-    }
-
-    override fun tile(repeats: IntArray): NumberNDArrayTFJS {
-        return NumberNDArrayTFJS(tfjsArray.tile(repeats.toTypedArray()))
-    }
-
-    override fun transpose2D(): NumberNDArrayTFJS {
-        val newShape = tfjsArray.shape.reversedArray()
-        return NumberNDArrayTFJS(tfjsArray.transpose(newShape))
-    }
-
     override fun toMutable(newStrides: Strides): MutableNumberNDArrayTFJS {
         val tensor = tfjsArray.clone().applyIf(strides != newStrides) { it.reshape(newStrides.shape) }
         return MutableNumberNDArrayTFJS(tensor)
     }
 
-    override fun row(row: Int): MutableNumberNDArray {
-        TODO("Not yet implemented")
-    }
-
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayTFJS {
-        val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
-        return MutableNumberNDArrayTFJS(result)
-    }
-
     override fun min(): Number {
-        TODO("Not yet implemented")
+        return tfjsArray.min().dataSync()[0] as Number
     }
 
     override fun min(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
@@ -73,7 +50,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override fun max(): Number {
-        TODO("Not yet implemented")
+        return tfjsArray.max().dataSync()[0] as Number
     }
 
     override fun max(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
@@ -100,18 +77,10 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
-    }
-
     override fun minus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.minus(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
-    }
-
-    override fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
     }
 
     override fun times(other: NumberNDArray): MutableNumberNDArrayTFJS {
@@ -120,22 +89,16 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun times(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
-    }
-
     override fun div(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.div(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
-    }
-
-    override fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
-        TODO("Not yet implemented")
+    override fun dot(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
+        other as NumberNDArrayTFJS
+        val result = tfjsArray.dot(other.tfjsArray)
+        return MutableNumberNDArrayTFJS(result)
     }
 
     override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
@@ -164,5 +127,26 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     override fun transpose(permutations: IntArray): NumberNDArrayTFJS {
         val result = tfjsArray.transpose(permutations.toTypedArray())
         return NumberNDArrayTFJS(result)
+    }
+
+    override fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
+        other as NumberNDArrayTFJS
+        val result = tfjsArray.matMul(other.tfjsArray, transposeLeft = false, transposeRight = false)
+        return MutableNumberNDArrayTFJS(result)
+    }
+
+    fun matmul(
+        other: NumberNDArray,
+        transposeLeft: Boolean = false,
+        transposeRight: Boolean = false,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext
+    ): MutableNumberNDArrayTFJS {
+        other as NumberNDArrayTFJS
+        val result = tfjsArray.matMul(other.tfjsArray, transposeLeft, transposeRight)
+        return MutableNumberNDArrayTFJS(result)
+    }
+
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayTFJS {
+        return MutableNumberNDArrayTFJS(tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray()))
     }
 }

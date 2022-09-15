@@ -26,12 +26,12 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
 
     fun dequantizeMatMulInteger(graph: Graph<KIONNXData<*>>, dynamicQLin: DynamicQuantizeLinear, matMulInt: MatMulInteger, mul: Mul, nextMul: Mul): MatMul? {
         val matMulRight = graph.findInitializer(matMulInt.inputs[1])
-        val matMulZeroRight = graph.findInitializer(matMulInt.inputs[3])?.data as? NumberNDArray
+        val matMulZeroRight = graph.findInitializer(matMulInt.inputs[3])?.data as? NumberNDArrayCore
         val scaleRight = graph.findInitializer(mul.inputs[1])?.data as? NumberNDArray
         if (matMulRight?.data == null || matMulZeroRight == null || scaleRight == null) return null
 
         val newName = "${PREFIX}_${matMulRight.name}"
-        val dequantizedRight = (matMulRight.data as NumberNDArray).tryZeroPoint(matMulZeroRight).toFloatNDArray().times(scaleRight)
+        val dequantizedRight = (matMulRight.data as NumberNDArrayCore).tryZeroPoint(matMulZeroRight).toFloatNDArray().times(scaleRight)
         graph.addInitializer(dequantizedRight.asTensor(newName))
         return MatMul(
             name = "${PREFIX}_${matMulInt.name}",

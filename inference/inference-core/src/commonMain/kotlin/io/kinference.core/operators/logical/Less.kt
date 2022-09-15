@@ -41,7 +41,7 @@ class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Less", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        infix fun NDArray.less(other: NDArray): NDArray {
+        infix fun NDArrayCore.less(other: NDArrayCore): NDArrayCore {
             require(this.type == other.type) { "Arrays must have same types" }
 
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->

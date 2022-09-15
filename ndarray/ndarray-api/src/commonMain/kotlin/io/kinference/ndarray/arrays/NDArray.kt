@@ -26,16 +26,22 @@ interface NDArray : Closeable {
     fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
     fun toMutable(newStrides: Strides = strides): MutableNDArray
 
+    fun squeeze(vararg axes: Int): NDArray
+    fun unsqueeze(vararg axes: Int): NDArray
+
+    fun stack(others: List<NDArray>, axis: Int): NDArray
+    fun concat(others: List<NDArray>, axis: Int): NDArray
+
+    fun gather(indices: NDArray, axis: Int = 0, batchDims: Int = 0): NDArray
+
     fun copyIfNotMutable(): MutableNDArray
     fun clone(): NDArray
 
-    fun row(row: Int): MutableNDArray
-    fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray
+    fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray
     fun expand(shape: IntArray): MutableNDArray
     fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray
     fun nonZero(): NumberNDArray
 
-    fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray
     fun tile(repeats: IntArray): NDArray
     fun transpose(permutations: IntArray): NDArray
     fun transpose2D(): NDArray
@@ -55,7 +61,6 @@ interface MutableNDArray : NDArray {
 interface NumberNDArray : NDArray {
     override fun toMutable(newStrides: Strides): MutableNumberNDArray
 
-    override fun row(row: Int): MutableNumberNDArray
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
 
     fun min(): Any
@@ -66,20 +71,13 @@ interface NumberNDArray : NDArray {
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
     fun erf(): NumberNDArray
 
-
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
-    fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
-
     operator fun minus(other: NumberNDArray): MutableNumberNDArray
-    fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
-
     operator fun times(other: NumberNDArray): MutableNumberNDArray
-    fun times(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
-
     operator fun div(other: NumberNDArray): MutableNumberNDArray
-    fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray
 
-    fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
+    fun dot(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
+    fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
 
     fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
     fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray

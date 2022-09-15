@@ -16,7 +16,7 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArray {
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
 
@@ -35,13 +35,13 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             else -> strides.shape.last() / array.blockSize
         }
 
-    override fun clone(): NDArray {
+    override fun clone(): NDArrayCore {
         return BooleanNDArray(array.copyOf(), Strides(shape))
     }
 
     override fun close() = Unit
 
-    fun view(vararg axes: Int): NDArray {
+    override fun view(vararg axes: Int): NDArrayCore {
         for ((i, axis) in axes.withIndex()) {
             require(shape[i] > axis)
         }
@@ -76,15 +76,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun toMutable(newStrides: Strides): MutableNDArray {
+    override fun toMutable(newStrides: Strides): MutableNDArrayCore {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutableNDArrayCore {
         return MutableBooleanNDArray(array, strides)
     }
 
-    fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArray {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore {
         function as BooleanMap
         destination as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
@@ -94,7 +94,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return destination
     }
 
-    fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableBooleanNDArray(strides))
+    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore = map(function, MutableBooleanNDArray(strides))
 
     override fun row(row: Int): MutableNDArray {
         val rowLength: Int = linearSize / shape[0]
@@ -174,7 +174,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
 
-    override fun concatenate(others: List<NDArray>, axis: Int): MutableNDArray {
+    override fun concat(others: List<NDArray>, axis: Int): MutableNDArrayCore {
         val actualAxis = indexAxis(axis)
 
         val inputs = others.toMutableList().also { it.add(0, this) }
@@ -198,7 +198,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return result
     }
 
-    override fun expand(shape: IntArray): MutableNDArray {
+    override fun expand(shape: IntArray): MutableNDArrayCore {
         val outputShape = broadcastShape(listOf(this.shape, shape))
         val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
@@ -239,15 +239,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArrayCore {
         TODO("Not yet implemented")
     }
 
-    override fun tile(repeats: IntArray): NDArray {
+    override fun tile(repeats: IntArray): NDArrayCore {
         TODO("Not yet implemented")
     }
 
-    private fun transposeByBlocks(permutations: IntArray): NDArray {
+    private fun transposeByBlocks(permutations: IntArray): NDArrayCore {
         val outputBlocks =  this.array.blocks.copyOf()
         val outputStrides = strides.transpose(permutations)
 
@@ -291,7 +291,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(BooleanTiledArray(outputBlocks), outputStrides)
     }
 
-    override fun transpose(permutations: IntArray): NDArray {
+    override fun transpose(permutations: IntArray): NDArrayCore {
         require(permutations.size == rank)
         require(permutations.all { it in permutations.indices })
 
@@ -334,7 +334,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return outputArray
     }
 
-    override fun transpose2D(): NDArray {
+    override fun transpose2D(): NDArrayCore {
         require(rank == 2)
 
         val outputShape = shape.reversedArray()
@@ -424,7 +424,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 }
 
-class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArray {
+class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArrayCore {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
 
@@ -437,7 +437,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array[linearIndex] = value as Boolean
     }
 
-    fun viewMutable(vararg axes: Int): MutableNDArray {
+    override fun viewMutable(vararg axes: Int): MutableNDArrayCore {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
         val offsetBlocks = offset / array.blockSize
 
@@ -452,11 +452,11 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         return MutableBooleanNDArray(newArray, newStrides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutableNDArrayCore {
         return MutableBooleanNDArray(array, strides)
     }
 
-    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArray {
+    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableBooleanNDArray {
         function as BooleanMap
         for (index in 0 until linearSize) {
             array[index] = function.apply(array[index])
@@ -546,7 +546,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array.fill(false)
     }
 
-    fun not(): MutableNDArray {
+    fun not(): MutableNDArrayCore {
         return mapMutable(object : BooleanMap {
             override fun apply(value: Boolean): Boolean = value.not()
         })

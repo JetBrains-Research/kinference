@@ -1,15 +1,14 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
 abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, val direction: String) {
     abstract fun apply(
-        input: NumberNDArray, weights: NumberNDArray, recurrentWeights: NumberNDArray, bias: NumberNDArray?, sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?, dataType: DataType, linearBeforeReset: Boolean, contexts: Contexts<*>
-    ): Pair<NumberNDArray, NumberNDArray>
+        input: NumberNDArrayCore, weights: NumberNDArrayCore, recurrentWeights: NumberNDArrayCore, bias: NumberNDArrayCore?,
+        sequenceLength: IntNDArray?, initialHiddenState: NumberNDArrayCore?, dataType: DataType, linearBeforeReset: Boolean, contexts: Contexts<*>
+    ): Pair<NumberNDArrayCore, NumberNDArrayCore>
 
     companion object {
         fun create(hiddenSize: Int, activations: List<String>, direction: String) =

@@ -10,6 +10,8 @@ import io.kinference.ndarray.makeNDArray
 fun ArrayTFJS.toNDArray() = makeNDArray(this, dtype)
 
 fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
+fun List<NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
+
 fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].toNDArray() }
 
 fun <T : NDArrayTFJS> T.dataInt() = tfjsArray.dataInt()
@@ -20,11 +22,7 @@ fun <T : NDArrayTFJS> T.broadcastTo(shape: Array<Int>) = tfjsArray.broadcastTo(s
 
 fun <T : NDArrayTFJS> T.cast(dtype: String) = tfjsArray.cast(dtype).toNDArray()
 
-fun <T : NDArrayTFJS> T.gather(indices: NDArrayTFJS, axis: Int = 0, batchDims: Int = 0) = tfjsArray.gather(indices.tfjsArray, axis, batchDims).toNDArray() as T
-
 fun <T : NDArrayTFJS> Array<T>.concat(axis: Int = 0) = concat(getArrays(), axis).toNDArray() as T
-
-fun <T : NDArrayTFJS> T.concat(vararg tensors: T, axis: Int = 0) = arrayOf(this, *tensors).concat(axis)
 
 fun <T : NDArrayTFJS> T.transpose() = transpose(tfjsArray, null).toNDArray() as T
 
@@ -36,21 +34,11 @@ fun <T : NDArrayTFJS> Collection<T>.stack(axis: Int = 0) = this.toTypedArray().s
 
 fun <T : NDArrayTFJS> T.flatten() = reshape(tfjsArray, arrayOf(this.linearSize)).toNDArray() as T
 
-fun <T : NDArrayTFJS> T.stack(vararg tensors: NDArrayTFJS, axis: Int = 0) = arrayOf(tfjsArray, *tensors.getArrays()).stack(axis).toNDArray() as T
-
-fun <T : NDArrayTFJS> T.slice(begin: Array<Int>, end: Array<Int>) = slice(tfjsArray, begin, end).toNDArray() as T
-
-fun <T : NDArrayTFJS> T.slice(begin: Array<Int>) = slice(tfjsArray, begin, null).toNDArray() as T
-
 fun <T : NDArrayTFJS> T.reverse(axes: Array<Int>) = reverse(tfjsArray, axes).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.reverse(axis: Int) = reverse(tfjsArray, arrayOf(axis)).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.reverse() = reverse(tfjsArray, null).toNDArray() as T
-
-fun <T : NDArrayTFJS> T.slice(start: Array<Int>, end: Array<Int>, step: Array<Int>) = stridedSlice(tfjsArray, start, end, step, 0, 0, 0, 0, 0).toNDArray() as T
-
-fun <T : NDArrayTFJS> T.squeeze(axes: Array<Int>? = null) = squeeze(tfjsArray, axes).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.equal(other: NDArrayTFJS) = BooleanNDArrayTFJS(equal(tfjsArray, other.tfjsArray))
 
@@ -60,7 +48,7 @@ fun <T : NDArrayTFJS> T.pad(paddings: Array<Array<Int>>, constantValue: Number) 
 
 fun <T : NDArrayTFJS> T.gatherNd(indices: NDArrayTFJS) = gatherND(tfjsArray, indices.tfjsArray).toNDArray()
 
-fun <T : NDArrayTFJS> T.topk(k: Int, sorted: Boolean = false) = topk(tfjsArray, k, sorted).toNDArray()
+fun <T : NDArrayTFJS> T.topk(k: Int, sorted: Boolean = false) = topk(tfjsArray, k, sorted).let { it.first.toNDArray() to it.second.toNDArray() }
 
 fun NumberNDArrayTFJS.leakyRelu(alpha: Number) = NumberNDArrayTFJS(leakyRelu(tfjsArray, alpha))
 
@@ -77,9 +65,6 @@ fun NumberNDArrayTFJS.add(tensors: Array<NumberNDArrayTFJS>) = NumberNDArrayTFJS
 fun NumberNDArrayTFJS.add(vararg tensors: NumberNDArrayTFJS) = add(tensors as Array<NumberNDArrayTFJS>)
 
 fun NumberNDArrayTFJS.dot(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(dot(tfjsArray, other.tfjsArray))
-
-fun NumberNDArrayTFJS.matMul(other: NumberNDArrayTFJS, transposeLeft: Boolean = false, transposeRight: Boolean = false) =
-    NumberNDArrayTFJS(matMul(tfjsArray, other.tfjsArray, transposeLeft, transposeRight))
 
 fun NumberNDArrayTFJS.softmax(axis: Int = -1) = NumberNDArrayTFJS(softmax(tfjsArray, axis))
 

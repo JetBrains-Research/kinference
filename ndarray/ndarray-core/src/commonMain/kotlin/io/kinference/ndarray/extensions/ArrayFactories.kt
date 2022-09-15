@@ -61,7 +61,7 @@ fun primitiveFromTiledArray(array: Any): Any {
     }
 }
 
-fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableNDArray {
+fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableNDArrayCore {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(value as DoubleTiledArray, strides)
         DataType.FLOAT -> MutableFloatNDArray(value as FloatTiledArray, strides)
@@ -75,11 +75,11 @@ fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableN
     }
 }
 
-fun createMutableNDArray(type: DataType, value: Any, shape: IntArray): MutableNDArray {
+fun createMutableNDArray(type: DataType, value: Any, shape: IntArray): MutableNDArrayCore {
     return createMutableNDArray(type, value, Strides(shape))
 }
 
-fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
+fun createNDArray(type: DataType, value: Any, strides: Strides): NDArrayCore {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray(value as DoubleTiledArray, strides)
         DataType.FLOAT -> FloatNDArray(value as FloatTiledArray, strides)
@@ -93,11 +93,11 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArray {
     }
 }
 
-fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArray {
+fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArrayCore {
     return createNDArray(type, value, Strides(shape))
 }
 
-fun createScalarNDArray(type: DataType, value: Any): NDArray {
+fun createScalarNDArray(type: DataType, value: Any): NDArrayCore {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray.scalar(value as Double)
         DataType.FLOAT -> FloatNDArray.scalar(value as Float)
@@ -111,7 +111,7 @@ fun createScalarNDArray(type: DataType, value: Any): NDArray {
     }
 }
 
-fun allocateNDArray(type: DataType, strides: Strides): MutableNDArray {
+fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(DoubleTiledArray(strides), strides)
         DataType.FLOAT -> MutableFloatNDArray(FloatTiledArray(strides), strides)

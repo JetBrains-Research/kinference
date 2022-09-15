@@ -50,13 +50,13 @@ class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<A
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val left = inputs[0]!!.data as NumberNDArray
-        val right = inputs[1]!!.data as NumberNDArray
+        val left = inputs[0]!!.data as NumberNDArrayCore
+        val right = inputs[1]!!.data as NumberNDArrayCore
         val leftScale = inputs[2]!!.data as FloatNDArray
         val rightScale = inputs[3]!!.data as FloatNDArray
 
-        val leftZeroPoint = inputs[4]?.data as? NumberNDArray
-        val rightZeroPoint = inputs[5]?.data as? NumberNDArray
+        val leftZeroPoint = inputs[4]?.data as? NumberNDArrayCore
+        val rightZeroPoint = inputs[5]?.data as? NumberNDArrayCore
 
         val bias = inputs[6]?.data as? FloatNDArray
 

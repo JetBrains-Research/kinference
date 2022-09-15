@@ -96,9 +96,9 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
     }*/
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data as NumberNDArray
-        val inputScale = inputs[3]!!.data as NumberNDArray
-        val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArray?
+        val input = inputs[0]!!.data as NumberNDArrayCore
+        val inputScale = inputs[3]!!.data as NumberNDArrayCore
+        val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArrayCore?
         val dequantInput = input.tryDequantize(inputZeroPoint, inputScale as FloatNDArray)
 
         val weights = inputs[1]!!
@@ -112,7 +112,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?
-        val past = inputs.getOrNull(8)?.data as NumberNDArray?
+        val past = inputs.getOrNull(8)?.data as NumberNDArrayCore?
 
         val (batchSize, seqLen, hiddenSize) = dequantInput.shape
         val (queries, keys, values) = AttentionVer1.initQueryKeyValue(

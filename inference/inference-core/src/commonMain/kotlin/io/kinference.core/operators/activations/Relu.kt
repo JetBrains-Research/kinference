@@ -5,7 +5,6 @@ import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.map
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 import kotlin.time.ExperimentalTime
@@ -41,9 +40,11 @@ class ReluVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(
         private val INFO = OperatorInfo("Relu", emptyMap(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
-        DataType.FLOAT -> input.map(Relu.activateFloat)
-        DataType.DOUBLE -> input.map(Relu.activateDouble)
-        else -> error("Unsupported data type for this operation: $type")
+    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+        return when (val type = input.type) {
+            DataType.FLOAT -> input.map(Relu.activateFloat)
+            DataType.DOUBLE -> input.map(Relu.activateDouble)
+            else -> error("Unsupported data type for this operation: $type")
+        }
     }
 }

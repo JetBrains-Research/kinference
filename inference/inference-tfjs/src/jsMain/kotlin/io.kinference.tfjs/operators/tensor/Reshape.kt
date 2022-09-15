@@ -55,7 +55,7 @@ class ReshapeVer5(name: String, attributes: Map<String, Attribute<Any>>, inputs:
                 val elementsCount = shapeData.filter { it != -1 }.fold(1, Int::times)
                 shapeData[negativeIdx] = input.linearSize / elementsCount
             }
-            return@tidyNDArray input.reshape(shapeData) as NDArrayTFJS
+            return@tidyNDArray input.reshape(shapeData)
         }
 
         return listOf(output.asTensor("reshaped"))

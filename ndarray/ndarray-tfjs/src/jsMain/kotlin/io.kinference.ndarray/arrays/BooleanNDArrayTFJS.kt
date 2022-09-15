@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
-import io.kinference.ndarray.core.logicalNot
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
@@ -35,10 +34,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return BooleanNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun row(row: Int): MutableNDArray {
-        TODO("Not yet implemented")
-    }
-
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArrayTFJS {
         val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
         return MutableBooleanNDArrayTFJS(result)
@@ -56,28 +51,8 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         TODO("Not yet implemented")
     }
 
-    override fun concatenate(others: List<NDArray>, axis: Int): MutableBooleanNDArrayTFJS {
-        val otherArrays = Array(others.size) { (others[it] as BooleanNDArrayTFJS).tfjsArray }
-        val result = tfjsArray.concat(*otherArrays, axis = axis)
-        return MutableBooleanNDArrayTFJS(result)
-    }
-
-    override fun tile(repeats: IntArray): BooleanNDArrayTFJS {
-        return BooleanNDArrayTFJS(tfjsArray.tile(repeats.toTypedArray()))
-    }
-
-    override fun transpose(permutations: IntArray): BooleanNDArrayTFJS {
-        val result = tfjsArray.transpose(strides.shape.toTypedArray())
-        return BooleanNDArrayTFJS(result)
-    }
-
-    override fun transpose2D(): BooleanNDArrayTFJS {
-        val newShape = tfjsArray.shape.reversedArray()
-        return BooleanNDArrayTFJS(tfjsArray.transpose(newShape))
-    }
-
     fun not(): BooleanNDArrayTFJS {
-        return BooleanNDArrayTFJS(logicalNot(tfjsArray))
+        return BooleanNDArrayTFJS(tfjsArray.not())
     }
 }
 
@@ -91,7 +66,14 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
-        TODO("Not yet implemented")
+        other as MutableBooleanNDArrayTFJS
+        val buffer = tfjsArray.bufferSync()
+        val otherData = other.tfjsArray.dataSync()
+        val startIndex = strides.index(offset)
+        val iterator = NDIndexIterator(strides, from = startIndex)
+        for (i in startInOther until endInOther) {
+            buffer.set(otherData[i], *iterator.next())
+        }
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
@@ -102,7 +84,8 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     }
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
-        TODO("Not yet implemented")
+        val value = (array as NDArrayTFJS).tfjsArray.dataSync()[index]
+        fill(value as Number, from, to)
     }
 
     override fun clean() {

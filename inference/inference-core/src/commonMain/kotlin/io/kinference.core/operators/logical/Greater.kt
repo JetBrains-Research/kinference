@@ -41,7 +41,7 @@ class GreaterVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Greater", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        infix fun NDArray.greater(other: NDArray): NDArray {
+        infix fun NDArrayCore.greater(other: NDArrayCore): NDArrayCore {
             require(this.type == other.type) { "Arrays must have same types" }
 
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->

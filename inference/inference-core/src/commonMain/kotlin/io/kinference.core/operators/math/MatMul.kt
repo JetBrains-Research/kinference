@@ -6,8 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -49,8 +48,8 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val first = inputs[0]!!.data as NumberNDArray
-        val second = inputs[1]!!.data as NumberNDArray
+        val first = inputs[0]!!.data as NumberNDArrayCore
+        val second = inputs[1]!!.data as NumberNDArrayCore
         return listOf((first.matmul(second, contexts.execution.asCoroutineContext())).asTensor("Y"))
     }
 }

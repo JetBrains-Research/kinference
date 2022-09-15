@@ -79,7 +79,7 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
             val right = inputs[1]!!.data as NumberNDArrayTFJS
             val (leftActual, rightActual) = expandTensors(left, right)
 
-            return@tidyNDArray leftActual.matMul(rightActual)
+            return@tidyNDArray leftActual.matmul(rightActual)
         }
         return listOf(output.asTensor("Y"))
     }

@@ -148,11 +148,15 @@ fun ArrayTFJS.min(axes: Array<Int>, keepDims: Boolean = false) = min(this, axes,
 
 fun ArrayTFJS.min(keepDims: Boolean = false) = min(this, null, keepDims)
 
+fun ArrayTFJS.min() = min(this, null, null)
+
 fun ArrayTFJS.max(axis: Int, keepDims: Boolean = false) = max(this, arrayOf(axis), keepDims)
 
 fun ArrayTFJS.max(axes: Array<Int>, keepDims: Boolean = false) = max(this, axes, keepDims)
 
 fun ArrayTFJS.max(keepDims: Boolean = false) = max(this, null, keepDims)
+
+fun ArrayTFJS.max() = max(this, null, null)
 
 fun ArrayTFJS.round() = round(this)
 
@@ -203,7 +207,7 @@ fun ArrayTFJS.where(condition: ArrayTFJS, other: ArrayTFJS) = where(condition, t
 fun ArrayTFJS.clone() = clone(this)
 
 fun ArrayTFJS.not(): ArrayTFJS {
-    require(this.dtype == "bool") { "Accepted only bool type" }
+    require(this.dtype == "bool") { "Only bool type is accepted" }
     return logicalNot(this)
 }
 

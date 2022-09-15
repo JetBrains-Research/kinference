@@ -9,7 +9,7 @@ import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
-open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArray {
+open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
     constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
 
@@ -22,7 +22,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         array[linearIndex] = value as PrimitiveType
     }
 
-    fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
+    override fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
         val offsetBlocks = offset / array.blockSize
 
@@ -52,7 +52,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
     }
 
-    fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArray {
+    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArrayCore {
         function as PrimitiveMap
 
         for (block in array.blocks) {

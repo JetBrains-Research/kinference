@@ -2,19 +2,18 @@ package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
-import io.kinference.ndarray.arrays.MutableNumberNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.extensions.view
+import io.kinference.ndarray.arrays.MutableNumberNDArrayCore
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 
-class DefaultLSTMInput(data: NumberNDArray): AbstractLSTMInput(data) {
-    override fun view(vararg axes: Int): DefaultLSTMInput = DefaultLSTMInput(data.view(*axes))
+class DefaultLSTMInput(data: NumberNDArrayCore): AbstractLSTMInput(data) {
+    override fun view(vararg dims: Int): DefaultLSTMInput = DefaultLSTMInput(data.view(*dims))
 
-    override fun dot(weights: AbstractLSTMWeights, destination: MutableNumberNDArray, executionContext: ExecutionContext?) {
+    override fun dot(weights: AbstractLSTMWeights, destination: MutableNumberNDArrayCore, executionContext: ExecutionContext?) {
         when (weights) {
             is DefaultLSTMWeights -> data.dot(weights.data, destination, executionContext.asCoroutineContext())
             else -> error("Unsupported operation")
         }
     }
 
-    override fun recreate(data: NumberNDArray): DefaultLSTMInput = DefaultLSTMInput(data)
+    override fun recreate(data: NumberNDArrayCore): DefaultLSTMInput = DefaultLSTMInput(data)
 }

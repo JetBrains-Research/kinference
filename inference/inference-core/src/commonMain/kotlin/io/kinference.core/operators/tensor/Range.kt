@@ -43,7 +43,7 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         internal val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
         private val INFO = OperatorInfo("Range", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArray {
+        private fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
             return when (type.resolveProtoDataType()) {
                 TensorProto.DataType.DOUBLE -> {
                     start as Double; limit as Double; delta as Double

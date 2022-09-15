@@ -5,8 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -83,16 +82,16 @@ class LSTMVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
-        val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArray)
+        val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArrayCore)
 
         val weights = inputs[1]!!
         val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
-        val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArray)
+        val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArrayCore)
 
         val recurrentWeights = inputs[2]!!
         val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
             ?: LSTMContext.prepareWeights(recurrentWeights)) as KITensor
-        val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArray)
+        val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArrayCore)
 
         val bias = inputs.getOrNull(3)
         val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
@@ -108,11 +107,11 @@ class LSTMVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             inputAsLSTMInput,
             weightsAsLSTMWeights,
             recurrentWeightsAsLSTMWeights,
-            preparedBias?.data as NumberNDArray?,
+            preparedBias?.data as NumberNDArrayCore?,
             sequenceLens?.data as IntNDArray?,
-            initialState?.data as NumberNDArray?,
-            initialCellState?.data as NumberNDArray?,
-            preparedPeepholes?.data as NumberNDArray?,
+            initialState?.data as NumberNDArrayCore?,
+            initialCellState?.data as NumberNDArrayCore?,
+            preparedPeepholes?.data as NumberNDArrayCore?,
             input.data.type,
             contexts.execution
         )

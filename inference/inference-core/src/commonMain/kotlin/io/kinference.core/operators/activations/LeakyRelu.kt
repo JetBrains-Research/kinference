@@ -5,7 +5,6 @@ import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.map
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
@@ -45,9 +44,11 @@ class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = empt
         override fun apply(value: Double): Double = if (value < 0) value * alpha else value
     }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
-        DataType.FLOAT -> input.map(activateFloat)
-        DataType.DOUBLE -> input.map(activateDouble)
-        else -> error("Unsupported data type for this operation: $type")
+    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+        return when (val type = input.type) {
+            DataType.FLOAT -> input.map(activateFloat)
+            DataType.DOUBLE -> input.map(activateDouble)
+            else -> error("Unsupported data type for this operation: $type")
+        }
     }
 }

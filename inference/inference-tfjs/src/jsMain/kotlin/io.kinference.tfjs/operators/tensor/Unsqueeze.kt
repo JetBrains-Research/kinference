@@ -54,7 +54,7 @@ class UnsqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
             for (axis in actualAxes) {
                 newShape.add(axis, 1)
             }
-            return@tidyNDArray input.reshape(newShape.toIntArray()) as NDArrayTFJS
+            return@tidyNDArray input.reshape(newShape.toIntArray())
         }
         return listOf(output.asTensor("expanded"))
     }

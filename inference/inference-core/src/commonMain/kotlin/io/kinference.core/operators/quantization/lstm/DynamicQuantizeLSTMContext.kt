@@ -30,7 +30,8 @@ internal object DynamicQuantizeLSTMContext: ContextPrepare() {
     internal fun prepareWeights(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], shape[1], 4, shape[2] / 4)
-        return tensor.data.reshape(newShape)
+        return tensor.data
+            .reshape(newShape)
             .transpose(intArrayOf(0, 2, 1, 3)).asTensor("prepared_${tensor.name}")
     }
 

@@ -6,7 +6,6 @@ import io.kinference.operator.*
 import io.kinference.core.operators.math.tanh
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.map
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
@@ -41,9 +40,11 @@ class TanhVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(
         private val INFO = OperatorInfo("Tanh", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
-        DataType.FLOAT -> input.map(Tanh.activateFloat)
-        DataType.DOUBLE -> input.map(Tanh.activateDouble)
-        else -> error("Unsupported data type for this operation: $type")
+    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+        return when (val type = input.type) {
+            DataType.FLOAT -> input.map(Tanh.activateFloat)
+            DataType.DOUBLE -> input.map(Tanh.activateDouble)
+            else -> error("Unsupported data type for this operation: $type")
+        }
     }
 }

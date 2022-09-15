@@ -12,25 +12,25 @@ import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArray, CoreBackend>(name, data) {
-    constructor(data: NDArray, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
+class KITensor(name: String?, data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
+    constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     override fun close() {
         data.close()
     }
 
     operator fun minus(other: KITensor): KITensor {
-        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data - other.data).asTensor()
     }
 
     operator fun times(other: KITensor): KITensor {
-        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data * other.data).asTensor()
     }
 
     operator fun div(other: KITensor): KITensor {
-        require(this.data is NumberNDArray && other.data is NumberNDArray)
+        require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data / other.data).asTensor()
     }
 
@@ -46,7 +46,6 @@ class KITensor(name: String?, data: NDArray, val info: ValueTypeInfo.TensorTypeI
         fun create(proto: TensorProto): KITensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
-            requireNotNull(array) { "Array value should be initialized" }
 
             return KITensor(array, type, proto.dims, proto.name)
         }

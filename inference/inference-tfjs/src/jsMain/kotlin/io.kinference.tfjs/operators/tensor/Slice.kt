@@ -104,7 +104,7 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
                     }
                 }
             }
-            return@tidyNDArray input.slice(starts, ends, steps) as NDArrayTFJS
+            return@tidyNDArray input.slice(starts, ends, steps)
         }
 
         return listOf(output.asTensor("output"))

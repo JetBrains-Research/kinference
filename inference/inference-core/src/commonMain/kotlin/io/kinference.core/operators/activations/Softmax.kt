@@ -31,7 +31,7 @@ sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, A
             else -> error("Unsupported data type: $type")
         }
 
-        fun softmax(input: NDArray, axis: Int = 0, strides: Strides = input.strides, executionContext: ExecutionContext? = null): MutableNDArray {
+        fun softmax(input: NDArrayCore, axis: Int = 0, strides: Strides = input.strides, executionContext: ExecutionContext? = null): MutableNDArrayCore {
             val actualAxis = input.indexAxis(axis)
             val shape = input.shape
             val (rowIdx, columnIdx) = (shape.indices).partition { it < actualAxis }
@@ -39,9 +39,9 @@ sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, A
             val rows = resolveDims(shape.sliceArray(rowIdx))
             val columns = resolveDims(shape.sliceArray(columnIdx))
 
-            val matrixRows = (input.reshape(intArrayOf(rows, columns)) as NumberNDArray).rows
-
-            fun MutableNumberNDArray.softmax() {
+            val matrix = input.reshape(intArrayOf(rows, columns))
+            val matrixRows = Array(rows) { matrix.row(it) as MutableNumberNDArrayCore }
+            fun MutableNumberNDArrayCore.softmax() {
                 minusAssign(createScalarNDArray(input.type, max()) as NumberNDArray)
                 mapMutable(exp(type))
                 divAssign(createScalarNDArray(input.type, sum()) as NumberNDArray)
@@ -100,7 +100,7 @@ class SoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray {
+    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         return softmax(input, axis, input.strides, executionContext = contexts.execution)
     }
 }

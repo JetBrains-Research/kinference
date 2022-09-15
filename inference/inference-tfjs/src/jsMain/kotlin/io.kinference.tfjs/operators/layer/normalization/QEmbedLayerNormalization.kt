@@ -102,13 +102,13 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
                 null
             }
 
-            val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape)
+            val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val positionIds = NumberNDArrayTFJS(range(0, inputIds.shape[1], 1, "int32")).broadcastTo(inputIds.shapeArray)
-            val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape)
+            val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val segmentResult = if (dequantSegmentEmbedding != null && segmentIds != null) {
-                dequantSegmentEmbedding.gather(segmentIds.flatten()).reshape(outputShape)
+                dequantSegmentEmbedding.gather(segmentIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
             } else {
                 null
             }

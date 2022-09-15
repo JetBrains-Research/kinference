@@ -45,7 +45,7 @@ class TransposeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val input = inputs[0]!!.data
-            return@tidyNDArray input.transpose(perm?.toIntArray()) as NDArrayTFJS
+            return@tidyNDArray input.transpose(perm?.toIntArray())
         }
 
         return listOf(output.asTensor("transposed"))

@@ -1,13 +1,13 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.concatenate
+import io.kinference.ndarray.extensions.concat
 import io.kinference.ndarray.extensions.splitWithAxis
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.resolveProtoDataType
 import io.kinference.types.*
 
-fun NDArray.asTensor(name: String? = null) = KITensor(name, this, ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()))
+fun <T : NDArray> T.asTensor(name: String? = null) = KITensor(name, this as NDArrayCore, ValueTypeInfo.TensorTypeInfo(TensorShape(this.shape), type.resolveProtoDataType()))
 
 fun Collection<KITensor>.stack(axis: Int): KITensor {
     val fstShape = this.first().data.shape
@@ -16,11 +16,11 @@ fun Collection<KITensor>.stack(axis: Int): KITensor {
     newShape[axis] = 1
     fstShape.copyInto(newShape, axis + 1, axis)
 
-    return this.map { it.data.reshape(newShape) }.concatenate(axis).asTensor()
+    return this.map { it.data.reshape(newShape) }.concat(axis).asTensor()
 }
 
 fun List<KITensor>.concatenate(axis: Int): KITensor {
-    return this.map { it.data }.concatenate(axis).asTensor()
+    return this.map { it.data }.concat(axis).asTensor()
 }
 
 fun KITensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
@@ -30,7 +30,6 @@ fun KITensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true):
 fun KITensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
-
 
 fun KITensor.splitWithAxis(splitTensor: KITensor, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     val splitArray = when (splitTensor.data.type) {

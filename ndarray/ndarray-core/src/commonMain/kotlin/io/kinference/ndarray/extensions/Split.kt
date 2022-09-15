@@ -17,7 +17,7 @@ private fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: 
 }
 
 
-fun NDArray.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<MutableNDArray> {
+fun NDArrayCore.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<MutableNDArrayCore> {
     require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
     val actualAxis = indexAxis(axis)
     val elementsByIndex = shape[actualAxis]
@@ -30,7 +30,7 @@ fun NDArray.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): 
     return splitWithAxis(split, actualAxis, keepDims)
 }
 
-fun NDArray.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<MutableNDArray> {
+fun NDArrayCore.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<MutableNDArrayCore> {
     val beforeAxisDims = computeBlockSize(toDim = axis)
     val fromAxisDims = computeBlockSize(fromDim = axis)
     val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
@@ -49,7 +49,7 @@ fun NDArray.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true):
     }
 }
 
-private fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableNDArray {
+private fun NDArrayCore.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragmentSize: Int, splitStrides: Strides, offset: Int): MutableNDArrayCore {
     val dst = allocateNDArray(type, splitStrides)
     val len = beforeAxisDims * fragmentSize
     if (fromAxisDims == fragmentSize) {
@@ -64,7 +64,7 @@ private fun NDArray.splitFragment(beforeAxisDims: Int, fromAxisDims: Int, fragme
     return dst
 }
 
-private fun NDArray.splitParts(parts: Int, strides: Strides): List<MutableNDArray> {
+private fun NDArrayCore.splitParts(parts: Int, strides: Strides): List<MutableNDArrayCore> {
     require(linearSize % parts == 0)
     require(strides.linearSize == linearSize / parts)
 

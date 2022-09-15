@@ -49,7 +49,7 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
             val repeatsArray = repeats.dataInt()
 
-            return@tidyNDArray input.tile(repeatsArray) as NDArrayTFJS
+            return@tidyNDArray input.tile(repeatsArray)
         }
 
         return listOf(output.asTensor("output"))

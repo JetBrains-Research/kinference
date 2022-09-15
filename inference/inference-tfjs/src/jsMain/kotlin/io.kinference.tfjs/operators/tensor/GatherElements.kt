@@ -63,7 +63,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
             val actualIndices = indices.where(indicesGreaterOrEqualZero, NumberNDArrayTFJS(indices.tfjsArray + scalar(limitByAxis)))
 
             // Zero pad indices to GatherND style
-            val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1)) as NDArrayTFJS
+            val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1))
             val padArray = Array(reshapedIndices.rank) {
                 if (it != reshapedIndices.rank - 1) {
                     arrayOf(0, 0)

@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -36,14 +37,23 @@ class SqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
         internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("Squeeze", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+        private fun NDArrayTFJS.getAxes(axes: IntArray?) {
+            val actualAxes = if (!axes.isNullOrEmpty()) {
+                axes!!.map { this.indexAxis(it) }
+            } else {
+                this.shape.withIndex().filter { it.value == 1 }.map { it.index }
+            }
+        }
     }
 
     private val axes: LongArray? by attributeOrNull()
-    private val axesPrepared = axes?.toIntArray()?.toTypedArray()
+    private val axesPrepared = axes?.toIntArray()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
-        return listOf(input.squeeze(axesPrepared).asTensor("squeezed"))
+        val axes = axesPrepared ?: IntArray(0)
+        return listOf(input.squeeze(*axes).asTensor("squeezed"))
     }
 }
 
