@@ -74,11 +74,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return array.blocks[0][0]
     }
 
-    override fun clone(): NDArray {
+    override fun clone(): PrimitiveNDArray {
         return PrimitiveNDArray(array.copyOf(), Strides(shape))
     }
 
-    override fun toMutable(): MutableNumberNDArrayCore = MutablePrimitiveNDArray(array.copyOf(), strides)
+    override fun toMutable(): MutablePrimitiveNDArray = MutablePrimitiveNDArray(array.copyOf(), strides)
 
     override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutablePrimitiveNDArray {
         function as PrimitiveMap
@@ -121,7 +121,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutablePrimitiveNDArray(strides))
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray {
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutablePrimitiveNDArray {
         val newShape = IntArray(shape.size) {
             val length = abs(ends[it] - starts[it])
             val rest = length % abs(steps[it])
@@ -138,7 +138,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    override fun row(i: Int): MutableNumberNDArray {
+    override fun row(i: Int): MutablePrimitiveNDArray {
         val rowLength: Int = linearSize / shape[0]
         val start = i * rowLength
         val dims = shape.copyOfRange(1, rank)
@@ -189,7 +189,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return min
     }
 
-    override fun min(axis: Int, keepDims: Boolean): NumberNDArray {
+    override fun min(axis: Int, keepDims: Boolean): PrimitiveNDArray {
         return findComparable(axis, keepDims) { first, second -> first < second }
     }
 
@@ -216,7 +216,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return sum
     }
 
-    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray {
+    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutablePrimitiveNDArray {
         val output = MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
 
         val actualAxis = indexAxis(axis)
@@ -257,17 +257,17 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return output
     }
 
-    override fun erf(): NumberNDArray {
+    override fun erf(): PrimitiveNDArray {
         return this.map(object : PrimitiveMap {
             override fun apply(value: PrimitiveType): PrimitiveType = erf(value)
         })
     }
 
-    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore {
-        return softmax(this, axis, strides, coroutineContext)
+    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): PrimitiveNDArray {
+        return softmax(this, axis, strides, coroutineContext) as PrimitiveNDArray
     }
 
-    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore {
+    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): PrimitiveNDArray {
         fun log(type: DataType) = when(type) {
             DataType.FLOAT -> object : FloatMap {
                 override fun apply(value: Float): Float = ln(value)
@@ -282,7 +282,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return output.mapMutable(log(output.type)) as MutablePrimitiveNDArray
     }
 
-    override fun plus(other: NumberNDArray): MutableNumberNDArrayCore {
+    override fun plus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
@@ -325,7 +325,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun minus(other: NumberNDArray): MutableNumberNDArrayCore {
+    override fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return minus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
@@ -382,7 +382,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun times(other: NumberNDArray): MutableNumberNDArrayCore {
+    override fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
@@ -426,7 +426,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun div(other: NumberNDArray): MutableNumberNDArrayCore {
+    override fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
         return div(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
@@ -552,7 +552,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    override fun dot(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArray {
+    override fun dot(other: NumberNDArray, coroutineContext: CoroutineContext): MutablePrimitiveNDArray {
         other as PrimitiveNDArray
         require(shape.size in 1..2 && other.shape.size in 1..2)
 
@@ -560,19 +560,35 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return dot(other, destination, coroutineContext)
     }
 
-    override fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayCore {
+    override fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext): MutablePrimitiveNDArray {
         other as NumberNDArrayCore
         val outputShape = Broadcasting.broadcastShapeForMatmul(this.shape, other.shape)
         val outputArray = MutablePrimitiveNDArray(outputShape)
-        return matmul(other, outputArray) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) }
+        return matmul(other, outputArray) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) } as MutablePrimitiveNDArray
     }
 
-    override fun matmul(other: NumberNDArray, destination: MutableNumberNDArrayCore, coroutineContext: CoroutineContext): MutableNumberNDArrayCore {
+    override fun matmul(other: NumberNDArray, destination: MutableNumberNDArrayCore, coroutineContext: CoroutineContext): MutablePrimitiveNDArray {
         other as NumberNDArrayCore
-        return matmul(other, destination) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) }
+        return matmul(other, destination) { otherArray, dest -> this.dot(otherArray, dest, coroutineContext) } as MutablePrimitiveNDArray
     }
 
-    override fun gemm(m: Int, n: Int, k: Int, alpha: Double, lda: Int, b: NDArray, ldb: Int, beta: Double, c: MutableNDArray, ldc: Int, aOffset: Int, bOffset: Int, cOffset: Int, transposeA: Boolean, transposeB: Boolean): MutablePrimitiveNDArray {
+    override fun gemm(
+        m: Int,
+        n: Int,
+        k: Int,
+        alpha: Double,
+        lda: Int,
+        b: NDArray,
+        ldb: Int,
+        beta: Double,
+        c: MutableNDArray,
+        ldc: Int,
+        aOffset: Int,
+        bOffset: Int,
+        cOffset: Int,
+        transposeA: Boolean,
+        transposeB: Boolean
+    ): MutablePrimitiveNDArray {
         b as PrimitiveNDArray; c as MutablePrimitiveNDArray
         val betaPrimitive = beta.toPrimitive()
         val alphaPrimitive = alpha.toPrimitive()
@@ -1135,7 +1151,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return outputArray to indicesArray
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutablePrimitiveNDArray {
         return MutablePrimitiveNDArray(array.copyOf(), strides)
     }
 
@@ -1180,7 +1196,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): PrimitiveNDArray {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): PrimitiveNDArray {
         require(pads.size == rank)
         val outputShape = shape.copyOf()
         for ((axis, pad) in pads.withIndex()) {
@@ -1315,24 +1331,23 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         recurrentCopyInput(0, this, outputArray)
 
         when(mode) {
-            "constant" -> {
+            PadMode.CONSTANT -> {
                 if (constant != (0).toPrimitive()) {
                     recurrentFillConstant(0, outputArray)
                 }
             }
-            "edge" -> {
+            PadMode.EDGE -> {
                 recurrentFillEdge(0, outputArray)
             }
-            "reflect" -> {
+            PadMode.REFLECT -> {
                 recurrentFillReflect(0, outputArray)
             }
-            else -> error("Unsupported mode")
         }
 
         return outputArray
     }
 
-    override fun tile(repeats: IntArray): NumberNDArray {
+    override fun tile(repeats: IntArray): PrimitiveNDArray {
         require(repeats.size == rank)
 
         if (repeats.all { it == 1 }) return this.toMutable()
@@ -1437,7 +1452,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return PrimitiveNDArray(this.array, strides)
     }
 
-    private fun transposeByBlocks(permutations: IntArray): NumberNDArrayCore {
+    private fun transposeByBlocks(permutations: IntArray): PrimitiveNDArray {
         val outputBlocks =  this.array.blocks.copyOf()
         val outputStrides = strides.transpose(permutations)
 
@@ -1481,7 +1496,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return PrimitiveNDArray(PrimitiveTiledArray(outputBlocks), outputStrides)
     }
 
-    override fun transpose(permutations: IntArray): NumberNDArrayCore {
+    override fun transpose(permutations: IntArray): PrimitiveNDArray {
         require(permutations.size == rank)
         require(permutations.all { it in permutations.indices })
 
@@ -1532,7 +1547,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return outputArray
     }
 
-    override fun transpose2D(): NumberNDArrayCore {
+    override fun transpose2D(): PrimitiveNDArray {
         require(rank == 2)
 
         val outputShape = shape.reversedArray()

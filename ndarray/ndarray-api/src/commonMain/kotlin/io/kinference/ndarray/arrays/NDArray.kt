@@ -6,6 +6,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.min
 
+enum class PadMode {
+    CONSTANT,
+    EDGE,
+    REFLECT
+}
+
 interface NDArray : Closeable {
     val type: DataType
 
@@ -42,7 +48,7 @@ interface NDArray : Closeable {
 
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray
     fun expand(shape: IntArray): MutableNDArray
-    fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray
+    fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NDArray
     fun nonZero(): NumberNDArray
 
     fun tile(repeats: IntArray): NDArray
@@ -95,10 +101,10 @@ interface NumberNDArray : NDArray {
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
-    operator fun plusAssign(other: NDArray)
-    operator fun minusAssign(other: NDArray)
-    operator fun timesAssign(other: NDArray)
-    operator fun divAssign(other: NDArray)
+    operator fun plusAssign(other: NumberNDArray)
+    operator fun minusAssign(other: NumberNDArray)
+    operator fun timesAssign(other: NumberNDArray)
+    operator fun divAssign(other: NumberNDArray)
 }
 
 operator fun NDArray.get(vararg index: Int) = this[index]

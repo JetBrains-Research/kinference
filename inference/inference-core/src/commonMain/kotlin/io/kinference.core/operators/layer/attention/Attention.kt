@@ -217,7 +217,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
                             val inputMatrix = input.view(batchNum)
                             for (numHead in 0 until numHeads) {
                                 val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArrayCore
-                                val biasMatrix = bias.view(qkvIdx, numHead)
+                                val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
 
                                 val outputMatrix = output.viewMutable(batchNum, numHead)
 

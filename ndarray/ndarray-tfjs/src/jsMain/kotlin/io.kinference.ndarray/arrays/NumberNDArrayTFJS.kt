@@ -26,7 +26,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NumberNDArrayTFJS {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArrayTFJS {
         error("Operation pad() is not supported yet")
     }
 

@@ -41,7 +41,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun close() = Unit
 
-    override fun view(vararg axes: Int): NDArrayCore {
+    override fun view(vararg axes: Int): BooleanNDArray {
         for ((i, axis) in axes.withIndex()) {
             require(shape[i] > axis)
         }
@@ -76,15 +76,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun toMutable(): MutableNDArrayCore {
+    override fun toMutable(): MutableBooleanNDArray {
         return MutableBooleanNDArray(array.copyOf(), strides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArrayCore {
+    override fun copyIfNotMutable(): MutableBooleanNDArray {
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableBooleanNDArray {
         function as BooleanMap
         destination as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
@@ -104,7 +104,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return MutableBooleanNDArray(BooleanTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))
     }
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray {
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArray {
         val newShape = IntArray(shape.size) {
             val length = abs(ends[it] - starts[it])
             val rest = length % abs(steps[it])
@@ -174,7 +174,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
 
-    override fun concat(others: List<NDArray>, axis: Int): MutableNDArrayCore {
+    override fun concat(others: List<NDArray>, axis: Int): MutableBooleanNDArray {
         val actualAxis = indexAxis(axis)
 
         val inputs = others.toMutableList().also { it.add(0, this) }
@@ -198,7 +198,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return result
     }
 
-    override fun expand(shape: IntArray): MutableNDArrayCore {
+    override fun expand(shape: IntArray): MutableBooleanNDArray {
         val outputShape = broadcastShape(listOf(this.shape, shape))
         val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
@@ -239,15 +239,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArrayCore {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun tile(repeats: IntArray): NDArrayCore {
+    override fun tile(repeats: IntArray): BooleanNDArray {
         TODO("Not yet implemented")
     }
 
-    private fun transposeByBlocks(permutations: IntArray): NDArrayCore {
+    private fun transposeByBlocks(permutations: IntArray): BooleanNDArray {
         val outputBlocks =  this.array.blocks.copyOf()
         val outputStrides = strides.transpose(permutations)
 
@@ -291,7 +291,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(BooleanTiledArray(outputBlocks), outputStrides)
     }
 
-    override fun transpose(permutations: IntArray): NDArrayCore {
+    override fun transpose(permutations: IntArray): BooleanNDArray {
         require(permutations.size == rank)
         require(permutations.all { it in permutations.indices })
 
@@ -334,7 +334,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return outputArray
     }
 
-    override fun transpose2D(): NDArrayCore {
+    override fun transpose2D(): BooleanNDArray {
         require(rank == 2)
 
         val outputShape = shape.reversedArray()
@@ -437,7 +437,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array[linearIndex] = value as Boolean
     }
 
-    override fun viewMutable(vararg axes: Int): MutableNDArrayCore {
+    override fun viewMutable(vararg axes: Int): MutableBooleanNDArray {
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
         val offsetBlocks = offset / array.blockSize
 
@@ -452,7 +452,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         return MutableBooleanNDArray(newArray, newStrides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArrayCore {
+    override fun copyIfNotMutable(): MutableBooleanNDArray {
         return MutableBooleanNDArray(array, strides)
     }
 
@@ -546,7 +546,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array.fill(false)
     }
 
-    fun not(): MutableNDArrayCore {
+    fun not(): MutableBooleanNDArray {
         return mapMutable(object : BooleanMap {
             override fun apply(value: Boolean): Boolean = value.not()
         })
@@ -570,12 +570,12 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         }
 
         @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): MutableNDArray {
+        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): MutableBooleanNDArray {
             return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
         }
 
         @JvmName("invokeNDVarArg")
-        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): BooleanNDArray {
+        operator fun invoke(vararg shape: Int, init: (IntArray) -> Boolean): MutableBooleanNDArray {
             return invoke(shape, init)
         }
     }

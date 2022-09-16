@@ -37,7 +37,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutablePrimitiveNDArray {
         return MutablePrimitiveNDArray(array, strides)
     }
 
@@ -52,7 +52,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNumberNDArrayCore {
+    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutablePrimitiveNDArray {
         function as PrimitiveMap
 
         for (block in array.blocks) {
@@ -64,7 +64,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         return this
     }
 
-    override operator fun plusAssign(other: NDArray) {
+    override operator fun plusAssign(other: NumberNDArray) {
         other as PrimitiveNDArray
 
         when {
@@ -105,7 +105,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
     }
 
-    override operator fun minusAssign(other: NDArray) {
+    override operator fun minusAssign(other: NumberNDArray) {
         other as PrimitiveNDArray
 
         when {
@@ -135,7 +135,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
     }
 
-    override operator fun timesAssign(other: NDArray) {
+    override operator fun timesAssign(other: NumberNDArray) {
         other as PrimitiveNDArray
 
         when {
@@ -165,7 +165,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
     }
 
-    override operator fun divAssign(other: NDArray) {
+    override operator fun divAssign(other: NumberNDArray) {
         other as PrimitiveNDArray
 
         when {

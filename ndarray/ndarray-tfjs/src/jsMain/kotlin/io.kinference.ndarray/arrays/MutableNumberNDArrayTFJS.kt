@@ -2,7 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.PrimitiveType
-import kotlin.coroutines.CoroutineContext
 
 class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArray), MutableNumberNDArray {
     override fun set(index: IntArray, value: Any) {
@@ -10,7 +9,7 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         tfjsArray.bufferSync().set(value, *index)
     }
 
-    override fun clone(): NumberNDArrayTFJS {
+    override fun clone(): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.clone())
     }
 
@@ -43,29 +42,29 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         fill(value as Number, from, to)
     }
 
-    override fun minusAssign(other: NDArray) {
+    override fun minusAssign(other: NumberNDArray) {
         val otherTFJS = (other as NDArrayTFJS).tfjsArray
         val result = tfjsArray.minus(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun plusAssign(other: NDArray) {
+    override fun plusAssign(other: NumberNDArray) {
         val otherTFJS = (other as NDArrayTFJS).tfjsArray
         val result = tfjsArray.plus(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun timesAssign(other: NDArray) {
-        val otherTFJS = (other as NDArrayTFJS).tfjsArray
+    override fun timesAssign(other: NumberNDArray) {
+        val otherTFJS = (other as NumberNDArrayTFJS).tfjsArray
         val result = tfjsArray.times(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun divAssign(other: NDArray) {
-        val otherTFJS = (other as NDArrayTFJS).tfjsArray
+    override fun divAssign(other: NumberNDArray) {
+        val otherTFJS = (other as NumberNDArrayTFJS).tfjsArray
         val result = tfjsArray.div(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result

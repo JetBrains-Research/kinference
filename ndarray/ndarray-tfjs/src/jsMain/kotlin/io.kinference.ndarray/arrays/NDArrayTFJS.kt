@@ -70,11 +70,11 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return result.toNDArray()
     }
 
-    override fun split(parts: Int, axis: Int): List<NDArray> {
+    override fun split(parts: Int, axis: Int): List<NDArrayTFJS> {
         return tfjsArray.split(parts, axis).map { it.toNDArray() }
     }
 
-    override fun split(split: IntArray, axis: Int): List<NDArray> {
+    override fun split(split: IntArray, axis: Int): List<NDArrayTFJS> {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
 

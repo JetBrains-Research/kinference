@@ -26,35 +26,35 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return array[linearIndex]
     }
 
-    override fun view(vararg axes: Int): NDArrayCore {
+    override fun view(vararg axes: Int): StringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun row(i: Int): MutableNDArray {
+    override fun row(i: Int): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun clone(): NDArray {
+    override fun clone(): StringNDArray {
         return StringNDArray(array.copyOf(), Strides(shape))
     }
 
     override fun close() = Unit
 
-    override fun toMutable(): MutableNDArrayCore {
+    override fun toMutable(): MutableStringNDArray {
         return MutableStringNDArray(array.copyOf(), strides)
     }
 
-    override fun copyIfNotMutable(): MutableNDArray {
+    override fun copyIfNotMutable(): MutableStringNDArray {
         return MutableStringNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore {
+    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
     override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArray {
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
@@ -62,11 +62,11 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         TODO("Not yet implemented")
     }
 
-    override fun expand(shape: IntArray): MutableNDArray {
+    override fun expand(shape: IntArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NDArray {
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): StringNDArray {
         TODO("Not yet implemented")
     }
 
@@ -74,7 +74,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         TODO("Not yet implemented")
     }
 
-    override fun tile(repeats: IntArray): NDArray {
+    override fun tile(repeats: IntArray): StringNDArray {
         TODO("Not yet implemented")
     }
 
@@ -84,11 +84,11 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return StringNDArray(array, strides)
     }
 
-    override fun transpose(permutations: IntArray): NDArrayCore {
+    override fun transpose(permutations: IntArray): StringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun transpose2D(): NDArray {
+    override fun transpose2D(): StringNDArray {
         TODO("Not yet implemented")
     }
 

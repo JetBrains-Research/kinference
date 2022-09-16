@@ -1,6 +1,5 @@
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
@@ -43,12 +42,12 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): MutableBooleanNDArrayTFJS {
-        TODO("Not yet implemented")
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): MutableBooleanNDArrayTFJS {
+        error("Operation pad() is not supported yet")
     }
 
     override fun nonZero(): NumberNDArrayTFJS {
-        TODO("Not yet implemented")
+        error("Operation nonZero() is not supported yet")
     }
 
     fun not(): BooleanNDArrayTFJS {
