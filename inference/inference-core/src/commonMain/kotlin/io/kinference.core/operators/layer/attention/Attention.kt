@@ -3,21 +3,18 @@ package io.kinference.core.operators.layer.attention
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
-import io.kinference.ndarray.runBlocking
 import io.kinference.operator.*
-import io.kinference.core.operators.activations.Softmax
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.extensions.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.*
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -26,10 +23,10 @@ import kotlin.time.ExperimentalTime
 sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private fun attentionScore(
-            scores: NDArray, values: NDArray, batchSize: Int, seqLen: Int, pastSeqLen: Int,
-            numHeads: Int, hiddenSize: Int, past: NDArray?, present: MutableNDArray,
+            scores: NDArrayCore, values: NDArrayCore, batchSize: Int, seqLen: Int, pastSeqLen: Int,
+            numHeads: Int, hiddenSize: Int, past: NDArrayCore?, present: MutableNDArrayCore,
             executionContext: ExecutionContext?
-        ): Pair<NDArray, NDArray> {
+        ): Pair<NDArrayCore, NDArrayCore> {
             val headSize = hiddenSize / numHeads
 
             val output = allocateNDArray(scores.type, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize)))
@@ -38,28 +35,29 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 for (batchNum in 0 until batchSize) {
                     for (numHead in 0 until numHeads) {
                         launch {
-                            val tempScores = scores.view(batchNum, numHead)
-                            val tempOutput = output.viewMutable(batchNum, numHead)
+                            val tempScores = scores.view(batchNum, numHead) as NumberNDArrayCore
+                            val tempOutput = output.viewMutable(batchNum, numHead) as MutableNumberNDArray
 
                             val tempValues = values.view(batchNum, numHead)
                             val tempPast = past?.view(1, batchNum, numHead)
                             val tempPresent = present.viewMutable(1, batchNum, numHead)
 
                             concatStateChunk(tempPast, tempValues, tempPresent)
-                            (tempScores as NumberNDArray).dot(tempPresent as NumberNDArray, tempOutput as MutableNumberNDArray, executionContext.asCoroutineContext())
+                            tempScores.dot(tempPresent as NumberNDArray, tempOutput, executionContext.asCoroutineContext())
                         }
                     }
                 }
             }
 
-            return output.transpose(intArrayOf(0, 2, 1, 3)).reshape(intArrayOf(batchSize, seqLen, hiddenSize)) to present
+            val outputTransposed = output.transpose(intArrayOf(0, 2, 1, 3)).reshape(intArrayOf(batchSize, seqLen, hiddenSize))
+            return outputTransposed to present
         }
 
         internal fun getScores(
-            unidir: Boolean, q: NDArray, k: NDArray, v: NDArray, mask: IntNDArray?,
-            past: NDArray?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int,
+            unidir: Boolean, q: NDArrayCore, k: NDArrayCore, v: NDArrayCore, mask: IntNDArray?,
+            past: NDArrayCore?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int,
             executionContext: ExecutionContext?
-        ): Pair<NDArray, NDArray> {
+        ): Pair<NDArrayCore, NDArrayCore> {
             var pastSeqLen = 0
             val headSize = hiddenSize / numHeads
             val presentDims = intArrayOf(2, batchSize, numHeads, seqLen, headSize)
@@ -74,15 +72,14 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             return attentionScore(scores, v, batchSize, seqLen, pastSeqLen, numHeads, hiddenSize, past, present, executionContext)
         }
 
-
         private fun normalizedScores(
-            unidir: Boolean, queries: NDArray, keys: NDArray, maskIndices: IntNDArray?, batchSize: Int,
-            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArray?, present: MutableNDArray,
+            unidir: Boolean, queries: NDArrayCore, keys: NDArrayCore, maskIndices: IntNDArray?, batchSize: Int,
+            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArrayCore?, present: MutableNDArrayCore,
             executionContext: ExecutionContext?
-        ): NDArray {
+        ): NumberNDArrayCore {
             val allSeqLen = pastSeqLen + seqLen
 
-            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
+            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen))) as MutableNumberNDArrayCore
 
             val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen)
 
@@ -95,12 +92,12 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                             val queryMatrix = queries.view(batchNum, numHead)
                             val keyMatrix = keys.view(batchNum, numHead)
                             val pastMatrix = past?.view(0, batchNum, numHead)
-                            val presentMatrix = present.viewMutable(0, batchNum, numHead)
-                            val scoresMatrix = scores.viewMutable(batchNum, numHead)
+                            val presentMatrix = present.viewMutable(0, batchNum, numHead) as MutableNumberNDArrayCore
+                            val scoresMatrix = scores.viewMutable(batchNum, numHead) as MutableNumberNDArray
                             val maskVector = maskData?.view(batchNum)
 
                             concatStateChunk(pastMatrix, keyMatrix, presentMatrix)
-                            (queryMatrix as NumberNDArray).dotTransposedWithAlpha(alpha, presentMatrix as NumberNDArray, scoresMatrix as MutableNumberNDArray, executionContext.asCoroutineContext())
+                            (queryMatrix as FloatNDArray).dotTransposedWithAlpha(alpha, presentMatrix, scoresMatrix, executionContext.asCoroutineContext())
 //                    gemm(seqLen, allSeqLen, headSize, alpha, queryMatrix as NumberNDArray, presentMatrix as NumberNDArray, 1.0, scoresMatrix, transposeB = true)
                             if (maskVector != null)
                                 scoresMatrix.plusAssign(maskVector)
@@ -110,7 +107,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             }
 
             //softmax for each result (normalize along last axis)
-            return Softmax.softmax(scores, -1, executionContext = executionContext)
+            return scores.softmax(axis = -1, coroutineContext = executionContext.asCoroutineContext())
         }
 
         private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
@@ -158,7 +155,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             return mask
         }
 
-        private fun concatStateChunk(past: NDArray?, chunk: NDArray, present: MutableNDArray) {
+        private fun concatStateChunk(past: NDArrayCore?, chunk: NDArrayCore, present: MutableNDArrayCore) {
             //TODO: Check iterators in copyFrom
             var additionalForChunkOffset = 0
             if (past != null) {
@@ -204,10 +201,10 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         internal fun initQueryKeyValue(
-            input: NDArray, weights: NDArray, bias: NDArray, batchSize: Int, seqLen: Int,
-            hiddenSize: Int, numHeads: Int, executionContext: ExecutionContext?
-        ): Array<MutableNDArray> {
-            input as NumberNDArray
+            input: NDArrayCore, weights: NDArrayCore, bias: NDArrayCore, batchSize: Int,
+            seqLen: Int, hiddenSize: Int, numHeads: Int, executionContext: ExecutionContext?
+        ): Array<MutableNDArrayCore> {
+            input as NumberNDArrayCore
             val headSize = hiddenSize / numHeads
 
             val qkv = Array(3) { allocateNDArray(input.type, Strides(intArrayOf(batchSize, numHeads, seqLen, headSize))) }
@@ -219,7 +216,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
                         for (batchNum in 0 until batchSize) {
                             val inputMatrix = input.view(batchNum)
                             for (numHead in 0 until numHeads) {
-                                val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArray
+                                val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArrayCore
                                 val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
 
                                 val outputMatrix = output.viewMutable(batchNum, numHead)
@@ -236,7 +233,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         }
 
         //create present state block from past + current states
-        private fun MutableNDArray.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
+        private fun MutableNDArrayCore.updateState(past: NDArray?, currentState: NDArray, pastBlockSize: Int, presentBlockSize: Int, i: Int,
                                                pastOffset: Int, presentOffset: Int, currentOffset: Int): Pair<MutableNDArray, Int> {
             //present state block offset
             val presentStart = i * presentBlockSize + presentOffset
@@ -265,7 +262,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.elementAtOrNull(3)?.data as IntNDArray?
-        val past = inputs.elementAtOrNull(4)?.data as NumberNDArray?
+        val past = inputs.elementAtOrNull(4)?.data
 
         val (batchSize, seqLen, hiddenSize) = input.data.shape
 

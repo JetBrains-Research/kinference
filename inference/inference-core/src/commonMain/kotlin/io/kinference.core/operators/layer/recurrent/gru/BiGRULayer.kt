@@ -14,16 +14,16 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
     private val reverseLayer = GRULayer(hiddenSize, activations.subList(2, 4), "reverse")
 
     override fun apply(
-        input: NumberNDArray,
-        weights: NumberNDArray,
-        recurrentWeights: NumberNDArray,
-        bias: NumberNDArray?,
-        sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?,
+        input: NumberNDArrayCore,
+        weights: NumberNDArrayCore,
+        recurrentWeights: NumberNDArrayCore,
+        bias: NumberNDArrayCore?,
+        sequenceLength: IntNDArray?,
+        initialHiddenState: NumberNDArrayCore?,
         dataType: DataType,
         linearBeforeReset: Boolean,
         contexts: Contexts<*>
-    ): Pair<NumberNDArray, NumberNDArray> {
+    ): Pair<NumberNDArrayCore, NumberNDArrayCore> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
 
@@ -43,10 +43,10 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
 
         val gruHiddenState = GRUHiddenState(initialHiddenState, dataType, 2, batchSize, hiddenSize)
 
-        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArray
+        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
-        forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLens, 0, seqLength, batchSize, dataType, contexts)
-        reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLens, 1, seqLength, batchSize, dataType, contexts)
+        forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLength, 0, seqLength, batchSize, dataType, contexts)
+        reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLength, 1, seqLength, batchSize, dataType, contexts)
 
         return outputArray to gruHiddenState.data
     }

@@ -5,7 +5,6 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.rows
 import io.kinference.operator.*
 import io.kinference.core.operators.ml.trees.*
 import io.kinference.core.operators.ml.trees.BaseEnsembleInfo
@@ -120,10 +119,9 @@ class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute
     private val ensemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
 
     private fun labeledTopClasses(array: FloatNDArray): NDArray {
-        val rows = array.rows
         val shape = intArrayOf(array.shape[0])
         return writeLabels(ensemble.labelsInfo!!.labelsDataType, shape) {
-            ensemble.labelsInfo.labels[(rows[it] as FloatNDArray).maxIdx()]!!
+            ensemble.labelsInfo.labels[(array.row(it) as FloatNDArray).maxIdx()]!!
         }
     }
 

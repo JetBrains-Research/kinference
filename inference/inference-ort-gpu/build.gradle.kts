@@ -15,7 +15,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":inference:inference-api"))
-                api(project(":serialization"))
+                api(project(":serialization:serializer-protobuf"))
                 api(project(":utils:logger"))
                 api(project(":utils:common-utils"))
             }

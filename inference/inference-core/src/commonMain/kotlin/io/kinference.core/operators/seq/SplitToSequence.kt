@@ -3,8 +3,7 @@ package io.kinference.core.operators.seq
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.splitWithAxis
+import io.kinference.core.data.tensor.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -55,9 +54,9 @@ class SplitToSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>
 
         val input = inputs[0]!!
         val tensors = if (parts == null) {
-            input.splitWithAxis(input.data.shape[axis], axis, keepDims)
+            input.split(input.data.shape[axis], axis, keepDims)
         } else {
-            input.splitWithAxis(parts, axis)
+            input.split(parts, axis)
         }
 
         return listOf(KIONNXSequence("output_sequence", tensors, SequenceTypeInfo(tensors[0].info)))

@@ -1,12 +1,12 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.runBlocking
 import io.kinference.core.operators.activations.Activation
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.runBlocking
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -17,19 +17,19 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
     }
 
     override fun apply(
-        input: NumberNDArray,
-        weights: NumberNDArray,
-        recurrentWeights: NumberNDArray,
-        bias: NumberNDArray?,
-        sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?,
+        input: NumberNDArrayCore,
+        weights: NumberNDArrayCore,
+        recurrentWeights: NumberNDArrayCore,
+        bias: NumberNDArrayCore?,
+        sequenceLength: IntNDArray?,
+        initialHiddenState: NumberNDArrayCore?,
         dataType: DataType,
         linearBeforeReset: Boolean,
         contexts: Contexts<*>
-    ): Pair<NumberNDArray, NumberNDArray> {
+    ): Pair<NumberNDArrayCore, NumberNDArrayCore> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
-        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArray
+        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
         val gruState = GRUHiddenState(initialHiddenState, dataType, 1, batchSize, hiddenSize)
 
@@ -40,13 +40,13 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
             batchSize, hiddenSize, dataType, linearBeforeReset
         )
 
-        apply(input, outputArray, gruState, gruGates, sequenceLens, 0, seqLength, batchSize, dataType, contexts)
+        apply(input, outputArray, gruState, gruGates, sequenceLength, 0, seqLength, batchSize, dataType, contexts)
         return outputArray to gruState.data
     }
 
     fun apply(
-        input: NumberNDArray,
-        output: MutableNumberNDArray,
+        input: NumberNDArrayCore,
+        output: MutableNumberNDArrayCore,
         hiddenState: GRUHiddenState,
         gruGates: GRUGates,
         sequenceLens: IntNDArray?,

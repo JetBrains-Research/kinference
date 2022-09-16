@@ -20,14 +20,14 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
-        bias: NumberNDArray?,
+        bias: NumberNDArrayCore?,
         sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?,
-        initialCellState: NumberNDArray?,
-        peepholes: NumberNDArray?,
+        initialHiddenState: NumberNDArrayCore?,
+        initialCellState: NumberNDArrayCore?,
+        peepholes: NumberNDArrayCore?,
         dataType: DataType,
         executionContext: ExecutionContext?
-    ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
+    ): LSTMLayerOutput {
         val seqLength = input.data.shape[0]
         val batchSize = input.data.shape[1]
 
@@ -50,7 +50,7 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
             batchSize, hiddenSize, dataType
         )
 
-        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(2, batchSize, hiddenSize))) as MutableNumberNDArray
+        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(2, batchSize, hiddenSize))) as MutableNumberNDArrayCore
         val initHiddenStateAsLSTMInput = arrayOf(input.recreate(initHiddenState.view(0)), input.recreate(initHiddenState.view(1)))
 
         val lstmStates = LSTMStates(
@@ -58,11 +58,11 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
             LSTMHiddenState(initHiddenState, initHiddenStateAsLSTMInput, listOf(forwardH, reverseH))
         )
 
-        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArray
+        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
         forwardLayer.apply(input, outputArray, lstmStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType, executionContext)
         reverseLayer.apply(input, outputArray, lstmStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType, executionContext)
 
-        return Triple(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
+        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
 }

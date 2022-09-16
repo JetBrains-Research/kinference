@@ -3,12 +3,12 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.tensor
-import io.kinference.tfjs.externals.extensions.tidy
 
 sealed class Shape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -36,12 +36,12 @@ class ShapeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!
-            val inputShape = input.data.shape
-            return@tidy arrayOf(tensor(inputShape, arrayOf(inputShape.size), "int32"))
+        val output = tidyNDArray {
+            val input = inputs[0]!!.data
+            val inputShape = input.shape
+            return@tidyNDArray NDArrayTFJS.int(inputShape, arrayOf(inputShape.size))
         }
 
-        return listOf(outputs[0].asTensor("shape"))
+        return listOf(output.asTensor("shape"))
     }
 }

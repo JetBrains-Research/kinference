@@ -3,27 +3,29 @@ package io.kinference.tfjs.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.scalar
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class SkipLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class SkipLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SkipLayerNormalizationVer1.VERSION.asRange() -> SkipLayerNormalizationVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of SkipLayerNormalization operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in SkipLayerNormalizationVer1.VERSION.asRange() -> SkipLayerNormalizationVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of SkipLayerNormalization operator: $version")
+            }
     }
 }
 
-class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SkipLayerNormalization(name, INFO, attributes, inputs, outputs) {
+class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    SkipLayerNormalization(name, INFO, attributes, inputs, outputs) {
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -57,28 +59,23 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
     private val epsilon: Float by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            val skip = inputs[1]!!.data
-            val gamma = inputs[2]!!.data
-            val beta = inputs[3]!!.data
-            val bias = inputs.getOrNull(4)?.data
-
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val skip = inputs[1]!!.data as NumberNDArrayTFJS
+        val gamma = inputs[2]!!.data as NumberNDArrayTFJS
+        val beta = inputs[3]!!.data as NumberNDArrayTFJS
+        val bias = inputs.getOrNull(4)?.data as? NumberNDArrayTFJS
+        val out = tidyNDArray {
             val skippedInput = if (bias != null) {
-                input.add(skip, bias.broadcastTo(input.shape))
+                input.add(skip, bias.broadcastTo(input.shapeArray))
             } else {
                 input.plus(skip)
             }
 
-            val momentsOutput = skippedInput.moments(-1, true)
-            val mean = momentsOutput.mean
-            val variance = momentsOutput.variance
+            val (mean, variance) = skippedInput.moments(axis = -1, keepDims = true)
 
-            val epsilonTensor = scalar(epsilon, "float32")
-            val output = (skippedInput - mean) / (sqrt(variance + epsilonTensor)) * gamma + beta
-            return@tidy arrayOf(output)
+            val epsilonTensor = NDArrayTFJS.floatScalar(epsilon)
+            return@tidyNDArray (skippedInput - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
         }
-
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(out.asTensor("output"))
     }
 }

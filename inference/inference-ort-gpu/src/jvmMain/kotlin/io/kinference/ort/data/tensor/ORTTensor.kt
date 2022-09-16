@@ -2,7 +2,6 @@ package io.kinference.ort.data.tensor
 
 import ai.onnxruntime.*
 import io.kinference.data.*
-import io.kinference.ndarray.extensions.primitiveFromTiledArray
 import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
 import java.nio.*
@@ -15,6 +14,10 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
 
     val shape: LongArray
         get() = data.info.shape
+
+    override fun close() {
+        data.close()
+    }
 
     fun toDoubleArray(): DoubleArray {
         require(data.info.type == OnnxJavaType.DOUBLE) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
@@ -66,12 +69,8 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
     companion object {
         fun create(proto: TensorProto): ORTTensor {
             val type = proto.dataType ?: TensorProto.DataType.UNDEFINED
-            val array = when {
-                proto.isTiled() -> primitiveFromTiledArray(proto.arrayData!!)
-                proto.isString() -> proto.stringData
-                proto.isPrimitive() -> proto.arrayData
-                else -> error("Unsupported data type ${proto.dataType}")
-            }
+            val array = if (proto.isString()) proto.stringData else proto.arrayData
+
             requireNotNull(array) { "Array value should be initialized" }
 
             return ORTTensor(array, type, proto.dims.toLongArray(), proto.name)

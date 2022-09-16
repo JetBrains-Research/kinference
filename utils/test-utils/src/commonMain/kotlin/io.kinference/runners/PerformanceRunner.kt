@@ -55,7 +55,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
 
             repeat(warmup) {
                 val outputs = model.predict(inputs)
-                outputs.values.forEach { engine.postprocessData(it) }
+                outputs.values.forEach { it.close() }
             }
 
             val times = LongArray(count)
@@ -66,7 +66,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
                 }.inWholeMilliseconds
                 times[i] = time
 
-                outputs.values.forEach { engine.postprocessData(it) }
+                outputs.values.forEach { it.close() }
             }
             results.add(PerformanceResults(dataset.test, times.average(), times.minOrNull()!!, times.maxOrNull()!!))
 
@@ -79,7 +79,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
                 (model as Profilable).resetProfiles()
             }
 
-            inputs.forEach { engine.postprocessData(it) }
+            inputs.forEach { it.close() }
         }
         return results
     }

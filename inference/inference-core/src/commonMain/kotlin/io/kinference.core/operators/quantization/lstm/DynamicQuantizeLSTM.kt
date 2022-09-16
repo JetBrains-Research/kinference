@@ -120,15 +120,15 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
 
 
         val weightsAsLSTMWeights = QuantizedLSTMWeights(
-            preparedWeights.data as NumberNDArray,
+            preparedWeights.data as NumberNDArrayCore,
             preparedWeightsScale as FloatNDArray,
-            preparedWeightsZeroPoint as NumberNDArray
+            preparedWeightsZeroPoint as NumberNDArrayCore
         )
 
         val recurrentWeightsAsLSTMWeights = QuantizedLSTMWeights(
-            preparedRecurrentWeights.data as NumberNDArray,
+            preparedRecurrentWeights.data as NumberNDArrayCore,
             preparedRecurrentWeightsScale as FloatNDArray,
-            preparedRecurrentWeightsZeroPoint as NumberNDArray
+            preparedRecurrentWeightsZeroPoint as NumberNDArrayCore
         )
 
 
@@ -136,11 +136,11 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
             inputAsLSTMInput,
             weightsAsLSTMWeights,
             recurrentWeightsAsLSTMWeights,
-            preparedBias?.data as NumberNDArray?,
+            preparedBias?.data as NumberNDArrayCore?,
             sequenceLens?.data as IntNDArray?,
-            initialState?.data as NumberNDArray?,
-            initialCellState?.data as NumberNDArray?,
-            preparedPeepholes?.data as NumberNDArray?,
+            initialState?.data as NumberNDArrayCore?,
+            initialCellState?.data as NumberNDArrayCore?,
+            preparedPeepholes?.data as NumberNDArrayCore?,
             input.type,
             contexts.execution
         )

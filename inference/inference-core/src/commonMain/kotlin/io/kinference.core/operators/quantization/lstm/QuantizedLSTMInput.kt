@@ -9,12 +9,12 @@ import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
 import kotlin.time.ExperimentalTime
 
-class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroPoint: NumberNDArray): AbstractLSTMInput(data) {
+class QuantizedLSTMInput(data: NumberNDArrayCore, val scale: FloatNDArray, val zeroPoint: NumberNDArrayCore): AbstractLSTMInput(data) {
     override fun view(vararg dims: Int): QuantizedLSTMInput = QuantizedLSTMInput(data.view(*dims), scale, zeroPoint)
 
     override fun dot(
         weights: AbstractLSTMWeights,
-        destination: MutableNumberNDArray,
+        destination: MutableNumberNDArrayCore,
         executionContext: ExecutionContext?
     ) {
         require(weights is QuantizedLSTMWeights) { "Cannot cast ${weights::class} to QuantizedLSTMWeights" }
@@ -30,7 +30,7 @@ class QuantizedLSTMInput(data: NumberNDArray, val scale: FloatNDArray, val zeroP
         )
     }
 
-    override fun recreate(data: NumberNDArray): QuantizedLSTMInput {
+    override fun recreate(data: NumberNDArrayCore): QuantizedLSTMInput {
         require(data is FloatNDArray)
         return create(data)
     }

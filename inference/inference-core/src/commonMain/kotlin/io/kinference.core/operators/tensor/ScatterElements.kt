@@ -7,7 +7,6 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.indexAxis
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime

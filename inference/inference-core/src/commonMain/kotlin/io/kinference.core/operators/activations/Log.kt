@@ -40,9 +40,11 @@ class LogVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap()
         private val INFO = OperatorInfo("Log", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArray, contexts: Contexts<KIONNXData<*>>): NDArray = when (val type = input.type) {
-        DataType.FLOAT -> input.map(Log.activateFloat)
-        DataType.DOUBLE -> input.map(Log.activateDouble)
-        else -> error("Unsupported data type for this operation: $type")
+    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+        return when (val type = input.type) {
+            DataType.FLOAT -> input.map(Log.activateFloat)
+            DataType.DOUBLE -> input.map(Log.activateDouble)
+            else -> error("Unsupported data type for this operation: $type")
+        }
     }
 }

@@ -4,7 +4,6 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.KIOperatorFactory
 import io.kinference.core.operators.layer.attention.AttentionContext
-import io.kinference.core.operators.layer.attention.QAttentionContext
 import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.math.MatMulIntegerVer10
@@ -18,7 +17,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIONNXData<*>>(proto, opSetRegistry, KIOperatorFactory) {
-    private val preparedTensorsContext = KIContext()
+    private val preparedTensorsContext = GraphContext<KIONNXData<*>>()
 
     init {
         initializers as List<KITensor>
@@ -35,7 +34,7 @@ class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIO
     }
 
     override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
-        val context = KIContext(root as? KIContext)
+        val context = GraphContext(root)
         context.mergeContext(preparedTensorsContext)
         return context
     }

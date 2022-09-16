@@ -3,24 +3,28 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class Unsqueeze(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Unsqueeze(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in UnsqueezeVer1.VERSION.asRange() -> UnsqueezeVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in UnsqueezeVer1.VERSION.asRange() -> UnsqueezeVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Constant operator: $version")
+            }
     }
 }
 
-class UnsqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Unsqueeze(name, INFO, attributes, inputs, outputs) {
+class UnsqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Unsqueeze(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -43,15 +47,15 @@ class UnsqueezeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         require(axes.size == axes.toSet().size) { "Axes must contains only unique elements, present: ${axes.joinToString(prefix = "[", postfix = "]")}" }
 
-        val outputs = tidy {
+        val output = tidyNDArray {
             val input = inputs[0]!!.data
             val actualAxes = axes.map { it.indexAxis(input.rank + axes.size) }.sorted()
             val newShape = input.shape.toMutableList()
             for (axis in actualAxes) {
                 newShape.add(axis, 1)
             }
-            return@tidy arrayOf(input.reshape(newShape.toTypedArray()))
+            return@tidyNDArray input.reshape(newShape.toIntArray())
         }
-        return listOf(outputs[0].asTensor("expanded"))
+        return listOf(output.asTensor("expanded"))
     }
 }

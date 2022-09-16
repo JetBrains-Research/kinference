@@ -3,24 +3,29 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.indexAxis
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 10)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in SliceVer10.VERSION.asRange() -> SliceVer10(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in SliceVer10.VERSION.asRange() -> SliceVer10(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Constant operator: $version")
+            }
     }
 }
 
-class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(name, INFO, attributes, inputs, outputs) {
+class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Slice(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val DATA_TYPE_CONSTRAINTS = ALL_DATA_TYPES
         private val INDEX_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.INT32)
@@ -43,8 +48,8 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
+        val input = inputs[0]!!.data
+        val output = tidyNDArray {
             val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {
                 for ((idx, axis) in this.withIndex()) {
                     set(idx, input.indexAxis(axis))
@@ -99,11 +104,9 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
                     }
                 }
             }
-            val output = input.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
-            return@tidy arrayOf(output)
+            return@tidyNDArray input.slice(starts, ends, steps)
         }
 
-
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 }

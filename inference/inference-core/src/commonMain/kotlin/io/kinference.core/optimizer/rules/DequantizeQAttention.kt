@@ -5,8 +5,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.layer.attention.*
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear
 import io.kinference.graph.Graph
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
 import io.kinference.optimizer.*
@@ -20,10 +19,10 @@ object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttentio
     private fun dequantizeQAttention(graph: Graph<KIONNXData<*>>, op: QAttention, inputs: MutableList<String>): Attention {
         val weightsQuant = graph.findInitializer(op.inputs[1])!!
         val weightsScale = graph.findInitializer(op.inputs[4])!!.data as FloatNDArray
-        val weightsZero = graph.findInitializer(op.inputs[7])!!.data as NumberNDArray
+        val weightsZero = graph.findInitializer(op.inputs[7])!!.data as NumberNDArrayCore
         val numHeads = op.getAttribute<Number>("num_heads").toInt()
 
-        val weights = (weightsQuant.data as NumberNDArray).tryDequantize(weightsZero, weightsScale).asTensor("${PREFIX}_${weightsQuant.name}")
+        val weights = (weightsQuant.data as NumberNDArrayCore).tryDequantize(weightsZero, weightsScale).asTensor("${PREFIX}_${weightsQuant.name}")
         graph.addInitializer(weights)
         graph.addInitializer(AttentionContext.prepareWeights(weights, numHeads))
         inputs.add(1, weights.name!!)

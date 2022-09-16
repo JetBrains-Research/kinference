@@ -173,8 +173,8 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
 
     val availableInputs: List<String> = inputs.map { it.name }
 
-    protected open fun cleanupUntilOrder(context: GraphContext<T>, order: Int) {
-        context.removeValues { valueOrderInfo.getOrder(it) <= order }
+    private fun cleanupUntilOrder(context: GraphContext<T>, order: Int) {
+        context.removeValues { it !in availableInputs && valueOrderInfo.getOrder(it) <= order }
     }
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>

@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.extensions.transpose
+import io.kinference.ndarray.arrays.transpose
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime

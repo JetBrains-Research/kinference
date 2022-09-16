@@ -2,11 +2,11 @@ package io.kinference.multik
 
 import ai.onnxruntime.*
 import io.kinference.data.*
-import io.kinference.ndarray.toIntArray
-import io.kinference.ndarray.toLongArray
 import io.kinference.ort.data.map.ORTMap
 import io.kinference.ort.data.seq.ORTSequence
 import io.kinference.ort.data.tensor.ORTTensor
+import io.kinference.protobuf.toIntArray
+import io.kinference.protobuf.toLongArray
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import java.nio.*
 
@@ -48,20 +48,21 @@ object ORTMultikTensorAdapter : ONNXDataAdapter<ORTMultikData.MultikTensor, ORTT
     override fun toONNXData(data: ORTMultikData.MultikTensor): ORTTensor {
         val arrayData = data.data.data
         val env = OrtEnvironment.getEnvironment()
+        val shapeLong = data.data.shape.toLongArray()
         val tensor = when (val array = arrayData.data) {
-            is DoubleArray -> OnnxTensor.createTensor(env, DoubleBuffer.wrap(array), data.data.shape.toLongArray())
-            is FloatArray -> OnnxTensor.createTensor(env, FloatBuffer.wrap(array), data.data.shape.toLongArray())
-            is LongArray -> OnnxTensor.createTensor(env, LongBuffer.wrap(array), data.data.shape.toLongArray())
-            is IntArray -> OnnxTensor.createTensor(env, IntBuffer.wrap(array), data.data.shape.toLongArray())
-            is ShortArray -> OnnxTensor.createTensor(env, ShortBuffer.wrap(array), data.data.shape.toLongArray())
+            is DoubleArray -> OnnxTensor.createTensor(env, DoubleBuffer.wrap(array), shapeLong)
+            is FloatArray -> OnnxTensor.createTensor(env, FloatBuffer.wrap(array), shapeLong)
+            is LongArray -> OnnxTensor.createTensor(env, LongBuffer.wrap(array), shapeLong)
+            is IntArray -> OnnxTensor.createTensor(env, IntBuffer.wrap(array), shapeLong)
+            is ShortArray -> OnnxTensor.createTensor(env, ShortBuffer.wrap(array), shapeLong)
             is ByteArray -> {
                 //TODO: rewrite it normally
                 if (data.dataType == OnnxJavaType.BOOL) {
                     val booleanArray = BooleanArray(array.size) { array[it] == (1).toByte() }
-                    return ORTTensor.invoke(booleanArray, data.data.shape.toLongArray(), data.name)
+                    return ORTTensor.invoke(booleanArray, shapeLong, data.name)
                     //OnnxTensor.createTensor(env, ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN), data.data.shape.toLongArray(), OnnxJavaType.BOOL)
                 } else {
-                    OnnxTensor.createTensor(env, ByteBuffer.wrap(array), data.data.shape.toLongArray())
+                    OnnxTensor.createTensor(env, ByteBuffer.wrap(array), shapeLong)
                 }
             }
             else -> error("Unsupported data type")

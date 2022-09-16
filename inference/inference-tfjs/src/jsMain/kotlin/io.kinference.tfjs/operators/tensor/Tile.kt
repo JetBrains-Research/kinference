@@ -3,11 +3,13 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
 sealed class Tile(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -41,15 +43,15 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
+        val output = tidyNDArray {
             val input = inputs[0]!!.data
             val repeats = inputs[1]!!.data
 
-            val repeatsArray = repeats.dataInt().toTypedArray()
+            val repeatsArray = repeats.dataInt()
 
-            return@tidy arrayOf(input.tile(repeatsArray))
+            return@tidyNDArray input.tile(repeatsArray)
         }
 
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 }

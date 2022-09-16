@@ -3,14 +3,13 @@ package io.kinference.tfjs.operators.flow
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.scalar
-import io.kinference.tfjs.externals.extensions.*
+import io.kinference.tfjs.data.tensors.*
 import io.kinference.tfjs.graph.TFJSGraph
 
 sealed class Loop(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -58,8 +57,8 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         scans: List<MutableList<TFJSTensor>>
     ): Boolean {
         val inputs = ArrayList<TFJSData<*>>().apply {
-            add(scalar(counter, "int32").asTensor(body.inputs[0].name))
-            add(scalar(condition).asTensor(body.inputs[1].name))
+            add(NDArrayTFJS.intScalar(counter).asTensor(body.inputs[0].name))
+            add(NDArrayTFJS.booleanScalar(condition).asTensor(body.inputs[1].name))
             body.inputs.drop(2).zip(modified) { info, data ->
                 add(data.rename(info.name))
             }
@@ -83,15 +82,14 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
+        val outputs = tidyNDArrays {
             val maxTripCount = inputs[0]?.data?.dataInt()?.first()
             val keepGoing = inputs[1]?.data?.dataBool()?.first()
-
 
             require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
             val modified = inputs.drop(2).requireNoNulls().map {
-                it.data.clone().asTensor(it.name)
+                (it.data.clone() as NDArrayTFJS).asTensor(it.name)
             }.toMutableList()
 
             val modifiedCount = modified.size
@@ -134,10 +132,9 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
             val stackedScans = scans.map { scan -> scan.map { tensor -> tensor.data }.stack(axis = 0) }
 
-            return@tidy (modified.map { it.data } + stackedScans).toTypedArray()
+            return@tidyNDArrays (modified.map { it.data } + stackedScans).toTypedArray()
         }
 
-        return outputs.zip(this.outputs).map { (data, name) -> data.asTensor(name) }
+        return outputs.asNamedOutputs(this.outputs)
     }
-
 }

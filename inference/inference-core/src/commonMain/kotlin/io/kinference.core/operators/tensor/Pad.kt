@@ -5,8 +5,8 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
-import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -43,7 +43,7 @@ class PadVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
         private val INFO = OperatorInfo("Pad", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val mode: String by attribute()
+    private val mode: PadMode by attribute { mode: String -> PadMode.valueOf(mode.uppercase()) }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
@@ -53,7 +53,7 @@ class PadVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
         val padsNormalized = Array(input.rank) { padsData[it].toInt() to padsData[it + input.rank].toInt() }
 
-        val output = input.pad(padsNormalized, mode, constantValue)
+        val output = input.pad(padsNormalized, mode, constantValue) as NDArrayCore
         return listOf(output.asTensor("output"))
     }
 }

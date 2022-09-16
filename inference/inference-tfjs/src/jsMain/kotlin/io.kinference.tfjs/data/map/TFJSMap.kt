@@ -22,6 +22,10 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
 
     override fun rename(name: String) = TFJSMap(name, data, info)
 
+    override fun close() {
+        data.values.forEach { it.close() }
+    }
+
     companion object {
         fun create(proto: MapProto): TFJSMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())

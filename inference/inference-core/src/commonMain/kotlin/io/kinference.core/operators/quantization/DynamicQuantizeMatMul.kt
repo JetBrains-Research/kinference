@@ -8,8 +8,7 @@ import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.extensions.matmul
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -51,13 +50,13 @@ class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val left = inputs[0]!!.data as FloatNDArray
-        val quantizedRight = inputs[1]!!.data as NumberNDArray
+        val quantizedRight = inputs[1]!!.data as NumberNDArrayCore
 
         val rightScale = inputs[2]!!.data as FloatNDArray
-        val rightZeroPoint = inputs[3]?.data as? NumberNDArray
+        val rightZeroPoint = inputs[3]?.data as? NumberNDArrayCore
         val bias = inputs[4]?.data as? FloatNDArray
 
-        val dequantRight = quantizedRight.tryDequantize(rightZeroPoint, rightScale) as NumberNDArray
+        val dequantRight = quantizedRight.tryDequantize(rightZeroPoint, rightScale)
 
         val output = left.matmul(dequantRight, contexts.execution.asCoroutineContext())
 

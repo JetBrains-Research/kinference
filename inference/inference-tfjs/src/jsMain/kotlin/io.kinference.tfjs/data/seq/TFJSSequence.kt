@@ -16,6 +16,10 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
 
     override fun rename(name: String) = TFJSSequence(name, data, info)
 
+    override fun close() {
+        data.forEach { it.close() }
+    }
+
     val length: Int = data.size
 
     companion object {

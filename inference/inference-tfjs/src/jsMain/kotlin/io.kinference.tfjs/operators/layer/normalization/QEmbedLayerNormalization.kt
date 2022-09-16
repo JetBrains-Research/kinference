@@ -3,15 +3,13 @@ package io.kinference.tfjs.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.fill
-import io.kinference.tfjs.externals.core.range
-import io.kinference.tfjs.externals.extensions.*
-
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 
 sealed class QEmbedLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -72,31 +70,30 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
     private val epsilon: Float by attribute()
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val inputIds = inputs[0]!!.data
-            val segmentIds = inputs.getOrNull(1)?.data
-            val wordEmbedding = inputs[2]!!.data
-            val positionEmbedding = inputs[3]!!.data
-            val segmentEmbedding = inputs.getOrNull(4)?.data
-            val gamma = inputs[5]!!.data
-            val beta = inputs[6]!!.data
-            val mask = inputs[7]?.data
-            val wordEmbeddingScale = inputs[8]!!.data//.dataFloat().first()
-            val positionEmbeddingScale = inputs[9]!!.data//.dataFloat().first()
-            val segmentEmbeddingScale = inputs.getOrNull(10)?.data
-            val gammaScale = inputs[11]!!.data
-            val betaScale = inputs[12]!!.data
-            val wordEmbeddingZeroPoint = inputs[13]!!.data
-            val positionEmbeddingZeroPoint = inputs[14]!!.data
-            val segmentEmbeddingZeroPoint = inputs.getOrNull(15)?.data
-            val gammaZeroPoint = inputs[16]!!.data
-            val betaZeroPoint = inputs[17]!!.data
+        val inputIds = inputs[0]!!.data
+        val segmentIds = inputs.getOrNull(1)?.data
+        val wordEmbedding = inputs[2]!!.data as NumberNDArrayTFJS
+        val positionEmbedding = inputs[3]!!.data as NumberNDArrayTFJS
+        val segmentEmbedding = inputs.getOrNull(4)?.data as? NumberNDArrayTFJS
+        val gamma = inputs[5]!!.data as NumberNDArrayTFJS
+        val beta = inputs[6]!!.data as NumberNDArrayTFJS
+        val mask = inputs[7]?.data as? NumberNDArrayTFJS
+        val wordEmbeddingScale = inputs[8]!!.data as NumberNDArrayTFJS
+        val positionEmbeddingScale = inputs[9]!!.data as NumberNDArrayTFJS
+        val segmentEmbeddingScale = inputs.getOrNull(10)?.data as? NumberNDArrayTFJS
+        val gammaScale = inputs[11]!!.data as NumberNDArrayTFJS
+        val betaScale = inputs[12]!!.data as NumberNDArrayTFJS
+        val wordEmbeddingZeroPoint = inputs[13]!!.data as NumberNDArrayTFJS
+        val positionEmbeddingZeroPoint = inputs[14]!!.data as NumberNDArrayTFJS
+        val segmentEmbeddingZeroPoint = inputs[15]?.data as? NumberNDArrayTFJS
+        val gammaZeroPoint = inputs[16]!!.data as NumberNDArrayTFJS
+        val betaZeroPoint = inputs[17]!!.data as NumberNDArrayTFJS
 
-            val (batchSize, seqLen) = inputIds.shape
-            val (_, hiddenSize) = wordEmbedding.shape
+        val (batchSize, seqLen) = inputIds.shape
+        val (_, hiddenSize) = wordEmbedding.shape
 
-            val outputShape = arrayOf(batchSize, seqLen, hiddenSize)
-
+        val outputShape = intArrayOf(batchSize, seqLen, hiddenSize)
+        val outputs = tidyNDArrays {
             val dequantWordEmbedding = (wordEmbedding - wordEmbeddingZeroPoint) * wordEmbeddingScale
             val dequantPositionEmbedding = (positionEmbedding - positionEmbeddingZeroPoint) * positionEmbeddingScale
             val dequantSegmentEmbedding = if (segmentEmbedding != null && segmentEmbeddingZeroPoint != null && segmentEmbeddingScale != null) {
@@ -105,13 +102,13 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
                 null
             }
 
-            val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape)
+            val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
-            val positionIds = range(0, inputIds.shape[1], 1, "int32").broadcastTo(inputIds.shape)
-            val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape)
+            val positionIds = NDArrayTFJS.intRange(0, inputIds.shape[1], 1).broadcastTo(inputIds.shapeArray)
+            val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val segmentResult = if (dequantSegmentEmbedding != null && segmentIds != null) {
-                dequantSegmentEmbedding.gather(segmentIds.flatten()).reshape(outputShape)
+                dequantSegmentEmbedding.gather(segmentIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
             } else {
                 null
             }
@@ -122,21 +119,17 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
                 wordResult + positionResult
             }
 
-            val moments = result.moments(-1, true)
-            val mean = moments.mean
-            val variance = moments.variance
+            val (mean, variance) = result.moments(axis = -1, keepDims = true)
 
-            val epsilonTensor = scalar(epsilon)
+            val epsilonTensor = NDArrayTFJS.floatScalar(epsilon)
             val dequantGamma = (gamma - gammaZeroPoint) * gammaScale
             val dequantBeta = (beta - betaZeroPoint) * betaScale
+            val output = (result - mean) / (variance + epsilonTensor).sqrt() * dequantGamma + dequantBeta
 
-            val output = (result - mean) / (sqrt(variance + epsilonTensor)) * dequantGamma + dequantBeta
+            val maskOutput = mask?.sum(1, false) ?: NDArrayTFJS.intZeros(arrayOf(batchSize))
 
-            val maskOutput = mask?.sum(1, false) ?: fill(arrayOf(batchSize), 0, "int32")
-
-            return@tidy arrayOf(output, maskOutput)
+            return@tidyNDArrays arrayOf(output, maskOutput)
         }
-
-        return listOf(outputs[0].asTensor("output"), outputs[1].asTensor("mask_index"))
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

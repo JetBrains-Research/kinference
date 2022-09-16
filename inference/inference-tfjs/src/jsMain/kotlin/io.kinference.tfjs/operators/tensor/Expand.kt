@@ -3,12 +3,12 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.arrays.broadcastShape
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.extensions.*
 
 sealed class Expand(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -38,18 +38,17 @@ class ExpandVer8(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val output = tidy {
-            val input = inputs[0]!!.data
-            val shape = inputs[1]!!.data
+        val input = inputs[0]!!.data
+        val shape = inputs[1]!!.data
 
+        val output = tidyNDArray {
             val shapeArray = shape.dataInt()
+            val broadcastedShape = broadcastShape(listOf(input.shape, shapeArray))
 
-            val broadcastedShape = Broadcasting.broadcastShape(listOf(input.shape.toIntArray(), shapeArray))
-
-            return@tidy arrayOf(input.broadcastTo(broadcastedShape.toTypedArray()))
+            return@tidyNDArray input.broadcastTo(broadcastedShape.toTypedArray())
         }
 
-        return listOf(output[0].asTensor("output"))
+        return listOf(output.asTensor("output"))
     }
 
 }

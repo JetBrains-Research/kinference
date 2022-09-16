@@ -6,7 +6,6 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import io.kinference.ndarray.Strides
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import kotlin.time.ExperimentalTime
@@ -63,6 +62,23 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
                     if (i != axis) offset += (currentDims[i] * array.strides.strides[i])
                 }
                 return offset + indicesPointer.getAndIncrement() * array.strides.strides[axis]
+            }
+        }
+
+
+        private fun getIndices(indices: NDArrayCore, axisLimit: Int): IntNDArray {
+            if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
+
+            fun checkIndex(index: Int, axisLimit: Int): Int = if (index >= 0) index else index + axisLimit
+
+            return if (indices is IntNDArray) {
+                indices.map (object : IntMap {
+                    override fun apply(value: Int): Int = checkIndex(value, axisLimit)
+                }) as IntNDArray
+            } else {
+                indices as LongNDArray
+                val pointer = indices.array.pointer()
+                IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
             }
         }
     }

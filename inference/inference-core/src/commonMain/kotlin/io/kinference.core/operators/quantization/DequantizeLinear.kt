@@ -5,8 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
@@ -51,12 +50,12 @@ class DequantizeLinearVer1(name: String, attributes: Map<String, Attribute<Any>>
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data as NumberNDArray
+        val input = inputs[0]!!.data as NumberNDArrayCore
         val scale = inputs[1]!!.data as FloatNDArray
-        val zeroPoint = inputs.getOrNull(2)?.data
+        val zeroPoint = inputs.getOrNull(2)?.data as? NumberNDArrayCore
 
         require(zeroPoint == null || scale.shape.contentEquals(zeroPoint.shape)) { "Zero point and scale tensors should have the same dims" }
 
-        return listOf(input.tryDequantize(zeroPoint as? NumberNDArray, scale, axis).asTensor("y"))
+        return listOf(input.tryDequantize(zeroPoint, scale, axis).asTensor("y"))
     }
 }

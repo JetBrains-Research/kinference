@@ -20,6 +20,10 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     val valueType: ValueTypeInfo
         get() = info.valueType
 
+    override fun close() {
+        data.values.forEach { it.close() }
+    }
+
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
 
     companion object {

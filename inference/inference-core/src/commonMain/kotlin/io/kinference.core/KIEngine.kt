@@ -11,8 +11,7 @@ import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.*
 import io.kinference.model.Model
 import io.kinference.optimizer.*
-import io.kinference.protobuf.ProtobufReader
-import io.kinference.protobuf.arrays.ArrayFormat
+import io.kinference.protobuf.*
 import io.kinference.protobuf.message.*
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
@@ -27,7 +26,7 @@ object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 
-    private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorFormat = ArrayFormat.TILED)
+    private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = TiledTensorDecoder)
     private val defaultOptRules = listOf(DequantizeMatMulInteger, DequantizeQAttention)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
@@ -37,7 +36,7 @@ object KIEngine : OptimizableEngine<KIONNXData<*>> {
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> = when (type) {
-        ONNXDataType.ONNX_TENSOR -> KITensor.create(TensorProto.decode(protoReader(bytes)))
+        ONNXDataType.ONNX_TENSOR -> KITensor.create(protoReader(bytes).readTensor())
         ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))
         ONNXDataType.ONNX_MAP -> KIONNXMap.create(MapProto.decode(protoReader(bytes)))
     }

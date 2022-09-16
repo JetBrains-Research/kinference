@@ -3,29 +3,31 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.scalar
-import io.kinference.tfjs.externals.extensions.*
 
-sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of FastGelu operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in FastGeluVer1.VERSION.asRange() -> FastGeluVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of FastGelu operator: $version")
+            }
     }
 }
 
-class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : FastGelu(name, INFO, attributes, inputs, outputs) {
+class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val COEF_1 = scalar(0.5f, "float32")
-        private val COEF_2 = scalar(0.035677408136300125f, "float32")
-        private val COEF_3 = scalar(0.7978845608028654f, "float32")
+        private val COEF_1 = NDArrayTFJS.floatScalar(0.5f)
+        private val COEF_2 = NDArrayTFJS.floatScalar(0.035677408136300125f)
+        private val COEF_3 = NDArrayTFJS.floatScalar(0.7978845608028654f)
 
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -44,17 +46,16 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
 
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs.first()!!.data
-            val bias = inputs.getOrNull(1)?.data
+        val output = tidyNDArray {
+            val input = inputs.first()!!.data as NumberNDArrayTFJS
+            val bias = inputs.getOrNull(1)?.data as? NumberNDArrayTFJS
 
             val inputWithBias = if (bias != null) input + bias else input
 
-            val output = inputWithBias * (COEF_1 + COEF_1 * tanh(inputWithBias * (COEF_2 * inputWithBias * inputWithBias + COEF_3)))
-            return@tidy arrayOf(output)
+            return@tidyNDArray inputWithBias * (COEF_1 + COEF_1 * (inputWithBias * (COEF_2 * inputWithBias * inputWithBias + COEF_3)).tanh())
         }
 
-        return listOf(outputs[0].asTensor("Y"))
+        return listOf(output.asTensor("Y"))
     }
 }
 

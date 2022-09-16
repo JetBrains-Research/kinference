@@ -2,11 +2,11 @@ package io.kinference.tfjs.utils
 
 import io.kinference.TestLoggerFactory
 import io.kinference.data.ONNXDataType
+import io.kinference.ndarray.extensions.*
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.externals.extensions.*
 import io.kinference.utils.ArrayAssertions
 import kotlin.test.assertEquals
 
@@ -16,7 +16,7 @@ object TFJSAssertions {
     @OptIn(ExperimentalUnsignedTypes::class)
     fun assertEquals(expected: TFJSTensor, actual: TFJSTensor, delta: Double) {
         assertEquals(expected.data.dtype, actual.data.dtype, "Types of tensors ${expected.name} do not match")
-        ArrayAssertions.assertArrayEquals(expected.data.shape, actual.data.shape, "Shapes are incorrect")
+        ArrayAssertions.assertArrayEquals(expected.data.shapeArray, actual.data.shapeArray, "Shapes are incorrect")
 
 
         logger.info { "Errors for ${expected.name}:" }

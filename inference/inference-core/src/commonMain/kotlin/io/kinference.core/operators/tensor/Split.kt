@@ -2,10 +2,10 @@ package io.kinference.core.operators.tensor
 
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.splitWithAxis
+import io.kinference.core.data.tensor.split
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.extensions.indexAxis
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
@@ -48,9 +48,9 @@ class SplitVer2(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         val input = inputs.first()!!
         val actualAxis = input.data.indexAxis(axis)
         return if (split == null) {
-            input.splitWithAxis(outputs.size, actualAxis)
+            input.split(outputs.size, actualAxis)
         } else {
-            input.splitWithAxis((split as LongArray).toIntArray(), actualAxis)
+            input.split((split as LongArray).toIntArray(), actualAxis)
         }
     }
 }

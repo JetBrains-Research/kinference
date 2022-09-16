@@ -14,10 +14,13 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                implementation("com.squareup.okio:okio:3.0.0")
 
-                api(project(":ndarray"))
+                api(project(":ndarray:ndarray-api"))
+                api(project(":ndarray:ndarray-core"))
+
                 api(project(":inference:inference-api"))
-                api(project(":serialization"))
+
                 api(project(":utils:logger"))
                 api(project(":utils:model-profiler"))
                 api(project(":utils:common-utils"))

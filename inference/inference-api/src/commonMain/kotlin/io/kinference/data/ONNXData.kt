@@ -1,6 +1,7 @@
 package io.kinference.data
 
 import io.kinference.BackendInfo
+import io.kinference.utils.Closeable
 
 interface BaseONNXData<T> {
     val name: String?
@@ -10,7 +11,7 @@ interface BaseONNXData<T> {
     fun rename(name: String): BaseONNXData<T>
 }
 
-interface ONNXData<T, B : BackendInfo> : BaseONNXData<T> {
+interface ONNXData<T, B : BackendInfo> : BaseONNXData<T>, Closeable {
     val backend: B
     override fun rename(name: String): ONNXData<T, B>
 }

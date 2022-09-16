@@ -6,6 +6,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.toIntArray
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
@@ -45,7 +46,7 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         val repeats = inputs[1]!!.data as LongNDArray
         val repeatsIntArray = repeats.array.toArray().toIntArray()
 
-        val output = input.tile(repeatsIntArray)
+        val output = input.tile(repeatsIntArray) as NDArrayCore
 
         return listOf(output.asTensor("output"))
     }

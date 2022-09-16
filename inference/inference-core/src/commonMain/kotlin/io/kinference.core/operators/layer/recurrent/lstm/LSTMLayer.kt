@@ -1,9 +1,9 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.core.operators.activations.Activation
 import io.kinference.model.ExecutionContext
+import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
 import kotlin.time.ExperimentalTime
@@ -18,21 +18,21 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
-        bias: NumberNDArray?,
+        bias: NumberNDArrayCore?,
         sequenceLens: IntNDArray?,
-        initialHiddenState: NumberNDArray?,
-        initialCellState: NumberNDArray?,
-        peepholes: NumberNDArray?,
+        initialHiddenState: NumberNDArrayCore?,
+        initialCellState: NumberNDArrayCore?,
+        peepholes: NumberNDArrayCore?,
         dataType: DataType,
         executionContext: ExecutionContext?,
-    ): Triple<NumberNDArray, NumberNDArray, NumberNDArray> {
+    ): LSTMLayerOutput {
         val h = Activation.create(activations[2], dataType)
 
         val seqLength = input.data.shape[0]
         val batchSize = input.data.shape[1]
-        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArray
+        val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
-        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(1, batchSize, hiddenSize))) as MutableNumberNDArray
+        val initHiddenState = (initialHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(1, batchSize, hiddenSize))) as MutableNumberNDArrayCore
         val initHiddenStateAsLSTMInput = arrayOf(input.recreate(initHiddenState.view(0)))
 
         val lstmStates = LSTMStates(
@@ -50,12 +50,12 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
 
         apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType, executionContext)
 
-        return Triple(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
+        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
 
     fun apply(
         input: AbstractLSTMInput,
-        output: MutableNumberNDArray,
+        output: MutableNumberNDArrayCore,
         lstmStates: LSTMStates,
         lstmGates: LSTMGates,
         sequenceLens: IntNDArray?,

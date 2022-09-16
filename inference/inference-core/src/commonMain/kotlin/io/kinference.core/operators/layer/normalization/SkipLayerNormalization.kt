@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto

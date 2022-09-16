@@ -5,12 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
-import io.kinference.ndarray.Strides
-import io.kinference.ndarray.arrays.LongNDArray
-import io.kinference.ndarray.arrays.NDArray
 import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.ndarray.extensions.computeBlockSize
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime

@@ -7,6 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.acceptDouble
+import io.kinference.ndarray.broadcasting.Broadcasting.applyWithBroadcast
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
@@ -41,7 +42,7 @@ class EqualVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Equal", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        infix fun NDArray.equal(other: NDArray): NDArray {
+        infix fun NDArrayCore.equal(other: NDArrayCore): NDArrayCore {
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
                 require(first.type == second.type) { "Arrays must have same types" }
                 dest as MutableBooleanNDArray

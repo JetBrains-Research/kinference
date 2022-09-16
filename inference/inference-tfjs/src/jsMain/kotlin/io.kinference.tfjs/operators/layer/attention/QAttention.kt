@@ -1,29 +1,30 @@
 package io.kinference.tfjs.operators.layer.attention
 
-import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.externals.core.NDArrayTFJS
-import io.kinference.tfjs.externals.extensions.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.*
 
-sealed class QAttention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
-    : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class QAttention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in QAttentionVer1.VERSION.asRange() -> QAttentionVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of QAttention operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in QAttentionVer1.VERSION.asRange() -> QAttentionVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of QAttention operator: $version")
+            }
     }
 }
 
-class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : QAttention(name, INFO, attributes, inputs, outputs) {
+class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    QAttention(name, INFO, attributes, inputs, outputs) {
 
     companion object {
         private val FLOATS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
@@ -53,26 +54,29 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
-        
-        private fun initQueryKeyValue(input: NDArrayTFJS, weights: NDArrayTFJS, bias: NDArrayTFJS,
-                                      numHeads: Int, inputZeroPoint: NDArrayTFJS?,
-                                      weightsZeroPoint: NDArrayTFJS?, deqScale: NDArrayTFJS): Array<NDArrayTFJS> {
-            return tidy {
+
+        @Suppress("UNCHECKED_CAST")
+        private fun initQueryKeyValue(
+            input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS,
+            numHeads: Int, inputZeroPoint: NumberNDArrayTFJS?,
+            weightsZeroPoint: NumberNDArrayTFJS?, deqScale: NumberNDArray
+        ): Array<NumberNDArrayTFJS> {
+            return tidyNDArrays {
                 val (batchSize, seqLen, inputHidden) = input.shape
                 val headSize = inputHidden / numHeads
                 val weightsWithZP = if (weightsZeroPoint != null) weights.minus(weightsZeroPoint) else weights
                 val inputWithZP = if (inputZeroPoint != null) input.minus(inputZeroPoint) else input
                 val weightsPrepared = weightsWithZP
-                    .reshape(arrayOf(inputHidden, 1, 3, numHeads, headSize))
-                    .transpose(arrayOf(2, 1, 3, 0, 4))
+                    .reshape(intArrayOf(inputHidden, 1, 3, numHeads, headSize))
+                    .transpose(intArrayOf(2, 1, 3, 0, 4))
                     .broadcastTo(arrayOf(3, batchSize, numHeads, inputHidden, headSize))
-                val biasPrepared = bias.reshape(arrayOf(3, 1, numHeads, 1, headSize))
+                val biasPrepared = bias.reshape(intArrayOf(3, 1, numHeads, 1, headSize))
                 val inputPrepared = inputWithZP
-                    .reshape(arrayOf(1, batchSize, 1, seqLen, inputHidden))
+                    .reshape(intArrayOf(1, batchSize, 1, seqLen, inputHidden))
                     .broadcastTo(arrayOf(3, batchSize, numHeads, seqLen, inputHidden))
-                val output = inputPrepared.matMul(weightsPrepared).times(deqScale).plus(biasPrepared)
-                return@tidy output.unstack(0)
-            }
+                val output = inputPrepared.matmul(weightsPrepared).times(deqScale).plus(biasPrepared)
+                return@tidyNDArrays output.unstack(0)
+            } as Array<NumberNDArrayTFJS>
         }
     }
 
@@ -80,28 +84,25 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val input = inputs[0]!!.data
-            val weights = inputs[1]!!.data
-            val bias = inputs[2]!!.data
-            val inputScale = inputs[3]!!.data
-            val weightsScale = inputs[4]!!.data
-            val maskIndices = inputs.getOrNull(5)?.data
-            val inputZP = inputs.getOrNull(6)?.data
-            val weightsZP = inputs.getOrNull(7)?.data
-            val past = inputs.getOrNull(8)?.data
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val weights = inputs[1]!!.data as NumberNDArrayTFJS
+        val bias = inputs[2]!!.data as NumberNDArrayTFJS
+        val inputScale = inputs[3]!!.data as NumberNDArrayTFJS
+        val weightsScale = inputs[4]!!.data as NumberNDArrayTFJS
+        val maskIndices = inputs.getOrNull(5)?.data as? NumberNDArrayTFJS
+        val inputZP = inputs.getOrNull(6)?.data as? NumberNDArrayTFJS
+        val weightsZP = inputs.getOrNull(7)?.data as? NumberNDArrayTFJS
+        val past = inputs.getOrNull(8)?.data as? NumberNDArrayTFJS
 
-            val (batchSize, seqLen, hiddenSize) = input.shape
+        val (batchSize, seqLen, hiddenSize) = input.shape
 
-
+        val outputs = tidyNDArrays {
             val fullScale = inputScale * weightsScale
-
-            val (queries, keys,  values) = initQueryKeyValue(input, weights, bias, numHeads, inputZP, weightsZP, fullScale)
-
-            return@tidy Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+            val (queries, keys, values) = initQueryKeyValue(input, weights, bias, numHeads, inputZP, weightsZP, fullScale)
+            return@tidyNDArrays Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         }
 
-        return listOf(outputs[0].asTensor(), outputs[1].asTensor())
+        return outputs.asNamedOutputs(this.outputs)
     }
 }
 
