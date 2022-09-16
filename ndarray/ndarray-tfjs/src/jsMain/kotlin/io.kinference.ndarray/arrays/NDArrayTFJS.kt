@@ -1,8 +1,7 @@
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.*
-import io.kinference.ndarray.core.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.resolveTFJSDataType
 import io.kinference.primitives.types.DataType
 
 abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
@@ -77,5 +76,25 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
 
     override fun split(split: IntArray, axis: Int): List<NDArray> {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
+    }
+
+    companion object {
+        private fun Array<Int>.times() = this.fold(1, Int::times)
+
+        fun float(values: FloatArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float"))
+        fun int(values: IntArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "int32"))
+        fun boolean(values: Array<Boolean>, shape: Array<Int>) = BooleanNDArrayTFJS(tensor(values, shape))
+
+        fun floatScalar(value: Float) = NumberNDArrayTFJS(scalar(value, "float"))
+        fun intScalar(value: Int) = NumberNDArrayTFJS(scalar(value, "int32"))
+        fun booleanScalar(value: Boolean) = BooleanNDArrayTFJS(scalar(value))
+
+        fun floatZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(FloatArray(shape.times()), shape, "float"))
+        fun intZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(IntArray(shape.times()), shape, "int32"))
+        fun booleanZeros(shape: Array<Int>) = BooleanNDArrayTFJS(tensor(Array(shape.times()) { false }, shape))
+
+        fun floatOnes(shape: Array<Int>) = NumberNDArrayTFJS(tensor(FloatArray(shape.times()) { 1f }, shape, "float"))
+        fun intOnes(shape: Array<Int>) = NumberNDArrayTFJS(tensor(IntArray(shape.times()) { 1 }, shape, "int32"))
+        fun booleanOnes(shape: Array<Int>) = BooleanNDArrayTFJS(tensor(Array(shape.times()) { true }, shape))
     }
 }
