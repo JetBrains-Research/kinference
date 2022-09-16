@@ -26,6 +26,9 @@ interface NDArrayCore : NDArray {
     override fun stack(others: List<NDArray>, axis: Int): MutableNDArrayCore = (listOf(this) + others as List<NDArrayCore>).stack(axis)
     override fun concat(others: List<NDArray>, axis: Int): MutableNDArrayCore
 
+    override fun split(parts: Int, axis: Int): List<NDArrayCore> = this.splitWithAxis(parts, axis, true)
+    override fun split(split: IntArray, axis: Int): List<NDArray> = this.splitWithAxis(split, axis, true)
+
     override fun gather(indices: NDArray, axis: Int, batchDims: Int): NDArrayCore = gather(this, indices as NDArrayCore, axis)
     fun gather(indices: NDArray, axis: Int, dst: MutableNDArrayCore): NDArrayCore = gather(this, indices as NDArrayCore, axis, dst)
 }

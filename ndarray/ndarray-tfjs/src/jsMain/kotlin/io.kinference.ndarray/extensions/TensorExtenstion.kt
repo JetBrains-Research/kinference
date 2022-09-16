@@ -35,6 +35,7 @@ import io.kinference.ndarray.core.reverse
 import io.kinference.ndarray.core.round
 import io.kinference.ndarray.core.slice
 import io.kinference.ndarray.core.softmax
+import io.kinference.ndarray.core.split
 import io.kinference.ndarray.core.sqrt
 import io.kinference.ndarray.core.squeeze
 import io.kinference.ndarray.core.stack
@@ -125,6 +126,10 @@ fun ArrayTFJS.dot(other: ArrayTFJS) = dot(this, other)
 fun Array<ArrayTFJS>.concat(axis: Int = 0) = concat(this, axis)
 
 fun ArrayTFJS.concat(vararg tensors: ArrayTFJS, axis: Int = 0) = concat(arrayOf(this, *tensors), axis)
+
+fun ArrayTFJS.split(split: Array<Int>, axis: Int) = split(this, split, axis)
+
+fun ArrayTFJS.split(splitSize: Int, axis: Int) = split(this, splitSize, axis)
 
 fun ArrayTFJS.matMul(other: ArrayTFJS, transposeLeft: Boolean = false, transposeRight: Boolean = false) = matMul(this, other, transposeLeft, transposeRight)
 

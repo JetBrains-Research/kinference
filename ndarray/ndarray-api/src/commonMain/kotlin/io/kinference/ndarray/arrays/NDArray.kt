@@ -32,6 +32,9 @@ interface NDArray : Closeable {
     fun stack(others: List<NDArray>, axis: Int): NDArray
     fun concat(others: List<NDArray>, axis: Int): NDArray
 
+    fun split(parts: Int, axis: Int = 0): List<NDArray>
+    fun split(split: IntArray, axis: Int = 0): List<NDArray>
+
     fun gather(indices: NDArray, axis: Int = 0, batchDims: Int = 0): NDArray
 
     fun copyIfNotMutable(): MutableNDArray

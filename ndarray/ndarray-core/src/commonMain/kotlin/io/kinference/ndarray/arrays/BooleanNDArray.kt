@@ -96,9 +96,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore = map(function, MutableBooleanNDArray(strides))
 
-    override fun row(row: Int): MutableNDArray {
+    override fun row(i: Int): MutableNDArray {
         val rowLength: Int = linearSize / shape[0]
-        val start = row * rowLength
+        val start = i * rowLength
         val dims = shape.copyOfRange(1, rank)
 
         return MutableBooleanNDArray(BooleanTiledArray(Strides(dims)) { array[start + it] }, Strides(dims))

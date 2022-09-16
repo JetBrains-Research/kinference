@@ -23,15 +23,15 @@ fun List<KITensor>.concatenate(axis: Int): KITensor {
     return this.map { it.data }.concat(axis).asTensor()
 }
 
-fun KITensor.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+fun KITensor.split(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     return data.splitWithAxis(parts, axis, keepDims).map { it.asTensor() }
 }
 
-fun KITensor.splitWithAxis(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+fun KITensor.split(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
 
-fun KITensor.splitWithAxis(splitTensor: KITensor, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+fun KITensor.split(splitTensor: KITensor, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     val splitArray = when (splitTensor.data.type) {
         DataType.INT -> {
             val array = splitTensor.data as IntNDArray
@@ -46,5 +46,5 @@ fun KITensor.splitWithAxis(splitTensor: KITensor, axis: Int = 0, keepDims: Boole
         else -> throw IllegalStateException("Split tensor must have Int or Long type")
     }
 
-    return this.data.splitWithAxis(splitArray, axis, keepDims).map { it.asTensor() }
+    return data.splitWithAxis(splitArray, axis, keepDims).map { it.asTensor() }
 }

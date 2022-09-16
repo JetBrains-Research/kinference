@@ -18,8 +18,9 @@ private fun computeSplitShape(shape: IntArray, axis: Int, split: Int, keepDims: 
 
 
 fun NDArrayCore.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<MutableNDArrayCore> {
-    require(axis in shape.indices) { "Index $axis out of shape bound: (0, ${rank - 1}" }
-    val actualAxis = indexAxis(axis)
+    val actualAxis = this.indexAxis(axis)
+    require(actualAxis in this.shape.indices) { "Index $actualAxis out of shape bound: (0, ${rank - 1}" }
+
     val elementsByIndex = shape[actualAxis]
     val mainSplit = ceil(elementsByIndex.toDouble() / parts).toInt()
     val split = IntArray(parts) { mainSplit }
@@ -27,19 +28,22 @@ fun NDArrayCore.splitWithAxis(parts: Int, axis: Int = 0, keepDims: Boolean = tru
     val tail = elementsByIndex % parts
     if (tail != 0) split[parts - 1] = tail
 
-    return splitWithAxis(split, actualAxis, keepDims)
+    return this.splitWithAxis(split, actualAxis, keepDims)
 }
 
 fun NDArrayCore.splitWithAxis(split: IntArray, axis: Int, keepDims: Boolean = true): List<MutableNDArrayCore> {
-    val beforeAxisDims = computeBlockSize(toDim = axis)
-    val fromAxisDims = computeBlockSize(fromDim = axis)
-    val afterAxisDims = if (axis + 1 == rank) 1 else computeBlockSize(fromDim = axis + 1)
+    val actualAxis = this.indexAxis(axis)
+    require(actualAxis in this.shape.indices) { "Index $actualAxis out of shape bound: (0, ${rank - 1}" }
+
+    val beforeAxisDims = this.computeBlockSize(toDim = actualAxis)
+    val fromAxisDims = this.computeBlockSize(fromDim = actualAxis)
+    val afterAxisDims = if (actualAxis + 1 == this.rank) 1 else this.computeBlockSize(fromDim = actualAxis + 1)
 
     var inputOffset = 0
 
     return List(split.size) { i ->
         val splitSize = split[i]
-        val outputDims = computeSplitShape(strides.shape, axis, split[i], keepDims)
+        val outputDims = computeSplitShape(this.strides.shape, actualAxis, split[i], keepDims)
         val outStrides = Strides(outputDims)
         val fragmentSize = splitSize * afterAxisDims
 

@@ -41,6 +41,8 @@ internal external val dot: (t1: ArrayTFJS, t2: ArrayTFJS) -> ArrayTFJS
 
 internal external val concat: (tensors: Array<ArrayTFJS>, axis: Int) -> ArrayTFJS
 
+internal external val split: (x: ArrayTFJS, numOrSizeSplits: dynamic, axis: Int) -> Array<ArrayTFJS>
+
 internal external val matMul: (a: ArrayTFJS, b: ArrayTFJS, transposeA: Boolean, transposeB: Boolean) -> ArrayTFJS
 
 internal external val softmax: (logits: ArrayTFJS, dim: Int) -> ArrayTFJS

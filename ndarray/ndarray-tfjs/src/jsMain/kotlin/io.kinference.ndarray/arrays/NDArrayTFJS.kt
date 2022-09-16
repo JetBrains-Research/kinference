@@ -71,7 +71,11 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return result.toNDArray()
     }
 
-    companion object {
+    override fun split(parts: Int, axis: Int): List<NDArray> {
+        return tfjsArray.split(parts, axis).map { it.toNDArray() }
+    }
 
+    override fun split(split: IntArray, axis: Int): List<NDArray> {
+        return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
 }

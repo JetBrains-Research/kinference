@@ -28,11 +28,11 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override fun pad(pads: Array<Pair<Int, Int>>, mode: String, constantValue: NDArray?): NumberNDArrayTFJS {
-        TODO("Not yet implemented")
+        error("Operation pad() is not supported yet")
     }
 
     override fun nonZero(): NumberNDArrayTFJS {
-        TODO("Not yet implemented")
+        error("Operation nonZero() is not supported yet")
     }
 
     override fun toMutable(): MutableNumberNDArrayTFJS {
@@ -120,7 +120,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
-        TODO("Not yet implemented")
+        error("Operation topK() is not supported yet")
     }
 
     override fun reshape(strides: Strides): NumberNDArrayTFJS {
