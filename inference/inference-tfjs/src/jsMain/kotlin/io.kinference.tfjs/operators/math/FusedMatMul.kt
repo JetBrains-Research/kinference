@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
@@ -64,7 +65,7 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
 
         val output = tidyNDArray {
             val matMulResult = left.matmul(right, transposeLeft, transposeRight)
-            val scalar = NumberNDArrayTFJS(scalar(alpha))
+            val scalar = NDArrayTFJS.floatScalar(alpha)
             return@tidyNDArray matMulResult * scalar
         }
         return listOf(output.asTensor("Y"))

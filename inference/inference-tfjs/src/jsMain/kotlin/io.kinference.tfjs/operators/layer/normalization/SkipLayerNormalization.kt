@@ -73,7 +73,7 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
 
             val (mean, variance) = skippedInput.moments(axis = -1, keepDims = true)
 
-            val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon, "float32"))
+            val epsilonTensor = NDArrayTFJS.floatScalar(epsilon)
             return@tidyNDArray (skippedInput - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
         }
         return listOf(out.asTensor("output"))

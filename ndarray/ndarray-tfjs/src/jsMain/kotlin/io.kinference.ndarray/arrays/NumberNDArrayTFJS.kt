@@ -1,6 +1,5 @@
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.applyIf
 import io.kinference.ndarray.extensions.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

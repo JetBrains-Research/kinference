@@ -51,14 +51,6 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
 
         internal val VERSION = VersionInfo(sinceVersion = 10)
         private val INFO = OperatorInfo("DequantizeLinear", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        private fun canDequantizePerTensor(zeroPoint: ArrayTFJS?, scale: ArrayTFJS): Boolean {
-            return scale.size == 1 && (zeroPoint == null || zeroPoint.size == 1)
-        }
-
-        private fun ArrayTFJS.canDequantizePerAxis(axis: Int, zeroPoint: ArrayTFJS?, scale: ArrayTFJS): Boolean {
-            return scale.rank == 1 && scale.size == shape[axis] && (zeroPoint == null || zeroPoint.rank == 1 && zeroPoint.size == shape[axis])
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
@@ -75,7 +67,7 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
         val output = tidyNDArray {
             return@tidyNDArray when {
                 canDequantizePerTensor(zeroPoint, scale) -> {
-                    val zero = zeroPoint ?: NumberNDArrayTFJS(scalar(0, "int32"))
+                    val zero = zeroPoint ?: NDArrayTFJS.intScalar(0)
                     (input - zero) * scale
                 }
 
@@ -84,7 +76,7 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
                     val blockSize = input.computeBlockSize(fromDim = actualAxis + 1)
                     val dim = input.shape[actualAxis]
                     val preparedInput = input.reshape(intArrayOf(blockCount, dim, blockSize))
-                    val preparedZP = zeroPoint?.reshape(intArrayOf(1, dim, 1)) ?: NumberNDArrayTFJS(fill(arrayOf(1, dim, 1), 0, "int32"))
+                    val preparedZP = zeroPoint?.reshape(intArrayOf(1, dim, 1)) ?: NDArrayTFJS.intZeros(arrayOf(1, dim, 1))
                     val preparedScale = scale.reshape(intArrayOf(1, dim, 1))
 
                     val rawOutput = (preparedInput - preparedZP) * preparedScale

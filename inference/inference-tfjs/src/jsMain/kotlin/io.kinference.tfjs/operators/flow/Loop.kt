@@ -57,8 +57,8 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         scans: List<MutableList<TFJSTensor>>
     ): Boolean {
         val inputs = ArrayList<TFJSData<*>>().apply {
-            add(scalar(counter, "int32").asTensor(body.inputs[0].name))
-            add(scalar(condition).asTensor(body.inputs[1].name))
+            add(NDArrayTFJS.intScalar(counter).asTensor(body.inputs[0].name))
+            add(NDArrayTFJS.booleanScalar(condition).asTensor(body.inputs[1].name))
             body.inputs.drop(2).zip(modified) { info, data ->
                 add(data.rename(info.name))
             }

@@ -59,8 +59,8 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
         // replace negative indices
         val limitByAxis = input.shape[actualAxis]
         val output = tidyNDArray {
-            val indicesGreaterOrEqualZero = indices.greaterEqual(NumberNDArrayTFJS(scalar(0))) // Bool tensor
-            val actualIndices = indices.where(indicesGreaterOrEqualZero, NumberNDArrayTFJS(indices.tfjsArray + scalar(limitByAxis)))
+            val indicesGreaterOrEqualZero = indices.greaterEqual(NDArrayTFJS.intScalar(0)) // Bool tensor
+            val actualIndices = indices.where(indicesGreaterOrEqualZero, indices + NDArrayTFJS.intScalar(limitByAxis))
 
             // Zero pad indices to GatherND style
             val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1))
@@ -83,7 +83,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
                     null
                 } else {
                     // Make range for axis
-                    val range = NumberNDArrayTFJS(range(0, paddedIndices.shape[axis], 1, "int32"))
+                    val range = NDArrayTFJS.intRange(0, paddedIndices.shape[axis], 1)
                     val rangeShape = baseRangeShape.copyOf().apply { set(axis, paddedIndices.shape[axis]) }
                     //reshape to [1,...,paddedIndices.shape[axis],...,1]
                     // reshapedRange.rank == paddedIndices.rank

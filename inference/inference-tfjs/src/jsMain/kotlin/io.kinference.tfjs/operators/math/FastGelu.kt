@@ -25,9 +25,9 @@ sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, 
 class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val COEF_1 = NumberNDArrayTFJS(scalar(0.5f, "float32"))
-        private val COEF_2 = NumberNDArrayTFJS(scalar(0.035677408136300125f, "float32"))
-        private val COEF_3 = NumberNDArrayTFJS(scalar(0.7978845608028654f, "float32"))
+        private val COEF_1 = NDArrayTFJS.floatScalar(0.5f)
+        private val COEF_2 = NDArrayTFJS.floatScalar(0.035677408136300125f)
+        private val COEF_3 = NDArrayTFJS.floatScalar(0.7978845608028654f)
 
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

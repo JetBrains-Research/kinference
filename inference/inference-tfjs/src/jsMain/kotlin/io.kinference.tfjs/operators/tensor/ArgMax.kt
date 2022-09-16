@@ -57,7 +57,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
             val output = if (selectLastIndex) {
                 val reversedInput = input.reverse(actualAxis)
                 val argMaxResult = reversedInput.argmax(actualAxis)
-                val axisDimension = NumberNDArrayTFJS(scalar(input.shape[actualAxis] - 1))
+                val axisDimension = NDArrayTFJS.intScalar(input.shape[actualAxis] - 1)
                 axisDimension - argMaxResult
             } else {
                 input.argmax(actualAxis)

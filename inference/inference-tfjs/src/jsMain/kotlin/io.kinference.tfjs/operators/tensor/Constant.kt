@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -55,16 +56,16 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
 
         val result = when (name) {
             "value" -> value as TFJSTensor
-            "value_float" -> scalar(value as Float, "float32").asTensor()
+            "value_float" -> NDArrayTFJS.floatScalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                tensor(value, arrayOf(value.size), "float32").asTensor()
+                NDArrayTFJS.float(value, arrayOf(value.size)).asTensor()
             }
 
-            "value_int" -> scalar(value as Int, "int32").asTensor()
+            "value_int" -> NDArrayTFJS.intScalar(value as Int).asTensor()
             "value_ints" -> {
                 value as LongArray
-                tensor(value.toIntArray(), arrayOf(value.size), "int32").asTensor()
+                NDArrayTFJS.int(value.toIntArray(), arrayOf(value.size)).asTensor()
             }
 
             "value_string", "value_strings" -> error("String not supported in Constant now")

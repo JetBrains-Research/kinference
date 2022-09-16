@@ -28,10 +28,9 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val SQRT2 = NumberNDArrayTFJS(scalar(sqrt(2.0f), "float32"))
-        private val scalarOne = NumberNDArrayTFJS(scalar(1.0f, "float32"))
-        private val scalarHalfOne = NumberNDArrayTFJS(scalar(0.5f, "float32"))
-
+        private val SQRT2 = NDArrayTFJS.floatScalar(sqrt(2.0f))
+        private val scalarOne = NDArrayTFJS.floatScalar(1.0f)
+        private val scalarHalfOne = NDArrayTFJS.floatScalar(0.5f)
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),

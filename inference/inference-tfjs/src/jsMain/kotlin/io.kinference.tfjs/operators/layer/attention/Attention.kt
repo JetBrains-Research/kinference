@@ -33,7 +33,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                                 outputArray.fill(-10000f, batchStartIdx, batchStartIdx + min(endIdx, fullSeqLen))
                             }
                         }
-                        NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
+                        NDArrayTFJS.float(outputArray, arrayOf(batchSize, 1, fullSeqLen))
                     }
 
                     this != null && this.rank == 2 -> {
@@ -43,7 +43,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                             val src = maskIndices[idx]
                             outputArray[idx] = if (src > 0) 0f else -10000f
                         }
-                        NumberNDArrayTFJS(tensor(outputArray, arrayOf(batchSize, 1, fullSeqLen), "float32"))
+                        NDArrayTFJS.float(outputArray, arrayOf(batchSize, 1, fullSeqLen))
                     }
 
                     else -> error("Unsupported mask")
@@ -62,7 +62,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                             }
                         }
                     }
-                    NumberNDArrayTFJS(tensor(outputData, broadcastedOutput.shapeArray, "float32"))
+                    NDArrayTFJS.float(outputData, broadcastedOutput.shapeArray)
                 } else broadcastedOutput
                 return@tidyNDArray outputWithUnidir
             } as NumberNDArrayTFJS
@@ -76,7 +76,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 val fullSeqLen = pastSeqLen + seqLen
                 val maskData = maskIndices.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen).reshape(intArrayOf(batchSize, 1, seqLen, fullSeqLen))
 
-                val alpha = NumberNDArrayTFJS(scalar(1.0f / sqrt(headSize.toFloat()), "float32"))
+                val alpha = NDArrayTFJS.floatScalar(1.0f / sqrt(headSize.toFloat()))
                 val scoreData = queries.matmul(present, transposeRight = true).times(alpha).plus(maskData)
 
                 return@tidyNDArray scoreData.softmax(-1)

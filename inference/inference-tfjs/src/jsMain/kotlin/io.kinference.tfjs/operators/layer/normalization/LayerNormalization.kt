@@ -58,8 +58,6 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val epsilon: Float by attribute()
 
-    private val epsilonScalar = scalar(epsilon, "float32")
-
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val scale = inputs[1]!!.data as NumberNDArrayTFJS
@@ -70,7 +68,7 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
 
         val output = tidyNDArray {
             val (mean, variance) = input.moments(axesForMoments, keepDims = true)
-            val epsilonTensor = NumberNDArrayTFJS(epsilonScalar)
+            val epsilonTensor = NDArrayTFJS.floatScalar(epsilon)
             return@tidyNDArray (input - mean) / (variance + epsilonTensor).sqrt() * scale + bias
         }
 

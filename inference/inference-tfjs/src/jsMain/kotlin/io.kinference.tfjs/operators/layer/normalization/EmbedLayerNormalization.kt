@@ -76,7 +76,7 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
         val outputs = tidyNDArrays {
             val wordEmbedding = wordWeights.gather(inputIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
-            val positionIds = range(0, inputIds.shape[1], 1, "int32").toNDArray().broadcastTo(inputIds.shapeArray)
+            val positionIds = NDArrayTFJS.intRange(0, inputIds.shape[1], 1).broadcastTo(inputIds.shapeArray)
 
             val positionEmbedding = positionWeights.gather(positionIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
@@ -94,10 +94,10 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
 
             val (mean, variance) = embedding.moments(axis = -1, keepDims = true)
 
-            val epsilonTensor = NumberNDArrayTFJS(tensor(floatArrayOf(epsilon), arrayOf(1), "float32"))
+            val epsilonTensor = NDArrayTFJS.float(floatArrayOf(epsilon), arrayOf(1))
             val output = (embedding - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
 
-            val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
+            val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NDArrayTFJS.intZeros(arrayOf(batchSize))
             return@tidyNDArrays arrayOf(output, maskOutput)
         }
 

@@ -104,7 +104,7 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
 
             val wordResult = dequantWordEmbedding.gather(inputIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
-            val positionIds = NumberNDArrayTFJS(range(0, inputIds.shape[1], 1, "int32")).broadcastTo(inputIds.shapeArray)
+            val positionIds = NDArrayTFJS.intRange(0, inputIds.shape[1], 1).broadcastTo(inputIds.shapeArray)
             val positionResult = dequantPositionEmbedding.gather(positionIds.flatten()).reshape(outputShape) as NumberNDArrayTFJS
 
             val segmentResult = if (dequantSegmentEmbedding != null && segmentIds != null) {
@@ -121,12 +121,12 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
 
             val (mean, variance) = result.moments(axis = -1, keepDims = true)
 
-            val epsilonTensor = NumberNDArrayTFJS(scalar(epsilon))
+            val epsilonTensor = NDArrayTFJS.floatScalar(epsilon)
             val dequantGamma = (gamma - gammaZeroPoint) * gammaScale
             val dequantBeta = (beta - betaZeroPoint) * betaScale
             val output = (result - mean) / (variance + epsilonTensor).sqrt() * dequantGamma + dequantBeta
 
-            val maskOutput = mask?.sum(1, false) ?: NumberNDArrayTFJS(fill(arrayOf(batchSize), 0, "int32"))
+            val maskOutput = mask?.sum(1, false) ?: NDArrayTFJS.intZeros(arrayOf(batchSize))
 
             return@tidyNDArrays arrayOf(output, maskOutput)
         }
