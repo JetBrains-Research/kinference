@@ -130,6 +130,8 @@ fun ArrayTFJS.matMul(other: ArrayTFJS, transposeLeft: Boolean = false, transpose
 
 fun ArrayTFJS.softmax(axis: Int = -1) = softmax(this, axis)
 
+fun ArrayTFJS.logSoftmax(axis: Int = -1) = io.kinference.ndarray.core.logSoftmax(this , axis)
+
 fun ArrayTFJS.erf() = erf(this)
 
 fun ArrayTFJS.flatten() = reshape(this, arrayOf(this.size))

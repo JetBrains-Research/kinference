@@ -45,6 +45,8 @@ internal external val matMul: (a: ArrayTFJS, b: ArrayTFJS, transposeA: Boolean, 
 
 internal external val softmax: (logits: ArrayTFJS, dim: Int) -> ArrayTFJS
 
+internal external val logSoftmax: (logits: ArrayTFJS, axis: Int) -> ArrayTFJS
+
 internal external val erf: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val min: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean?) -> ArrayTFJS

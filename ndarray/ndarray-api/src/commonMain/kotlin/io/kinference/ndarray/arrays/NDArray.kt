@@ -70,6 +70,8 @@ interface NumberNDArray : NDArray {
     fun sum(): Any
     fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
     fun erf(): NumberNDArray
+    fun softmax(axis: Int = 0, coroutineContext: CoroutineContext? = null): NumberNDArray
+    fun logSoftmax(axis: Int = 0, coroutineContext: CoroutineContext? = null): NumberNDArray
 
     operator fun plus(other: NumberNDArray): MutableNumberNDArray
     operator fun minus(other: NumberNDArray): MutableNumberNDArray

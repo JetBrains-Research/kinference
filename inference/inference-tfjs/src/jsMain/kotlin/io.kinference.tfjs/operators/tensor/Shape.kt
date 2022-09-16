@@ -3,8 +3,8 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.shapeArray
 import io.kinference.ndarray.arrays.tensor
+import io.kinference.ndarray.extensions.shapeArray
 import io.kinference.ndarray.extensions.tidy
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto

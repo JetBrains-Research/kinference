@@ -17,7 +17,7 @@ sealed class PostTransform {
     object SoftmaxTransform : PostTransform() {
         override fun apply(array: MutableFloatNDArray): FloatNDArray {
             // TODO: coroutines in softmax can't be used without context here
-            return Softmax.softmax(array, axis = -1) as FloatNDArray
+            return array.softmax(axis = -1) as FloatNDArray
         }
     }
 

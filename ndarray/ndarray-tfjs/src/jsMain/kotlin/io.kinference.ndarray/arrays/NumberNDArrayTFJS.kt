@@ -71,6 +71,14 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
+    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayTFJS {
+        return NumberNDArrayTFJS(tfjsArray.softmax(axis))
+    }
+
+    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayTFJS {
+        return NumberNDArrayTFJS(tfjsArray.logSoftmax(axis))
+    }
+
     override fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.plus(other.tfjsArray)

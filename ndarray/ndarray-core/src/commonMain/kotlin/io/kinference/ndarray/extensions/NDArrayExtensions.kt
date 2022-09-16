@@ -1,11 +1,9 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.concat
 import io.kinference.primitives.types.DataType
-import kotlin.collections.toIntArray
 
 fun NDArrayCore.wrapOneDim(): NDArray {
     return this.reshape(1.concat(this.shape))

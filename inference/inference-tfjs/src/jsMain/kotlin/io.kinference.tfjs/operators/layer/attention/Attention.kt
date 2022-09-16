@@ -79,7 +79,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 val alpha = NumberNDArrayTFJS(scalar(1.0f / sqrt(headSize.toFloat()), "float32"))
                 val scoreData = queries.matmul(present, transposeRight = true).times(alpha).plus(maskData)
 
-                return@tidyNDArray scoreData.softmax()
+                return@tidyNDArray scoreData.softmax(-1)
             } as NumberNDArrayTFJS
         }
 

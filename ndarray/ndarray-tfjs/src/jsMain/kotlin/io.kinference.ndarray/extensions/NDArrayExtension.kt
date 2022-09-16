@@ -7,6 +7,12 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.ndarray.makeNDArray
 
+val NDArrayTFJS.dtype: String
+    get() = tfjsArray.dtype
+
+val NDArrayTFJS.shapeArray: Array<Int>
+    get() = tfjsArray.shape
+
 fun ArrayTFJS.toNDArray() = makeNDArray(this, dtype)
 
 fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
@@ -23,6 +29,8 @@ fun <T : NDArrayTFJS> T.broadcastTo(shape: Array<Int>) = tfjsArray.broadcastTo(s
 fun <T : NDArrayTFJS> T.cast(dtype: String) = tfjsArray.cast(dtype).toNDArray()
 
 fun <T : NDArrayTFJS> Array<T>.concat(axis: Int = 0) = concat(getArrays(), axis).toNDArray() as T
+
+fun <T : NDArrayTFJS> Collection<T>.concat(axis: Int = 0) = concat(toTypedArray().getArrays(), axis).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.transpose() = transpose(tfjsArray, null).toNDArray() as T
 

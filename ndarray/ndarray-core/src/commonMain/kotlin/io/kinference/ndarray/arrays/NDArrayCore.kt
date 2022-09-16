@@ -72,6 +72,9 @@ interface NumberNDArrayCore : NDArrayCore, NumberNDArray {
     override operator fun times(other: NumberNDArray): MutableNumberNDArrayCore
     override operator fun div(other: NumberNDArray): MutableNumberNDArrayCore
 
+    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore
+    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore
+
     fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArrayCore
     fun matmul(other: NumberNDArray, destination: MutableNumberNDArrayCore, coroutineContext: CoroutineContext): MutableNumberNDArrayCore
 }

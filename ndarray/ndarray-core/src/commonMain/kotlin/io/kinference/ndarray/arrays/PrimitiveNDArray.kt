@@ -263,6 +263,25 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         })
     }
 
+    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore {
+        return softmax(this, axis, strides, coroutineContext)
+    }
+
+    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayCore {
+        fun log(type: DataType) = when(type) {
+            DataType.FLOAT -> object : FloatMap {
+                override fun apply(value: Float): Float = ln(value)
+            }
+
+            DataType.DOUBLE -> object : DoubleMap {
+                override fun apply(value: Double): Double = ln(value)
+            }
+            else -> error("LogSoftmax supported only for DOUBLE and FLOAT types")
+        }
+        val output = softmax(this, axis, strides, coroutineContext)
+        return output.mapMutable(log(output.type)) as MutablePrimitiveNDArray
+    }
+
     override fun plus(other: NumberNDArray): MutableNumberNDArrayCore {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
         val destStrides = Strides(destShape)
@@ -1558,6 +1577,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     companion object {
+        fun zeros(shape: IntArray): MutablePrimitiveNDArray = MutablePrimitiveNDArray(shape)
+
+        fun ones(shape: IntArray): MutablePrimitiveNDArray = MutablePrimitiveNDArray(shape) { 1.toPrimitive() }
+
         fun scalar(value: PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }

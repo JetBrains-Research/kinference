@@ -2,11 +2,7 @@ package io.kinference.tfjs.utils
 
 import io.kinference.TestLoggerFactory
 import io.kinference.data.ONNXDataType
-import io.kinference.ndarray.arrays.dtype
-import io.kinference.ndarray.arrays.shapeArray
-import io.kinference.ndarray.extensions.dataBool
-import io.kinference.ndarray.extensions.dataFloat
-import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.*
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence

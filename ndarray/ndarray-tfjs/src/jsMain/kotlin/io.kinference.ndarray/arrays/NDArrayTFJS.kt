@@ -70,10 +70,8 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
         return result.toNDArray()
     }
+
+    companion object {
+
+    }
 }
-
-val NDArrayTFJS.dtype: String
-    get() = tfjsArray.dtype
-
-val NDArrayTFJS.shapeArray: Array<Int>
-    get() = tfjsArray.shape

@@ -7,7 +7,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.operator.*
-import io.kinference.core.operators.activations.Softmax
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.graph.asCoroutineContext
@@ -73,15 +72,14 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             return attentionScore(scores, v, batchSize, seqLen, pastSeqLen, numHeads, hiddenSize, past, present, executionContext)
         }
 
-
         private fun normalizedScores(
             unidir: Boolean, queries: NDArrayCore, keys: NDArrayCore, maskIndices: IntNDArray?, batchSize: Int,
             seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, past: NDArrayCore?, present: MutableNDArrayCore,
             executionContext: ExecutionContext?
-        ): NDArrayCore {
+        ): NumberNDArrayCore {
             val allSeqLen = pastSeqLen + seqLen
 
-            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen)))
+            val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen))) as MutableNumberNDArrayCore
 
             val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen)
 
@@ -109,7 +107,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             }
 
             //softmax for each result (normalize along last axis)
-            return Softmax.softmax(scores, -1, executionContext = executionContext)
+            return scores.softmax(axis = -1, coroutineContext = executionContext.asCoroutineContext())
         }
 
         private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
