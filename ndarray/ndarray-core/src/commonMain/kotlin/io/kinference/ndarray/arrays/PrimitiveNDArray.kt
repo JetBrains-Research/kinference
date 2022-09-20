@@ -792,7 +792,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             for (i in 0 until countIterations) {
                 var result = inputPointer.getAndIncrement()
                 inputPointer.forEach(countDims - 1) { value: PrimitiveType ->
-                    if (compare(result, value)) {
+                    if (compare(value, result)) {
                         result = value
                     }
                 }
