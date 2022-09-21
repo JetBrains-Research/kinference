@@ -218,7 +218,7 @@ fun ArrayTFJS.not(): ArrayTFJS {
     return logicalNot(this)
 }
 
-fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(this, paddings, constantValue)
+fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
 fun ArrayTFJS.gatherNd(indices: ArrayTFJS) = gatherND(this, indices)
 

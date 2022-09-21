@@ -42,10 +42,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): MutableBooleanNDArrayTFJS {
-        error("Operation pad() is not supported yet")
-    }
-
     override fun nonZero(): NumberNDArrayTFJS {
         error("Operation nonZero() is not supported yet")
     }

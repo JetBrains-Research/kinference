@@ -78,8 +78,28 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
 
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NDArrayTFJS {
+        require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
+        require(constantValue == null || constantValue is NDArrayTFJS)
+        val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }
+        return tidyNDArray {
+            val value = constantValue as? NDArrayTFJS ?: zero(dtype)
+            return@tidyNDArray tfjsArray.pad(padsArray, value.singleValue()).toNDArray()
+        }
+    }
+
     companion object {
         private fun Array<Int>.times() = this.fold(1, Int::times)
+
+        private fun zero(dtype: String): NDArrayTFJS {
+            val zero = when (dtype) {
+                "int32" -> intScalar(0)
+                "float32" -> floatScalar(0f)
+                "bool" -> booleanScalar(false)
+                else -> error("Unsupported data type: $dtype")
+            }
+            return zero
+        }
 
         fun float(values: FloatArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float32"))
         fun int(values: IntArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "int32"))

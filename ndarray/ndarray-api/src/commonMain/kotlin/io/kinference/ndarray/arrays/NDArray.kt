@@ -48,7 +48,7 @@ interface NDArray : Closeable {
 
     fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray
     fun expand(shape: IntArray): MutableNDArray
-    fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NDArray
+    fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray? = null): NDArray
     fun nonZero(): NumberNDArray
 
     fun tile(repeats: IntArray): NDArray

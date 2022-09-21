@@ -11,6 +11,9 @@ kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
+                implementation(npm("@tensorflow/tfjs-core", Versions.TFJS))
+                implementation(npm("@tensorflow/tfjs-backend-webgl", Versions.TFJS))
+
                 api(project(":ndarray:ndarray-api"))
                 api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
