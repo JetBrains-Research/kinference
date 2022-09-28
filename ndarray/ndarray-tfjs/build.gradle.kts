@@ -6,8 +6,8 @@ version = rootProject.version
 
 kotlin {
     js(BOTH) {
-        configureTests()
         browser()
+        configureTests()
     }
 
     sourceSets {
