@@ -69,5 +69,10 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         tfjsArray.dispose()
         tfjsArray = result
     }
+
+    override fun viewMutable(vararg axes: Int): MutableNumberNDArrayTFJS {
+        val indices = tensor(axes, arrayOf(axes.size), "int32")
+        return MutableNumberNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
+    }
 }
 

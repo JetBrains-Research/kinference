@@ -10,7 +10,7 @@ interface NDArrayCore : NDArray {
     fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore
     fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore
 
-    fun view(vararg axes: Int): NDArrayCore
+    override fun view(vararg axes: Int): NDArrayCore
     fun row(i: Int): MutableNDArray
 
     override fun reshape(strides: Strides): NDArrayCore
@@ -35,7 +35,7 @@ interface NDArrayCore : NDArray {
 
 interface MutableNDArrayCore : NDArrayCore, MutableNDArray {
     fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore
-    fun viewMutable(vararg axes: Int): MutableNDArrayCore
+    override fun viewMutable(vararg axes: Int): MutableNDArrayCore
 }
 
 interface NumberNDArrayCore : NDArrayCore, NumberNDArray {

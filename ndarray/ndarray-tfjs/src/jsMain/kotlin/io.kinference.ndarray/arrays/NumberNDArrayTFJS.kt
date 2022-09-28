@@ -162,4 +162,9 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray()))
     }
+
+    override fun view(vararg axes: Int): NumberNDArrayTFJS {
+        val indices = tensor(axes, arrayOf(axes.size), "int32")
+        return NumberNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
+    }
 }

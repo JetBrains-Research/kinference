@@ -54,10 +54,14 @@ interface NDArray : Closeable {
     fun tile(repeats: IntArray): NDArray
     fun transpose(permutations: IntArray): NDArray
     fun transpose2D(): NDArray
+
+    fun view(vararg axes: Int): NDArray
 }
 
 interface MutableNDArray : NDArray {
     operator fun set(index: IntArray, value: Any)
+
+    fun viewMutable(vararg axes: Int): MutableNDArray
 
     fun copyFrom(offset: Int, other: NDArray, startInOther: Int = 0, endInOther: Int = min(other.linearSize, linearSize))
     fun fill(value: Any, from: Int = 0, to: Int = linearSize)
@@ -99,6 +103,8 @@ interface NumberNDArray : NDArray {
 
     override fun transpose(permutations: IntArray): NumberNDArray
     override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArray
+
+    override fun view(vararg axes: Int): NDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
@@ -106,6 +112,8 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     operator fun minusAssign(other: NumberNDArray)
     operator fun timesAssign(other: NumberNDArray)
     operator fun divAssign(other: NumberNDArray)
+
+    override fun viewMutable(vararg axes: Int): MutableNDArray
 }
 
 operator fun NDArray.get(vararg index: Int) = this[index]

@@ -56,6 +56,11 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         }
     }
 
+    override fun view(vararg axes: Int): BooleanNDArrayTFJS {
+        val indices = tensor(axes, arrayOf(axes.size), "int32")
+        return BooleanNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
+    }
+
     fun not(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.not())
     }
@@ -97,5 +102,10 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         val zerosArray = tensor(Array(linearSize) { false }, shapeArray, "bool")
         zerosArray.dispose()
         tfjsArray = zerosArray
+    }
+
+    override fun viewMutable(vararg axes: Int): MutableBooleanNDArrayTFJS {
+        val indices = tensor(axes, arrayOf(axes.size), "int32")
+        return MutableBooleanNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
     }
 }
