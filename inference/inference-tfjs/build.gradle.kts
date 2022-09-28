@@ -18,9 +18,6 @@ kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
-                implementation(npm("@tensorflow/tfjs-core", Versions.TFJS))
-                implementation(npm("@tensorflow/tfjs-backend-webgl", Versions.TFJS))
-
                 api(project(":serialization:serializer-protobuf"))
 
                 api(project(":ndarray:ndarray-api"))

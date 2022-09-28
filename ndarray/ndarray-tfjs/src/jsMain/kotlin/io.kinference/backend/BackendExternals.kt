@@ -1,6 +1,6 @@
 @file:JsModule("@tensorflow/tfjs-core")
 @file:JsNonModule
-package io.kinference.tfjs.externals.core
+package io.kinference.backend
 
 import kotlin.js.Promise
 

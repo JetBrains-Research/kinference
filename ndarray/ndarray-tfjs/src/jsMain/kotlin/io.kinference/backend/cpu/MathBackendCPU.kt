@@ -1,7 +1,7 @@
 @file:JsModule("@tensorflow/tfjs-backend-cpu")
 @file:JsNonModule
-package io.kinference.tfjs.externals.backend.cpu
+package io.kinference.backend.cpu
 
-import io.kinference.tfjs.externals.core.KernelBackend
+import io.kinference.backend.KernelBackend
 
 internal external class MathBackendCPU(): KernelBackend

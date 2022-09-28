@@ -1,4 +1,4 @@
-package io.kinference.tfjs.externals.core
+package io.kinference.tfjs.utils
 
 import io.kinference.ndarray.arrays.ArrayTFJS
 import kotlin.js.Promise

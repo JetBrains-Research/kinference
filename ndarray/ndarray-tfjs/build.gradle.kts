@@ -19,5 +19,13 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
             }
         }
+
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+                implementation(kotlin("test-annotations-common"))
+                implementation(project(":utils:test-utils"))
+            }
+        }
     }
 }

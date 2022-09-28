@@ -1,12 +1,12 @@
 package io.kinference.tfjs.model
 
+import io.kinference.backend.setDefaultBackend
 import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.ModelProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.graph.TFJSGraph
-import io.kinference.tfjs.utils.setDefaultBackend
 import io.kinference.utils.LoggerFactory
 import kotlin.time.ExperimentalTime
 

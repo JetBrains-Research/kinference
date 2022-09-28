@@ -1,14 +1,13 @@
-package io.kinference.tfjs.utils
+package io.kinference.backend
 
 import io.kinference.utils.runBlocking
-import io.kinference.tfjs.externals.backend.cpu.MathBackendCPU
-import io.kinference.tfjs.externals.backend.webgl.MathBackendWebGL
-import io.kinference.tfjs.externals.core.*
+import io.kinference.backend.cpu.MathBackendCPU
+import io.kinference.backend.webgl.MathBackendWebGL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.await
 
 
-internal fun setWebGLBackend() {
+fun setWebGLBackend() {
     if (getBackend() != "webgl") {
         removeBackend("webgl")
         registerBackend("webgl", { MathBackendWebGL(null) })
@@ -16,7 +15,7 @@ internal fun setWebGLBackend() {
     }
 }
 
-internal fun setCPUBackend() {
+fun setCPUBackend() {
     if (getBackend() != "cpu") {
         removeBackend("cpu")
         registerBackend("cpu", { MathBackendCPU() })
@@ -24,6 +23,6 @@ internal fun setCPUBackend() {
     }
 }
 
-internal fun setDefaultBackend() {
+fun setDefaultBackend() {
     setWebGLBackend()
 }
