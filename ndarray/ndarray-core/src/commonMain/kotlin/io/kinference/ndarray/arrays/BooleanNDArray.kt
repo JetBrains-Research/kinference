@@ -71,6 +71,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array[linearIndex]
     }
 
+    override fun getLinear(index: Int): Boolean {
+        return array[index]
+    }
+
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
@@ -435,6 +439,10 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
         array[linearIndex] = value as Boolean
+    }
+
+    override fun setLinear(index: Int, value: Any) {
+        array[index] = value as Boolean
     }
 
     override fun viewMutable(vararg axes: Int): MutableBooleanNDArray {

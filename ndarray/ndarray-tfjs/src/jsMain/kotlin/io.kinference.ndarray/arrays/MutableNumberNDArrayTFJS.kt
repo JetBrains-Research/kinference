@@ -1,12 +1,16 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
-import io.kinference.primitives.types.PrimitiveType
 
 class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArray), MutableNumberNDArray {
     override fun set(index: IntArray, value: Any) {
-        require(value is PrimitiveType)
+        require(value is Number)
         tfjsArray.bufferSync().set(value, *index)
+    }
+
+    override fun setLinear(index: Int, value: Any) {
+        require(value is Number)
+        tfjsArray.bufferSync().set(value, *strides.index(index))
     }
 
     override fun clone(): MutableNumberNDArrayTFJS {

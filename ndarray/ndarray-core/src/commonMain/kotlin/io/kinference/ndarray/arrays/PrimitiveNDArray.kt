@@ -69,6 +69,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return array[linearIndex]
     }
 
+    override fun getLinear(index: Int): PrimitiveType {
+        return array[index]
+    }
+
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]

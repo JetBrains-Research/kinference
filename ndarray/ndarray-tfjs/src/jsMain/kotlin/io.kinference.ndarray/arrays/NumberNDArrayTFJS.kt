@@ -9,6 +9,10 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return tfjsArray.bufferSync().get(*index) as Number
     }
 
+    override fun getLinear(index: Int): Number {
+        return tfjsArray.dataSync()[index] as Number
+    }
+
     override fun singleValue(): Number {
         require(this.linearSize == 1) { "NDArrays has more than 1 value" }
         return tfjsArray.dataSync()[0] as Number

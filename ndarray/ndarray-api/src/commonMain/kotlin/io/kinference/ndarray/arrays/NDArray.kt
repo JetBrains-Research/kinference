@@ -25,6 +25,7 @@ interface NDArray : Closeable {
         get() = shape.size
 
     operator fun get(index: IntArray): Any
+    fun getLinear(index: Int): Any
 
     fun singleValue(): Any
 
@@ -60,6 +61,7 @@ interface NDArray : Closeable {
 
 interface MutableNDArray : NDArray {
     operator fun set(index: IntArray, value: Any)
+    fun setLinear(index: Int, value: Any)
 
     fun viewMutable(vararg axes: Int): MutableNDArray
 
@@ -104,7 +106,7 @@ interface NumberNDArray : NDArray {
     override fun transpose(permutations: IntArray): NumberNDArray
     override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArray
 
-    override fun view(vararg axes: Int): NDArray
+    override fun view(vararg axes: Int): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
@@ -113,7 +115,7 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
     operator fun timesAssign(other: NumberNDArray)
     operator fun divAssign(other: NumberNDArray)
 
-    override fun viewMutable(vararg axes: Int): MutableNDArray
+    override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 }
 
 operator fun NDArray.get(vararg index: Int) = this[index]

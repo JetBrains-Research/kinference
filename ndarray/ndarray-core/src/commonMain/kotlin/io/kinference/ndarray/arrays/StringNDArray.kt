@@ -26,6 +26,10 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return array[linearIndex]
     }
 
+    override fun getLinear(index: Int): String {
+        return array[index]
+    }
+
     override fun view(vararg axes: Int): StringNDArray {
         TODO("Not yet implemented")
     }
@@ -135,6 +139,10 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.offset(index)
         array[linearIndex] = value as String
+    }
+
+    override fun setLinear(index: Int, value: Any) {
+        array[index] = value as String
     }
 
     override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore {

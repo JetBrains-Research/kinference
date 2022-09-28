@@ -10,6 +10,10 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return tfjsArray.bufferSync().get(*index) as Boolean
     }
 
+    override fun getLinear(index: Int): Boolean {
+        return tfjsArray.dataSync()[index] as Boolean
+    }
+
     override fun singleValue(): Boolean {
         require(this.linearSize == 1) { "NDArrays has more than 1 value" }
         return tfjsArray.dataSync()[0] as Boolean
@@ -73,6 +77,11 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     override fun set(index: IntArray, value: Any) {
         require(value is Boolean)
         tfjsArray.bufferSync().set(value, *index)
+    }
+
+    override fun setLinear(index: Int, value: Any) {
+        require(value is Boolean)
+        tfjsArray.bufferSync().set(value, *strides.index(index))
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
