@@ -2,10 +2,10 @@ package io.kinference.core.operators.ml.trees
 
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
-import io.kinference.core.operators.activations.Softmax
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.ExperimentalTime
 
-//TODO: SOFTMAX, SOFTMAX_ZERO, LOGISTIC, PROBIT
+//TODO: SOFTMAX_ZERO, LOGISTIC, PROBIT
 @ExperimentalTime
 sealed class PostTransform {
     abstract fun apply(array: MutableFloatNDArray): FloatNDArray
@@ -17,7 +17,7 @@ sealed class PostTransform {
     object SoftmaxTransform : PostTransform() {
         override fun apply(array: MutableFloatNDArray): FloatNDArray {
             // TODO: coroutines in softmax can't be used without context here
-            return array.softmax(axis = -1) as FloatNDArray
+            return array.softmax(axis = -1, EmptyCoroutineContext)
         }
     }
 

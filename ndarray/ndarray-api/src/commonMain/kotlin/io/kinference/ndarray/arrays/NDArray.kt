@@ -98,6 +98,7 @@ interface NumberNDArray : NDArray {
     override fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
 
     override fun transpose(permutations: IntArray): NumberNDArray
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArray
 }
 
 interface MutableNumberNDArray : MutableNDArray, NumberNDArray {

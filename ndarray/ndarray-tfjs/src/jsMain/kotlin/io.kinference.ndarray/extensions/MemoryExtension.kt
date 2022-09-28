@@ -6,18 +6,18 @@ import io.kinference.ndarray.core.tidy
 
 fun tidy(fn: () -> Array<ArrayTFJS>): Array<ArrayTFJS> = tidy(fn, null)
 
-fun tidyNDArrays(fn: () -> Array<NDArrayTFJS>): Array<NDArrayTFJS> {
+fun <T : NDArrayTFJS> tidyNDArrays(fn: () -> Array<T>): Array<T> {
     val rawOutput = tidy {
         val output = fn()
         return@tidy output.map { it.tfjsArray }.toTypedArray()
     }
-    return rawOutput.map { it.toNDArray() }.toTypedArray()
+    return rawOutput.map { it.toNDArray() as T }.toTypedArray()
 }
 
-fun tidyNDArray(fn: () -> NDArrayTFJS): NDArrayTFJS {
+fun <T : NDArrayTFJS> tidyNDArray(fn: () -> T): T {
     val rawOutput = tidy {
         val output = fn()
         return@tidy arrayOf(output.tfjsArray)
     }.first()
-    return rawOutput.toNDArray()
+    return rawOutput.toNDArray() as T
 }

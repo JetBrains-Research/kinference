@@ -6,11 +6,9 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.ndarray.arrays.scalar
-import io.kinference.ndarray.extensions.tensor
-import io.kinference.protobuf.toIntArray
 
 sealed class Constant(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {

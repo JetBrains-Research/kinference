@@ -132,6 +132,16 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(result)
     }
 
+    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArrayTFJS {
+        require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
+        require(constantValue == null || constantValue is NDArrayTFJS)
+        val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }
+        return tidyNDArray {
+            val value = constantValue as? NDArrayTFJS ?: zero(dtype)
+            return@tidyNDArray NumberNDArrayTFJS(tfjsArray.pad(padsArray, value.singleValue()))
+        }
+    }
+
     override fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.matMul(other.tfjsArray, transposeLeft = false, transposeRight = false)

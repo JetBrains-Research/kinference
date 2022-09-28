@@ -48,7 +48,7 @@ class ScatterElementsVer11(name: String, attributes: Map<String, Attribute<Any>>
             return if (indices is IntNDArray) {
                 indices.map (object : IntMap {
                     override fun apply(value: Int): Int = checkIndex(value, axisLimit)
-                }) as IntNDArray
+                })
             } else {
                 indices as LongNDArray
                 val pointer = indices.array.pointer()
