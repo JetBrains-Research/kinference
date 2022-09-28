@@ -1,6 +1,8 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.core.versionCpu
+import io.kinference.ndarray.core.versionWebgl
 import io.kinference.primitives.types.DataType
 
 fun String.resolveTFJSDataType(): DataType {
@@ -25,3 +27,13 @@ fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
 }
 
 fun makeNDArray(tfjsArray: ArrayTFJS, type: String) = makeNDArray(tfjsArray, type.resolveTFJSDataType())
+
+internal fun activateCpuBackend() {
+    versionCpu.length
+}
+
+internal fun activateWebglBackend() {
+    versionWebgl.length
+}
+
+internal fun activateDefaultBackend() = activateWebglBackend()

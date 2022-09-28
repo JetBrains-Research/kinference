@@ -1,10 +1,18 @@
 package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.activateDefaultBackend
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.resolveTFJSDataType
 import io.kinference.primitives.types.DataType
 
 abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
+    init {
+        if (!isActivated) {
+            activateDefaultBackend()
+            isActivated = true
+        }
+    }
+
     var tfjsArray = tfjsArray
         protected set
 
@@ -79,6 +87,8 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
     }
 
     companion object {
+        private var isActivated = false
+
         private fun Array<Int>.times() = this.fold(1, Int::times)
 
         internal fun zero(dtype: String): NDArrayTFJS {

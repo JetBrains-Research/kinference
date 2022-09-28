@@ -1,6 +1,5 @@
 package io.kinference.tfjs.model
 
-import io.kinference.backend.setDefaultBackend
 import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
@@ -12,10 +11,6 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
-    init {
-        setDefaultBackend()
-    }
-
     private val opSet = OperatorSetRegistry(proto.opSetImport)
     val graph = TFJSGraph(proto.graph!!, opSet)
     val name: String = "${proto.domain}:${proto.modelVersion}"
