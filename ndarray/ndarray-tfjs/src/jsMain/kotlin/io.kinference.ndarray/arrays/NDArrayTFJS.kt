@@ -54,10 +54,13 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return tfjsArray.reshape(shape.toTypedArray()).toNDArray()
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun stack(others: List<NDArray>, axis: Int): NDArrayTFJS {
         others as List<NDArrayTFJS>
         return tfjsArray.stack(*others.getArrays(), axis = axis).toNDArray()
     }
+
+    @Suppress("UNCHECKED_CAST")
     override fun concat(others: List<NDArray>, axis: Int): NDArrayTFJS {
         others as List<NDArrayTFJS>
         return tfjsArray.concat(*others.getArrays(), axis = axis).toNDArray()

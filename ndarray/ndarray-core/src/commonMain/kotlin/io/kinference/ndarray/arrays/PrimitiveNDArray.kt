@@ -1522,7 +1522,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return transposeByBlocks(permutations)
         }
 
-        val outputArray = PrimitiveNDArray(outputStrides)
+        val outputArray = MutablePrimitiveNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
             when(axis) {
@@ -1574,7 +1574,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             }
         }
 
-        return PrimitiveNDArray(outputArray, outputStrides)
+        return MutablePrimitiveNDArray(outputArray, outputStrides)
     }
 
     override fun equals(other: Any?): Boolean {

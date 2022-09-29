@@ -65,7 +65,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     NDArrayTFJS.float(outputData, broadcastedOutput.shapeArray)
                 } else broadcastedOutput
                 return@tidyNDArray outputWithUnidir
-            } as NumberNDArrayTFJS
+            }
         }
 
         internal fun normalizedScores(
@@ -80,7 +80,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 val scoreData = queries.matmul(present, transposeRight = true).times(alpha).plus(maskData)
 
                 return@tidyNDArray scoreData.softmax(-1)
-            } as NumberNDArrayTFJS
+            }
         }
 
         internal fun attentionScore(

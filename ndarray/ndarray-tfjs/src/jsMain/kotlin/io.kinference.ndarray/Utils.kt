@@ -20,8 +20,8 @@ inline fun <T> T.applyIf(predicate: Boolean, func: (T) -> (T)): T {
 
 fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
     return when (type) {
-        DataType.FLOAT, DataType.INT -> NumberNDArrayTFJS(tfjsArray)
-        DataType.BOOLEAN -> BooleanNDArrayTFJS(tfjsArray)
+        DataType.FLOAT, DataType.INT -> MutableNumberNDArrayTFJS(tfjsArray)
+        DataType.BOOLEAN -> MutableBooleanNDArrayTFJS(tfjsArray)
         else -> error("Unsupported type: $type")
     }
 }

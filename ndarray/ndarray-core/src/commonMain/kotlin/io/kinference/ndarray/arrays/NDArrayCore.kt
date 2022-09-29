@@ -31,6 +31,8 @@ interface NDArrayCore : NDArray {
 
     override fun gather(indices: NDArray, axis: Int, batchDims: Int): NDArrayCore = gather(this, indices as NDArrayCore, axis)
     fun gather(indices: NDArray, axis: Int, dst: MutableNDArrayCore): NDArrayCore = gather(this, indices as NDArrayCore, axis, dst)
+
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNDArrayCore
 }
 
 interface MutableNDArrayCore : NDArrayCore, MutableNDArray {
@@ -64,6 +66,8 @@ interface NumberNDArrayCore : NDArrayCore, NumberNDArray {
 
     override fun view(vararg axes: Int): NumberNDArrayCore
     override fun transpose(permutations: IntArray): NumberNDArrayCore
+
+    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayCore
 
     fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayCore
     fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArrayCore
