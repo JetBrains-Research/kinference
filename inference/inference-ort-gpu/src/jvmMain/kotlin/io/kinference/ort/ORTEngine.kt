@@ -1,16 +1,13 @@
 package io.kinference.ort
 
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
+import ai.onnxruntime.*
 import io.kinference.BackendInfo
-import io.kinference.InferenceEngine
+import io.kinference.OptimizableEngine
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
-import io.kinference.model.Model
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.ort.model.ORTModel
 import io.kinference.protobuf.*
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
@@ -19,7 +16,7 @@ typealias ORTData<T> = ONNXData<T, ORTBackend>
 
 object ORTBackend : BackendInfo("ONNXRuntime-GPU")
 
-object ORTEngine : InferenceEngine<ORTData<*>> {
+object ORTEngine : OptimizableEngine<ORTData<*>> {
     private val env = OrtEnvironment.getEnvironment()
     private val options = OrtSession.SessionOptions()
 
@@ -33,21 +30,33 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         options.addCUDA()
     }
 
-    override fun loadModel(bytes: ByteArray): Model<ORTData<*>> {
-        val session = env.createSession(bytes)
+    override fun loadModel(bytes: ByteArray): ORTModel {
+        val session = env.createSession(bytes, options)
         return ORTModel(session)
     }
 
-    fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
+    override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
         if (optimize)
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         else
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
-        val session = env.createSession(bytes)
+        val session = env.createSession(bytes, options)
         return ORTModel(session)
     }
 
-    fun loadModel(path: Path, optimize: Boolean): ORTModel {
+    fun loadModel(bytes: ByteArray, optimize: Boolean, logLevel: OrtLoggingLevel =  OrtLoggingLevel.ORT_LOGGING_LEVEL_INFO): ORTModel {
+        if (optimize)
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+        else
+            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+
+        options.setSessionLogLevel(logLevel)
+        val session = env.createSession(bytes, options)
+
+        return ORTModel(session)
+    }
+
+    override suspend fun loadModel(path: Path, optimize: Boolean): ORTModel {
         if (optimize)
             options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
         else
@@ -56,12 +65,12 @@ object ORTEngine : InferenceEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
-    override suspend fun loadModel(path: Path): Model<ORTData<*>> {
+    override suspend fun loadModel(path: Path): ORTModel {
         val session = env.createSession(path.toString(), options)
         return ORTModel(session)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType)= when (type) {
+    override fun loadData(bytes: ByteArray, type: ONNXDataType) = when (type) {
         ONNXDataType.ONNX_TENSOR -> ORTTensor.create(protoReader(bytes).readTensor())
         else -> error("$type construction is not supported in OnnxRuntime Java API")
     }

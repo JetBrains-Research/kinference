@@ -2,7 +2,8 @@ package io.kinference.tfjs
 
 import io.kinference.BackendInfo
 import io.kinference.InferenceEngine
-import io.kinference.data.*
+import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.protobuf.*
 import io.kinference.protobuf.message.*
 import io.kinference.tfjs.data.map.TFJSMap

@@ -45,7 +45,13 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
         val opIdx = graph.operators.indexOfFirst { it.name == name }
         val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), opIdx)!!
         val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), opIdx)!!
-        val operator = dequantizeMatMulInteger(graph, secondPath[0] as DynamicQuantizeLinear, secondPath[1] as MatMulInteger, firstPath[1] as Mul, firstPath[2] as Mul)
+        val operator = dequantizeMatMulInteger(
+            graph = graph,
+            dynamicQLin = secondPath[0] as DynamicQuantizeLinear,
+            matMulInt = secondPath[1] as MatMulInteger,
+            mul = firstPath[1] as Mul,
+            nextMul = firstPath[2] as Mul
+        ) ?: return
         val names = firstPath.map { it.name }.drop(1) + secondPath.dropLast(1).map { it.name }
         graph.mergeOperators(names, operator as Operator<KIONNXData<*>, KIONNXData<*>>)
     }
