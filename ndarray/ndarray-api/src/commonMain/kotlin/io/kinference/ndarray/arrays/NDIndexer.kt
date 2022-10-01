@@ -1,16 +1,19 @@
 package io.kinference.ndarray.arrays
 
-class NDIndexIterator(
+class NDIndexer(
     val strides: Strides,
-    from: IntArray = IntArray(strides.shape.size),
-    to: IntArray = strides.shape.copyOf().onEach { it - 1 }
+    from: IntArray = strides.defaultStart(),
+    to: IntArray = strides.defaultEnd()
 ) : Iterator<IntArray> {
+    constructor(shape: IntArray) : this(Strides(shape))
     private val indexSize = strides.shape.size
-    private val maxElements = to.fold(1, Int::times) - from.fold(1, Int::times)
-    private var elementsCounter = 0
-    private var currentIndex = from.copyOf().apply { this[lastIndex] -= 1 }
+    private val maxElements = strides.countElements(from, to)
+    private val currentIndex = from.copyOf().apply { this[lastIndex] -= 1 }
 
-    override fun hasNext(): Boolean = elementsCounter < maxElements
+    var linearIndex = 0
+        private set
+
+    override fun hasNext(): Boolean = linearIndex < maxElements
 
     override fun next(): IntArray {
         for (idx in indexSize - 1 downTo 0) {
@@ -20,15 +23,20 @@ class NDIndexIterator(
             }
             currentIndex[idx] = 0
         }
-        elementsCounter++
+        linearIndex++
         return currentIndex
+    }
+
+    companion object {
+        private fun Strides.countElements(from: IntArray, to: IntArray) = offset(to) - offset(from) + 1
     }
 }
 
-fun NDArray.ndIndexed(func: (IntArray) -> Unit) {
-    return NDIndexIterator(strides).forEach(func)
-}
+private fun Strides.defaultStart() = IntArray(shape.size)
+private fun Strides.defaultEnd() = IntArray(shape.size) { shape[it] - 1 }
 
-fun NDArray.ndIndexed(from: IntArray, to: IntArray, func: (IntArray) -> Unit) {
-    return NDIndexIterator(strides, from, to).forEach(func)
-}
+fun <T : NDArray> T.ndIndices(
+    from: IntArray = strides.defaultStart(),
+    to: IntArray = strides.defaultEnd(),
+    func: (IntArray) -> Unit
+) = NDIndexer(strides, from, to).forEach(func)

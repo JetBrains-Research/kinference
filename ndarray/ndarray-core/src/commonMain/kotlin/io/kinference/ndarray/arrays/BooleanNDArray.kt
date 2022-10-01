@@ -226,7 +226,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         var totalElements = 0
         val inputPointer = array.pointer()
         val indicesArray = IntArray(linearSize * ndIndexSize)
-        this.ndIndexed { ndIndex ->
+        this.ndIndices { ndIndex ->
             if (inputPointer.getAndIncrement()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
                 totalElements++
@@ -405,7 +405,8 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): BooleanNDArray {
-            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return BooleanNDArray(strides) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): BooleanNDArray {
@@ -437,7 +438,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
 
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         array[linearIndex] = value as Boolean
     }
 
@@ -566,7 +567,8 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): MutableBooleanNDArray {
-            return MutableBooleanNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return MutableBooleanNDArray(strides) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> Boolean): MutableBooleanNDArray {

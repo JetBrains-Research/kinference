@@ -102,7 +102,8 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> String): StringNDArray {
-            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return StringNDArray(strides.shape) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> String): StringNDArray {
@@ -184,11 +185,12 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> String): MutableStringNDArray {
-            return MutableStringNDArray(strides.shape).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return MutableStringNDArray(strides.shape) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> String): MutableStringNDArray {
-            return MutableStringNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         operator fun invoke(vararg shape: Int): MutableStringNDArray {

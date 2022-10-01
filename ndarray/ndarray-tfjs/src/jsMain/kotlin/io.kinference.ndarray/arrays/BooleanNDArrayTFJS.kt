@@ -89,7 +89,7 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         val buffer = tfjsArray.bufferSync()
         val otherData = other.tfjsArray.dataSync()
         val startIndex = strides.index(offset)
-        val iterator = NDIndexIterator(strides, from = startIndex)
+        val iterator = NDIndexer(strides, from = startIndex)
         for (i in startInOther until endInOther) {
             buffer.set(otherData[i], *iterator.next())
         }
@@ -99,7 +99,7 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         val offsetFrom = strides.index(from)
         val offsetTo = strides.index(to)
         val buffer = tfjsArray.bufferSync()
-        ndIndexed(offsetFrom, offsetTo) { buffer.set(value, *it) }
+        ndIndices(offsetFrom, offsetTo) { buffer.set(value, *it) }
     }
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {

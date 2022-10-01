@@ -18,7 +18,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
-        val linearIndex = strides.strides.reduceIndexed { idx, acc, i -> acc + i * index[idx] }
+        val linearIndex = strides.offset(index)
         array[linearIndex] = value as PrimitiveType
     }
 
@@ -216,7 +216,8 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return MutablePrimitiveNDArray(strides) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
@@ -229,7 +230,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
 
         @JvmName("invokeNDVarArg")
         operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         @JvmName("invokeVarArg")

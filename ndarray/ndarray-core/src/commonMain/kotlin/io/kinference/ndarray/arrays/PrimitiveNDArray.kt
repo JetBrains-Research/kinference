@@ -1183,7 +1183,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         var totalElements = 0
         val inputPointer = array.pointer()
         val indicesArray = IntArray(linearSize * ndIndexSize)
-        this.ndIndexed { ndIndex ->
+        this.ndIndices { ndIndex ->
             if (inputPointer.getAndIncrement() != (0).toPrimitive()) {
                 ndIndex.copyInto(indicesArray, totalElements * ndIndexSize)
                 totalElements++
@@ -1605,7 +1605,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-            return MutablePrimitiveNDArray(strides).apply { this.ndIndexed { this[it] = init(it) } }
+            val iterator = NDIndexer(strides)
+            return PrimitiveNDArray(strides) { init(iterator.next()) }
         }
 
         operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
@@ -1618,7 +1619,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
         @JvmName("invokeNDVarArg")
         operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
-            return MutablePrimitiveNDArray(shape).apply { this.ndIndexed { this[it] = init(it) }  }
+            return invoke(Strides(shape), init)
         }
 
         @JvmName("invokeVarArg")
