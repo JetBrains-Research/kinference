@@ -24,7 +24,7 @@ object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = TiledTensorDecoder)
-    private val defaultOptRules = listOf(DequantizeMatMulInteger, DequantizeQAttention)
+    private val defaultOptRules = listOf(DequantizeQAttention)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
     override fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
