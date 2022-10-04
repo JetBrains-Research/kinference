@@ -12,7 +12,7 @@ import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
+class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     override fun close() {

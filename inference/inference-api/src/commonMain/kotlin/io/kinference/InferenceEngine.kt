@@ -16,6 +16,6 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     suspend fun loadModel(path: Path): Model<T>
     suspend fun loadData(path: Path, type: ONNXDataType): T
 
-    suspend fun loadModel(path: String): Model<T> = loadModel(path.toPath())
-    suspend fun loadData(path: String, type: ONNXDataType): T = loadData(path.toPath(), type)
+    suspend fun loadModel(path: String): Model<T>
+    suspend fun loadData(path: String, type: ONNXDataType): T
 }

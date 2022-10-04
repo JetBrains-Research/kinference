@@ -13,6 +13,7 @@ import io.kinference.tfjs.model.TFJSModel
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
+import okio.Path.Companion.toPath
 
 typealias TFJSData<T> = ONNXData<T, TFJSBackend>
 
@@ -30,13 +31,27 @@ object TFJSEngine : InferenceEngine<TFJSData<*>> {
         return TFJSModel(modelScheme)
     }
 
-    override suspend fun loadModel(path: Path) = loadModel(CommonDataLoader.bytes(path))
-
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> = when (type) {
-        ONNXDataType.ONNX_TENSOR -> TFJSTensor.create(protoReader(bytes).readTensor())
-        ONNXDataType.ONNX_SEQUENCE -> TFJSSequence.create(SequenceProto.decode(protoReader(bytes)))
-        ONNXDataType.ONNX_MAP -> TFJSMap.create(MapProto.decode(protoReader(bytes)))
+    override suspend fun loadModel(path: Path): TFJSModel {
+        return loadModel(CommonDataLoader.bytes(path))
     }
 
-    override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
+    override suspend fun loadModel(path: String): TFJSModel {
+        return loadModel(path.toPath())
+    }
+
+    override fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> {
+        return when (type) {
+            ONNXDataType.ONNX_TENSOR -> TFJSTensor.create(protoReader(bytes).readTensor())
+            ONNXDataType.ONNX_SEQUENCE -> TFJSSequence.create(SequenceProto.decode(protoReader(bytes)))
+            ONNXDataType.ONNX_MAP -> TFJSMap.create(MapProto.decode(protoReader(bytes)))
+        }
+    }
+
+    override suspend fun loadData(path: Path, type: ONNXDataType): TFJSData<*> {
+        return loadData(CommonDataLoader.bytes(path), type)
+    }
+
+    override suspend fun loadData(path: String, type: ONNXDataType): TFJSData<*> {
+        return loadData(path.toPath(), type)
+    }
 }

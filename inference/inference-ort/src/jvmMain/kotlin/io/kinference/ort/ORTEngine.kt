@@ -11,6 +11,7 @@ import io.kinference.protobuf.*
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
+import okio.Path.Companion.toPath
 
 typealias ORTData<T> = ONNXData<T, ORTBackend>
 
@@ -80,10 +81,26 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
-    override suspend fun loadData(path: Path, type: ONNXDataType) = loadData(CommonDataLoader.bytes(path), type)
+    override suspend fun loadModel(path: String): ORTModel {
+        return loadModel(path.toPath())
+    }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType) = when (type) {
-        ONNXDataType.ONNX_TENSOR -> ORTTensor.create(protoReader(bytes).readTensor())
-        else -> error("$type construction is not supported in OnnxRuntime Java API")
+    override suspend fun loadModel(path: String, optimize: Boolean): ORTModel {
+        return loadModel(path.toPath(), optimize)
+    }
+
+    override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> {
+        return when (type) {
+            ONNXDataType.ONNX_TENSOR -> ORTTensor.create(protoReader(bytes).readTensor())
+            else -> error("$type construction is not supported in OnnxRuntime Java API")
+        }
+    }
+
+    override suspend fun loadData(path: Path, type: ONNXDataType): ORTData<*> {
+        return loadData(CommonDataLoader.bytes(path), type)
+    }
+
+    override suspend fun loadData(path: String, type: ONNXDataType): ORTData<*> {
+        return loadData(path.toPath(), type)
     }
 }
