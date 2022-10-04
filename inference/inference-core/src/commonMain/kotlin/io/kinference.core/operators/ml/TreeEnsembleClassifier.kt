@@ -121,7 +121,7 @@ class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute
     private fun labeledTopClasses(array: FloatNDArray): NDArray {
         val shape = intArrayOf(array.shape[0])
         return writeLabels(ensemble.labelsInfo!!.labelsDataType, shape) {
-            ensemble.labelsInfo.labels[(array.row(it) as FloatNDArray).maxIdx()]!!
+            ensemble.labelsInfo.labels[(array.view(it)).maxIdx()]!!
         }
     }
 

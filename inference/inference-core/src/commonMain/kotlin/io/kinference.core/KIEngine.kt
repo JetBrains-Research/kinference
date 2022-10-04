@@ -15,13 +15,11 @@ import io.kinference.protobuf.message.*
 import io.kinference.utils.CommonDataLoader
 import okio.Buffer
 import okio.Path
-import kotlin.time.ExperimentalTime
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
-@OptIn(ExperimentalTime::class)
 object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 

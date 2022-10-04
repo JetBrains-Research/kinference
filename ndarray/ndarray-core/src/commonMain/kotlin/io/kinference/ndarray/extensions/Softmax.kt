@@ -41,8 +41,8 @@ fun softmax(
     val rows = resolveDims(shape.sliceArray(rowIdx))
     val columns = resolveDims(shape.sliceArray(columnIdx))
 
-    val matrix = input.reshape(intArrayOf(rows, columns))
-    val matrixRows = Array(rows) { matrix.row(it) as MutableNumberNDArrayCore }
+    val matrix = input.reshape(intArrayOf(rows, columns)).copyIfNotMutable()
+    val matrixRows = Array(rows) { matrix.viewMutable(it) as MutableNumberNDArrayCore }
 
     if (matrixRows.size > 128 && coroutineContext != null) {
         runBlocking(coroutineContext) {

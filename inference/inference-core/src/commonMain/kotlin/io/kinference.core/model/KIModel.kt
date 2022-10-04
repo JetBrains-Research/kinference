@@ -8,9 +8,7 @@ import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGraph) : Model<KIONNXData<*>>, Profilable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }

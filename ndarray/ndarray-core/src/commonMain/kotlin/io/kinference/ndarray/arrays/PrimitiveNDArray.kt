@@ -142,17 +142,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    override fun row(i: Int): MutablePrimitiveNDArray {
-        val rowLength: Int = linearSize / shape[0]
-        val start = i * rowLength
-        val dims = shape.copyOfRange(1, rank)
-
-        val result = PrimitiveTiledArray(Strides(dims))
-        result.pointer().accept(array.pointer(start), result.size) { _, src -> src }
-
-        return MutablePrimitiveNDArray(result, Strides(dims))
-    }
-
     private fun slice(dst: PrimitivePointer, src: PrimitivePointer, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
         val start = starts[axis]
         val end = ends[axis]
@@ -1453,7 +1442,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return PrimitiveNDArray(newArray, strides)
         }
 
-        return PrimitiveNDArray(this.array, strides)
+        return MutablePrimitiveNDArray(this.array, strides)
     }
 
     private fun transposeByBlocks(permutations: IntArray): PrimitiveNDArray {

@@ -11,7 +11,6 @@ interface NDArrayCore : NDArray {
     fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore
 
     override fun view(vararg axes: Int): NDArrayCore
-    fun row(i: Int): MutableNDArray
 
     override fun reshape(strides: Strides): NDArrayCore
     override fun reshape(shape: IntArray): NDArrayCore = reshape(Strides(shape))

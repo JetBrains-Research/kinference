@@ -34,10 +34,6 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         TODO("Not yet implemented")
     }
 
-    override fun row(i: Int): MutableStringNDArray {
-        TODO("Not yet implemented")
-    }
-
     override fun clone(): StringNDArray {
         return StringNDArray(array.copyOf(), Strides(shape))
     }
@@ -162,14 +158,6 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         array as StringNDArray
         this.array.fill(array.array[index], from, to)
     }
-
-    /*override fun transpose(permutations: IntArray): MutableNDArray {
-        TODO("Not yet implemented")
-    }*/
-
-    /*override fun transpose2D(): MutableNDArray {
-        TODO("Not yet implemented")
-    }*/
 
     override fun clean() {
         TODO("Not yet implemented")
