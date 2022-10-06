@@ -11,6 +11,10 @@ fun NDArrayCore.asTensor(name: String? = null) = KITensor(name, this, ValueTypeI
 
 internal fun <T : NDArray> T.asTensor(name: String? = null) = (this as NDArrayCore).asTensor(name)
 
+internal fun <T : NDArray> Collection<T>.asONNXTensors(names: List<String>): List<KITensor> {
+    return this.zip(names).map { (data, name) -> data.asTensor(name) }
+}
+
 fun Collection<KITensor>.stack(axis: Int): KITensor {
     val fstShape = this.first().data.shape
     val newShape = IntArray(fstShape.size + 1)

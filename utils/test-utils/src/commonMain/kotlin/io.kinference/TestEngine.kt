@@ -1,6 +1,7 @@
 package io.kinference
 
 import io.kinference.data.*
+import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.utils.KILogger
 import okio.Path
@@ -12,6 +13,8 @@ abstract class TestEngine<T : ONNXData<*, *>>(private val engine: InferenceEngin
 
     suspend fun loadModel(path: Path): Model<T> = engine.loadModel(path)
     suspend fun loadData(path: Path, type: ONNXDataType): T = engine.loadData(path, type)
+
+    open fun execContext(): ExecutionContext? = null
 }
 
 expect object TestLoggerFactory {

@@ -97,6 +97,11 @@ class PrimitivePointer {
         return value
     }
 
+    fun setAndIncrement(value: PrimitiveType) {
+        currentBlock[indexInBlock] = value
+        increment()
+    }
+
     fun isValid(): Boolean = indexInBlock < array.blockSize && indexInBlock > -1
 }
 

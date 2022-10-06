@@ -12,6 +12,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) {
     private data class ONNXTestData<T : ONNXData<*, *>> (val name: String, val actual: Map<String, T>, val expected: Map<String, T>)
+
     data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
         companion object {
             private const val DEFAULT_DATATYPE = "ONNX_TENSOR"
@@ -53,7 +54,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
             logger.info { "Start predicting: $group" }
-            val actualOutputs = model.predict(inputs)
+            val actualOutputs = model.predict(inputs, executionContext = testEngine.execContext())
             check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
 
             inputs.forEach { it.close() }

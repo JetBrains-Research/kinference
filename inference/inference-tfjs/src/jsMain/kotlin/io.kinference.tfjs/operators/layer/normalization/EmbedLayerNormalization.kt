@@ -24,8 +24,12 @@ sealed class EmbedLayerNormalization(name: String, info: OperatorInfo, attribute
     }
 }
 
-class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    EmbedLayerNormalization(name, INFO, attributes, inputs, outputs) {
+class EmbedLayerNormalizationVer1(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : EmbedLayerNormalization(name, INFO, attributes, inputs, outputs) {
 
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -45,12 +49,14 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
             IOInfo(4, TYPE_CONSTRAINTS, "segment_embedding", true),
             IOInfo(5, TYPE_CONSTRAINTS, "gamma", false),
             IOInfo(6, TYPE_CONSTRAINTS, "beta", false),
-            IOInfo(7, setOf(TensorProto.DataType.INT32), "mask", true)
+            IOInfo(7, setOf(TensorProto.DataType.INT32), "mask", true),
+            IOInfo(8, setOf(TensorProto.DataType.INT32), "position_ids", true)
         )
 
         private val OUTPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "output", false),
-            IOInfo(1, setOf(TensorProto.DataType.INT32), "mask_index", false)
+            IOInfo(1, setOf(TensorProto.DataType.INT32), "mask_index", false),
+            IOInfo(2, TYPE_CONSTRAINTS, "embedding_sum", true)
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
@@ -98,7 +104,7 @@ class EmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribut
             val output = (embedding - mean) / (variance + epsilonTensor).sqrt() * gamma + beta
 
             val maskOutput = mask?.sum(axis = 1, keepDims = false) ?: NDArrayTFJS.intZeros(arrayOf(batchSize))
-            return@tidyNDArrays arrayOf(output, maskOutput)
+            return@tidyNDArrays arrayOf(output, embedding, maskOutput)
         }
 
         return outputs.asNamedOutputs(this.outputs)
