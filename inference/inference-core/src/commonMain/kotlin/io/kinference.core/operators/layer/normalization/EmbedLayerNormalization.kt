@@ -5,14 +5,12 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asONNXTensors
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.runBlocking
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
@@ -107,63 +105,62 @@ class EmbedLayerNormalizationVer1(
             val embeddingSum = MutableFloatNDArray(shape = intArrayOf(batchSize, seqLen, hiddenSize))
 
             for (batch in 0 until batchSize) {
-                runBlocking(context.asCoroutineContext()) {
-                    val blockIdx = batch * seqLen
-                    val inputIdsPointer = inputIds.array.pointer(blockIdx)
-                    val segmentIdsPointer = segmentIds?.array?.pointer(blockIdx)
-                    val positionIdsPointer = positionIds?.array?.pointer(blockIdx)
-                    for (seqIdx in 0 until seqLen) {
-                        val wordIdx = inputIdsPointer.getAndIncrement()
-                        val segmentIdx = segmentIdsPointer?.getAndIncrement() ?: 0
-                        val positionIdx = positionIdsPointer?.getAndIncrement() ?: seqIdx
+                val blockIdx = batch * seqLen
+                val inputIdsPointer = inputIds.array.pointer(blockIdx)
+                val segmentIdsPointer = segmentIds?.array?.pointer(blockIdx)
+                val positionIdsPointer = positionIds?.array?.pointer(blockIdx)
 
-                        val wordEmbedOffset = wordIdx * hiddenSize
-                        val segmentEmbedOffset = segmentIdx * hiddenSize
-                        val outputOffset = (seqIdx + batch * seqLen) * hiddenSize
-                        val posEmbedOffset = positionIdx * hiddenSize
+                for (seqIdx in 0 until seqLen) {
+                    val wordIdx = inputIdsPointer.getAndIncrement()
+                    val segmentIdx = segmentIdsPointer?.getAndIncrement() ?: 0
+                    val positionIdx = positionIdsPointer?.getAndIncrement() ?: seqIdx
 
-                        val wordEmbedPointer = wordEmbed.array.pointer(wordEmbedOffset)
-                        val segmentEmbedPointer = segmentEmbed?.array?.pointer(segmentEmbedOffset)
-                        val posEmbedPointer = posEmbed.array.pointer(posEmbedOffset)
-                        val embeddingSumPointer = embeddingSum.array.pointer(outputOffset)
+                    val wordEmbedOffset = wordIdx * hiddenSize
+                    val segmentEmbedOffset = segmentIdx * hiddenSize
+                    val outputOffset = (seqIdx + batch * seqLen) * hiddenSize
+                    val posEmbedOffset = positionIdx * hiddenSize
 
-                        if (segmentEmbedPointer == null) {
-                            embeddingSumPointer.acceptDouble(wordEmbedPointer, posEmbedPointer, hiddenSize) { _, fst, snd ->
-                                fst + snd
-                            }
+                    val wordEmbedPointer = wordEmbed.array.pointer(wordEmbedOffset)
+                    val segmentEmbedPointer = segmentEmbed?.array?.pointer(segmentEmbedOffset)
+                    val posEmbedPointer = posEmbed.array.pointer(posEmbedOffset)
+                    val embeddingSumPointer = embeddingSum.array.pointer(outputOffset)
 
-                        } else {
-                            embeddingSumPointer.acceptTriple(wordEmbedPointer, posEmbedPointer, segmentEmbedPointer, hiddenSize) { _, fst, snd, trd ->
-                                fst + snd + trd
-                            }
+                    if (segmentEmbedPointer == null) {
+                        embeddingSumPointer.acceptDouble(wordEmbedPointer, posEmbedPointer, hiddenSize) { _, fst, snd ->
+                            fst + snd
                         }
 
-                        val outputPointer = output.array.pointer(outputOffset)
-                        embeddingSumPointer.linearIndex = outputOffset
-
-                        var acc = 0.0f
-
-                        embeddingSumPointer.forEach(hiddenSize) {
-                            outputPointer.setAndIncrement(it)
-                            acc += it
+                    } else {
+                        embeddingSumPointer.acceptTriple(wordEmbedPointer, posEmbedPointer, segmentEmbedPointer, hiddenSize) { _, fst, snd, trd ->
+                            fst + snd + trd
                         }
-
-                        val mean = acc / hiddenSize
-                        acc = 0.0f
-
-                        outputPointer.linearIndex = outputOffset
-                        outputPointer.map(hiddenSize) { it - mean }
-
-                        outputPointer.linearIndex = outputOffset
-                        outputPointer.forEach(hiddenSize) { acc += it * it }
-
-                        val eps = sqrt(acc / hiddenSize + epsilon)
-                        outputPointer.linearIndex = outputOffset
-                        val gammaPointer = gamma.array.pointer()
-                        val betaPointer = beta.array.pointer()
-
-                        outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b -> out / eps * g + b }
                     }
+
+                    val outputPointer = output.array.pointer(outputOffset)
+                    embeddingSumPointer.linearIndex = outputOffset
+
+                    var acc = 0.0f
+
+                    embeddingSumPointer.forEach(hiddenSize) {
+                        outputPointer.setAndIncrement(it)
+                        acc += it
+                    }
+
+                    val mean = acc / hiddenSize
+                    acc = 0.0f
+
+                    outputPointer.linearIndex = outputOffset
+                    outputPointer.map(hiddenSize) { it - mean }
+
+                    outputPointer.linearIndex = outputOffset
+                    outputPointer.forEach(hiddenSize) { acc += it * it }
+
+                    val eps = sqrt(acc / hiddenSize + epsilon)
+                    outputPointer.linearIndex = outputOffset
+                    val gammaPointer = gamma.array.pointer()
+                    val betaPointer = beta.array.pointer()
+
+                    outputPointer.acceptDouble(gammaPointer, betaPointer, hiddenSize) { out, g, b -> out / eps * g + b }
                 }
             }
 
