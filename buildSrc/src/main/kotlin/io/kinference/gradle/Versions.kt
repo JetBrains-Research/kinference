@@ -15,6 +15,4 @@ object Versions {
 
     const val kmath = "0.3.0"
     const val multik = "0.2.0"
-
-    const val kotlinx_io = "0.1.16"
 }
