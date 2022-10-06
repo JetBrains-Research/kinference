@@ -73,8 +73,8 @@ class EmbedLayerNormalizationVer1(
         val segmentWeights = inputs[4]?.data as? NumberNDArrayTFJS
         val gamma = inputs[5]!!.data as NumberNDArrayTFJS
         val beta = inputs[6]!!.data as NumberNDArrayTFJS
-        val mask = inputs[7]?.data as? NumberNDArrayTFJS
-        val posIds = inputs[8]?.data as? NumberNDArrayTFJS
+        val mask = inputs.getOrNull(7)?.data as? NumberNDArrayTFJS
+        val posIds = inputs.getOrNull(8)?.data as? NumberNDArrayTFJS
 
         val (batchSize, seqLen) = inputIds.shape
         val (_, hiddenSize) = wordWeights.shape
