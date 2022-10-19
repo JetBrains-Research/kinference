@@ -1,5 +1,8 @@
 package io.kinference.ndarray.arrays
 
+/**
+ * ND indices generator for the given [strides].
+ */
 class NDIndexer(
     val strides: Strides,
     from: IntArray = strides.defaultStart(),
@@ -35,6 +38,9 @@ class NDIndexer(
 private fun Strides.defaultStart() = IntArray(shape.size)
 private fun Strides.defaultEnd() = IntArray(shape.size) { shape[it] - 1 }
 
+/**
+ * Iterate over nd-indices of the array
+ */
 fun <T : NDArray> T.ndIndices(
     from: IntArray = strides.defaultStart(),
     to: IntArray = strides.defaultEnd(),

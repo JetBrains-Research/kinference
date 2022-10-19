@@ -9,7 +9,7 @@ abstract class BackendInfo(val name: String)
 /**
  * This interface defines inference engine.
  * Inference engine manages how models and ONNX data should be loaded and processed for further usage.
- * Engine is unique for every supported KInference backend.
+ * The engine is unique for every supported KInference backend.
  */
 interface InferenceEngine<T : ONNXData<*, *>> {
     /**
@@ -18,7 +18,7 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     val info: BackendInfo
 
     /**
-     * Reads data of given type. Data should be previously loaded as [ByteArray].
+     * Reads data of a given type. Data should be previously loaded as [ByteArray].
      */
     fun loadData(bytes: ByteArray, type: ONNXDataType): T
 
@@ -28,22 +28,22 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     fun loadModel(bytes: ByteArray): Model<T>
 
     /**
-     * Reads model from specified path.
+     * Reads model from a specified path.
      */
     suspend fun loadModel(path: Path): Model<T>
 
     /**
-     * Reads data of given type from specified path.
+     * Reads data of a given type from a specified path.
      */
     suspend fun loadData(path: Path, type: ONNXDataType): T
 
     /**
-     * Reads model from specified string path.
+     * Reads model from a specified string path.
      */
     suspend fun loadModel(path: String): Model<T>
 
     /**
-     * Reads data of given type from specified string path.
+     * Reads data of a given type from a specified string path.
      */
     suspend fun loadData(path: String, type: ONNXDataType): T
 }

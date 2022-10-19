@@ -5,6 +5,7 @@ import io.kinference.model.Model
 /**
  * Interface for ONNX data adapters.
  * It provides data conversion methods from [SourceType] to [TargetType] and back.
+ *
  * @param SourceType wrapper class type for source data. Source data doesn't necessarily have to be supported by KInference backends.
  * @param TargetType wrapper class type for target data. Target data must be supported by one of the KInference backends.
  */
@@ -17,7 +18,8 @@ interface ONNXDataAdapter<SourceType : BaseONNXData<*>, TargetType : ONNXData<*,
  * Base class defining KInference model adapter.
  * Model adapter enables models to run on specified external data types utilizing data adapters
  * to convert provided inputs to model-appropriate format.
- * @param SourceType wrapper class type for external data. If there is more than one type, it should be the type of wrappers superclass.
+ *
+ * @param SourceType wrapper class type for external data. If there is more than one type, it should be the type of wrappers' superclass.
  * @param TargetType data type required by model.
  * @property model model instance to run.
  */

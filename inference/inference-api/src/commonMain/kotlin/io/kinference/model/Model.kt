@@ -6,6 +6,7 @@ import io.kinference.data.ONNXData
 
 /**
  * Interface for KInference executable models.
+ *
  * @param T type of model data representation.
  */
 interface Model<T : ONNXData<*, *>> {

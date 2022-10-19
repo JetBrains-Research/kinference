@@ -2,10 +2,10 @@ package io.kinference.data
 
 import io.kinference.BackendInfo
 import io.kinference.utils.Closeable
-import kotlinx.coroutines.*
 
 /**
  * Base interface for ONNX data wrapper classes.
+ *
  * @param T wrapped data type.
  */
 interface BaseONNXData<T> {
@@ -19,6 +19,7 @@ interface BaseONNXData<T> {
 /**
  * Interface for ONNX data wrapper classes.
  * [data] type should be supported by one of the available KInference backends.
+ *
  * @param T wrapped data type.
  * @param B corresponding backend information.
  */
