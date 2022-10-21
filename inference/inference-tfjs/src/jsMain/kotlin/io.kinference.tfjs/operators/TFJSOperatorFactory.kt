@@ -9,6 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.activations.Softmax
 import io.kinference.tfjs.operators.flow.Loop
 import io.kinference.tfjs.operators.flow.Where
 import io.kinference.tfjs.operators.layer.attention.Attention
@@ -57,6 +58,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "FastGelu" -> FastGelu(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "Slice" -> Slice(name, version, attributes, inputs, outputs)
+        "Softmax" -> Softmax(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
