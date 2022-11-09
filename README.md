@@ -34,7 +34,7 @@ Right now, KInference is in active development.
 
 * **KInference enables data preprocessing.** 
   We understand that data needs preprocessing before feeding it to the model and that is why we implemented numpy-like n-dimensional arrays.
-  In addition, KInference can work with custom array formats and some of them available just out-of-the-box
+  In addition, KInference can work with custom array formats and some of them are available just out-of-the-box
   (see [multik](https://github.com/Kotlin/multik), 
   [kmath](https://github.com/SciProgCentre/kmath)).
 
@@ -43,7 +43,7 @@ Right now, KInference is in active development.
 ### KInference Core
 Pure Kotlin implementation that requires anything but vanilla Kotlin. KInference Core is lightweight but fast, and supports numerous ONNX operators.
 It makes the library easy to use and especially convenient for various applications that require the models to run locally on users' machines.
-Note that this backend is well-optimized for JVM projects only, and, despite the fact that KInference Core is available for JS projects, 
+Note that this backend is well-optimized for JVM projects only, and, despite the fact that KInference Core is available for JavaScript projects, 
 it is highly recommended to use KInference TensorFlow.js backend instead for more performance.
 
 ### TensorFlow.js
