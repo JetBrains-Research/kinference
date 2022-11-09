@@ -22,11 +22,20 @@ typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
+/**
+ * This is an inference engine for KInference Core backend implementation
+ * which is most efficient to use with distilled models of a relatively small size.
+ * KInference Core is a pure Kotlin implementation that requires anything but vanilla Kotlin to run and so is
+ * an advisable option for JVM projects employing inference on users' machines due to the small number of dependencies and JVM-optimized computations.
+ * Note that, despite the fact that KInference Core is available for JS projects,
+ * it is highly recommended to use KInference TFJS backend instead for more performance.
+ */
 object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = TiledTensorDecoder)
     private val defaultOptRules = listOf(DequantizeQAttention)
+
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
     override fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {

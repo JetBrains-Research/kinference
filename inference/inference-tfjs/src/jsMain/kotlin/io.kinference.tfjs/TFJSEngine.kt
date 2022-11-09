@@ -19,6 +19,14 @@ typealias TFJSData<T> = ONNXData<T, TFJSBackend>
 
 object TFJSBackend : BackendInfo(name = "TensorFlow for JS")
 
+/**
+ * This is an inference engine for KInference TensorFlow.js backend implementation.
+ * High-performance JavaScript backend that is built upon [Tensorflow.js](https://www.tensorflow.org/js/) library.
+ * Essentially, it employs GPU operations provided by TensorFlow.js to boost the computations.
+ * Recommended backend for JavaScript projects.
+ *
+ * TensorFlow.js version: 3.9.0
+ */
 object TFJSEngine : InferenceEngine<TFJSData<*>> {
     override val info: BackendInfo
         get() = TFJSBackend

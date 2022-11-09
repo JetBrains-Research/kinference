@@ -18,13 +18,13 @@ interface OptimizableEngine<T : ONNXData<*, *>> : InferenceEngine<T> {
     fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
 
     /**
-     * Reads model from a specified path.
+     * Reads model from the specified path.
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
     suspend fun loadModel(path: Path, optimize: Boolean = false): Model<T>
 
     /**
-     * Reads model from a specified string path.
+     * Reads model from the specified string path.
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
     suspend fun loadModel(path: String, optimize: Boolean = false): Model<T>

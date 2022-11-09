@@ -28,22 +28,22 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     fun loadModel(bytes: ByteArray): Model<T>
 
     /**
-     * Reads model from a specified path.
+     * Reads model from the specified path.
      */
     suspend fun loadModel(path: Path): Model<T>
 
     /**
-     * Reads data of a given type from a specified path.
+     * Reads data of a given type from the specified path.
      */
     suspend fun loadData(path: Path, type: ONNXDataType): T
 
     /**
-     * Reads model from a specified string path.
+     * Reads model from the specified string path.
      */
     suspend fun loadModel(path: String): Model<T>
 
     /**
-     * Reads data of a given type from a specified string path.
+     * Reads data of a given type from the specified string path.
      */
     suspend fun loadData(path: String, type: ONNXDataType): T
 }

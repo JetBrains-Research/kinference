@@ -244,7 +244,7 @@ interface NumberNDArray : NDArray {
     fun sum(): Any
 
     /**
-     * Computes the cumulative sum of array elements along a given [axis].
+     * Computes the cumulative sum of array elements along the given [axis].
      *
      * @param axis axis along which the cumulative sum is computed.
      * @param exclusive if this flag is true, an exclusive sum (top element is not included) is computed.

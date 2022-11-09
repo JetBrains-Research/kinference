@@ -17,6 +17,15 @@ typealias ORTData<T> = ONNXData<T, ORTBackend>
 
 object ORTBackend : BackendInfo("ONNXRuntime-GPU")
 
+/**
+ * This is an inference engine for KInference Java ONNXRuntime GPU backend implementation.
+ * This backend provides a common KInference API to interact with ONNXRuntime library.
+ *
+ * Note that the backend is **CUDA-only** and uses JNI for model inference.
+ * To check on the system requirements, visit the following [link](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
+ *
+ * ONNXRuntime version: 1.11.0-1.patched
+ */
 object ORTEngine : OptimizableEngine<ORTData<*>> {
     private val env = OrtEnvironment.getEnvironment()
     private val options = OrtSession.SessionOptions()
