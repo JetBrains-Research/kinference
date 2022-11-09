@@ -19,7 +19,7 @@ object ORTBackend : BackendInfo(name = "ONNXRuntime")
 
 /**
  * This is an inference engine for KInference Java ONNXRuntime CPU backend implementation.
- * This backend provides a common KInference API to interact with ONNXRuntime library.
+ * This backend provides common KInference API to interact with ONNXRuntime library.
  *
  * Note that this backend uses JNI for model inference.
  *

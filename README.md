@@ -13,21 +13,56 @@ Our library addresses the problem of local inference as well and provides severa
 
 Right now, KInference is in active development.
 
+### Table of contents:
+* [Why should I use KInference?](#why-should-i-use-kinference)
+* [KInference Backends](#kinference-backends)
+* [Getting started](#getting-started)
+* [Examples](#examples)
+
+### Why should I use KInference?
+
+* **KInference is specifically optimized for inference.**
+  Most of the existing ML libraries are, in fact, versatile tools for model learning and inference, 
+  but carry with themselves a lot of dependencies and requirements. KInference instead addresses inference-only functionality,
+  since a lot of projects just utilize pre-trained models. This helps to facilitate model inference with a relatively small yet convenient API
+  and inference-specific optimizations.
+
+* **KInference supports configurable backends.**
+  KInference employs platform-specific optimizations and allows essential for multiplatform projects backend configuration.
+  You can choose backend for every module in the `build.gradle.kts` project file just by adding there corresponding dependencies, 
+  while keeping most of your KInference-related code in common module.
+
+* **KInference enables data preprocessing.** 
+  We understand that data needs preprocessing before feeding it to the model and that is why we implemented numpy-like n-dimensional arrays.
+  In addition, KInference can work with custom array formats and some of them available just out-of-the-box
+  (see [multik](https://github.com/Kotlin/multik), 
+  [kmath](https://github.com/SciProgCentre/kmath)).
+
 ## KInference backends
+
 ### KInference Core
 Pure Kotlin implementation that requires anything but vanilla Kotlin. KInference Core is lightweight but fast, and supports numerous ONNX operators.
 It makes the library easy to use and especially convenient for various applications that require the models to run locally on users' machines.
+Note that this backend is well-optimized for JVM projects only, and, despite the fact that KInference Core is available for JS projects, 
+it is highly recommended to use KInference TensorFlow.js backend instead for more performance.
 
 ### TensorFlow.js
 High-performance JavaScript backend that relies on [Tensorflow.js](https://www.tensorflow.org/js/) library. 
 Essentially, it employs GPU operations provided by TensorFlow.js to boost the computations. 
 In addition, this implementation enables model execution directly in the user's browser.
+Recommended backend for JavaScript projects.
 
-### ONNXRuntime and ONNXRuntime GPU
-Java backends that use [ONNXRuntime](https://github.com/microsoft/onnxruntime) as an inference engine.
+### ONNXRuntime CPU and ONNXRuntime GPU
+Java backends that use [ONNXRuntime](https://github.com/microsoft/onnxruntime) as an inference engine 
+and provide common KInference API to interact with ONNXRuntime library.
 
-## Setup
+Note that the GPU backend is **CUDA-only**.
+To check on the system requirements, visit the following [link](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
+
+## Getting started
 Latest version of KInference is: *0.2.0*
+
+### Setup dependencies repository
 
 First, in `build.gradle.kts` you should add KInference repository via:
 
@@ -39,8 +74,8 @@ repositories {
 }
 ```
 
-### KInference Core
-To enable the backend, you can add KInference Runtime as dependency:
+### Project setup
+To enable the backend, you can add chosen KInference Runtime as dependency:
 
 ```kotlin
 dependencies {
@@ -81,3 +116,7 @@ kotlin {
     }
 }
 ```
+
+## Examples
+You can find several KInference usage examples in [this repository](https://github.com/JetBrains-Research/kinference-examples).
+The repository has examples of multi-backend project configuration and sharing KInference-related code between the modules.

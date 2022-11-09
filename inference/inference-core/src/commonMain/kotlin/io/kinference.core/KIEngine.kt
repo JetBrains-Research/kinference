@@ -28,7 +28,7 @@ object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
  * KInference Core is a pure Kotlin implementation that requires anything but vanilla Kotlin to run and so is
  * an advisable option for JVM projects employing inference on users' machines due to the small number of dependencies and JVM-optimized computations.
  * Note that, despite the fact that KInference Core is available for JS projects,
- * it is highly recommended to use KInference TFJS backend instead for more performance.
+ * it is highly recommended to use KInference TensorFlow.js backend instead for more performance.
  */
 object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend

@@ -19,7 +19,7 @@ object ORTBackend : BackendInfo("ONNXRuntime-GPU")
 
 /**
  * This is an inference engine for KInference Java ONNXRuntime GPU backend implementation.
- * This backend provides a common KInference API to interact with ONNXRuntime library.
+ * This backend provides common KInference API to interact with ONNXRuntime library.
  *
  * Note that the backend is **CUDA-only** and uses JNI for model inference.
  * To check on the system requirements, visit the following [link](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
