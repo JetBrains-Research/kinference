@@ -7,7 +7,8 @@ KInference is a library that makes possible execution of complex ML models (writ
 [ONNX](https://github.com/onnx/onnx) is a popular ecosystem for building, training, evaluating, and exchanging ML and DL models. It makes the process much
 simpler and divides the model into building blocks that can be switched or tuned to one's liking.
 
-However, ONNX carries with itself a lot of dependencies and requirements that complicate its use in some cases. 
+However, popular ML libraries, including those intended for ONNX models inference, carry with themselves 
+a lot of dependencies and requirements that complicate their use in some cases. 
 KInference is designed to facilitate ONNX models inference on a variety of platforms via configurable backends.
 Our library addresses the problem not only of server side inference, but also of local inference as well and provides 
 several solutions that are suitable for running both on user and server side. 
