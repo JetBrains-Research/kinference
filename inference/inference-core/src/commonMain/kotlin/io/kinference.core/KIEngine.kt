@@ -11,6 +11,7 @@ import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.optimizer.GraphOptimizer
+import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
 import io.kinference.protobuf.message.*
 import io.kinference.utils.CommonDataLoader
@@ -34,7 +35,8 @@ object KIEngine : OptimizableEngine<KIONNXData<*>> {
     override val info: BackendInfo = CoreBackend
 
     private val KI_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = TiledTensorDecoder)
-    private val defaultOptRules = listOf(DequantizeQAttention)
+    
+    private val defaultOptRules = emptyList<OptimizerRule<KIONNXData<*>>>()
 
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 

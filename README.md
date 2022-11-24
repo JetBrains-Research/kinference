@@ -78,7 +78,7 @@ and provide common KInference API to interact with the ONNXRuntime library.
 Note that the GPU backend is **CUDA-only**.
 To check on the system requirements, visit the following [link](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
 
-ONNXRuntime backend dependency coordinates:
+ONNXRuntime CPU backend dependency coordinates:
 ```kotlin
 dependencies {
     api("io.kinference", "inference-ort", "0.2.2")
