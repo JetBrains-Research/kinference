@@ -51,7 +51,7 @@ It makes the library easy to use and especially convenient for various applicati
 Note that this backend is well-optimized for JVM projects only, and, despite the fact that KInference Core is available for JavaScript projects, 
 it is highly recommended to use KInference TensorFlow.js backend instead for more performance.
 
-Kinference Core dependency coordinates:
+KInference Core dependency coordinates:
 ```kotlin
 dependencies {
     api("io.kinference", "inference-core", "0.2.2")
@@ -64,7 +64,7 @@ Essentially, it employs GPU operations provided by TensorFlow.js to boost the co
 In addition, this implementation enables model execution directly in the user's browser.
 This backend is recommended for JavaScript projects.
 
-TensorFlow.js dependency coordinates:
+TensorFlow.js backend dependency coordinates:
 ```kotlin
 dependencies {
     api("io.kinference", "inference-tfjs", "0.2.2")
