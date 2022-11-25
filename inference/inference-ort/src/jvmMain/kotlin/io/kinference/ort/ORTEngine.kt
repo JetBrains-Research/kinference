@@ -17,6 +17,14 @@ typealias ORTData<T> = ONNXData<T, ORTBackend>
 
 object ORTBackend : BackendInfo(name = "ONNXRuntime")
 
+/**
+ * This is an inference engine for KInference Java ONNXRuntime CPU backend implementation.
+ * This backend provides common KInference API to interact with ONNXRuntime library.
+ *
+ * Note that this backend uses JNI for model inference.
+ *
+ * ONNXRuntime version: 1.11.0-1.patched
+ */
 object ORTEngine : OptimizableEngine<ORTData<*>> {
     override val info: BackendInfo = ORTBackend
 

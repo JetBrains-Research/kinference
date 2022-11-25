@@ -1163,12 +1163,12 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     override fun nonZero(): LongNDArray {
         if (isScalar()) {
             val value = singleValue()
-            return if (value != (0).toPrimitive())
-                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
+            return if (value == (0).toPrimitive())
+                LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(0, 1)))
             else
-                LongNDArray(Strides(intArrayOf(1, 1))) { 0L }
+                LongNDArray(Strides(intArrayOf(0, 1))) { 0L }
         }
-        val ndIndexSize = shape.size
+        val ndIndexSize = rank
         var totalElements = 0
         val inputPointer = array.pointer()
         val indicesArray = IntArray(linearSize * ndIndexSize)
@@ -1178,15 +1178,9 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
                 totalElements++
             }
         }
-        val nonZeroStrides = Strides(intArrayOf(ndIndexSize, totalElements))
-        val indicesByDim = LongTiledArray(nonZeroStrides)
-        val resultPointer = indicesByDim.pointer()
-        for (i in 0 until ndIndexSize)
-            for (j in 0 until totalElements) {
-                resultPointer.set(indicesArray[j * ndIndexSize + i].toLong())
-                resultPointer.increment()
-            }
-        return LongNDArray(indicesByDim, nonZeroStrides)
+        return LongNDArray(intArrayOf(ndIndexSize, totalElements)) { (i, j): IntArray ->
+            indicesArray[j * ndIndexSize + i].toLong()
+        }
     }
 
     override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): PrimitiveNDArray {
