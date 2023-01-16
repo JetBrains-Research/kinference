@@ -5,7 +5,7 @@ job("KInference / Build and Test") {
 
         shellScript("Install Firefox, xvfb and JDK") {
             content = """
-                apt-get update && apt-get install firefox xvfb openjdk-11-jdk -y -f
+                apt-get update && apt-get install firefox xvfb openjdk-17-jdk -y -f
             """.trimIndent()
         }
 
