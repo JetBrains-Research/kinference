@@ -34,7 +34,7 @@ job("KInference / Release") {
         }
     }
 
-    container("openjdk:17") {
+    container("amazoncorretto:17") {
         env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
         env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
 
