@@ -38,8 +38,11 @@ job("KInference / Release") {
         env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
         env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
 
-        kotlinScript("Publish") { api ->
-            api.gradlew("publish")
+
+        shellScript("Release") {
+            content = """
+                ./gradlew publish
+            """.trimIndent()
         }
     }
 }
