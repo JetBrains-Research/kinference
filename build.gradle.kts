@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 group = "io.kinference"
-version = "0.2.3"
+version = "0.2.4"
 
 plugins {
     kotlin("multiplatform") apply false
@@ -55,14 +55,14 @@ subprojects {
             }
 
             languageSettings {
-                apiVersion = "1.6"
-                languageVersion = "1.6"
+                apiVersion = "1.7"
+                languageVersion = "1.7"
             }
         }
 
         tasks.withType<KotlinJvmCompile> {
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = "17"
             }
         }
     }

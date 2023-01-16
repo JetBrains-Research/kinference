@@ -24,12 +24,12 @@ class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIO
         initializers as List<KITensor>
         for (operator in operators) {
             when(operator.info.type) {
-                "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers, operator)
-                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers, operator)
-                "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers, operator)
-                "Attention" -> AttentionContext.appendContext(preparedTensorsContext, initializers, operator)
-                "QAttention" -> QAttentionContext.appendContext(preparedTensorsContext, initializers, operator)
-                "MatMulInteger" -> MatMulIntegerVer10.MatMulIntegerPrepare.appendContext(preparedTensorsContext, initializers, operator)
+                "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
+                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
+                "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
+                "Attention" -> AttentionContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
+                "QAttention" -> QAttentionContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
+                "MatMulInteger" -> MatMulIntegerVer10.MatMulIntegerPrepare.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
             }
         }
     }

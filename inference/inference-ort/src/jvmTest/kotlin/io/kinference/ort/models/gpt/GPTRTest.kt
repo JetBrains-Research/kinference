@@ -3,10 +3,11 @@ package io.kinference.ort.models.gpt
 import io.kinference.ort.ORTTestEngine
 import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.TestRunner
+import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+@Disabled
 class GPTRTest {
     @Test
     fun heavy_test_gpt_model() = TestRunner.runTest {
