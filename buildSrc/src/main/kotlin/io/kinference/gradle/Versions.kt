@@ -10,7 +10,7 @@ object Versions {
     const val slf4j = "1.7.30"
     const val loglevel = "1.7.1"
 
-    const val ONNXRuntime = "1.12.1"
+    const val ONNXRuntime = "1.13.1"
     const val TFJS = "4.0.0"
 
     const val kmath = "0.3.0"
