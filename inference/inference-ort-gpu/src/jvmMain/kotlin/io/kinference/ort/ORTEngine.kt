@@ -24,7 +24,7 @@ object ORTBackend : BackendInfo("ONNXRuntime-GPU")
  * Note that the backend is **CUDA-only** and uses JNI for model inference.
  * To check on the system requirements, visit the following [link](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
  *
- * ONNXRuntime version: 1.11.0-1.patched
+ * ONNXRuntime version: 1.13.1
  */
 object ORTEngine : OptimizableEngine<ORTData<*>> {
     private val env = OrtEnvironment.getEnvironment()

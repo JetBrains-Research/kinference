@@ -23,7 +23,7 @@ object ORTBackend : BackendInfo(name = "ONNXRuntime")
  *
  * Note that this backend uses JNI for model inference.
  *
- * ONNXRuntime version: 1.11.0-1.patched
+ * ONNXRuntime version: 1.13.1
  */
 object ORTEngine : OptimizableEngine<ORTData<*>> {
     override val info: BackendInfo = ORTBackend
