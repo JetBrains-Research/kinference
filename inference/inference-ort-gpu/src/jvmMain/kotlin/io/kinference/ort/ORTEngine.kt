@@ -1,6 +1,7 @@
 package io.kinference.ort
 
 import ai.onnxruntime.*
+import ai.onnxruntime.OrtSession.SessionOptions
 import io.kinference.BackendInfo
 import io.kinference.OptimizableEngine
 import io.kinference.data.ONNXData
@@ -28,7 +29,7 @@ object ORTBackend : BackendInfo("ONNXRuntime-GPU")
  */
 object ORTEngine : OptimizableEngine<ORTData<*>> {
     private val env = OrtEnvironment.getEnvironment()
-    private val options = OrtSession.SessionOptions()
+    private val options = SessionOptions()
 
     override val info: BackendInfo = ORTBackend
 
@@ -47,18 +48,18 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
 
     override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
         if (optimize)
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.BASIC_OPT)
         else
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.NO_OPT)
         val session = env.createSession(bytes, options)
         return ORTModel(session)
     }
 
     fun loadModel(bytes: ByteArray, optimize: Boolean, logLevel: OrtLoggingLevel =  OrtLoggingLevel.ORT_LOGGING_LEVEL_INFO): ORTModel {
         if (optimize)
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.BASIC_OPT)
         else
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.NO_OPT)
 
         options.setSessionLogLevel(logLevel)
         val session = env.createSession(bytes, options)
@@ -66,11 +67,17 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
+    fun loadModel(bytes: ByteArray, options: SessionOptions): ORTModel {
+        val session = env.createSession(bytes, options)
+
+        return ORTModel(session)
+    }
+
     override suspend fun loadModel(path: Path, optimize: Boolean): ORTModel {
         if (optimize)
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.BASIC_OPT)
         else
-            options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT)
+            options.setOptimizationLevel(SessionOptions.OptLevel.NO_OPT)
         val session = env.createSession(path.toString(), options)
         return ORTModel(session)
     }
@@ -86,6 +93,15 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
 
     override suspend fun loadModel(path: String, optimize: Boolean): ORTModel {
         return loadModel(path.toPath(), optimize)
+    }
+
+    fun loadModel(path: Path, options: SessionOptions): ORTModel {
+        val session = env.createSession(path.toString(), options)
+        return ORTModel(session)
+    }
+
+    fun loadModel(path: String, options: SessionOptions): ORTModel {
+        return loadModel(path.toPath(), options)
     }
 
     override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> {
