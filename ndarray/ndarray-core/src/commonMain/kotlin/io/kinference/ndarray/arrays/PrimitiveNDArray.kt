@@ -476,19 +476,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return destination
     }
 
-    private fun resortBlocks(blocks: Array<PrimitiveArray>, colSize: Int, blocksInRow: Int): Array<PrimitiveArray> {
-        if (blocks.size == 1) return blocks
-        val result = blocks.copyOf()
-
-        for (i in 0 until blocksInRow) {
-            for (j in 0 until colSize) {
-                result[i * colSize + j] = blocks[j * blocksInRow + i]
-            }
-        }
-
-        return result
-    }
-
     override fun dot(other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
         require(shape.size in 1..2 && other.shape.size in 1..2)
@@ -498,33 +485,40 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         require(actualThis.shape[1] == actualOther.shape[0])
 
         val n = actualThis.shape[0]
-        val t = actualThis.shape[1]
-
-        val resortedLeft = resortBlocks(actualThis.array.blocks, actualThis.shape[0], actualThis.blocksInRow)
-        val resortedRight = resortBlocks(actualOther.array.blocks, actualOther.shape[0], actualOther.blocksInRow)
-        val resortedDest = resortBlocks(destination.array.blocks, destination.shape[0], destination.blocksInRow)
+//        val t = actualThis.shape[1]
 
         val lBlockSize = actualThis.array.blockSize
         val rdBlockSize = destination.array.blockSize
 
-        val lBlockInRow = actualThis.blocksInRow
-        val rBlockInRow = other.blocksInRow
+        val lBlocksInRow = actualThis.blocksInRow
+        val rdBlocksInRow = other.blocksInRow
 
         fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
-            for (rdCol in 0 until rBlockInRow) {
-                val rightIdx = rdCol * t
-                val destIdx = rdCol * n
-
+            for (rdCol in 0 until rdBlocksInRow) {
                 body {
                     for (i in 0 until n) {
-                        val destBlock = resortedDest[destIdx + i]
-                        for (lCol in 0 until lBlockInRow) {
-                            val leftBlock = resortedLeft[i + lCol * n]
-                            val rightIdxOffset = rightIdx + lBlockSize * lCol
+                        /*
+                        i * rdBlockInRow equals taking i-th line in destination matrix
+                        rdCol is number of current block in row
+                         */
+                        val destBlock = destination.array.blocks[i * rdBlocksInRow + rdCol]
+                        //i * lBlocksInRow equals taking i-th line in left matrix
+                        val leftBlockOffset = i * lBlocksInRow
+                        // iterating over blocks in i-th line in left matrix
+                        for (lCol in 0 until lBlocksInRow) {
+                            val leftBlock = actualThis.array.blocks[leftBlockOffset + lCol]
+                            val rightBlockOffset = lCol * lBlockSize
 
+                            // iterating in left block
                             for (k in 0 until lBlockSize) {
                                 val temp = leftBlock[k]
-                                val rightBlock = resortedRight[rightIdxOffset + k]
+                                /*
+                                 * lCol * lBlockSize + k is linear index in row in left matrix
+                                 * number temp staying at [i, lCol * lBlockSize + k] in left matrix,
+                                 * therefore, we should take (lCol * lBlockSize + k) row in right matrix
+                                 * (lCol * lBlockSize) moved in rightBlockOffset due to performance purposes
+                                 */
+                                val rightBlock = actualOther.array.blocks[(rightBlockOffset + k) * rdBlocksInRow + rdCol]
 
                                 for (j in 0 until rdBlockSize) {
                                     destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
@@ -536,7 +530,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             }
         }
 
-        if (rBlockInRow > 1) {
+        if (rdBlocksInRow > 1) {
             runBlocking(coroutineContext) { wrapper { launch { it() } } }
         } else {
             wrapper()
