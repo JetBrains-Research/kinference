@@ -93,7 +93,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
             batchFunc: (T, T, T, Int, Int) -> Unit
         ) {
             val rowSize = bias.linearSize
-            val numThreads = PlatformUtils.availableThreads
+            val numThreads = PlatformUtils.threads
             val numRows = input.linearSize / bias.linearSize
             val numBatches = if (numRows < numThreads) numRows else numThreads
             val batchSize = floor(numRows.toDouble() / numBatches).toInt()
@@ -119,6 +119,10 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
 
         require(input.shape.last() == bias.shape.last()) { "Last dimensions of input and bias tensors must be equal" }
 
+        // Uses ERF formula with fractional error less than x.xx * 10 ^ -4.
+        // Algorithm 26.2.17 in Abromowitz and Stegun, Handbook of Mathematical.
+        // Another possible ERF implementation (several ms faster):
+        // https://github.com/apache/commons-numbers/blob/master/commons-numbers-gamma/src/main/java/org/apache/commons/numbers/gamma/BoostErf.java
         return when(val type = input.type) {
             DataType.FLOAT -> {
                 input as FloatNDArray

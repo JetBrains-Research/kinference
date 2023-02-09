@@ -5,5 +5,5 @@ actual object PlatformUtils {
 
     //we don't support multithreading for JS yet
     actual val cores: Int = 1
-    actual val availableThreads: Int = 1
+    actual val threads: Int = 1
 }
