@@ -64,8 +64,8 @@ job("KInference / Build and Test") {
                 echo ${'$'}test
                 for folder in ${'$'}test
                 do
-                echo ${'$'}folder
-                echo ${'$'}JB_SPACE_FILE_SHARE_PATH
+                mkdir -p /mnt/space/share/${'$'}folder
+                cp -R ${'$'}folder /mnt/space/share/${'$'}folder
                 done
             """.trimIndent()
         }
@@ -74,6 +74,14 @@ job("KInference / Build and Test") {
 //            api.gradlew("assemble", "--parallel", "--console=plain")
 //
 //        }
+    }
+
+    container("amazoncorretto:17") {
+        shellScript {
+            content = """
+                ls /mnt/space/share
+            """.trimIndent()
+        }
     }
 }
 
