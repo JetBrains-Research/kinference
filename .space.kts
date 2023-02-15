@@ -31,7 +31,7 @@ job("KInference / Build and Test") {
     container("Build with Gradle", "amazoncorretto:17") {
         addAwsKeys()
 
-        mountDir = "/root"
+//        mountDir = "/root"
 
 //        cache {
 //            storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
@@ -40,7 +40,7 @@ job("KInference / Build and Test") {
 
         cache {
             storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
-            localPath = "/root/.m2/repository"
+            localPath = "~/.m2/repository"
         }
 
         cache {
@@ -49,10 +49,17 @@ job("KInference / Build and Test") {
         }
 
 
-        kotlinScript("Build with Gradle") { api ->
-            api.gradlew("assemble", "--parallel", "--console=plain")
-
+        shellScript("Build with Gradle") {
+            """
+                ./gradlew assemble --parallel --console=plain
+                $packBuildFolders
+            """.trimIndent()
         }
+
+//        kotlinScript("Build with Gradle") { api ->
+//            api.gradlew("assemble", "--parallel", "--console=plain")
+//
+//        }
     }
 }
 
@@ -60,6 +67,15 @@ fun Container.addAwsKeys() {
     env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
     env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
 }
+
+val packBuildFolders = """
+    build_folders=${'$'}(find . -type d -name "build")
+    for folder in build_folders;
+    do
+        mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
+        cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder;
+    done;
+""".trimIndent()
 
 job("KInference / Release") {
     startOn {
