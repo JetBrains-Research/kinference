@@ -28,7 +28,7 @@
 }*/
 
 job("KInference / Build and Test") {
-    container("Build", "amazoncorretto:17") {
+    container("Build with Gradle", "amazoncorretto:17") {
         addAwsKeys()
 
         mountDir = "/root"
@@ -40,17 +40,18 @@ job("KInference / Build and Test") {
 
         cache {
             storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
-            localPath = "/root/.m2/repository/*"
+            localPath = "/root/.m2/repository"
         }
 
         cache {
             storeKey = "node_modules-{{ hashFiles('kotlin-js-store/yarn.lock') }}"
-            localPath = "build/js/node_modules/*"
+            localPath = "build/js/node_modules"
         }
 
 
-        kotlinScript { api ->
-            api.gradlew("build", "-Pci", "-Pdisable-tests", "--console=plain")
+        kotlinScript("Build with Gradle") { api ->
+            api.gradlew("assemble", "--parallel", "--console=plain")
+
         }
     }
 }
