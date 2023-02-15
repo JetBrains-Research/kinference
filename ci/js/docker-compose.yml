@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  ci-corretto-17-firefox:
+    container_name: ci-corretto-17-firefox
+    platform: linux/amd64
+    build: .
+    image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
