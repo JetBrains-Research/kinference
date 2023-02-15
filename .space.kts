@@ -50,10 +50,11 @@ job("KInference / Build and Test") {
 
 
         shellScript("Build with Gradle") {
-            """
+            content = """
                 ./gradlew assemble --parallel --console=plain
                 $packBuildFolders
-            """.trimIndent()
+                """.trimIndent()
+
         }
 
 //        kotlinScript("Build with Gradle") { api ->
