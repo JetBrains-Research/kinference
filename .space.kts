@@ -31,14 +31,21 @@ job("KInference / Build and Test") {
     container("Build", "amazoncorretto:17") {
         addAwsKeys()
 
-        cache {
-            storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
-            localPath = "test-data/*"
-        }
+        mountDir = "/root"
+
+//        cache {
+//            storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
+//            localPath = "test-data/*"
+//        }
 
         cache {
             storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
             localPath = "/root/.m2/repository/*"
+        }
+
+        cache {
+            storeKey = "node_modules-{{ hashFiles('kotlin-js-store/yarn.lock') }}"
+            localPath = "build/js/node_modules/*"
         }
 
 
