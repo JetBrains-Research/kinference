@@ -59,7 +59,8 @@ job("KInference / Build and Test") {
 //        }
         shellScript {
             content = """
-                find . -type d -name "commonMain"
+                shopt -s extglob
+                find !(serialization) -type d -name "commonMain"
             """.trimIndent()
         }
 
