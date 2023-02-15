@@ -64,8 +64,8 @@ job("KInference / Build and Test") {
                 echo ${'$'}test
                 for folder in ${'$'}test
                 do
-                mkdir -p /mnt/space/share/${'$'}folder
-                cp -R ${'$'}folder /mnt/space/share/${'$'}folder
+                mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
+                cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
                 done
             """.trimIndent()
         }
@@ -79,7 +79,7 @@ job("KInference / Build and Test") {
     container("amazoncorretto:17") {
         shellScript {
             content = """
-                ls /mnt/space/share
+                ls ${'$'}JB_SPACE_FILE_SHARE_PATH
             """.trimIndent()
         }
     }
