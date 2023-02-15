@@ -51,7 +51,8 @@ job("KInference / Build and Test") {
 
         shellScript("Build with Gradle") {
             content = """
-                ./gradlew assemble --parallel --console=plain
+                ./gradlew assemble --parallel --console=plain --no-daemon
+                find / -type d -name ".m2"
                 $packBuildFolders
                 """.trimIndent()
 
@@ -70,12 +71,13 @@ fun Container.addAwsKeys() {
 }
 
 val packBuildFolders = """
-    build_folders=${'$'}(find . -type d -name "build")
-    for folder in build_folders;
+    shopt -s extglob
+    build_folders="`find !(build) -type d -name 'build'` build"
+    for folder in ${'$'}build_folders
     do
         mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
-        cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder;
-    done;
+        cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
+    done
 """.trimIndent()
 
 job("KInference / Release") {
