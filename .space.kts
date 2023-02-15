@@ -38,24 +38,29 @@ job("KInference / Build and Test") {
 //            localPath = "test-data/*"
 //        }
 
-        cache {
-            storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
-            localPath = "~/.m2/repository"
-        }
+//        cache {
+//            storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
+//            localPath = "~/.m2/repository"
+//        }
+//
+//        cache {
+//            storeKey = "node_modules-{{ hashFiles('kotlin-js-store/yarn.lock') }}"
+//            localPath = "build/js/node_modules"
+//        }
 
-        cache {
-            storeKey = "node_modules-{{ hashFiles('kotlin-js-store/yarn.lock') }}"
-            localPath = "build/js/node_modules"
-        }
 
-
-        shellScript("Build with Gradle") {
+//        shellScript("Build with Gradle") {
+//            content = """
+//                ./gradlew assemble --parallel --console=plain --no-daemon
+//                find / -type d -name ".m2"
+//                $packBuildFolders
+//                """.trimIndent()
+//
+//        }
+        shellScript {
             content = """
-                ./gradlew assemble --parallel --console=plain --no-daemon
-                find / -type d -name ".m2"
-                $packBuildFolders
-                """.trimIndent()
-
+                find . -type d -name "commonMain"
+            """.trimIndent()
         }
 
 //        kotlinScript("Build with Gradle") { api ->
