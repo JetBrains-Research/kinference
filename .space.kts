@@ -62,6 +62,11 @@ job("KInference / Build and Test") {
                 shopt -s extglob
                 test="`find !(serialization) -type d -name 'commonMain'` serialization"
                 echo ${'$'}test
+                for folder in ${'$'}test
+                do
+                echo ${'$'}folder
+                echo test
+                done
             """.trimIndent()
         }
 
