@@ -60,7 +60,8 @@ job("KInference / Build and Test") {
         shellScript {
             content = """
                 shopt -s extglob
-                find !(serialization) -type d -name "commonMain"
+                test="`find !(serialization) -type d -name 'commonMain'` serialization"
+                echo ${'$'}test
             """.trimIndent()
         }
 
