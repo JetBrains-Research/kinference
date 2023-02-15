@@ -30,50 +30,31 @@
 job("KInference / Build and Test") {
     container("Build with Gradle", "amazoncorretto:17") {
         addAwsKeys()
-
-//        mountDir = "/root"
-
-//        cache {
-//            storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
-//            localPath = "test-data/*"
-//        }
-
-//        cache {
-//            storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
-//            localPath = "~/.m2/repository"
-//        }
-//
-//        cache {
-//            storeKey = "node_modules-{{ hashFiles('kotlin-js-store/yarn.lock') }}"
-//            localPath = "build/js/node_modules"
-//        }
-
-
-//        shellScript("Build with Gradle") {
+//        shellScript {
 //            content = """
-//                ./gradlew assemble --parallel --console=plain --no-daemon
-//                find / -type d -name ".m2"
-//                $packBuildFolders
-//                """.trimIndent()
-//
+//                shopt -s extglob
+//                test="`find !(serialization) -type d -name 'commonMain'` serialization"
+//                echo ${'$'}test
+//                for folder in ${'$'}test
+//                do
+//                mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
+//                cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
+//                done
+//            """.trimIndent()
 //        }
+
         shellScript {
             content = """
+                ./gradlew assemble --parallel --console=plain --no-daemon
                 shopt -s extglob
-                test="`find !(serialization) -type d -name 'commonMain'` serialization"
-                echo ${'$'}test
-                for folder in ${'$'}test
+                build_folders="`find !(build) -type d -name 'build'` build"
+                for folder in ${'$'}build_folders
                 do
                 mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
                 cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
                 done
             """.trimIndent()
         }
-
-//        kotlinScript("Build with Gradle") { api ->
-//            api.gradlew("assemble", "--parallel", "--console=plain")
-//
-//        }
     }
 
     container("amazoncorretto:17") {
@@ -90,7 +71,7 @@ fun Container.addAwsKeys() {
     env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
 }
 
-val packBuildFolders = """
+/*val packBuildFolders = """
     shopt -s extglob
     build_folders="`find !(build) -type d -name 'build'` build"
     for folder in ${'$'}build_folders
@@ -98,7 +79,7 @@ val packBuildFolders = """
         mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
         cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
     done
-""".trimIndent()
+""".trimIndent()*/
 
 job("KInference / Release") {
     startOn {
