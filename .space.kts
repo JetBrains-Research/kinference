@@ -57,13 +57,62 @@ job("KInference / Build and Test") {
         }
     }
 
-    container("amazoncorretto:17") {
-        shellScript {
-            content = """
-                ls ${'$'}JB_SPACE_FILE_SHARE_PATH
-            """.trimIndent()
+    parallel {
+        container("JVM Test","amazoncorretto:17") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    ./gradlew -Pci jvmTest --console=plain
+                    """.trimIndent()
+            }
+        }
+
+        container("JS Ir Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    xvfb-run --auto-servernum ./gradlew -Pci jsIrTest --console=plain
+                    """.trimIndent()
+            }
+        }
+
+        container("JS Legacy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    xvfb-run --auto-servernum ./gradlew -Pci jsLegacyTest --console=plain
+                    """.trimIndent()
+            }
+        }
+
+        container("JVM Heavy Test","amazoncorretto:17") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    ./gradlew -Pci jvmHeavyTest --console=plain
+                    """.trimIndent()
+            }
+        }
+
+        container("JS Legacy Heavy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    xvfb-run --auto-servernum ./gradlew -Pci jsLegacyHeavyTest --console=plain
+                    """.trimIndent()
+            }
+        }
+
+        container("JS Ir Heavy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
+            shellScript {
+                content = """
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    xvfb-run --auto-servernum ./gradlew -Pci jsIrHeavyTest --console=plain
+                    """.trimIndent()
+            }
         }
     }
+
 }
 
 fun Container.addAwsKeys() {
