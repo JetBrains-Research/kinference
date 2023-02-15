@@ -1,4 +1,4 @@
-job("KInference / Build and Test") {
+/*job("KInference / Build and Test") {
     host("Build and test") {
         env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
         env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
@@ -25,6 +25,32 @@ job("KInference / Build and Test") {
             """.trimIndent()
         }
     }
+}*/
+
+job("KInference / Build and Test") {
+    container("Build", "amazoncorretto:17") {
+        addAwsKeys()
+
+        cache {
+            storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
+            localPath = "test-data/*"
+        }
+
+        cache {
+            storeKey = "maven-{{ hashFiles('**/*gradle.kts') }}"
+            localPath = "/root/.m2/repository/*"
+        }
+
+
+        kotlinScript { api ->
+            api.gradlew("build", "-Pci", "-Pdisable-tests", "--console=plain")
+        }
+    }
+}
+
+fun Container.addAwsKeys() {
+    env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
+    env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
 }
 
 job("KInference / Release") {
