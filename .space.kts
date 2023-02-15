@@ -65,7 +65,7 @@ job("KInference / Build and Test") {
                 for folder in ${'$'}test
                 do
                 echo ${'$'}folder
-                echo test
+                echo ${'$'}JB_SPACE_FILE_SHARE_PATH
                 done
             """.trimIndent()
         }
