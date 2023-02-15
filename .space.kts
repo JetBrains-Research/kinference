@@ -45,9 +45,9 @@ job("KInference / Build and Test") {
 
         shellScript {
             content = """
-                ./gradlew assemble --parallel --console=plain --no-daemon
+                ./gradlew :ndarray:ndarray-core:assemble --parallel --console=plain && ./gradlew assemble --parallel --console=plain
                 shopt -s extglob
-                build_folders="`find !(build) -type d -name 'build'` build"
+                build_folders="`find !(build) -type d -name 'build'` build .gradle"
                 for folder in ${'$'}build_folders
                 do
                 mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
@@ -62,6 +62,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     ./gradlew -Pci jvmTest --console=plain
                     """.trimIndent()
             }
@@ -71,6 +72,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     xvfb-run --auto-servernum ./gradlew -Pci jsIrTest --console=plain
                     """.trimIndent()
             }
@@ -80,6 +82,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     xvfb-run --auto-servernum ./gradlew -Pci jsLegacyTest --console=plain
                     """.trimIndent()
             }
@@ -89,6 +92,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     ./gradlew -Pci jvmHeavyTest --console=plain
                     """.trimIndent()
             }
@@ -98,6 +102,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     xvfb-run --auto-servernum ./gradlew -Pci jsLegacyHeavyTest --console=plain
                     """.trimIndent()
             }
@@ -107,6 +112,7 @@ job("KInference / Build and Test") {
             shellScript {
                 content = """
                     cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
+                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
                     xvfb-run --auto-servernum ./gradlew -Pci jsIrHeavyTest --console=plain
                     """.trimIndent()
             }
