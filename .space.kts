@@ -45,20 +45,27 @@ job("KInference / Build and Test") {
         }
 
         container("JS Legacy Tests", jsContainer) {
-            kotlinScript { api ->
-                api.gradlew("jsLegacyTest", "--parallel", "--console=plain", "-Pci")
+            shellScript {
+                content = "xvfb-run --auto-servernum ./gradlew jsLegacyTest --parallel --console=plain -Pci"
             }
+
+            /*kotlinScript { api ->
+                api.gradlew("jsLegacyTest", "--parallel", "--console=plain", "-Pci")
+            }*/
         }
 
         container("JS IR Tests", jsContainer) {
-            kotlinScript { api ->
-                api.gradlew("jsIrTest", "jsTest", "--parallel", "--console=plain", "-Pci")
+            shellScript {
+                content = "xvfb-run --auto-servernum ./gradlew jsIrTest jsTest --parallel --console=plain -Pci"
             }
+
+            /*kotlinScript { api ->
+                api.gradlew("jsIrTest", "jsTest", "--parallel", "--console=plain", "-Pci")
+            }*/
         }
 
         container("JVM Heavy Tests", jvmContainer) {
             addAwsKeys()
-
             cacheTestData()
 
             kotlinScript { api ->
