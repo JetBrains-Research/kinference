@@ -29,7 +29,6 @@ job("KInference / Build and Test") {
 
         container("JVM Heavy Tests", jvmContainer) {
             addAwsKeys()
-            cacheTestData()
 
             kotlinScript { api ->
                 api.gradlew("jvmHeavyTest", "--console=plain", "-Pci", "--no-daemon")
@@ -38,7 +37,6 @@ job("KInference / Build and Test") {
 
         container("JS Legacy Heavy Tests", jsContainer) {
             addAwsKeys()
-            cacheTestData()
 
             shellScript {
                 content = "xvfb-run --auto-servernum ./gradlew jsLegacyHeavyTest --console=plain -Pci --no-daemon"
@@ -47,7 +45,6 @@ job("KInference / Build and Test") {
 
         container("JS IR Heavy Tests", jsContainer) {
             addAwsKeys()
-            cacheTestData()
 
             shellScript {
                 content = "xvfb-run --auto-servernum ./gradlew jsIrHeavyTest --console=plain -Pci --no-daemon"
@@ -75,11 +72,4 @@ job("KInference / Release") {
 fun Container.addAwsKeys() {
     env["AWS_ACCESS_KEY"] = "{{ project:aws_access_key }}"
     env["AWS_SECRET_KEY"] = "{{ project:aws_secret_key }}"
-}
-
-fun Container.cacheTestData() {
-    cache {
-        storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
-        localPath = "test-data"
-    }
 }
