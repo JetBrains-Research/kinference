@@ -27,103 +27,57 @@
     }
 }*/
 
+val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0"
+val jvmContainer = "amazoncorretto:17"
+
 job("KInference / Build and Test") {
-    container("Build with Gradle", "amazoncorretto:17") {
-        addAwsKeys()
-//        shellScript {
-//            content = """
-//                shopt -s extglob
-//                test="`find !(serialization) -type d -name 'commonMain'` serialization"
-//                echo ${'$'}test
-//                for folder in ${'$'}test
-//                do
-//                mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
-//                cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
-//                done
-//            """.trimIndent()
-//        }
-
-        shellScript {
-            content = """
-                ./gradlew :ndarray:ndarray-core:assemble --parallel --console=plain && ./gradlew assemble --parallel --console=plain
-                shopt -s extglob
-                build_folders="`find !(build) -type d -name 'build'` build .gradle"
-                for folder in ${'$'}build_folders
-                do
-                mkdir -p ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
-                cp -R ${'$'}folder ${'$'}JB_SPACE_FILE_SHARE_PATH/${'$'}folder
-                done
-            """.trimIndent()
-        }
-    }
-
     parallel {
-        container("JVM Test","amazoncorretto:17") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    ./gradlew -Pci jvmTest --console=plain
-                    """.trimIndent()
+        container("Build With Gradle",jvmContainer) {
+            kotlinScript { api ->
+                api.gradlew("assemble", "--parallel", "--console=plain")
             }
         }
 
-        container("JS Ir Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    xvfb-run --auto-servernum ./gradlew -Pci jsIrTest --console=plain
-                    """.trimIndent()
+        container("JVM Tests", jvmContainer) {
+            kotlinScript { api ->
+                api.gradlew("jvmTest", "--parallel", "--console=plain", "-Pci")
             }
         }
 
-        container("JS Legacy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    xvfb-run --auto-servernum ./gradlew -Pci jsLegacyTest --console=plain
-                    """.trimIndent()
+        container("JS Legacy Tests", jsContainer) {
+            kotlinScript { api ->
+                api.gradlew("jsLegacyTest", "--parallel", "--console=plain", "-Pci")
             }
         }
 
-        container("JVM Heavy Test","amazoncorretto:17") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    ./gradlew -Pci jvmHeavyTest --console=plain
-                    """.trimIndent()
+        container("JS IR Tests", jsContainer) {
+            kotlinScript { api ->
+                api.gradlew("jsIrTest", "jsTest", "--parallel", "--console=plain", "-Pci")
             }
         }
 
-        container("JS Legacy Heavy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    xvfb-run --auto-servernum ./gradlew -Pci jsLegacyHeavyTest --console=plain
-                    """.trimIndent()
-            }
-        }
+        container("JVM Heavy Tests", jvmContainer) {
+            addAwsKeys()
 
-        container("JS Ir Heavy Test","registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0") {
-            shellScript {
-                content = """
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/* .
-                    cp -R ${'$'}JB_SPACE_FILE_SHARE_PATH/.gradle .
-                    xvfb-run --auto-servernum ./gradlew -Pci jsIrHeavyTest --console=plain
-                    """.trimIndent()
+            cacheTestData()
+
+            kotlinScript { api ->
+                api.gradlew("jvmHeavyTest", "--console=plain", "-Pci")
             }
         }
     }
-
 }
 
 fun Container.addAwsKeys() {
-    env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
-    env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
+    env["AWS_ACCESS_KEY"] = "{{ project:aws_access_key }}" //Secrets("aws_access_key")
+    env["AWS_SECRET_KEY"] = "{{ project:aws_secret_key }}" //Secrets("aws_secret_key")
+}
+
+fun Container.cacheTestData() {
+    cache {
+        storeKey = "test-data-{{ hashFiles('buildSrc/src/main/kotlin/io/kinference/gradle/s3/DefaultS3Deps.kt') }}"
+        localPath = "test-data"
+    }
 }
 
 /*val packBuildFolders = """
