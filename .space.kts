@@ -48,20 +48,12 @@ job("KInference / Build and Test") {
             shellScript {
                 content = "xvfb-run --auto-servernum ./gradlew jsLegacyTest --parallel --console=plain -Pci"
             }
-
-            /*kotlinScript { api ->
-                api.gradlew("jsLegacyTest", "--parallel", "--console=plain", "-Pci")
-            }*/
         }
 
         container("JS IR Tests", jsContainer) {
             shellScript {
                 content = "xvfb-run --auto-servernum ./gradlew jsIrTest jsTest --parallel --console=plain -Pci"
             }
-
-            /*kotlinScript { api ->
-                api.gradlew("jsIrTest", "jsTest", "--parallel", "--console=plain", "-Pci")
-            }*/
         }
 
         container("JVM Heavy Tests", jvmContainer) {
@@ -70,6 +62,24 @@ job("KInference / Build and Test") {
 
             kotlinScript { api ->
                 api.gradlew("jvmHeavyTest", "--console=plain", "-Pci")
+            }
+        }
+
+        container("JS Legacy Heavy Tests", jsContainer) {
+            addAwsKeys()
+            cacheTestData()
+
+            shellScript {
+                content = "xvfb-run --auto-servernum ./gradlew jsLegacyHeavyTest --console=plain -Pci"
+            }
+        }
+
+        container("JS IR Heavy Tests", jsContainer) {
+            addAwsKeys()
+            cacheTestData()
+
+            shellScript {
+                content = "xvfb-run --auto-servernum ./gradlew jsIrHeavyTest --console=plain -Pci"
             }
         }
     }
