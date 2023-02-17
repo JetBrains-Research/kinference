@@ -5,10 +5,17 @@ on: [ push, pull_request ]
 jobs:
   Build:
     runs-on: ubuntu-latest
-    container: amazoncorretto:17
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: Build With Gradle
         run: ./gradlew assemble --parallel --console=plain --no-daemon
@@ -24,10 +31,17 @@ jobs:
 
   JVM-Test:
     runs-on: ubuntu-latest
-    container: amazoncorretto:17
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: JVM Tests
         run: ./gradlew jvmTest --parallel --console=plain --no-daemon -Pci
@@ -81,10 +95,17 @@ jobs:
 
   JVM-Heavy-Test:
     runs-on: ubuntu-latest
-    container: amazoncorretto:17
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: Cache test data
         uses: actions/cache@v3
