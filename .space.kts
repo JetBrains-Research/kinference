@@ -53,6 +53,14 @@ val jvmContainer = "amazoncorretto:17"
     }
 }*/
 
+job("KInference / Build and Test") {
+    container("Build With Gradle", jvmContainer) {
+        kotlinScript { api ->
+            api.gradlew("assemble", "--parallel", "--console=plain", "--no-daemon")
+        }
+    }
+}
+
 job("KInference / JVM Test") {
     container("JVM Tests", jvmContainer) {
         kotlinScript { api ->
@@ -142,6 +150,7 @@ job("KInference / Release") {
         }
     }
 }
+
 
 fun Container.addAwsKeys() {
     env["AWS_ACCESS_KEY"] = "{{ project:aws_access_key }}"
