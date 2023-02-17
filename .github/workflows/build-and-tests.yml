@@ -64,6 +64,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
+
       - name: JS IR Test
         run: xvfb-run --auto-servernum ./gradlew jsIrTest jsTest --parallel --console=plain --no-daemon -Pci
 
@@ -84,6 +92,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: JS Legacy Test
         run: xvfb-run --auto-servernum ./gradlew jsLegacyTest --parallel --console=plain --no-daemon -Pci
@@ -141,6 +157,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
+
       - name: Cache test data
         uses: actions/cache@v3
         with:
@@ -170,6 +194,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: Cache test data
         uses: actions/cache@v3
@@ -201,6 +233,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
+
       - name: Cache test data
         uses: actions/cache@v3
         with:
@@ -230,6 +270,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+          check-latest: true
 
       - name: Cache test data
         uses: actions/cache@v3
