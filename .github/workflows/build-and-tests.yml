@@ -3,7 +3,7 @@ name: Build and tests
 on: [ push, pull_request ]
 
 jobs:
-  Build With Gradle:
+  Build:
     runs-on: ubuntu-latest
     container: amazoncorretto:17
 
@@ -22,7 +22,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JVM Test:
+  JVM-Test:
     runs-on: ubuntu-latest
     container: amazoncorretto:17
 
@@ -41,7 +41,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS IR Test:
+  JS-IR-Test:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
@@ -60,7 +60,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS Legacy Test:
+  JS-Legacy-Test:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
@@ -79,7 +79,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JVM Heavy Test:
+  JVM-Heavy-Test:
     runs-on: ubuntu-latest
     container: amazoncorretto:17
 
@@ -107,7 +107,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS IR Heavy Test:
+  JS-IR-Heavy-Test:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
@@ -135,7 +135,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS Legacy Heavy Test:
+  JS-Legacy-Heavy-Test:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
@@ -163,7 +163,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS IR Heavy Test (Inference Core):
+  JS-IR-Heavy-Test-Inference-Core:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
@@ -191,7 +191,7 @@ jobs:
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
 
-  JS Legacy Heavy Test (Inference Core):
+  JS-Legacy-Heavy-Test-Inference-Core:
     runs-on: ubuntu-latest
     container: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
 
