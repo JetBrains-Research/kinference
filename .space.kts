@@ -177,7 +177,7 @@ fun Container.gradleCache() {
     env["GRADLE_USER_HOME"] = "~/.gradle/"
 
     cache {
-        this.localPath = "~/.gradle/caches"
+        this.localPath = "~/.gradle/caches/**/*.jar"
 
         this.storeKey = "gradle-cache-{{ run:job.id }}-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
 
