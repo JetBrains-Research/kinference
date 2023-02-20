@@ -179,7 +179,7 @@ fun Container.gradleCache() {
     cache {
         this.localPath = "~/.gradle/caches"
 
-        this.storeKey = "gradle-cache-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+        this.storeKey = "gradle-cache-{{ run:job.id }}-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
 
         this.restoreKeys {
             +"gradle-cache-master"
@@ -189,7 +189,7 @@ fun Container.gradleCache() {
     cache {
         this.localPath = "~/.gradle/wrapper"
 
-        this.storeKey = "gradle-wrapper-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+        this.storeKey = "gradle-wrapper-{{ run:job.id }}-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
 
         this.restoreKeys {
             +"gradle-wrapper-master"
