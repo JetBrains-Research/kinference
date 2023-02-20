@@ -55,6 +55,8 @@ val jvmContainer = "amazoncorretto:17"
 
 job("KInference / Build and Test") {
     container("Build With Gradle", jvmContainer) {
+        gradleCache()
+
         kotlinScript { api ->
             api.gradlew("assemble", "--parallel", "--console=plain", "--no-daemon")
         }
@@ -63,6 +65,8 @@ job("KInference / Build and Test") {
 
 job("KInference / JVM Test") {
     container("JVM Tests", jvmContainer) {
+        gradleCache()
+
         kotlinScript { api ->
             api.gradlew("jvmTest", "--parallel", "--console=plain", "-Pci", "--no-daemon")
         }
@@ -71,6 +75,8 @@ job("KInference / JVM Test") {
 
 job("KInference / JS IR Test") {
     container("JS IR Tests", jsContainer) {
+        gradleCache()
+
         shellScript {
             content = xvfbRun("./gradlew jsIrTest jsTest --parallel --console=plain -Pci --no-daemon")
         }
@@ -79,6 +85,8 @@ job("KInference / JS IR Test") {
 
 job("KInference / JS Legacy Test") {
     container("JS Legacy Tests", jsContainer) {
+        gradleCache()
+
         shellScript {
             content = xvfbRun("./gradlew jsLegacyTest --parallel --console=plain -Pci --no-daemon")
         }
@@ -87,6 +95,8 @@ job("KInference / JS Legacy Test") {
 
 job("KInference / JVM Heavy Test") {
     container("JVM Heavy Tests", jvmContainer) {
+        gradleCache()
+
         addAwsKeys()
 
         kotlinScript { api ->
@@ -97,6 +107,7 @@ job("KInference / JVM Heavy Test") {
 
 job("KInference / JS IR Heavy Test") {
     container("JS IR Heavy Tests", jsContainer) {
+        gradleCache()
         addAwsKeys()
 
         shellScript {
@@ -107,6 +118,7 @@ job("KInference / JS IR Heavy Test") {
 
 job("KInference / JS Legacy Heavy Test") {
     container("JS Legacy Heavy Tests", jsContainer) {
+        gradleCache()
         addAwsKeys()
 
         shellScript {
@@ -117,6 +129,7 @@ job("KInference / JS Legacy Heavy Test") {
 
 job("KInference / Inference Core / JS Legacy Heavy Test ") {
     container("JS Legacy Heavy Tests", jsContainer) {
+        gradleCache()
         addAwsKeys()
 
         shellScript {
@@ -127,6 +140,7 @@ job("KInference / Inference Core / JS Legacy Heavy Test ") {
 
 job("KInference / Inference Core / JS IR Heavy Test ") {
     container("JS IR Heavy Tests", jsContainer) {
+        gradleCache()
         addAwsKeys()
 
         shellScript {
@@ -142,7 +156,7 @@ job("KInference / Release") {
         }
     }
 
-    container("Release",jvmContainer) {
+    container("Release", jvmContainer) {
         addAwsKeys()
 
         kotlinScript { api ->
@@ -158,3 +172,16 @@ fun Container.addAwsKeys() {
 }
 
 fun xvfbRun(command: String): String = "xvfb-run --auto-servernum $command"
+
+fun Container.gradleCache() {
+    cache {
+        this.localPath = "~/.gradle/caches"
+
+        this.storeKey = "gradle-cache-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+
+        this.restoreKeys {
+            +"gradle-cache-master"
+            +"gradle-cache-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+        }
+    }
+}
