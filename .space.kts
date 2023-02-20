@@ -174,6 +174,8 @@ fun Container.addAwsKeys() {
 fun xvfbRun(command: String): String = "xvfb-run --auto-servernum $command"
 
 fun Container.gradleCache() {
+    env["GRADLE_USER_HOME"] = "~/.gradle/"
+
     cache {
         this.localPath = "~/.gradle/caches"
 
@@ -181,7 +183,16 @@ fun Container.gradleCache() {
 
         this.restoreKeys {
             +"gradle-cache-master"
-            +"gradle-cache-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+        }
+    }
+
+    cache {
+        this.localPath = "~/.gradle/wrapper"
+
+        this.storeKey = "gradle-wrapper-{{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt') }}"
+
+        this.restoreKeys {
+            +"gradle-wrapper-master"
         }
     }
 }
