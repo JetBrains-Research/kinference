@@ -10,7 +10,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class CommentUpdaterTest {
     @Test
-    fun heavy_test_comment_updater() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_comment_updater() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("custom:comment_updater")
     }
 

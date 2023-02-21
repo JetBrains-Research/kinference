@@ -10,7 +10,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 class IJCompletionRankerTest {
     @Test
-    fun heavy_test_ranker() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_ranker() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("catboost:ij-completion-ranker:v1")
     }
 
