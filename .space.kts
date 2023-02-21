@@ -1,7 +1,7 @@
 val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0"
 val jvmContainer = "amazoncorretto:17"
 
-job("KInference / Build and Test") {
+job("KInference / Build") {
     container("Build With Gradle", jvmContainer) {
         kotlinScript { api ->
             api.gradlew("assemble", "--parallel", "--console=plain", "--no-daemon")
@@ -9,7 +9,7 @@ job("KInference / Build and Test") {
     }
 }
 
-job("KInference / JVM Test") {
+job("KInference / Test / JVM") {
     container("JVM Tests", jvmContainer) {
         kotlinScript { api ->
             api.gradlew("jvmTest", "--parallel", "--console=plain", "-Pci", "--no-daemon")
@@ -17,7 +17,7 @@ job("KInference / JVM Test") {
     }
 }
 
-job("KInference / JS IR Test") {
+job("KInference / Test / JS IR") {
     container("JS IR Tests", jsContainer) {
         shellScript {
             content = xvfbRun("./gradlew jsIrTest jsTest --parallel --console=plain -Pci --no-daemon")
@@ -25,7 +25,7 @@ job("KInference / JS IR Test") {
     }
 }
 
-job("KInference / JS Legacy Test") {
+job("KInference / Test / JS Legacy") {
     container("JS Legacy Tests", jsContainer) {
         shellScript {
             content = xvfbRun("./gradlew jsLegacyTest --parallel --console=plain -Pci --no-daemon")
@@ -33,7 +33,7 @@ job("KInference / JS Legacy Test") {
     }
 }
 
-job("KInference / JVM Heavy Test") {
+job("KInference / Heavy Test / JVM") {
     container("JVM Heavy Tests", jvmContainer) {
         addAwsKeys()
 
@@ -43,27 +43,27 @@ job("KInference / JVM Heavy Test") {
     }
 }
 
-job("KInference / JS IR Heavy Test") {
+job("KInference / Heavy Test / JS IR") {
     container("JS IR Heavy Tests", jsContainer) {
         addAwsKeys()
 
         shellScript {
-            content = xvfbRun("./gradlew jsIrHeavyTest -x :inference:inference-core:jsIrHeavyTest --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsIrHeavyTest --console=plain -Pci --no-daemon")
         }
     }
 }
 
-job("KInference / JS Legacy Heavy Test") {
+job("KInference / Heavy Test / JS Legacy") {
     container("JS Legacy Heavy Tests", jsContainer) {
         addAwsKeys()
 
         shellScript {
-            content = xvfbRun("./gradlew jsLegacyHeavyTest -x :inference:inference-core:jsLegacyHeavyTest --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsLegacyHeavyTest --console=plain -Pci --no-daemon")
         }
     }
 }
 
-job("KInference / Inference Core / JS Legacy Heavy Test ") {
+/*job("KInference / Inference Core / JS Legacy Heavy Test ") {
     container("JS Legacy Heavy Tests", jsContainer) {
         addAwsKeys()
 
@@ -81,7 +81,7 @@ job("KInference / Inference Core / JS IR Heavy Test ") {
             content = xvfbRun("./gradlew :inference:inference-core:jsIrHeavyTest --console=plain -Pci --no-daemon")
         }
     }
-}
+}*/
 
 job("KInference / Release") {
     startOn {

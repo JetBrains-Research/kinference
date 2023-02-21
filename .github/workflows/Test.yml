@@ -1,0 +1,80 @@
+name: Tests
+
+on: [ push, pull_request ]
+
+jobs:
+  JVM:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+      #          cache: 'gradle'
+      #          check-latest: true
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: JVM Tests
+        run: ./gradlew jvmTest --parallel --console=plain --no-daemon -Pci
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: test-report
+          path: |
+            **/build/**/test-results/**/* |
+            **/build/**/reports/**/*
+
+    JS-IR:
+      runs-on: ubuntu-latest
+      container:
+        image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
+        options: --user 1001
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup Gradle
+          uses: gradle/gradle-build-action@v2
+
+        - name: JS IR Test
+          run: xvfb-run --auto-servernum ./gradlew jsIrTest jsTest --parallel --console=plain --no-daemon -Pci
+
+        - name: Upload Test Results
+          uses: actions/upload-artifact@v3
+          if: ${{ always() }}
+          with:
+            name: test-report
+            path: |
+              **/build/**/test-results/**/* |
+              **/build/**/reports/**/*
+
+    JS-Legacy:
+      runs-on: ubuntu-latest
+      container:
+        image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
+        options: --user 1001
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup Gradle
+          uses: gradle/gradle-build-action@v2
+
+        - name: JS Legacy Test
+          run: xvfb-run --auto-servernum ./gradlew jsLegacyTest --parallel --console=plain --no-daemon -Pci
+
+        - name: Upload Test Results
+          uses: actions/upload-artifact@v3
+          if: ${{ always() }}
+          with:
+            name: test-report
+            path: |
+              **/build/**/test-results/**/* |
+              **/build/**/reports/**/*
