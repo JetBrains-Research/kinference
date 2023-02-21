@@ -6,13 +6,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y
 
-RUN apt-get install -y wget tar bzip2 xvfb git gnupg
+RUN apt-get install -y wget xvfb git gnupg software-properties-common
 
-# Install firefox
-RUN wget -O ~/Firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-latest&os=linux64" && \
-    tar xjf ~/Firefox.tar.bz2 -C /opt/ && \
-    ln -s /opt/firefox/firefox /usr/bin/ && \
-    rm ~/Firefox.tar.bz2
+RUN add-apt-repository ppa:mozillateam/ppa
+RUN printf "\n \
+    Package: *\n \
+    Pin: release o=LP-PPA-mozillateam\n \
+    Pin-Priority: 1001\n \
+    " | tee /etc/apt/preferences.d/mozilla-firefox
+
+RUN apt-get install -y firefox
 
 #Install Amazon Corretto JDK 17
 RUN wget -q -O - https://apt.corretto.aws/corretto.key | apt-key add - \
