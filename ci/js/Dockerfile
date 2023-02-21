@@ -9,11 +9,11 @@ RUN apt-get update && \
 RUN apt-get install -y wget xvfb git gnupg software-properties-common
 
 RUN add-apt-repository ppa:mozillateam/ppa
-RUN printf "\n \
-    Package: *\n \
-    Pin: release o=LP-PPA-mozillateam\n \
-    Pin-Priority: 1001\n \
-    " | tee /etc/apt/preferences.d/mozilla-firefox
+RUN printf "\
+Package: *\n\
+Pin: release o=LP-PPA-mozillateam\n\
+Pin-Priority: 1001\
+" | tee /etc/apt/preferences.d/mozilla-firefox
 
 RUN apt-get install -y firefox
 
