@@ -63,26 +63,6 @@ job("KInference / Heavy Test / JS Legacy") {
     }
 }
 
-/*job("KInference / Inference Core / JS Legacy Heavy Test ") {
-    container("JS Legacy Heavy Tests", jsContainer) {
-        addAwsKeys()
-
-        shellScript {
-            content = xvfbRun("./gradlew :inference:inference-core:jsLegacyHeavyTest --console=plain -Pci --no-daemon")
-        }
-    }
-}
-
-job("KInference / Inference Core / JS IR Heavy Test ") {
-    container("JS IR Heavy Tests", jsContainer) {
-        addAwsKeys()
-
-        shellScript {
-            content = xvfbRun("./gradlew :inference:inference-core:jsIrHeavyTest --console=plain -Pci --no-daemon")
-        }
-    }
-}*/
-
 job("KInference / Release") {
     startOn {
         gitPush {

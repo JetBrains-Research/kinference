@@ -12,7 +12,7 @@ class TreeTRFBiaffineTest {
         KITestEngine.KIAccuracyRunner.runFromS3("bert:en_tree:quantized", delta = 3.8)
     }
 
-//    @Test
+    @Test
     fun heavy_test_js_tree_trf_biaffine_quantized() = TestRunner.runTest(Platform.JS) {
         KITestEngine.KIAccuracyRunner.runFromS3("bert:en_tree:quantized", delta = 3.8, disableTests = listOf(
             "test_data_64_4",
