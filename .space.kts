@@ -1,4 +1,4 @@
-val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0"
+val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1"
 val jvmContainer = "amazoncorretto:17"
 
 job("KInference / Build") {

@@ -44,7 +44,7 @@ jobs:
   JS-IR:
     runs-on: ubuntu-latest
     container:
-      image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
+      image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1
       options: --user 1001
 
     steps:
@@ -77,7 +77,7 @@ jobs:
   JS-Legacy:
     runs-on: ubuntu-latest
     container:
-      image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.0
+      image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1
       options: --user 1001
 
     steps:
