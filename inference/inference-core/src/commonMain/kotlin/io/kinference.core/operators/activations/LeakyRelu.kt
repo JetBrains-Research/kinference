@@ -44,7 +44,7 @@ class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = empt
         override fun apply(value: Double): Double = if (value < 0) value * alpha else value
     }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         return when (val type = input.type) {
             DataType.FLOAT -> input.map(activateFloat)
             DataType.DOUBLE -> input.map(activateDouble)

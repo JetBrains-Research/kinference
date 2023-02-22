@@ -30,5 +30,5 @@ class ErfVer9(name: String, attributes: Map<String, Attribute<Any>> = emptyMap()
         private val INFO = OperatorInfo("Erf", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore = (input as NumberNDArray).erf() as NDArrayCore
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore = (input as NumberNDArray).erf() as NDArrayCore
 }

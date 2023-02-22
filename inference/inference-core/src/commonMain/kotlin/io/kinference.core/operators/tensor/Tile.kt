@@ -41,7 +41,7 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val repeats = inputs[1]!!.data as LongNDArray
         val repeatsIntArray = repeats.array.toArray().toIntArray()

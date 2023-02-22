@@ -37,7 +37,7 @@ class ShapeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val tensor = inputs.first()!!
         val shape = tensor.data.shape
 

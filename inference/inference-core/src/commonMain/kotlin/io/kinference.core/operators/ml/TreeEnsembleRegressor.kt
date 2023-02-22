@@ -81,7 +81,7 @@ class TreeEnsembleRegressorVer1(name: String, attributes: Map<String, Attribute<
 
     private val treeEnsemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputData = inputs[0]!!.data.toFloatNDArray()
         return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
     }

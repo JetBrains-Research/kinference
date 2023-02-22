@@ -57,7 +57,7 @@ class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val axes: LongArray by attribute()
     private val keepDims: Boolean by attribute("keepdims") { it: Long -> it == 1L }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArray
         val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
         return listOf(input.reduceSum(actualAxes, keepDims).asTensor("reduced"))

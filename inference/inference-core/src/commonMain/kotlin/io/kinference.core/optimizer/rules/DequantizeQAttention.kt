@@ -16,7 +16,7 @@ object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttentio
         return op != -1 && graph.findPath(listOf("DynamicQuantizeLinear", "QAttention"), op) != null
     }
 
-    private fun dequantizeQAttention(graph: Graph<KIONNXData<*>>, op: QAttention, inputs: MutableList<String>): Attention {
+    private suspend fun dequantizeQAttention(graph: Graph<KIONNXData<*>>, op: QAttention, inputs: MutableList<String>): Attention {
         val weightsQuant = graph.findInitializer(op.inputs[1])!!
         val weightsScale = graph.findInitializer(op.inputs[4])!!.data as FloatNDArray
         val weightsZero = graph.findInitializer(op.inputs[7])!!.data as NumberNDArrayCore
@@ -30,7 +30,7 @@ object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttentio
         return Attention("${PREFIX}_$name", 1, op.attributes, inputs, op.outputs)
     }
 
-    override fun transform(graph: Graph<KIONNXData<*>>, name: String) {
+    override suspend fun transform(graph: Graph<KIONNXData<*>>, name: String) {
         val quantize = graph.operators.singleOrNull { it.name == name } as DynamicQuantizeLinear
         val opIdx = graph.operators.indexOfFirst { it.name == name }
         val path = graph.findPath(listOf("DynamicQuantizeLinear", "QAttention"), opIdx)!!

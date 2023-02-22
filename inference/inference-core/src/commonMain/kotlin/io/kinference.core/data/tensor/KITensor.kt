@@ -19,17 +19,17 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
         data.close()
     }
 
-    operator fun minus(other: KITensor): KITensor {
+    suspend operator fun minus(other: KITensor): KITensor {
         require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data - other.data).asTensor()
     }
 
-    operator fun times(other: KITensor): KITensor {
+    suspend operator fun times(other: KITensor): KITensor {
         require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data * other.data).asTensor()
     }
 
-    operator fun div(other: KITensor): KITensor {
+    suspend operator fun div(other: KITensor): KITensor {
         require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data / other.data).asTensor()
     }

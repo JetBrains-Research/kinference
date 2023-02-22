@@ -95,7 +95,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         return qkv
     }*/
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArrayCore
         val inputScale = inputs[3]!!.data as NumberNDArrayCore
         val inputZeroPoint = inputs.getOrNull(6)?.data as NumberNDArrayCore?
@@ -105,11 +105,13 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val weightsScale = inputs[4]!!
         val weightsZeroPoint = inputs.getOrNull(7)
 
-        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
+        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}")
+            ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
 
         val bias = inputs[2]!!
 
-        val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}") ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
+        val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}")
+            ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?
         val past = inputs.getOrNull(8)?.data as NumberNDArrayCore?
@@ -119,10 +121,9 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
             dequantInput,
             preparedWeights.data,
             preparedBias.data,
-            batchSize, seqLen, hiddenSize, numHeads,
-            contexts.execution
+            batchSize, seqLen, hiddenSize, numHeads
         )
-        val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize, contexts.execution)
+        val (scores, present) = Attention.getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
         return listOf(scores.asTensor(), present.asTensor())
     }
 }

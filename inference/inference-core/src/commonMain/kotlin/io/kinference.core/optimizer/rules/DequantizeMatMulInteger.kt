@@ -24,7 +24,7 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
         return firstPath.first().name == secondPath.first().name && firstPath.last().name == secondPath.last().name
     }
 
-    fun dequantizeMatMulInteger(graph: Graph<KIONNXData<*>>, dynamicQLin: DynamicQuantizeLinear, matMulInt: MatMulInteger, mul: Mul, nextMul: Mul): MatMul? {
+    suspend fun dequantizeMatMulInteger(graph: Graph<KIONNXData<*>>, dynamicQLin: DynamicQuantizeLinear, matMulInt: MatMulInteger, mul: Mul, nextMul: Mul): MatMul? {
         val matMulRight = graph.findInitializer(matMulInt.inputs[1])
         val matMulZeroRight = graph.findInitializer(matMulInt.inputs[3])?.data as? NumberNDArrayCore
         val scaleRight = graph.findInitializer(mul.inputs[1])?.data as? NumberNDArray
@@ -41,7 +41,7 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
         )
     }
 
-    override fun transform(graph: Graph<KIONNXData<*>>, name: String) {
+    override suspend fun transform(graph: Graph<KIONNXData<*>>, name: String) {
         val opIdx = graph.operators.indexOfFirst { it.name == name }
         val firstPath = graph.findPath(listOf("DynamicQuantizeLinear", "Mul", "Mul"), opIdx)!!
         val secondPath = graph.findPath(listOf("DynamicQuantizeLinear", "MatMulInteger", "Cast", "Mul"), opIdx)!!

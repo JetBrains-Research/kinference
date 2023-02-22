@@ -1,13 +1,12 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
-import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
 
 abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>, val direction: String) {
 
-    abstract fun apply(
+    abstract suspend fun apply(
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
@@ -16,8 +15,7 @@ abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>,
         initialHiddenState: NumberNDArrayCore?,
         initialCellState: NumberNDArrayCore?,
         peepholes: NumberNDArrayCore?,
-        dataType: DataType,
-        executionContext: ExecutionContext? = null
+        dataType: DataType
     ): LSTMLayerOutput
 
     companion object {

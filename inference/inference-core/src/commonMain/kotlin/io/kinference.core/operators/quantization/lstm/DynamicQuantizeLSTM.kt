@@ -83,7 +83,7 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as FloatNDArray
         val inputAsLSTMInput = QuantizedLSTMInput.create(input)
 
@@ -141,8 +141,7 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
             initialState?.data as NumberNDArrayCore?,
             initialCellState?.data as NumberNDArrayCore?,
             preparedPeepholes?.data as NumberNDArrayCore?,
-            input.type,
-            contexts.execution
+            input.type
         )
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }

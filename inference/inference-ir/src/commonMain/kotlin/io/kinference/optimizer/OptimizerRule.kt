@@ -16,9 +16,9 @@ abstract class OptimizerRule<T : ONNXData<*, *>>(val name: String, val type: Rul
     }
 
     abstract fun shouldApply(graph: Graph<T>, name: String): Boolean
-    abstract fun transform(graph: Graph<T>, name: String)
+    abstract suspend fun transform(graph: Graph<T>, name: String)
 
-    private fun checkAttributes(graph: Graph<T>, name: String, report: GraphOptimizer.OptimizationReport) {
+    private suspend fun checkAttributes(graph: Graph<T>, name: String, report: GraphOptimizer.OptimizationReport) {
         val operator = graph.operators.singleOrNull { it.name == name } ?: return
         for (attribute in operator.attributes) {
             if (attribute.value.type == AttributeProto.AttributeType.GRAPH)
@@ -28,7 +28,7 @@ abstract class OptimizerRule<T : ONNXData<*, *>>(val name: String, val type: Rul
         }
     }
 
-    fun apply(graph: Graph<T>, report: GraphOptimizer.OptimizationReport): Graph<T> {
+    suspend fun apply(graph: Graph<T>, report: GraphOptimizer.OptimizationReport): Graph<T> {
         var pos = 0
         while (pos < graph.operators.size) {
             val operator = graph.operators[pos]

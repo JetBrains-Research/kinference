@@ -15,10 +15,10 @@ class Attribute<T>(proto: AttributeProto, val value: T) {
 
 interface AttributeFactory<T : ONNXData<*, *>> {
     fun createTensor(proto: TensorProto): T
-    fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<T>
+    suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<T>
 
     @ExperimentalTime
-    fun create(proto: AttributeProto, currentOpSet: OperatorSetRegistry): Attribute<Any> = when (proto.type) {
+    suspend fun create(proto: AttributeProto, currentOpSet: OperatorSetRegistry): Attribute<Any> = when (proto.type) {
         AttributeProto.AttributeType.FLOAT -> Attribute(proto, proto.f!!)
         AttributeProto.AttributeType.INT -> Attribute(proto, proto.i!!)
         AttributeProto.AttributeType.STRING -> Attribute(proto, proto.s!!)

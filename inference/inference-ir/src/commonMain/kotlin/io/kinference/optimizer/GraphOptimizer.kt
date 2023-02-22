@@ -81,7 +81,7 @@ class GraphOptimizer<T : ONNXData<*, *>>(val graph: Graph<T>) {
         }
     }
 
-    fun run(rules: List<OptimizerRule<T>>): Graph<T> {
+    suspend fun run(rules: List<OptimizerRule<T>>): Graph<T> {
         val report = OptimizationReport()
         for (rule in rules) rule.apply(graph, report)
 

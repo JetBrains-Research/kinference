@@ -44,7 +44,7 @@ class SplitVer2(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     private val split: LongArray? by attributeOrNull()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!
         val actualAxis = input.data.indexAxis(axis)
         return if (split == null) {

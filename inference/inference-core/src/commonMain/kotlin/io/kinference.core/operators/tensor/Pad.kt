@@ -45,7 +45,7 @@ class PadVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
     private val mode: PadMode by attribute { mode: String -> PadMode.valueOf(mode.uppercase()) }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val pads = inputs[1]!!.data as LongNDArray
         val padsData = pads.array.toArray()

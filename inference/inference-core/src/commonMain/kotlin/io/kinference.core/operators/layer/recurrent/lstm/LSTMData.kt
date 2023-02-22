@@ -1,6 +1,5 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
-import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
@@ -12,19 +11,18 @@ class LSTMGate(private val weights: AbstractLSTMWeights,
                batchSize: Int, hiddenSize: Int, dataType: DataType) {
     private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
-    fun compute(
+    suspend fun compute(
         input: AbstractLSTMInput,
         lstmStates: LSTMStates,
         activationFunction: PrimitiveToPrimitiveFunction,
         numDirection: Int,
-        batchNum: Int,
-        executionContext: ExecutionContext? = null
+        batchNum: Int
     ) {
         val gateLocal = gateData.viewMutable(batchNum)
         gateLocal.clean()
 
-        input.dot(weights, gateLocal, executionContext)
-        lstmStates.hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal, executionContext)
+        input.dot(weights, gateLocal)
+        lstmStates.hiddenState.getVector(numDirection, batchNum).dot(recurrentWeights, gateLocal)
         if (bias != null) gateLocal.plusAssign(bias)
         if (peephole != null) gateLocal.plusAssign(peephole.times(lstmStates.cellState.getVector(numDirection, batchNum)))
         gateLocal.mapMutable(activationFunction)
@@ -35,7 +33,7 @@ class LSTMGate(private val weights: AbstractLSTMWeights,
 
 data class LSTMGates(val input: LSTMGate, val output: LSTMGate, val forget: LSTMGate, val cell: LSTMGate) {
     companion object {
-        fun create(weights: AbstractLSTMWeights, recurrentWeights: AbstractLSTMWeights, bias: NumberNDArrayCore?,
+        suspend fun create(weights: AbstractLSTMWeights, recurrentWeights: AbstractLSTMWeights, bias: NumberNDArrayCore?,
                    peepholes: NumberNDArrayCore?, batchSize: Int, hiddenSize: Int, dataType: DataType): LSTMGates {
             val inputGate = LSTMGate(
                 weights.view(0),
@@ -76,7 +74,7 @@ class LSTMCellState(initCellState: NumberNDArrayCore?, dataType: DataType, numDi
     val data: NumberNDArrayCore
         get() = stateData
 
-    fun compute(lstmGates: LSTMGates, numDirection: Int, batchNum: Int) {
+    suspend fun compute(lstmGates: LSTMGates, numDirection: Int, batchNum: Int) {
         val stateLocal = stateData.viewMutable(numDirection, batchNum)
         val tempLocal = tempData.viewMutable(numDirection, batchNum)
 
@@ -96,14 +94,14 @@ class LSTMHiddenState(initHiddenState: MutableNumberNDArrayCore, initHiddenState
 
     private val stateDataAsLSTMInput = initHiddenStateAsLSTMInput
 
-    fun compute(lstmGates: LSTMGates, cellState: LSTMCellState, numDirection: Int, batchNum: Int) {
+    suspend fun compute(lstmGates: LSTMGates, cellState: LSTMCellState, numDirection: Int, batchNum: Int) {
         val stateLocal = stateData.viewMutable(numDirection, batchNum)
         stateLocal.copyFrom(0, cellState.getVector(numDirection, batchNum))
         stateLocal.mapMutable(activationFunctions[numDirection])
         stateLocal.timesAssign(lstmGates.output.getVector(batchNum))
     }
 
-    fun update(numDirection: Int) {
+    suspend fun update(numDirection: Int) {
         stateDataAsLSTMInput[numDirection] = stateDataAsLSTMInput[numDirection].recreate(stateData.view(numDirection))
     }
 

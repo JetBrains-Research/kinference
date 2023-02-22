@@ -45,7 +45,7 @@ class IfVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List
     private val thenBranch: KIGraph by attribute("then_branch")
     private val elseBranch: KIGraph by attribute("else_branch")
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val condition = inputs[0]!!.data.singleValue() as Boolean
         val outputs = if (condition) thenBranch.execute(emptyList(), contexts as Contexts<KIONNXData<*>>) else elseBranch.execute(emptyList(), contexts as Contexts<KIONNXData<*>>)
 

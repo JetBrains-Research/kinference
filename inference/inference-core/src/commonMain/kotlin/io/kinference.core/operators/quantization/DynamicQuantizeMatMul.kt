@@ -5,7 +5,6 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
@@ -48,7 +47,7 @@ class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute
         private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val left = inputs[0]!!.data as FloatNDArray
         val quantizedRight = inputs[1]!!.data as NumberNDArrayCore
 
@@ -58,7 +57,7 @@ class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute
 
         val dequantRight = quantizedRight.tryDequantize(rightZeroPoint, rightScale)
 
-        val output = left.matmul(dequantRight, contexts.execution.asCoroutineContext())
+        val output = left.matmul(dequantRight)
 
         if (bias != null) {
             output.plusAssign(bias)

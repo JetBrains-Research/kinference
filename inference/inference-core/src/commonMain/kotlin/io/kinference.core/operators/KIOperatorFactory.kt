@@ -27,7 +27,7 @@ import kotlin.time.ExperimentalTime
 
 object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
     override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
-    override fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<KIONNXData<*>> = KIGraph(proto, opSet)
+    override suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<KIONNXData<*>> = KIGraph(proto, opSet)
 }
 
 @ExperimentalTime

@@ -41,7 +41,7 @@ class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Less", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        infix fun NDArrayCore.less(other: NDArrayCore): NDArrayCore {
+        suspend infix fun NDArrayCore.less(other: NDArrayCore): NDArrayCore {
             require(this.type == other.type) { "Arrays must have same types" }
 
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
@@ -110,7 +110,7 @@ class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val result = inputs[0]!!.data less inputs[1]!!.data
         return listOf(result.asTensor("output"))
     }

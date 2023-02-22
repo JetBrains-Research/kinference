@@ -33,7 +33,7 @@ abstract class ONNXModelAdapter<SourceType : BaseONNXData<*>, TargetType : ONNXD
      * Runs model pass on data of [SourceType]. First, it converts inputs to [TargetType],
      * then runs the model, and, finally, converts model results back to [SourceType] using provided adapters.
      */
-    open fun predict(inputs: List<SourceType>, profile: Boolean = false): Map<String, SourceType> {
+    open suspend fun predict(inputs: List<SourceType>, profile: Boolean = false): Map<String, SourceType> {
         val onnxInputs = inputs.map { adapters[it.type]!!.toONNXData(it) }
         val onnxResult = model.predict(onnxInputs, profile)
         val result = onnxResult.mapValues { adapters[it.value.type]!!.fromONNXData(it.value) }

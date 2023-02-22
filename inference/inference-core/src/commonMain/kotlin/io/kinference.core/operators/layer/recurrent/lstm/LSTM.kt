@@ -80,7 +80,7 @@ class LSTMVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
         val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArrayCore)
 
@@ -112,8 +112,7 @@ class LSTMVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             initialState?.data as NumberNDArrayCore?,
             initialCellState?.data as NumberNDArrayCore?,
             preparedPeepholes?.data as NumberNDArrayCore?,
-            input.data.type,
-            contexts.execution
+            input.data.type
         )
         
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))

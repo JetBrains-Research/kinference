@@ -30,14 +30,22 @@ object Broadcasting {
         return outputShape
     }
 
-    fun applyWithBroadcast(inputs: List<NDArrayCore>, destination: MutableNDArrayCore, op: (List<NDArrayCore>, MutableNDArrayCore) -> Unit): MutableNDArrayCore {
+    suspend fun applyWithBroadcast(
+        inputs: List<NDArrayCore>,
+        destination: MutableNDArrayCore,
+        op: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
+    ): MutableNDArrayCore {
         val wrappedInputs = inputs.map { it.reshape(unsqueezeFirst(it.shape, destination.shape.size)) }
 
         broadcast(wrappedInputs, destination, op)
         return destination
     }
 
-    fun applyWithBroadcast(inputs: List<NDArrayCore>, destType: DataType, op: (List<NDArrayCore>, MutableNDArrayCore) -> Unit): MutableNDArrayCore {
+    suspend fun applyWithBroadcast(
+        inputs: List<NDArrayCore>,
+        destType: DataType,
+        op: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
+    ): MutableNDArrayCore {
         val newShape = broadcastShape(inputs.map { it.shape })
         val destination = allocateNDArray(destType, newShape)
 
@@ -47,11 +55,11 @@ object Broadcasting {
         return destination
     }
 
-    fun matmulWithBroadcast(
+    suspend fun matmulWithBroadcast(
         left: NDArrayCore,
         right: NDArrayCore,
         destination: MutableNDArrayCore,
-        dotFunc: NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
+        dotFunc: suspend NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
     ) {
         require(broadcastShapeForMatmul(left.shape, right.shape).contentEquals(destination.shape))
 
@@ -61,10 +69,10 @@ object Broadcasting {
         matmulBroadcast(wrappedLeft, wrappedRight, destination, dotFunc)
     }
 
-    private fun broadcast(
+    private suspend fun broadcast(
         inputs: List<NDArrayCore>,
         destination: MutableNDArrayCore,
-        op: (List<NDArrayCore>, MutableNDArrayCore) -> Unit
+        op: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
     ) {
         if (inputs.all { it.shape.contentEquals(destination.shape) }) { // check all shapes (inputs and destination) equals
             op(inputs, destination)
@@ -73,11 +81,11 @@ object Broadcasting {
         }
     }
 
-    private fun matmulBroadcast(
+    private suspend fun matmulBroadcast(
         left: NDArrayCore,
         right: NDArrayCore,
         destination: MutableNDArrayCore,
-        dotFunc: NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
+        dotFunc: suspend NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
     ) {
         if (left.rank == 2) {
 
@@ -88,10 +96,10 @@ object Broadcasting {
         }
     }
 
-    private fun innerBroadcast(
+    private suspend fun innerBroadcast(
         inputs: List<NDArrayCore>,
         destination: MutableNDArrayCore,
-        recurrentBack: (List<NDArrayCore>, MutableNDArrayCore) -> Unit
+        recurrentBack: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
     ) {
         val indexedInputs = inputs.withIndex()
         val (arraysWithOne, arraysWithoutOne) = indexedInputs.partition { it.value.shape[0] == 1 }

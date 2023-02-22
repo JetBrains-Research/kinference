@@ -3,7 +3,6 @@ package io.kinference.core.operators.layer.recurrent.lstm
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.core.operators.activations.Activation
-import io.kinference.model.ExecutionContext
 import io.kinference.primitives.types.DataType
 import kotlin.time.ExperimentalTime
 
@@ -16,7 +15,7 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
     private val forwardLayer = LSTMLayer(hiddenSize, activations.subList(0, 3), "forward")
     private val reverseLayer = LSTMLayer(hiddenSize, activations.subList(3, 6), "reverse")
 
-    override fun apply(
+    override suspend fun apply(
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
@@ -25,8 +24,7 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
         initialHiddenState: NumberNDArrayCore?,
         initialCellState: NumberNDArrayCore?,
         peepholes: NumberNDArrayCore?,
-        dataType: DataType,
-        executionContext: ExecutionContext?
+        dataType: DataType
     ): LSTMLayerOutput {
         val seqLength = input.data.shape[0]
         val batchSize = input.data.shape[1]
@@ -60,8 +58,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
 
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 2, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
-        forwardLayer.apply(input, outputArray, lstmStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType, executionContext)
-        reverseLayer.apply(input, outputArray, lstmStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType, executionContext)
+        forwardLayer.apply(input, outputArray, lstmStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType)
+        reverseLayer.apply(input, outputArray, lstmStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType)
 
         return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
