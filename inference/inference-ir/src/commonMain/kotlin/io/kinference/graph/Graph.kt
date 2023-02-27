@@ -1,21 +1,19 @@
 package io.kinference.graph
 
 import io.kinference.data.ONNXData
-import io.kinference.model.ExecutionContext
 import io.kinference.operator.*
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
 import io.kinference.utils.LoggerFactory
 import io.kinference.utils.Stack
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.coroutineScope
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-abstract class Graph<T : ONNXData<*, *>>(
+abstract class Graph<T : ONNXData<*, *>> protected constructor(
     proto: GraphProto,
     private var _operators: ArrayList<Operator<T, T>>,
     private val valueOrderInfo: GraphValueOrderInfo
@@ -188,7 +186,7 @@ abstract class Graph<T : ONNXData<*, *>>(
     @ExperimentalTime
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
         //TODO: check that all inputs were set and not null
-        val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling, _contexts.execution ?: ExecutionContext(EmptyCoroutineContext))
+        val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
         for (tensor in initializers) {
             contexts.graph!!.putValue(tensor.name!!, tensor)
@@ -202,14 +200,12 @@ abstract class Graph<T : ONNXData<*, *>>(
             contexts.graph!!.putValue(input.name!!, input)
         }
         
-        withContext(contexts.execution.asCoroutineContext()) {
+        coroutineScope {
             for ((i, operator) in operators.withIndex()) {
-                contexts.execution?.checkCancelled?.invoke()
-
                 lateinit var outputs: List<T?>
                 contexts.profiling.profile(operator.info.type) { profilingContext ->
                     outputs = operator.applyWithCheck(
-                        Contexts(contexts.graph, profilingContext, contexts.execution),
+                        Contexts(contexts.graph, profilingContext),
                         operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
                 }
 

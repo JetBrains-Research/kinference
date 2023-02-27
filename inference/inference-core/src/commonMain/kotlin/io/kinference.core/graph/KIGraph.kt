@@ -17,11 +17,11 @@ import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class KIGraph(
+class KIGraph private constructor(
     proto: GraphProto,
     operators: ArrayList<Operator<KIONNXData<*>, KIONNXData<*>>>,
     valueOrderInfo: GraphValueOrderInfo,
-    internal val preparedTensorsContext: GraphContext<KIONNXData<*>> = GraphContext()
+    private val preparedTensorsContext: GraphContext<KIONNXData<*>> = GraphContext()
 ) : Graph<KIONNXData<*>>(proto, operators, valueOrderInfo) {
     override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
         val context = GraphContext(root)

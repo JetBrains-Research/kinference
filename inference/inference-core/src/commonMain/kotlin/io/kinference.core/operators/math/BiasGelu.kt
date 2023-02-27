@@ -128,7 +128,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
 
                 val output = MutableFloatNDArray(input.strides)
 
-                if (contexts.execution?.coroutineContext != null && input.linearSize > bias.linearSize) {
+                if (input.linearSize > bias.linearSize) {
                     computeBatched(input, output, bias, ::computeFloat)
                 } else {
                     computeFloat(output, input, bias)
@@ -143,7 +143,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
 
                 val output = MutableDoubleNDArray(input.strides)
 
-                if (contexts.execution?.coroutineContext != null) {
+                if (input.linearSize > bias.linearSize) {
                     computeBatched(input, output, bias, ::computeDouble)
                 } else {
                     computeDouble(output, input, bias)

@@ -18,8 +18,7 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
     override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, KIONNXData<*>> {
         val contexts = Contexts<KIONNXData<*>>(
             null,
-            if (profile) addProfilingContext("Model $name") else null,
-            executionContext
+            if (profile) addProfilingContext("Model $name") else null
         )
         val execResult = graph.execute(input, contexts)
         return execResult.associateBy { it.name!! }

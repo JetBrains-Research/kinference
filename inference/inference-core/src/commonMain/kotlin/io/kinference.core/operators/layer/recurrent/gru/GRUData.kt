@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
-class GRUDefaultGate(
+class GRUDefaultGate internal constructor(
     private val weights: NumberNDArrayCore,
     private val recurrentWeights: NumberNDArrayCore,
     private val bias: NumberNDArrayCore?,
@@ -33,7 +33,7 @@ class GRUDefaultGate(
     fun getVector(batchNum: Int) = gateData.view(batchNum)
 }
 
-class GRUHiddenGate(
+class GRUHiddenGate private constructor(
     private val weights: NumberNDArrayCore,
     private val recurrentWeights: NumberNDArrayCore,
     private val bias: NumberNDArray?,
@@ -170,7 +170,11 @@ data class GRUGates(val update: GRUDefaultGate, val reset: GRUDefaultGate, val h
 
 }
 
-class GRUHiddenState(initHiddenState: NumberNDArrayCore?, private val dataType: DataType, numDirection: Int, batchSize: Int, hiddenSize: Int) {
+class GRUHiddenState internal constructor(
+    initHiddenState: NumberNDArrayCore?,
+    private val dataType: DataType,
+    numDirection: Int, batchSize: Int, hiddenSize: Int
+) {
     private val stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
     private val tempData = allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
 
