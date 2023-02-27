@@ -8,7 +8,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 abstract class ContextPrepare {
-    abstract fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>)
+    abstract suspend fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>)
 
     @OptIn(ExperimentalTime::class)
     protected fun initTensorByDefaultName(defaultName: String, operator: Operator<KIONNXData<*>, KIONNXData<*>>, initializers: List<KITensor>): KITensor? {

@@ -38,7 +38,7 @@ class FlattenVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         private val INFO = OperatorInfo("Flatten", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    val axis: Int by attribute() { it: Number -> it.toInt() }
+    val axis: Int by attribute { it: Number -> it.toInt() }
 
     private fun makeShape(shape: IntArray, axis: Int): IntArray {
         val firstDimension = shape.slice(0 until axis).fold(1, Int::times)
@@ -47,7 +47,7 @@ class FlattenVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         return intArrayOf(firstDimension, secondDimension)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val actualAxis = input.indexAxis(axis)
 

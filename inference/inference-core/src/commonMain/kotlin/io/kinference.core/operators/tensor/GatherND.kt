@@ -66,7 +66,7 @@ class GatherNDVer11(name: String, attributes: Map<String, Attribute<Any>>, input
 
     private val batchDims: Int by attribute("batch_dims") { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val indices = inputs[1]!!.data as LongNDArray
         val blockSize = input.computeBlockSize(fromDim = batchDims + indices.shape.last())

@@ -41,7 +41,7 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
         private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!
         val bias = inputs.getOrNull(1)
 

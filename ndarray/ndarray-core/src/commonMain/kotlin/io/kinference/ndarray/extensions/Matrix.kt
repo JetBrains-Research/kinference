@@ -4,10 +4,8 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.primitives.types.DataType
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
-fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArrayCore, b: NumberNDArrayCore, beta: Double, c: MutableNDArrayCore,
+suspend fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArrayCore, b: NumberNDArrayCore, beta: Double, c: MutableNDArrayCore,
          aOffset: Int = 0, bOffset: Int = 0, cOffset: Int = 0, transposeA: Boolean = false, transposeB: Boolean = false) : MutableNDArrayCore {
     val lda = if (transposeA) m else k
     val ldb = if (transposeB) k else n
@@ -15,9 +13,9 @@ fun gemm(m: Int, n: Int, k: Int, alpha: Double, a: NumberNDArrayCore, b: NumberN
 }
 
 
-internal fun NumberNDArrayCore.matmul(
+internal suspend fun NumberNDArrayCore.matmul(
     other: NumberNDArrayCore, dest: MutableNumberNDArrayCore,
-    dotFunc: NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
+    dotFunc: suspend NumberNDArrayCore.(NumberNDArrayCore, MutableNumberNDArrayCore) -> MutableNumberNDArrayCore
 ): MutableNumberNDArrayCore {
     require(!this.isScalar() && !other.isScalar()) { "Matmul operation is not available for scalar tensors" }
 
@@ -32,18 +30,20 @@ internal fun NumberNDArrayCore.matmul(
     return dest
 }
 
-fun quantizeMatMul(
-    left: NumberNDArrayCore, right: NumberNDArrayCore, leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
-    leftScale: FloatNDArray, rightScale: FloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
+suspend fun quantizeMatMul(
+    left: NumberNDArrayCore, right: NumberNDArrayCore,
+    leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
+    leftScale: FloatNDArray, rightScale: FloatNDArray
 ): MutableFloatNDArray {
     val outputShape = Broadcasting.broadcastShapeForMatmul(left.shape, right.shape)
     val outputArray = MutableFloatNDArray(outputShape)
-    return quantizeMatMul(left, right, leftZeroPoint, rightZeroPoint, leftScale, rightScale, outputArray, coroutineContext)
+    return quantizeMatMul(left, right, leftZeroPoint, rightZeroPoint, leftScale, rightScale, outputArray)
 }
 
-fun quantizeMatMul(
-    left: NumberNDArrayCore, right: NumberNDArrayCore, leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
-    leftScale: FloatNDArray, rightScale: FloatNDArray, dest: MutableFloatNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext
+suspend fun quantizeMatMul(
+    left: NumberNDArrayCore, right: NumberNDArrayCore,
+    leftZeroPoint: NumberNDArrayCore?, rightZeroPoint: NumberNDArrayCore?,
+    leftScale: FloatNDArray, rightScale: FloatNDArray, dest: MutableFloatNDArray
 ): MutableFloatNDArray {
     if (canDequantizePerTensor(leftZeroPoint, leftScale) && canDequantizePerTensor(rightZeroPoint, rightScale)) {
         val leftScaleValue = leftScale.singleValue()
@@ -56,7 +56,7 @@ fun quantizeMatMul(
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 left.matmul(right, dest) { other, dest ->
-                    (this as ByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale, coroutineContext)
+                    (this as ByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
 
@@ -64,7 +64,7 @@ fun quantizeMatMul(
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 left.matmul(right, dest) { other, dest ->
-                    (this as ByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale, coroutineContext)
+                    (this as ByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
 
@@ -72,7 +72,7 @@ fun quantizeMatMul(
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? Byte)?.toInt() ?: 0
                 left.matmul(right, dest) { other, dest ->
-                    (this as UByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale, coroutineContext)
+                    (this as UByteNDArray).quantizeDot(other as ByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
 
@@ -80,7 +80,7 @@ fun quantizeMatMul(
                 val leftZeroPointValue = (leftZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 val rightZeroPointValue = (rightZeroPoint?.singleValue() as? UByte)?.toInt() ?: 0
                 left.matmul(right, dest) { other, dest ->
-                    (this as UByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale, coroutineContext)
+                    (this as UByteNDArray).quantizeDot(other as UByteNDArray, dest as MutableFloatNDArray, leftZeroPointValue, rightZeroPointValue, fullScale)
                 }
             }
         }
@@ -88,7 +88,7 @@ fun quantizeMatMul(
         val leftDequantized = left.tryDequantize(leftZeroPoint, leftScale) as MutableFloatNDArray
         val rightDequantized = right.tryDequantize(rightZeroPoint, rightScale) as MutableFloatNDArray
 
-        leftDequantized.matmul(rightDequantized, dest) { other, dest -> this.dot(other, dest, coroutineContext) }
+        leftDequantized.matmul(rightDequantized, dest) { other, dest -> this.dot(other, dest) }
     }
 
     return dest

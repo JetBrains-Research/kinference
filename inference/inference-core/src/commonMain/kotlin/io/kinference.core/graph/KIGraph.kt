@@ -9,31 +9,20 @@ import io.kinference.core.operators.layer.recurrent.gru.GRUContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.math.MatMulIntegerVer10
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTMContext
-import io.kinference.graph.GraphContext
-import io.kinference.graph.Graph
+import io.kinference.graph.*
+import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIONNXData<*>>(proto, opSetRegistry, KIOperatorFactory) {
-    private val preparedTensorsContext = GraphContext<KIONNXData<*>>()
-
-    init {
-        initializers as List<KITensor>
-        for (operator in operators) {
-            when(operator.info.type) {
-                "LSTM" -> LSTMContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-                "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-                "GRU" -> GRUContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-                "Attention" -> AttentionContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-                "QAttention" -> QAttentionContext.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-                "MatMulInteger" -> MatMulIntegerVer10.MatMulIntegerPrepare.appendContext(preparedTensorsContext, initializers as List<KITensor>, operator)
-            }
-        }
-    }
-
+class KIGraph private constructor(
+    proto: GraphProto,
+    operators: ArrayList<Operator<KIONNXData<*>, KIONNXData<*>>>,
+    valueOrderInfo: GraphValueOrderInfo,
+    private val preparedTensorsContext: GraphContext<KIONNXData<*>> = GraphContext()
+) : Graph<KIONNXData<*>>(proto, operators, valueOrderInfo) {
     override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
         val context = GraphContext(root)
         context.mergeContext(preparedTensorsContext)
@@ -41,4 +30,29 @@ class KIGraph(proto: GraphProto, opSetRegistry: OperatorSetRegistry) : Graph<KIO
     }
 
     override fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
+
+    companion object {
+        suspend operator fun invoke(proto: GraphProto, opSetRegistry: OperatorSetRegistry): KIGraph {
+            val valueOrderInfo = GraphValueOrderInfo()
+            val nodes = proto.collectOperators<KIONNXData<*>>(valueOrderInfo)
+            val operators = ArrayList<Operator<KIONNXData<*>, KIONNXData<*>>>(nodes.size).apply {
+                for (node in nodes) {
+                    add(KIOperatorFactory.create(node.proto, opSetRegistry))
+                }
+            }
+
+            val graph = KIGraph(proto, operators, valueOrderInfo)
+            for (operator in graph.operators) {
+                when(operator.info.type) {
+                    "LSTM" -> LSTMContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                    "DynamicQuantizeLSTM" -> DynamicQuantizeLSTMContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                    "GRU" -> GRUContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                    "Attention" -> AttentionContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                    "QAttention" -> QAttentionContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                    "MatMulInteger" -> MatMulIntegerVer10.MatMulIntegerPrepare.appendContext(graph.preparedTensorsContext, graph.initializers as List<KITensor>, operator)
+                }
+            }
+            return graph
+        }
+    }
 }

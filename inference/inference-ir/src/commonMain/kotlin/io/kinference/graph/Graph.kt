@@ -1,37 +1,95 @@
 package io.kinference.graph
 
 import io.kinference.data.ONNXData
-import io.kinference.model.ExecutionContext
 import io.kinference.operator.*
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
 import io.kinference.utils.LoggerFactory
 import io.kinference.utils.Stack
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.coroutineScope
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>) {
+abstract class Graph<T : ONNXData<*, *>> protected constructor(
+    proto: GraphProto,
+    private var _operators: ArrayList<Operator<T, T>>,
+    private val valueOrderInfo: GraphValueOrderInfo
+) {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
-    }
 
-    private var _operators: ArrayList<Operator<T, T>>
+        private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int, initNames: List<String>) {
+            val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
+            putOrder(otherNames, order)
+        }
+
+        fun <T : ONNXData<*, *>> GraphProto.collectOperators(valueOrderInfo: GraphValueOrderInfo): ArrayList<Node> {
+            val sortedNodes = ArrayList<Node>(this.node.size)
+            val initNames = initializer.map { it.name ?: "" }
+            val nodes = HashMap<String, Node>().apply {
+                for (nodeProto in node) {
+                    val node = Node(nodeProto)
+                    for (output in nodeProto.output) {
+                        put(output, node)
+                    }
+                }
+            }
+
+            val stack = Stack<Node>().apply {
+                for (output in output) {
+                    val name = output.name!!
+                    if (name.isNotEmpty()) {
+                        val node = nodes[name]
+                        if (node != null) push(node)
+                    }
+                }
+            }
+
+            var order = 0
+            val outputNames = this.output.map { it.name!! }
+            while (stack.isNotEmpty()) {
+                val node = stack.peek()
+                if (!node.visited) {
+                    var ready = true
+                    for (input in node.dependencies) {
+                        val next = nodes[input]
+                        if (next != null && !next.visited) {
+                            ready = false
+                            stack.push(next)
+                        }
+                    }
+
+                    if (ready) {
+                        node.visited = true
+                        stack.pop()
+                        sortedNodes.add(node)
+                        valueOrderInfo.putOrderFor(node.dependencies - outputNames, order, initNames)
+                        order++
+                    }
+                } else stack.pop()
+            }
+
+            return sortedNodes
+        }
+    }
     val operators: List<Operator<T, T>>
         get() = _operators
 
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
-    val valueOrderInfo = GraphValueOrderInfo()
 
-    protected val initializers: MutableList<T>
+    protected val initializers = ArrayList<T>(proto.initializer.size).apply {
+        for (i in proto.initializer)
+            this.add(prepareInput(i))
+    }
+
     val initNames = proto.initializer.map { it.name }
 
-    private data class Node(val proto: NodeProto, var visited: Boolean = false) {
+    data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
             for (variable in input) {
                 if (variable.isNotEmpty()) add(variable)
@@ -56,60 +114,11 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     }
 
     init {
-        _operators = ArrayList(proto.node.size)
-        val nodes = HashMap<String, Node>().apply {
-            for (nodeProto in proto.node) {
-                val node = Node(nodeProto)
-                for (output in nodeProto.output) {
-                    put(output, node)
-                }
-            }
-        }
-
-        val stack = Stack<Node>().apply {
-            for (output in proto.output) {
-                val name = output.name!!
-                if (name.isNotEmpty()) {
-                    val node = nodes[name]
-                    if (node != null) push(node)
-                }
-            }
-        }
-
-        var order = 0
-        val outputNames = outputs.map { it.name }
-        while (stack.isNotEmpty()) {
-            val node = stack.peek()
-            if (!node.visited) {
-                var ready = true
-                for (input in node.dependencies) {
-                    val next = nodes[input]
-                    if (next != null && !next.visited) {
-                        ready = false
-                        stack.push(next)
-                    }
-                }
-
-                if (ready) {
-                    node.visited = true
-                    stack.pop()
-                    _operators.add(factory.create(node.proto, opSetRegistry))
-                    valueOrderInfo.putOrderFor(node.dependencies - outputNames, order)
-                    order++
-                }
-            } else stack.pop()
-        }
-
         if (_operators.size != proto.node.size) {
             logger.warning {
                 "Count of used operators ${operators.size} not equals count of operators in model ${proto.node.size}. " +
                     "Remove unused operators from model for more performance!"
             }
-        }
-
-        initializers = ArrayList<T>(proto.initializer.size).apply {
-            for (i in proto.initializer)
-                this.add(prepareInput(i))
         }
     }
 
@@ -152,11 +161,6 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
         _operators = newOperators
     }
 
-    private fun GraphValueOrderInfo.putOrderFor(names: Set<String>, order: Int) {
-        val (_, otherNames) = names.partition { name -> initNames.any { it == name } }
-        putOrder(otherNames, order)
-    }
-
     private fun GraphValueOrderInfo.decOrderFrom(targetOrder: Int) {
         for (name in this.names()) {
             val order = valueOrderInfo.getOrder(name)
@@ -180,13 +184,14 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
     @ExperimentalTime
-    fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
+    suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
         //TODO: check that all inputs were set and not null
-        val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling, _contexts.execution ?: ExecutionContext(EmptyCoroutineContext))
+        val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
         for (tensor in initializers) {
             contexts.graph!!.putValue(tensor.name!!, tensor)
         }
+
         for (input in inputs) {
             if (input.name !in availableInputs) {
                 logger.warning { "Input node '${input.name}' not found in Graph and probably is excessive" }
@@ -194,23 +199,23 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             }
             contexts.graph!!.putValue(input.name!!, input)
         }
+        
+        coroutineScope {
+            for ((i, operator) in operators.withIndex()) {
+                lateinit var outputs: List<T?>
+                contexts.profiling.profile(operator.info.type) { profilingContext ->
+                    outputs = operator.applyWithCheck(
+                        Contexts(contexts.graph, profilingContext),
+                        operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+                }
 
-        for ((i, operator) in operators.withIndex()) {
-            contexts.execution?.checkCancelled?.invoke()
-
-            lateinit var outputs: List<T?>
-            contexts.profiling.profile(operator.info.type) { profilingContext ->
-                outputs = operator.applyWithCheck(
-                    Contexts(contexts.graph, profilingContext, contexts.execution),
-                    operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
-            }
-
-            contexts.profiling.profile("${operator.info.type}:cleanup") {
-                cleanupUntilOrder(contexts.graph!!, i)
-                outputs.zip(operator.outputs) { output, variable ->
-                    if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
-                    if (variable.isNotEmpty()) {
-                        contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
+                contexts.profiling.profile("${operator.info.type}:cleanup") {
+                    cleanupUntilOrder(contexts.graph!!, i)
+                    outputs.zip(operator.outputs) { output, variable ->
+                        if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
+                        if (variable.isNotEmpty()) {
+                            contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
+                        }
                     }
                 }
             }

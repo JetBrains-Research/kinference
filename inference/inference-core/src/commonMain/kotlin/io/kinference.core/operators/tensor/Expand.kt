@@ -44,7 +44,7 @@ class ExpandVer8(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         return output
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val shapeNDArray = inputs[1]!!.data as LongNDArray
 

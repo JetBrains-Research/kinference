@@ -5,7 +5,6 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
@@ -49,7 +48,7 @@ class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<A
         private val INFO = OperatorInfo("MatMulIntegerToFloat", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val left = inputs[0]!!.data as NumberNDArrayCore
         val right = inputs[1]!!.data as NumberNDArrayCore
         val leftScale = inputs[2]!!.data as FloatNDArray
@@ -63,7 +62,7 @@ class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<A
         val leftDequant = left.tryDequantize(leftZeroPoint, leftScale)
         val rightDequant = right.tryDequantize(rightZeroPoint, rightScale)
 
-        val outputArray = leftDequant.matmul(rightDequant, contexts.execution.asCoroutineContext())
+        val outputArray = leftDequant.matmul(rightDequant)
 
         if (bias != null) {
             outputArray.plusAssign(bias)

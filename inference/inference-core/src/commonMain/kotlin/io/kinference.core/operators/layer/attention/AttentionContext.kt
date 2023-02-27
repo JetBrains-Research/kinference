@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 internal object AttentionContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.attention.AttentionContext")
 
-    override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    override suspend fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("weight", operator, initializers)
         val biasInit = initTensorByDefaultName("bias", operator, initializers)
         val numHeads = operator.getAttribute<Long>("num_heads").toInt()
@@ -22,7 +22,7 @@ internal object AttentionContext: ContextPrepare() {
         appendBias(biasInit, context, numHeads)
     }
 
-    internal fun prepareWeights(tensor: KITensor, numHeads: Int): KITensor {
+    internal suspend fun prepareWeights(tensor: KITensor, numHeads: Int): KITensor {
         val shape = tensor.data.shape
         val headSize = shape[1] / 3 / numHeads
         val newShape = intArrayOf(shape[0], 3, numHeads, headSize)
@@ -32,14 +32,14 @@ internal object AttentionContext: ContextPrepare() {
         return prepared.asTensor("prepared_${tensor.name}")
     }
 
-    internal fun prepareBias(tensor: KITensor, numHeads: Int): KITensor {
+    internal suspend fun prepareBias(tensor: KITensor, numHeads: Int): KITensor {
         val shape = tensor.data.shape
         val headSize = shape[0] / 3 / numHeads
         val newShape = intArrayOf(3, numHeads, headSize)
         return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
-    private fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
+    private suspend fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
         if (tensor == null) {
             logger.warning { "Make the weights part of the model, otherwise the Attention will be slow" }
         } else {
@@ -48,7 +48,7 @@ internal object AttentionContext: ContextPrepare() {
         }
     }
 
-    private fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
+    private suspend fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>, numHeads: Int) {
         if (tensor == null) {
             logger.warning { "Make the bias part of the model, otherwise the Attention will be slow\n" }
         } else {

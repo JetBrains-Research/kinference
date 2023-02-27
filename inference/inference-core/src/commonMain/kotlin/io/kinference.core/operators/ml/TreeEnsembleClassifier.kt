@@ -125,7 +125,7 @@ class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputData = inputs[0]!!.data.toFloatNDArray()
         val classScores = ensemble.execute(inputData) as FloatNDArray
         val classLabels = labeledTopClasses(classScores)

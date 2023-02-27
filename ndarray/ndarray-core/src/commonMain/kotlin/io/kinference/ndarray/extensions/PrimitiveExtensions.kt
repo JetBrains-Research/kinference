@@ -9,7 +9,7 @@ import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.runBlocking
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -28,10 +28,10 @@ fun erf(value: PrimitiveType): PrimitiveType {
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
 @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
-fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
+suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
     val M = this.shape[0]
 
-    fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
+    suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
         for (rdBlockNum in 0 until destination.blocksInRow) {
             body {
                 for (i in 0 until M) {
@@ -58,7 +58,7 @@ fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, 
     }
 
     if (other.blocksInRow > 1) {
-        runBlocking(coroutineContext) { wrapper { launch { it() } } }
+        coroutineScope { wrapper { launch { it() } } }
     } else {
         wrapper()
     }
@@ -68,7 +68,7 @@ fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, 
 
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE, DataType.INT])
-fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
+suspend fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
     return if (zeroPoint.linearSize == 1) {
         val zero = zeroPoint.array.blocks[0][0].toInt()
         val arr = IntTiledArray(this.strides)
@@ -82,7 +82,7 @@ fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
 }
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
-fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
+suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
     val zeros = zeroPoint?.array
     val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
 
@@ -117,7 +117,7 @@ fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArra
 }
 
 @SpecifyPrimitives(include = [DataType.FLOAT, DataType.DOUBLE])
-fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArray {
+suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
     other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
 
     @Suppress("NAME_SHADOWING") val alpha = alpha.toPrimitive()
@@ -133,7 +133,7 @@ fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray,
     val lBlocks = this.array.blocks
     val rBlocks = other.array.blocks
 
-    fun wrapper(body: (inner: () -> Unit) -> Unit = { it() }) {
+    suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
         for (dRow in 0 until dRowsNum) {
             var rRow = 0
             val dBlockOffset = dRow * dBlocksInRow
@@ -163,7 +163,7 @@ fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray,
     }
 
     if (destination.blocksInRow > 1) {
-        runBlocking(coroutineContext) { wrapper { launch { it() } } }
+        coroutineScope { wrapper { launch { it() } } }
     } else {
         wrapper()
     }

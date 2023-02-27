@@ -7,7 +7,6 @@ import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.KIGraph
 import io.kinference.core.model.KIModel
-import io.kinference.core.optimizer.rules.DequantizeQAttention
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.optimizer.GraphOptimizer
@@ -40,7 +39,7 @@ object KIEngine : OptimizableEngine<KIONNXData<*>> {
 
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
+    override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
         val model = KIModel(modelScheme)
         return if (optimize) {
@@ -51,7 +50,7 @@ object KIEngine : OptimizableEngine<KIONNXData<*>> {
         }
     }
 
-    override fun loadModel(bytes: ByteArray): KIModel = loadModel(bytes, optimize = false)
+    override suspend fun loadModel(bytes: ByteArray): KIModel = loadModel(bytes, optimize = false)
 
     override suspend fun loadModel(path: Path, optimize: Boolean): KIModel {
         return loadModel(CommonDataLoader.bytes(path), optimize)

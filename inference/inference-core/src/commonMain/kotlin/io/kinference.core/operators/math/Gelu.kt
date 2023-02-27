@@ -65,7 +65,7 @@ class GeluVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArrayCore
         return listOf(gelu(input.toMutable()).asTensor("Y"))
     }

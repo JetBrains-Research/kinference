@@ -681,7 +681,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!
 

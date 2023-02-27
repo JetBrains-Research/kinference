@@ -40,7 +40,7 @@ class SigmoidVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyM
         private val INFO = OperatorInfo("Sigmoid", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         return when (val type = input.type) {
             DataType.FLOAT -> input.map(Sigmoid.activateFloat)
             DataType.DOUBLE -> input.map(Sigmoid.activateDouble)

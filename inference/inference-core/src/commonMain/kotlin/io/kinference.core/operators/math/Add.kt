@@ -52,7 +52,7 @@ class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
         private val INFO = OperatorInfo("Add", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val result = (inputs[0]!!.data as NumberNDArrayCore) + (inputs[1]!!.data as NumberNDArrayCore)
         return listOf(result.asTensor("C"))
     }

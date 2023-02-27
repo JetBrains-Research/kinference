@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 internal object GRUContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.gru.GRUContext")
 
-    override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    override suspend fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)
@@ -23,19 +23,19 @@ internal object GRUContext: ContextPrepare() {
         appendBias(biasInit, context)
     }
 
-    internal fun prepareWeights(tensor: KITensor): KITensor {
+    internal suspend fun prepareWeights(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 3, shape[1] / 3, shape[2])
         return tensor.data.reshape(newShape).transpose(intArrayOf(0, 1, 3, 2)).asTensor("prepared_${tensor.name}")
     }
 
-    internal fun prepareBias(tensor: KITensor): KITensor {
+    internal suspend fun prepareBias(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 6, shape[1] / 6)
         return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
-    private fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
+    private suspend fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make the weights part of the model, otherwise the GRU will be slow" }
         } else {
@@ -44,7 +44,7 @@ internal object GRUContext: ContextPrepare() {
         }
     }
 
-    private fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
+    private suspend fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make the bias part of the model, otherwise the GRU will be slow" }
         } else {

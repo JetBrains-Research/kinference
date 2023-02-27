@@ -66,7 +66,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
         }
 
 
-        private fun getIndices(indices: NDArrayCore, axisLimit: Int): IntNDArray {
+        private suspend fun getIndices(indices: NDArrayCore, axisLimit: Int): IntNDArray {
             if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
 
             fun checkIndex(index: Int, axisLimit: Int): Int = if (index >= 0) index else index + axisLimit
@@ -85,7 +85,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val (data, indices) = inputs.map { it!!.data }
         require(data.rank == indices.rank) { "Data and indices tensors must have the same rank" }
 

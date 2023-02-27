@@ -30,7 +30,7 @@ fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): In
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : NDArray> T.transpose(permutations: IntArray? = null): T {
+suspend fun <T : NDArray> T.transpose(permutations: IntArray? = null): T {
     require(permutations.isNullOrEmpty() || permutations!!.size == rank) { "Axes permutations list size should match the number of axes" }
     if (this.rank == 2) return this.transpose2D() as T
 
@@ -52,7 +52,7 @@ fun broadcastShape(shapes: List<IntArray>): IntArray {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : NDArray> T.slice(starts: IntArray? = null, ends: IntArray? = null, steps: IntArray? = null): T {
+suspend fun <T : NDArray> T.slice(starts: IntArray? = null, ends: IntArray? = null, steps: IntArray? = null): T {
     fun zeros() = IntArray(rank)
     fun ones() = IntArray(rank) { 1 }
 

@@ -2,8 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.Closeable
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.min
 
 enum class PadMode {
@@ -50,12 +48,12 @@ interface NDArray : Closeable {
     /**
      * Creates an array containing the same data with the new strides.
      */
-    fun reshape(strides: Strides): NDArray
+    suspend fun reshape(strides: Strides): NDArray
 
     /**
      * Creates an array containing the same data with the new shape.
      */
-    fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
+    suspend fun reshape(shape: IntArray): NDArray = reshape(Strides(shape))
 
     /**
      * Copies current array data to a new instance of [MutableNDArray].
@@ -67,39 +65,39 @@ interface NDArray : Closeable {
      *
      * @param axes positions of axes to remove. If it is empty, removes all single-dimensional entries from shape.
      */
-    fun squeeze(vararg axes: Int): NDArray
+    suspend fun squeeze(vararg axes: Int): NDArray
 
     /**
      * Inserts single-dimensional entries to the array shape on the positions specified in [axes].
      */
-    fun unsqueeze(vararg axes: Int): NDArray
+    suspend fun unsqueeze(vararg axes: Int): NDArray
 
     /**
      * Joins an array with a sequence of [others] along a new [axis].
      * Each array must have the same shape.
      */
-    fun stack(others: List<NDArray>, axis: Int): NDArray
+    suspend fun stack(others: List<NDArray>, axis: Int): NDArray
 
     /**
      * Joins an array with a sequence of [others] along existing [axis].
      * Each array must have the same shape (except in the dimension corresponding to [axis])
      */
-    fun concat(others: List<NDArray>, axis: Int): NDArray
+    suspend fun concat(others: List<NDArray>, axis: Int): NDArray
 
     /**
      * Splits an array into multiple sub-arrays of length [parts] along [axis].
      */
-    fun split(parts: Int, axis: Int = 0): List<NDArray>
+    suspend fun split(parts: Int, axis: Int = 0): List<NDArray>
 
     /**
      * Split an array into multiple sub-arrays on given indices [split] along [axis].
      */
-    fun split(split: IntArray, axis: Int = 0): List<NDArray>
+    suspend fun split(split: IntArray, axis: Int = 0): List<NDArray>
 
     /**
      * Gathers values along given [axis] specified by [indices].
      */
-    fun gather(indices: NDArray, axis: Int = 0, batchDims: Int = 0): NDArray
+    suspend fun gather(indices: NDArray, axis: Int = 0, batchDims: Int = 0): NDArray
 
     /**
      * If a current array is not an instance of [MutableNDArray], creates [MutableNDArray] with deep copy of array data.
@@ -116,42 +114,42 @@ interface NDArray : Closeable {
      * @param ends end slice indices along each axis.
      * @param steps step between elements along each axis.
      */
-    fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray
+    suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArray
 
     /**
      * Broadcasts an array to the given shape.
      */
-    fun expand(shape: IntArray): MutableNDArray
+    suspend fun expand(shape: IntArray): MutableNDArray
 
     /**
      * Pads an array with given [pads] values (pairs of start and end pad values for each axis).
      * [constantValue] is optional and used only for [PadMode.CONSTANT]
      */
-    fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray? = null): NDArray
+    suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray? = null): NDArray
 
     /**
      * Computes indices of the elements that are non-zero.
      * These indices are represented as a 2D array of shape [[rank], numNonZeros],
      * where each row contains the indices of non-zero elements in corresponding dimension.
      */
-    fun nonZero(): NumberNDArray
+    suspend fun nonZero(): NumberNDArray
 
     /**
      * Constructs a new array by repeating a current array the number of times specified in [repeats] along each axis.
      * [repeats] size should be equal to [rank].
      */
-    fun tile(repeats: IntArray): NDArray
+    suspend fun tile(repeats: IntArray): NDArray
 
     /**
      * Permutes the axes of an array in the given order specified in [permutations]
      * [permutations] size should be equal to [rank].
      */
-    fun transpose(permutations: IntArray): NDArray
+    suspend fun transpose(permutations: IntArray): NDArray
 
     /**
      * Transposes an array if it is a matrix (Could be more time-efficient for matrices than common [transpose])
      */
-    fun transpose2D(): NDArray
+    suspend fun transpose2D(): NDArray
 
     /**
      * Returns a view on an array using specified indices.
@@ -214,34 +212,34 @@ interface MutableNDArray : NDArray {
 interface NumberNDArray : NDArray {
     override fun toMutable(): MutableNumberNDArray
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
 
     /**
      * Computes the minimum value of an array.
      */
-    fun min(): Any
+    suspend fun min(): Any
 
     /**
      * Computes the minimum value along an axis.
      * If [keepDims] flag is true, target axis will be set to 1. In any other case, it will be reduced.
      */
-    fun min(axis: Int, keepDims: Boolean): NumberNDArray
+    suspend fun min(axis: Int, keepDims: Boolean): NumberNDArray
 
     /**
      * Computes maximum value of an array.
      */
-    fun max(): Any
+    suspend fun max(): Any
 
     /**
      * Computes the minimum value along an axis.
      * If [keepDims] flag is true, target axis will be set to 1. In any other case, it will be reduced.
      */
-    fun max(axis: Int, keepDims: Boolean): NumberNDArray
+    suspend fun max(axis: Int, keepDims: Boolean): NumberNDArray
 
     /**
      * Computes a sum of all array elements.
      */
-    fun sum(): Any
+    suspend fun sum(): Any
 
     /**
      * Computes the cumulative sum of array elements along the given [axis].
@@ -250,52 +248,52 @@ interface NumberNDArray : NDArray {
      * @param exclusive if this flag is true, an exclusive sum (top element is not included) is computed.
      * @param reverse if this flag is true, sums are made in a reverse direction.
      */
-    fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
+    suspend fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArray
 
     /**
      * Computes error function element-wise.
      */
-    fun erf(): NumberNDArray
+    suspend fun erf(): NumberNDArray
 
     /**
      * Computes softmax along the given axis.
      */
-    fun softmax(axis: Int = 0, coroutineContext: CoroutineContext? = null): NumberNDArray
+    suspend fun softmax(axis: Int = 0): NumberNDArray
 
     /**
      * Computes logSoftmax along the given axis.
      */
-    fun logSoftmax(axis: Int = 0, coroutineContext: CoroutineContext? = null): NumberNDArray
+    suspend fun logSoftmax(axis: Int = 0): NumberNDArray
 
     /**
      * Element-wise addition (supports broadcasting).
      */
-    operator fun plus(other: NumberNDArray): MutableNumberNDArray
+    suspend operator fun plus(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Element-wise subtraction (supports broadcasting).
      */
-    operator fun minus(other: NumberNDArray): MutableNumberNDArray
+    suspend operator fun minus(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Element-wise multiplication (supports broadcasting).
      */
-    operator fun times(other: NumberNDArray): MutableNumberNDArray
+    suspend operator fun times(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Element-wise division (supports broadcasting).
      */
-    operator fun div(other: NumberNDArray): MutableNumberNDArray
+    suspend operator fun div(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Computes dot product. Supports coroutines to speed up the computations.
      */
-    fun dot(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
+    suspend fun dot(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Computes matmul. Supports coroutines to speed up the computations.
      */
-    fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableNumberNDArray
+    suspend fun matmul(other: NumberNDArray): MutableNumberNDArray
 
     /**
      * Computes the indices of the maximum values along given axis.
@@ -305,13 +303,13 @@ interface NumberNDArray : NDArray {
      * @param selectLastIndex this flag determines whether the first occurrence of the maximum index should be selected,
      *                        or the last one (True -- last, False -- first).
      */
-    fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
+    suspend fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
 
     /**
      * Computes the sum of array elements along provided axes.
      * If [keepDims] flag is true, target axes will be set to 1. In any other case, they will be reduced.
      */
-    fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
+    suspend fun reduceSum(axes: IntArray, keepDims: Boolean = true): NDArray
 
     /**
      * Retrieves the top-k largest (or smallest) elements along the provided axis.
@@ -322,13 +320,13 @@ interface NumberNDArray : NDArray {
      * @param largest this flag determines whether to return the top-k largest or smallest elements.
      * @param sorted this flag determines whether to sort elements.
      */
-    fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, NumberNDArray>
+    suspend fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArray, NumberNDArray>
 
-    override fun reshape(strides: Strides): NumberNDArray
-    override fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
+    override suspend fun reshape(strides: Strides): NumberNDArray
+    override suspend fun reshape(shape: IntArray): NumberNDArray = reshape(Strides(shape))
 
-    override fun transpose(permutations: IntArray): NumberNDArray
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArray
+    override suspend fun transpose(permutations: IntArray): NumberNDArray
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArray
 
     override fun view(vararg axes: Int): NumberNDArray
 }
@@ -341,25 +339,25 @@ interface MutableNumberNDArray : MutableNDArray, NumberNDArray {
      * Assigns the element-wise addition result to the current array.
      * Broadcasting is only available for [other] array.
      */
-    operator fun plusAssign(other: NumberNDArray)
+    suspend operator fun plusAssign(other: NumberNDArray)
 
     /**
      * Assigns the element-wise subtraction result to the current array.
      * Broadcasting is only available for [other] array.
      */
-    operator fun minusAssign(other: NumberNDArray)
+    suspend operator fun minusAssign(other: NumberNDArray)
 
     /**
      * Assigns the element-wise multiplication result to the current array.
      * Broadcasting is only available for [other] array.
      */
-    operator fun timesAssign(other: NumberNDArray)
+    suspend operator fun timesAssign(other: NumberNDArray)
 
     /**
      * Assigns the element-wise division result to the current array.
      * Broadcasting is only available for [other] array.
      */
-    operator fun divAssign(other: NumberNDArray)
+    suspend operator fun divAssign(other: NumberNDArray)
 
     override fun viewMutable(vararg axes: Int): MutableNumberNDArray
 }

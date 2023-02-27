@@ -35,7 +35,7 @@ class NotVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val data = inputs[0]!!.data.toMutable() as MutableBooleanNDArray
         return listOf(data.not().asTensor("output"))
     }

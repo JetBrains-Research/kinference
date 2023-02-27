@@ -49,7 +49,7 @@ class SplitToSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KIONNXSequence?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KIONNXSequence?> {
         val parts = inputs.elementAtOrNull(1)
 
         val input = inputs[0]!!

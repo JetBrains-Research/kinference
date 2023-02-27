@@ -46,7 +46,7 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val data = inputs[0]!!
         val shape = data.data.shape
 

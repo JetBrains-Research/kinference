@@ -41,12 +41,12 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
         options.addCUDA()
     }
 
-    override fun loadModel(bytes: ByteArray): ORTModel {
+    override suspend fun loadModel(bytes: ByteArray): ORTModel {
         val session = env.createSession(bytes, options)
         return ORTModel(session)
     }
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
+    override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
         if (optimize)
             options.setOptimizationLevel(SessionOptions.OptLevel.BASIC_OPT)
         else

@@ -54,7 +54,7 @@ class TreeEnsemble(
         aggregator.finalize(biases, output.array, dstIdx, score, numTargets)
     }
 
-    fun execute(input: NumberNDArray): NDArray {
+    suspend fun execute(input: NumberNDArray): NDArray {
         val n = if (input.rank == 1) 1 else input.shape[0]
         val outputShape = if (numTargets == 1) intArrayOf(n) else intArrayOf(n, numTargets)
         val output = MutableFloatNDArray(shape = outputShape)

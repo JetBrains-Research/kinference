@@ -1,12 +1,10 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
-import io.kinference.ndarray.arrays.*
 import io.kinference.core.operators.activations.Activation
-import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.runBlocking
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -16,7 +14,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         require(activations.size == 2)
     }
 
-    override fun apply(
+    override suspend fun apply(
         input: NumberNDArrayCore,
         weights: NumberNDArrayCore,
         recurrentWeights: NumberNDArrayCore,
@@ -24,8 +22,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         sequenceLength: IntNDArray?,
         initialHiddenState: NumberNDArrayCore?,
         dataType: DataType,
-        linearBeforeReset: Boolean,
-        contexts: Contexts<*>
+        linearBeforeReset: Boolean
     ): Pair<NumberNDArrayCore, NumberNDArrayCore> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
@@ -40,11 +37,11 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
             batchSize, hiddenSize, dataType, linearBeforeReset
         )
 
-        apply(input, outputArray, gruState, gruGates, sequenceLength, 0, seqLength, batchSize, dataType, contexts)
+        apply(input, outputArray, gruState, gruGates, sequenceLength, 0, seqLength, batchSize, dataType)
         return outputArray to gruState.data
     }
 
-    fun apply(
+    suspend fun apply(
         input: NumberNDArrayCore,
         output: MutableNumberNDArrayCore,
         hiddenState: GRUHiddenState,
@@ -53,22 +50,21 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         numDirection: Int,
         seqLength: Int,
         batchSize: Int,
-        dataType: DataType,
-        contexts: Contexts<*>
+        dataType: DataType
     ) {
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
         val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
         val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
 
-        fun wrapper(seqNum: Int, body: (inner: () -> Unit) -> Unit = { it() }) {
+        suspend fun wrapper(seqNum: Int, body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
             for (batchNum in 0 until batchSize) {
                 if (seqNum >= seqLens[batchNum]) continue
                 body {
                     val localInput = input.view(seqNum, batchNum)
-                    gruGates.update.compute(localInput, hiddenState, f, numDirection, batchNum, contexts.execution)
-                    gruGates.reset.compute(localInput, hiddenState, f, numDirection, batchNum, contexts.execution)
-                    gruGates.hidden.compute(localInput, hiddenState, gruGates, g, numDirection, batchNum, contexts.execution)
+                    gruGates.update.compute(localInput, hiddenState, f, numDirection, batchNum)
+                    gruGates.reset.compute(localInput, hiddenState, f, numDirection, batchNum)
+                    gruGates.hidden.compute(localInput, hiddenState, gruGates, g, numDirection, batchNum)
                     hiddenState.compute(gruGates, numDirection, batchNum)
                     val outputVector = hiddenState.getVector(numDirection, batchNum)
 
@@ -80,7 +76,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         //TODO: research optimal batchSize for run with coroutines
         for (seqNum in seqRange) {
             if (batchSize > 1) {
-                runBlocking(contexts.execution.asCoroutineContext()) { wrapper(seqNum) { launch { it() } } }
+                coroutineScope { wrapper(seqNum) { launch { it() } } }
             } else {
                 wrapper(seqNum)
             }

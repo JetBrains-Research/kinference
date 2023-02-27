@@ -15,18 +15,17 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override fun predict(input: List<KIONNXData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, KIONNXData<*>> {
+    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, KIONNXData<*>> {
         val contexts = Contexts<KIONNXData<*>>(
             null,
-            if (profile) addProfilingContext("Model $name") else null,
-            executionContext
+            if (profile) addProfilingContext("Model $name") else null
         )
         val execResult = graph.execute(input, contexts)
         return execResult.associateBy { it.name!! }
     }
 
     companion object {
-        operator fun invoke(proto: ModelProto): KIModel {
+        suspend operator fun invoke(proto: ModelProto): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)

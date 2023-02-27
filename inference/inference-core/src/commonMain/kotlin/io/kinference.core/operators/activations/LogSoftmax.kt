@@ -3,7 +3,6 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -36,8 +35,8 @@ class LogSoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
 
     val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         input as NumberNDArrayCore
-        return input.logSoftmax(axis, contexts.execution.asCoroutineContext())
+        return input.logSoftmax(axis)
     }
 }

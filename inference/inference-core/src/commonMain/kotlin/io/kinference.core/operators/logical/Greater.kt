@@ -41,7 +41,7 @@ class GreaterVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("Greater", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        infix fun NDArrayCore.greater(other: NDArrayCore): NDArrayCore {
+        suspend infix fun NDArrayCore.greater(other: NDArrayCore): NDArrayCore {
             require(this.type == other.type) { "Arrays must have same types" }
 
             return applyWithBroadcast(other, DataType.BOOLEAN) { first, second, dest ->
@@ -110,7 +110,7 @@ class GreaterVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val result = inputs[0]!!.data greater inputs[1]!!.data
         return listOf(result.asTensor("output"))
     }

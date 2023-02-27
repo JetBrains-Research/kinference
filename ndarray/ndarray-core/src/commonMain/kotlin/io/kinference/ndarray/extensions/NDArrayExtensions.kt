@@ -5,11 +5,11 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.concat
 import io.kinference.primitives.types.DataType
 
-fun NDArrayCore.wrapOneDim(): NDArray {
+suspend fun NDArrayCore.wrapOneDim(): NDArray {
     return this.reshape(1.concat(this.shape))
 }
 
-fun squeeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
+suspend fun squeeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
     val actualAxes = if (axes.isNotEmpty()) {
         axes.map { array.indexAxis(it) }
     } else {
@@ -23,7 +23,7 @@ fun squeeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
     return array.reshape(newShape)
 }
 
-fun unsqueeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
+suspend fun unsqueeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
     fun indexAxisForUnsqueeze(axis: Int, shapeSize: Int): Int = if (axis < 0) shapeSize + axis else axis
 
     val actualAxes = axes.map { indexAxisForUnsqueeze(it, array.rank + axes.size) }.sorted()
@@ -35,7 +35,7 @@ fun unsqueeze(array: NDArrayCore, vararg axes: Int): NDArrayCore {
     return array.reshape(newShape.toIntArray())
 }
 
-fun NDArrayCore.reshape(tensorShape: NDArray): NDArrayCore {
+suspend fun NDArrayCore.reshape(tensorShape: NDArray): NDArrayCore {
     require(tensorShape is LongNDArray) { "Tensor shape must have Long type" }
 
     val pointer = tensorShape.array.pointer()
@@ -62,35 +62,36 @@ fun viewHelper(axes: IntArray, strides: Strides): Pair<Int, IntArray> {
     return newOffset to newShape
 }
 
-fun NDArrayCore.applyWithBroadcast(
+suspend fun NDArrayCore.applyWithBroadcast(
     other: NDArrayCore,
     destination: MutableNDArrayCore,
     ordered: Boolean = false,
-    op: (NDArrayCore, NDArrayCore, MutableNDArrayCore) -> Unit
+    op: suspend (NDArrayCore, NDArrayCore, MutableNDArrayCore) -> Unit
 ): MutableNDArray {
     val newShape = broadcastShape(listOf(this.shape, other.shape))
 
     if (ordered) require(this.shape.contentEquals(newShape))
 
-    val opWithNewStructure = { inputs: List<NDArrayCore>, dest: MutableNDArrayCore -> op(inputs[0], inputs[1], dest) }
-
-    return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
+    return Broadcasting.applyWithBroadcast(listOf(this, other), destination) { inputs: List<NDArrayCore>, dest: MutableNDArrayCore ->
+        op(inputs[0], inputs[1], dest)
+    }
 }
 
-fun NDArrayCore.applyWithBroadcast(
+suspend fun NDArrayCore.applyWithBroadcast(
     other: NDArrayCore,
     destType: DataType = this.type,
     ordered: Boolean = false,
-    op: (NDArrayCore, NDArrayCore, MutableNDArrayCore) -> Unit
+    op: suspend (NDArrayCore, NDArrayCore, MutableNDArrayCore) -> Unit
 ): MutableNDArrayCore {
     val newShape = broadcastShape(listOf(this.shape, other.shape))
 
     if (ordered) require(this.shape.contentEquals(newShape))
 
     val destination = allocateNDArray(destType, Strides(newShape))
-    val opWithNewStructure = { inputs: List<NDArrayCore>, dest: MutableNDArrayCore -> op(inputs[0], inputs[1], dest) }
 
-    return Broadcasting.applyWithBroadcast(listOf(this, other), destination, opWithNewStructure)
+    return Broadcasting.applyWithBroadcast(listOf(this, other), destination) { inputs: List<NDArrayCore>, dest: MutableNDArrayCore ->
+        op(inputs[0], inputs[1], dest)
+    }
 }
 
 fun NDArrayCore.isTransposeReshape(permutation: IntArray): Boolean {
@@ -106,7 +107,7 @@ fun NDArrayCore.isTransposeReshape(permutation: IntArray): Boolean {
     return true
 }
 
-fun NumberNDArrayCore.tryDequantize(zeroPoint: NumberNDArrayCore?, scale: FloatNDArray, axis: Int? = null): FloatNDArray {
+suspend fun NumberNDArrayCore.tryDequantize(zeroPoint: NumberNDArrayCore?, scale: FloatNDArray, axis: Int? = null): FloatNDArray {
     require(this.type == zeroPoint?.type) { "Input data and zero point should have the same data type." }
     return when {
         this is ByteNDArray && zeroPoint is ByteNDArray -> this.dequantize(zeroPoint, scale, axis)
@@ -115,7 +116,7 @@ fun NumberNDArrayCore.tryDequantize(zeroPoint: NumberNDArrayCore?, scale: FloatN
     }
 }
 
-fun NumberNDArrayCore.tryZeroPoint(zeroPoint: NumberNDArrayCore): IntNDArray {
+suspend fun NumberNDArrayCore.tryZeroPoint(zeroPoint: NumberNDArrayCore): IntNDArray {
     require(this.type == zeroPoint.type) { "Input data and zero point should have the same data type." }
     return when {
         this is ByteNDArray && zeroPoint is ByteNDArray -> this.withZeroPoint(zeroPoint)

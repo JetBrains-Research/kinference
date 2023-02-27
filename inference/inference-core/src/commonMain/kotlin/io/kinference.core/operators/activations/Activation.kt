@@ -21,10 +21,10 @@ abstract class Activation protected constructor(
     outputs: List<String>
 ) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
 
-    open fun activate(input: KITensor, contexts: Contexts<KIONNXData<*>>): KITensor = activate(input.data, contexts).asTensor()
-    abstract fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore
+    open suspend fun activate(input: KITensor, contexts: Contexts<KIONNXData<*>>): KITensor = activate(input.data, contexts).asTensor()
+    abstract suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         return listOf(activate(inputs.first()!!, contexts as Contexts<KIONNXData<*>>))
     }
 
