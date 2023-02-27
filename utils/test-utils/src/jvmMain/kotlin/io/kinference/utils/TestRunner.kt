@@ -4,7 +4,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
 actual object TestRunner {
-    actual fun runTest(block: suspend CoroutineScope.() -> Unit) {
-        runBlocking { block() }
+    actual fun runTest(platform: Platform?, block: suspend CoroutineScope.() -> Unit) {
+        if (platform == null || platform == Platform.JVM) {
+            runBlocking { block() }
+        }
     }
 }

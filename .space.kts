@@ -1,28 +1,64 @@
-job("KInference / Build and Test") {
-    host("Build and test") {
-        env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
-        env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
+val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1"
+val jvmContainer = "amazoncorretto:17"
 
-        shellScript("Install Firefox, xvfb and JDK") {
-            content = """
-                apt-get update && apt-get install firefox xvfb openjdk-17-jdk -y -f
-            """.trimIndent()
+job("KInference / Build") {
+    container("Build With Gradle", jvmContainer) {
+        kotlinScript { api ->
+            api.gradlew("assemble", "--parallel", "--console=plain", "--no-daemon")
         }
+    }
+}
 
-        kotlinScript("Build with Gradle") { api ->
-            api.gradlew("build", "-Pci", "-Pdisable-tests", "--console=plain")
+job("KInference / Test / JVM") {
+    container("JVM Tests", jvmContainer) {
+        kotlinScript { api ->
+            api.gradlew("jvmTest", "--parallel", "--console=plain", "-Pci", "--no-daemon")
         }
+    }
+}
 
-        shellScript("Run tests") {
-            content = """
-                xvfb-run --auto-servernum ./gradlew -Pci jvmTest jsLegacyTest jsIrTest jsTest --console=plain
-            """.trimIndent()
+job("KInference / Test / JS IR") {
+    container("JS IR Tests", jsContainer) {
+        shellScript {
+            content = xvfbRun("./gradlew jsIrTest jsTest --parallel --console=plain -Pci --no-daemon")
         }
+    }
+}
 
-        shellScript("Run heavy tests") {
-            content = """
-                xvfb-run --auto-servernum ./gradlew -Pci jvmHeavyTest jsLegacyHeavyTest jsIrHeavyTest --console=plain
-            """.trimIndent()
+job("KInference / Test / JS Legacy") {
+    container("JS Legacy Tests", jsContainer) {
+        shellScript {
+            content = xvfbRun("./gradlew jsLegacyTest --parallel --console=plain -Pci --no-daemon")
+        }
+    }
+}
+
+job("KInference / Heavy Test / JVM") {
+    container("JVM Heavy Tests", jvmContainer) {
+        addAwsKeys()
+
+        kotlinScript { api ->
+            api.gradlew("jvmHeavyTest", "--console=plain", "-Pci", "--no-daemon")
+        }
+    }
+}
+
+job("KInference / Heavy Test / JS IR") {
+    container("JS IR Heavy Tests", jsContainer) {
+        addAwsKeys()
+
+        shellScript {
+            content = xvfbRun("./gradlew jsIrHeavyTest --console=plain -Pci --no-daemon")
+        }
+    }
+}
+
+job("KInference / Heavy Test / JS Legacy") {
+    container("JS Legacy Heavy Tests", jsContainer) {
+        addAwsKeys()
+
+        shellScript {
+            content = xvfbRun("./gradlew jsLegacyHeavyTest --console=plain -Pci --no-daemon")
         }
     }
 }
@@ -34,15 +70,19 @@ job("KInference / Release") {
         }
     }
 
-    container("amazoncorretto:17") {
-        env["AWS_ACCESS_KEY"] = Secrets("aws_access_key")
-        env["AWS_SECRET_KEY"] = Secrets("aws_secret_key")
+    container("Release", jvmContainer) {
+        addAwsKeys()
 
-
-        shellScript("Release") {
-            content = """
-                ./gradlew publish
-            """.trimIndent()
+        kotlinScript { api ->
+            api.gradlew("publish", "--parallel", "--console=plain", "--no-daemon")
         }
     }
 }
+
+
+fun Container.addAwsKeys() {
+    env["AWS_ACCESS_KEY"] = "{{ project:aws_access_key }}"
+    env["AWS_SECRET_KEY"] = "{{ project:aws_secret_key }}"
+}
+
+fun xvfbRun(command: String): String = "xvfb-run --auto-servernum $command"
