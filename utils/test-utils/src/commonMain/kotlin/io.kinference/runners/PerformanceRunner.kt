@@ -54,7 +54,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
             val inputs = dataset.data.map { engine.loadData(it.first, it.second) }
 
             repeat(warmup) {
-                val outputs = model.predict(inputs, executionContext = engine.execContext())
+                val outputs = model.predict(inputs)
                 outputs.values.forEach { it.close() }
             }
 
@@ -62,7 +62,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
             for (i in (0 until count)) {
                 lateinit var outputs: Map<String, T>
                 val time = measureTime {
-                    outputs = model.predict(inputs, withProfiling,  executionContext = engine.execContext())
+                    outputs = model.predict(inputs, withProfiling)
                 }.inWholeMilliseconds
                 times[i] = time
 

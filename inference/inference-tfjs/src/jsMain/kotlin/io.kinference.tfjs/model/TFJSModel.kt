@@ -1,6 +1,5 @@
 package io.kinference.tfjs.model
 
-import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.ModelProto
@@ -22,9 +21,8 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         }
     }*/
 
-    override fun predict(input: List<TFJSData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, TFJSData<*>> {
+    override suspend fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
         if (profile) logger.warning { "Profiling of models running on TFJS backend is not supported" }
-        if (executionContext != null) logger.warning { "ExecutionContext for models running on TFJS backend is not supported" }
         return graph.execute(input).associateBy { it.name.orEmpty() }
     }
 

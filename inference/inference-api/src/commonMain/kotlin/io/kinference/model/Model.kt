@@ -14,7 +14,7 @@ interface Model<T : ONNXData<*, *>> {
      * Executes the model with profiling and given context.
      * If [profile] flag is true, prints profiling info after the model pass.
      */
-    suspend fun predict(input: List<T>, profile: Boolean = false, executionContext: ExecutionContext? = null): Map<String, T>
+    suspend fun predict(input: List<T>, profile: Boolean = false): Map<String, T>
 
     companion object {
         /**
