@@ -53,7 +53,7 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         val (name, value) = ATTRIBUTES_INFO.map { it.name to getAttributeOrNull<Any?>(it.name) }.single { it.second != null }
 
         val result = when (name) {
-            "value" -> value as TFJSTensor
+            "value" -> (value as TFJSTensor).data.clone().asTensor()
             "value_float" -> NDArrayTFJS.floatScalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray

@@ -61,6 +61,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             expectedOutputs.forEach { it.close() }
             actualOutputs.values.forEach { it.close() }
         }
+        model.close()
     }
 
     private fun check(dataset: ONNXTestData<T>, delta: Double = DELTA) {

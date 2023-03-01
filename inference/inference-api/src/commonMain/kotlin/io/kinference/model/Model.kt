@@ -3,13 +3,14 @@ package io.kinference.model
 import io.kinference.InferenceEngine
 import io.kinference.OptimizableEngine
 import io.kinference.data.ONNXData
+import io.kinference.utils.Closeable
 
 /**
  * Interface for KInference executable models.
  *
  * @param T type of model data representation.
  */
-interface Model<T : ONNXData<*, *>> {
+interface Model<T : ONNXData<*, *>>: Closeable {
     /**
      * Executes the model with profiling and given context.
      * If [profile] flag is true, prints profiling info after the model pass.

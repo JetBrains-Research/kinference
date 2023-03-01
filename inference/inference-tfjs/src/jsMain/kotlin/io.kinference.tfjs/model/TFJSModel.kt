@@ -28,6 +28,10 @@ class TFJSModel(proto: ModelProto) : Model<TFJSData<*>> {
         return graph.execute(input).associateBy { it.name.orEmpty() }
     }
 
+    override fun close() {
+        graph.close()
+    }
+
     companion object {
         private val logger = LoggerFactory.create("io.kinference.tfjs.model.TFJSModel")
     }
