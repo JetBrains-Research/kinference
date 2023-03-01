@@ -1,12 +1,12 @@
 package io.kinference.runners
 
-import io.kinference.TestEngine
-import io.kinference.TestLoggerFactory
+import io.kinference.*
 import io.kinference.data.*
 import io.kinference.utils.*
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.math.pow
+import kotlin.test.assertEquals
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -54,7 +54,18 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
             logger.info { "Start predicting: $group" }
-            val actualOutputs = model.predict(inputs, executionContext = testEngine.execContext())
+            val actualOutputs: Map<String, T> = if (testEngine is WithMemory) {
+                val memoryBeforeTest = testEngine.memory()
+                logger.info { "Memory before predict: $memoryBeforeTest" }
+                val outputs = model.predict(inputs, executionContext = testEngine.execContext())
+                val memoryAfterTest = testEngine.memory()
+                logger.info { "Memory after predict: $memoryAfterTest" }
+                assertEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
+                outputs
+            } else {
+                model.predict(inputs, executionContext = testEngine.execContext())
+            }
+
             check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
 
             inputs.forEach { it.close() }
@@ -62,6 +73,9 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             actualOutputs.values.forEach { it.close() }
         }
         model.close()
+        if (testEngine is WithMemory) {
+            assertEquals(0, testEngine.memory(), "Memory leak found after model dispose")
+        }
     }
 
     private fun check(dataset: ONNXTestData<T>, delta: Double = DELTA) {
