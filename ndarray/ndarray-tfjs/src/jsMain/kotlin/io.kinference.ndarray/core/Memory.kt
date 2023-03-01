@@ -8,3 +8,14 @@ import io.kinference.ndarray.arrays.ArrayTFJS
 external fun tidy(nameOrFn: () -> Array<ArrayTFJS>, fn: (() -> Array<ArrayTFJS>)?): Array<ArrayTFJS>
 
 external fun tidy(nameOrFn: String, fn: (() -> Array<ArrayTFJS>)?): Array<ArrayTFJS>
+
+
+external fun memory(): MemoryInfo
+
+external interface MemoryInfo {
+    val numTensors: Int
+    val numDataBuffers: Int
+    val numBytes: Int
+    val unreliable: Boolean?
+    val reasons: Array<String>
+}

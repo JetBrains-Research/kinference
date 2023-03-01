@@ -8,6 +8,7 @@ import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.closeAll
 
 sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -25,9 +26,6 @@ sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, 
 class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val COEF_1 = NDArrayTFJS.floatScalar(0.5f)
-        private val COEF_2 = NDArrayTFJS.floatScalar(0.035677408136300125f)
-        private val COEF_3 = NDArrayTFJS.floatScalar(0.7978845608028654f)
 
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
@@ -44,6 +42,10 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
+    private val COEF_1 = NDArrayTFJS.floatScalar(0.5f)
+    private val COEF_2 = NDArrayTFJS.floatScalar(0.035677408136300125f)
+    private val COEF_3 = NDArrayTFJS.floatScalar(0.7978845608028654f)
+
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
@@ -56,6 +58,11 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         }
 
         return listOf(output.asTensor("Y"))
+    }
+
+    override fun close() {
+        super.close()
+        closeAll(COEF_1, COEF_2, COEF_3)
     }
 }
 

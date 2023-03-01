@@ -8,6 +8,7 @@ import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.closeAll
 import kotlin.math.sqrt
 
 sealed class BiasGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -28,10 +29,6 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
-        private val SQRT2 = NDArrayTFJS.floatScalar(sqrt(2.0f))
-        private val scalarOne = NDArrayTFJS.floatScalar(1.0f)
-        private val scalarHalfOne = NDArrayTFJS.floatScalar(0.5f)
-
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),
             IOInfo(1, TYPE_CONSTRAINTS, "B", optional = false)
@@ -45,6 +42,10 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
+    private val SQRT2 = NDArrayTFJS.floatScalar(sqrt(2.0f))
+    private val scalarOne = NDArrayTFJS.floatScalar(1.0f)
+    private val scalarHalfOne = NDArrayTFJS.floatScalar(0.5f)
+
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val bias = inputs[1]!!.data as NumberNDArrayTFJS
@@ -54,5 +55,10 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
             return@tidyNDArray ((sum / SQRT2).erf() + scalarOne) * scalarHalfOne * sum
         }
         return listOf(output.asTensor("C"))
+    }
+
+    override fun close() {
+        super.close()
+        closeAll(SQRT2, scalarOne, scalarHalfOne)
     }
 }

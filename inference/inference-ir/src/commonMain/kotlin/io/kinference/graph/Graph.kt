@@ -5,8 +5,7 @@ import io.kinference.operator.*
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
-import io.kinference.utils.LoggerFactory
-import io.kinference.utils.Stack
+import io.kinference.utils.*
 import kotlinx.coroutines.coroutineScope
 import kotlin.time.ExperimentalTime
 
@@ -17,7 +16,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     proto: GraphProto,
     private var _operators: ArrayList<Operator<T, T>>,
     private val valueOrderInfo: GraphValueOrderInfo
-) {
+) : Closeable {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
 
@@ -183,6 +182,11 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
+    override fun close() {
+        closeAll(initializers)
+        closeAll(operators)
+    }
+
     @ExperimentalTime
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
         //TODO: check that all inputs were set and not null
@@ -199,7 +203,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             }
             contexts.graph!!.putValue(input.name!!, input)
         }
-        
+
         coroutineScope {
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>
@@ -211,10 +215,15 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
                 contexts.profiling.profile("${operator.info.type}:cleanup") {
                     cleanupUntilOrder(contexts.graph!!, i)
-                    outputs.zip(operator.outputs) { output, variable ->
-                        if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
-                        if (variable.isNotEmpty()) {
+                    for (outputIdx in outputs.indices) {
+                        val output = outputs[outputIdx]
+                        val variable = operator.outputs.getOrNull(outputIdx)
+
+                        if (output == null) require(variable.isNullOrEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
+                        if (!variable.isNullOrEmpty()) {
                             contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
+                        } else {
+                            output?.close()
                         }
                     }
                 }

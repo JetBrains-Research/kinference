@@ -5,10 +5,10 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.ndarray.extensions.cast
+import io.kinference.primitives.types.DataType
+import io.kinference.tfjs.data.tensors.*
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -44,19 +44,27 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         TensorProto.DataType.INT64, TensorProto.DataType.UINT64,
         TensorProto.DataType.INT32, TensorProto.DataType.UINT32,
         TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
-        TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> "int32"
+        TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> DataType.INT
 
-        TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE, TensorProto.DataType.BFLOAT16 -> "float32"
+        TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE, TensorProto.DataType.BFLOAT16 -> DataType.FLOAT
 
-        TensorProto.DataType.BOOL -> "bool"
+        TensorProto.DataType.BOOL -> DataType.BOOLEAN
 
-        TensorProto.DataType.COMPLEX64, TensorProto.DataType.COMPLEX128 -> "complex64"
-        TensorProto.DataType.STRING -> "string"
         else -> error("Unsupported type: $type")
     }
 
     override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val input = inputs[0]!!.data
-        return listOf(input.cast(tfjsType).asTensor("output"))
+        val outputs = tidyNDArrays {
+            val input = inputs[0]!!.data
+            val casted = when (tfjsType) {
+                DataType.INT -> input.castToInt()
+                DataType.FLOAT -> input.castToFloat()
+                DataType.BOOLEAN -> input.castToBool()
+                else -> error("Unsupported type $tfjsType")
+            }
+            val castedCopy = if (input === casted) casted.clone() else casted
+            return@tidyNDArrays arrayOf(castedCopy)
+        }
+        return outputs.asNamedOutputs(this.outputs)
     }
 }

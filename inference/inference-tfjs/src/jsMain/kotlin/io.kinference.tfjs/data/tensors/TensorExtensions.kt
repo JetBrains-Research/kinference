@@ -21,5 +21,7 @@ fun String.tfTypeResolve(): TensorProto.DataType {
 }
 
 fun <T : NDArrayTFJS> Array<T>.asNamedOutputs(names: List<String>): List<TFJSTensor> {
-    return this.zip(names).map { (data, name) -> data.asTensor(name) }
+    return List(this.size) {
+        this[it].asTensor(names.getOrNull(it))
+    }
 }

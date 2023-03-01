@@ -14,6 +14,10 @@ abstract class TestEngine<T : ONNXData<*, *>>(private val engine: InferenceEngin
     suspend fun loadData(path: Path, type: ONNXDataType): T = engine.loadData(path, type)
 }
 
+interface MemoryProfileable {
+    fun allocatedMemory(): Int
+}
+
 expect object TestLoggerFactory {
     fun create(name: String): KILogger
 }

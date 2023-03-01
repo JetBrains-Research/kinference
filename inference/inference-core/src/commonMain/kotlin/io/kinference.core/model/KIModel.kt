@@ -23,6 +23,10 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
         return execResult.associateBy { it.name!! }
     }
 
+    override fun close() {
+        graph.close()
+    }
+
     companion object {
         suspend operator fun invoke(proto: ModelProto): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
