@@ -1,20 +1,20 @@
 package io.kinference.graph
 
+import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.model.ExecutionContext
 import io.kinference.operator.*
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
-import io.kinference.utils.LoggerFactory
-import io.kinference.utils.Stack
+import io.kinference.utils.*
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>) {
+abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>) : Closeable {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }
@@ -179,6 +179,11 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
+    override fun close() {
+        closeAll(initializers)
+        closeAll(operators)
+    }
+
     @ExperimentalTime
     fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
         //TODO: check that all inputs were set and not null
@@ -202,15 +207,21 @@ abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: Opera
             contexts.profiling.profile(operator.info.type) { profilingContext ->
                 outputs = operator.applyWithCheck(
                     Contexts(contexts.graph, profilingContext, contexts.execution),
-                    operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+                    operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) }
+                )
             }
 
             contexts.profiling.profile("${operator.info.type}:cleanup") {
                 cleanupUntilOrder(contexts.graph!!, i)
-                outputs.zip(operator.outputs) { output, variable ->
-                    if (output == null) require(variable.isEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
-                    if (variable.isNotEmpty()) {
+                for (outputIdx in outputs.indices) {
+                    val output = outputs[outputIdx]
+                    val variable = operator.outputs.getOrNull(outputIdx)
+
+                    if (output == null) require(variable.isNullOrEmpty()) { "Required output '$variable' not provided by '${operator.info.type}' operator" }
+                    if (!variable.isNullOrEmpty()) {
                         contexts.graph.putValue(variable, output!!.rename(name = variable) as T)
+                    } else {
+                        output?.close()
                     }
                 }
             }

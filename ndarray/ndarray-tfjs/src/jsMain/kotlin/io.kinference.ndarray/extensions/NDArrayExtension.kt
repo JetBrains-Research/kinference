@@ -6,6 +6,7 @@ import io.kinference.ndarray.MomentsOutput
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.ndarray.makeNDArray
+import io.kinference.primitives.types.DataType
 
 val NDArrayTFJS.dtype: String
     get() = tfjsArray.dtype
@@ -26,7 +27,9 @@ fun <T : NDArrayTFJS> T.dataBool() = tfjsArray.dataBool()
 
 fun <T : NDArrayTFJS> T.broadcastTo(shape: Array<Int>) = tfjsArray.broadcastTo(shape).toNDArray() as T
 
-fun <T : NDArrayTFJS> T.cast(dtype: String) = tfjsArray.cast(dtype).toNDArray()
+fun <T : NDArrayTFJS> T.castToInt(): NumberNDArrayTFJS = (if (type == DataType.INT) this.clone() else tfjsArray.cast("int32").toNDArray()) as NumberNDArrayTFJS
+fun <T : NDArrayTFJS> T.castToFloat(): NumberNDArrayTFJS = (if (type == DataType.FLOAT) this.clone() else tfjsArray.cast("float32").toNDArray()) as NumberNDArrayTFJS
+fun <T : NDArrayTFJS> T.castToBool(): BooleanNDArrayTFJS = (if (type == DataType.BOOLEAN) this.clone() else tfjsArray.cast("bool").toNDArray()) as BooleanNDArrayTFJS
 
 fun <T : NDArrayTFJS> Array<T>.concat(axis: Int = 0) = concat(getArrays(), axis).toNDArray() as T
 

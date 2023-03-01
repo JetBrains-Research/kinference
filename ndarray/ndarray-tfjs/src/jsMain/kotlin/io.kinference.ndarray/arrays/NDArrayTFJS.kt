@@ -89,6 +89,8 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
 
+    override fun clone() = tfjsArray.clone().toNDArray()
+
     companion object {
         private var isActivated = false
 
