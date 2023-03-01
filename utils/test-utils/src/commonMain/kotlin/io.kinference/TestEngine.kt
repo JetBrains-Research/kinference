@@ -17,8 +17,8 @@ abstract class TestEngine<T : ONNXData<*, *>>(private val engine: InferenceEngin
     open fun execContext(): ExecutionContext? = null
 }
 
-interface WithMemory {
-    fun memory(): Int
+interface MemoryProfileable {
+    fun allocatedMemory(): Int
 }
 
 expect object TestLoggerFactory {

@@ -54,11 +54,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
             logger.info { "Start predicting: $group" }
-            val actualOutputs: Map<String, T> = if (testEngine is WithMemory) {
-                val memoryBeforeTest = testEngine.memory()
+            val actualOutputs: Map<String, T> = if (testEngine is MemoryProfileable) {
+                val memoryBeforeTest = testEngine.allocatedMemory()
                 logger.info { "Memory before predict: $memoryBeforeTest" }
                 val outputs = model.predict(inputs, executionContext = testEngine.execContext())
-                val memoryAfterTest = testEngine.memory()
+                val memoryAfterTest = testEngine.allocatedMemory()
                 logger.info { "Memory after predict: $memoryAfterTest" }
                 assertEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
                 outputs
@@ -73,8 +73,8 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             actualOutputs.values.forEach { it.close() }
         }
         model.close()
-        if (testEngine is WithMemory) {
-            assertEquals(0, testEngine.memory(), "Memory leak found after model dispose")
+        if (testEngine is MemoryProfileable) {
+            assertEquals(0, testEngine.allocatedMemory(), "Memory leak found after model dispose")
         }
     }
 

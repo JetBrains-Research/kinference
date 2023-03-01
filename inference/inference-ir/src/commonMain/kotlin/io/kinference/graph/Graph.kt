@@ -14,7 +14,7 @@ import kotlin.time.ExperimentalTime
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 @ExperimentalTime
-abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>): Closeable {
+abstract class Graph<T : ONNXData<*, *>>(proto: GraphProto, opSetRegistry: OperatorSetRegistry, factory: OperatorFactory<T>) : Closeable {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.core.graph.Graph")
     }

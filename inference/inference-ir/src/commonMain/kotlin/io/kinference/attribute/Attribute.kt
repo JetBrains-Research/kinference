@@ -7,7 +7,7 @@ import io.kinference.protobuf.message.*
 import io.kinference.utils.Closeable
 import kotlin.time.ExperimentalTime
 
-class Attribute<T>(proto: AttributeProto, val value: T): Closeable {
+class Attribute<T>(proto: AttributeProto, val value: T) : Closeable {
     val name: String = proto.name!!
     val type: AttributeProto.AttributeType = proto.type
 

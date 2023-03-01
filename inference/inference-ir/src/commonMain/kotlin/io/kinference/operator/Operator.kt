@@ -11,7 +11,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.time.ExperimentalTime
 
-class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null): Closeable {
+class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) : Closeable {
     init {
         require(types.isNotEmpty()) { "Attribute info must have at least one type constraint!" }
     }

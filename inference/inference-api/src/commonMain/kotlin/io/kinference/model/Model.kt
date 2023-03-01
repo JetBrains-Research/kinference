@@ -10,7 +10,7 @@ import io.kinference.utils.Closeable
  *
  * @param T type of model data representation.
  */
-interface Model<T : ONNXData<*, *>>: Closeable {
+interface Model<T : ONNXData<*, *>> : Closeable {
     /**
      * Executes the model with profiling and given context.
      * If [profile] flag is true, prints profiling info after the model pass.
