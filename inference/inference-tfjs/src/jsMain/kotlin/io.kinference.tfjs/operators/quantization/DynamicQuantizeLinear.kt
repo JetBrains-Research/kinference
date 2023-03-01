@@ -3,11 +3,13 @@ package io.kinference.tfjs.operators.quantization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.*
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 import io.kinference.utils.closeAll
 
 sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
@@ -47,7 +49,7 @@ class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute
     private val byteSizeScalar = NDArrayTFJS.floatScalar(255f)
     private val scalarZero = NDArrayTFJS.floatScalar(0f)
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidyNDArrays {
             val input = inputs[0]!!.data as NumberNDArrayTFJS
 

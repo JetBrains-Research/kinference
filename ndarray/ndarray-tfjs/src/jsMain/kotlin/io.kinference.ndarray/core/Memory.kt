@@ -9,6 +9,12 @@ external fun tidy(nameOrFn: () -> Array<ArrayTFJS>, fn: (() -> Array<ArrayTFJS>)
 
 external fun tidy(nameOrFn: String, fn: (() -> Array<ArrayTFJS>)?): Array<ArrayTFJS>
 
+external class Engine {
+    fun startScope(name: String?)
+    fun endScope(result: Array<ArrayTFJS>?)
+}
+
+external fun engine(): Engine
 
 external fun memory(): MemoryInfo
 

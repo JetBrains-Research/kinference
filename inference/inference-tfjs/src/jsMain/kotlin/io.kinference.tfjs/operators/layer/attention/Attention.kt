@@ -16,7 +16,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
 
     companion object {
-        internal fun NDArrayTFJS?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): NumberNDArrayTFJS {
+        internal suspend fun NDArrayTFJS?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): NumberNDArrayTFJS {
             return tidyNDArray {
                 val fullSeqLen = pastSeqLen + seqLen
                 val output = when {
@@ -68,7 +68,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             }
         }
 
-        internal fun normalizedScores(
+        internal suspend fun normalizedScores(
             unidir: Boolean, queries: NumberNDArrayTFJS, maskIndices: NumberNDArrayTFJS?, batchSize: Int,
             seqLen: Int, pastSeqLen: Int, headSize: Int, present: NumberNDArrayTFJS
         ): NumberNDArrayTFJS {
@@ -83,7 +83,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             }
         }
 
-        internal fun attentionScore(
+        internal suspend fun attentionScore(
             scores: NumberNDArrayTFJS, batchSize: Int, seqLen: Int,
             hiddenSize: Int, present: NumberNDArrayTFJS
         ): NDArrayTFJS {
@@ -94,7 +94,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             }
         }
 
-        internal fun getScores(
+        internal suspend fun getScores(
             unidir: Boolean, q: NumberNDArrayTFJS, k: NumberNDArrayTFJS, v: NumberNDArrayTFJS, mask: NumberNDArrayTFJS?,
             past: NumberNDArrayTFJS?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int
         ): Array<NDArrayTFJS> {
@@ -146,7 +146,12 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         @Suppress("UNCHECKED_CAST")
-        internal fun initQueryKeyValue(input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS, numHeads: Int): Array<NumberNDArrayTFJS> {
+        internal suspend fun initQueryKeyValue(
+            input: NumberNDArrayTFJS,
+            weights: NumberNDArrayTFJS,
+            bias: NumberNDArrayTFJS,
+            numHeads: Int
+        ): Array<NumberNDArrayTFJS> {
             return tidyNDArrays {
                 val (batchSize, seqLen, inputHidden) = input.shape
                 val headSize = inputHidden / numHeads
@@ -168,7 +173,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val weights = inputs[1]!!.data as NumberNDArrayTFJS
         val bias = inputs[2]!!.data as NumberNDArrayTFJS

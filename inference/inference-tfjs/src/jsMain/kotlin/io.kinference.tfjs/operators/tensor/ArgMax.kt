@@ -4,7 +4,8 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.reverse
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -49,7 +50,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
     private val selectLastIndex: Boolean by attribute("select_last_index") { it: Number -> it.toInt() != 0 }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val actualAxis = input.indexAxis(axis)
 

@@ -4,7 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -56,7 +56,7 @@ class DequantizeLinearVer10(name: String, attributes: Map<String, Attribute<Any>
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val scale = inputs[1]!!.data as NumberNDArrayTFJS
         val zeroPoint = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS

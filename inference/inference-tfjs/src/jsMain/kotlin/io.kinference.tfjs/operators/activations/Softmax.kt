@@ -3,7 +3,8 @@ package io.kinference.tfjs.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -49,7 +50,7 @@ class SoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         return tidyNDArrays {
             val input = inputs[0]!!.data as NumberNDArrayTFJS
             val actualAxis = input.indexAxis(axis)

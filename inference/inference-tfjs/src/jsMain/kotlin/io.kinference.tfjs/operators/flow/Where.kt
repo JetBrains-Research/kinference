@@ -3,10 +3,12 @@ package io.kinference.tfjs.operators.flow
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.tidyNDArrays
+import io.kinference.ndarray.extensions.where
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.*
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 
 sealed class Where(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -40,7 +42,7 @@ class WhereVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidyNDArrays {
             val condition = inputs[0]!!.data
             val left = inputs[1]!!.data

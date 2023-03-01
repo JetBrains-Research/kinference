@@ -56,7 +56,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         private val INFO = OperatorInfo("QAttention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
         @Suppress("UNCHECKED_CAST")
-        private fun initQueryKeyValue(
+        private suspend fun initQueryKeyValue(
             input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS,
             numHeads: Int, inputZeroPoint: NumberNDArrayTFJS?,
             weightsZeroPoint: NumberNDArrayTFJS?, deqScale: NumberNDArray
@@ -83,7 +83,7 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val weights = inputs[1]!!.data as NumberNDArrayTFJS
         val bias = inputs[2]!!.data as NumberNDArrayTFJS

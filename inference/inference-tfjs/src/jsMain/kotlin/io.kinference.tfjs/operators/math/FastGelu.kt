@@ -3,8 +3,10 @@ package io.kinference.tfjs.operators.math
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.tanh
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
@@ -47,7 +49,7 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
     private val COEF_3 = NDArrayTFJS.floatScalar(0.7978845608028654f)
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val input = inputs.first()!!.data as NumberNDArrayTFJS
             val bias = inputs.getOrNull(1)?.data as? NumberNDArrayTFJS
