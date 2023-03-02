@@ -6,6 +6,8 @@ import io.kinference.protobuf.message.ModelProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.utils.LoggerFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -23,7 +25,9 @@ class TFJSModel(val name: String, val opSet: OperatorSetRegistry, val graph: TFJ
 
     override suspend fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
         if (profile) logger.warning { "Profiling of models running on TFJS backend is not supported" }
-        return graph.execute(input).associateBy { it.name.orEmpty() }
+        return withContext(Dispatchers.Unconfined) {
+            return@withContext graph.execute(input).associateBy { it.name.orEmpty() }
+        }
     }
 
     override fun close() {

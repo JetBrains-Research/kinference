@@ -14,7 +14,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) : Closeable {
     val refAttrName: String? = proto.refAttrName
 
     override fun close() {
-        if (value is Closeable) value.close()
+        if (value is Closeable) return value.close()
 
         if (value is List<*>) {
             for (element in value) {

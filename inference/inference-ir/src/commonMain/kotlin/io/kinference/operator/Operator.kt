@@ -17,7 +17,7 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
     }
 
     override fun close() {
-        if (default is Closeable) default.close()
+        if (default is Closeable) return default.close()
 
         if (default is List<*>) {
             for (value in default) {
