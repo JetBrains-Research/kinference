@@ -3,7 +3,6 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.extensions.dataInt
 import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
@@ -42,7 +41,7 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("Tile", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val input = inputs[0]!!.data
             val repeats = inputs[1]!!.data

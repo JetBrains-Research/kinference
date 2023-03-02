@@ -3,13 +3,13 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.tensor
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.ndarray.arrays.tensor
 
 sealed class ConstantOfShape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -44,7 +44,7 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
 
     private val value: TFJSTensor by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val shape = inputs[0]!!.data.dataInt().toTypedArray()
             if (shape.contains(0)) {

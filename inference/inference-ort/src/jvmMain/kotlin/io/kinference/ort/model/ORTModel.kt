@@ -17,4 +17,8 @@ class ORTModel(private val session: OrtSession) : Model<ORTData<*>> {
     companion object {
         private val logger = LoggerFactory.create("io.kinference.ort.model.ORTModel")
     }
+
+    override fun close() {
+        session.close()
+    }
 }

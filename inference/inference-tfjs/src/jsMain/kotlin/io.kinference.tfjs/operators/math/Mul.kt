@@ -50,7 +50,7 @@ class MulVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
         private val INFO = OperatorInfo("Mul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val left = inputs[0]!!.data as NumberNDArrayTFJS
             val right = inputs[1]!!.data as NumberNDArrayTFJS

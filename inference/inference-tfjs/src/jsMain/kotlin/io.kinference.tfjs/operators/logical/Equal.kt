@@ -42,7 +42,7 @@ class EqualVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
 
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val left = inputs[0]!!.data
             val right = inputs[1]!!.data

@@ -3,9 +3,9 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.indexAxis
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -47,7 +47,7 @@ class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
         val output = tidyNDArray {
             val axes = inputs.getOrNull(3)?.data?.dataInt()?.copyOf()?.apply {

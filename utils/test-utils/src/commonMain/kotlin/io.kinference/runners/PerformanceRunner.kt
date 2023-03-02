@@ -81,6 +81,8 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
 
             inputs.forEach { it.close() }
         }
+
+        model.close()
         return results
     }
 

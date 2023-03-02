@@ -3,7 +3,8 @@ package io.kinference.tfjs.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -65,7 +66,7 @@ class EmbedLayerNormalizationVer1(
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val inputIds = inputs[0]!!.data as NumberNDArrayTFJS
         val segmentIds = inputs[1]?.data as? NumberNDArrayTFJS
         val wordWeights = inputs[2]!!.data as NumberNDArrayTFJS

@@ -4,7 +4,6 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
-import io.kinference.ndarray.extensions.matMul
 import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
@@ -47,7 +46,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
         private val INFO = OperatorInfo("MatMulInteger", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val left = inputs[0]!!.data as NumberNDArrayTFJS
         val right = inputs[1]!!.data as NumberNDArrayTFJS
         val leftZP = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS

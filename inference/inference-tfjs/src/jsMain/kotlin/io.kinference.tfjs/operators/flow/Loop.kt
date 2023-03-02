@@ -3,7 +3,7 @@ package io.kinference.tfjs.operators.flow
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -48,7 +48,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     private val body: TFJSGraph by attribute()
 
-    private fun inner(
+    private suspend fun inner(
         contexts: Contexts<TFJSData<*>>,
         body: TFJSGraph,
         counter: Int,
@@ -81,7 +81,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         return newCondition
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidyNDArrays {
             val maxTripCount = inputs[0]?.data?.dataInt()?.first()
             val keepGoing = inputs[1]?.data?.dataBool()?.first()

@@ -25,16 +25,16 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         tfjsArray.dispose()
     }
 
-    override fun gather(indices: NDArray, axis: Int, batchDims: Int): NDArrayTFJS {
+    override suspend fun gather(indices: NDArray, axis: Int, batchDims: Int): NDArrayTFJS {
         indices as NDArrayTFJS
         return tfjsArray.gather(indices.tfjsArray, axis, batchDims).toNDArray()
     }
 
-    override fun squeeze(vararg axes: Int): NDArrayTFJS {
+    override suspend fun squeeze(vararg axes: Int): NDArrayTFJS {
         return tfjsArray.squeeze(axes.toTypedArray()).toNDArray()
     }
 
-    override fun unsqueeze(vararg axes: Int): NDArrayTFJS {
+    override suspend fun unsqueeze(vararg axes: Int): NDArrayTFJS {
         fun indexAxisForUnsqueeze(axis: Int, shapeSize: Int): Int = if (axis < 0) shapeSize + axis else axis
 
         val actualAxes = axes.map { indexAxisForUnsqueeze(it, rank + axes.size) }.sorted()
@@ -46,48 +46,50 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return this.reshape(newShape.toIntArray())
     }
 
-    override fun reshape(strides: Strides): NDArrayTFJS {
+    override suspend fun reshape(strides: Strides): NDArrayTFJS {
         return reshape(strides.shape)
     }
 
-    override fun reshape(shape: IntArray): NDArrayTFJS {
+    override suspend fun reshape(shape: IntArray): NDArrayTFJS {
         return tfjsArray.reshape(shape.toTypedArray()).toNDArray()
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun stack(others: List<NDArray>, axis: Int): NDArrayTFJS {
+    override suspend fun stack(others: List<NDArray>, axis: Int): NDArrayTFJS {
         others as List<NDArrayTFJS>
         return tfjsArray.stack(*others.getArrays(), axis = axis).toNDArray()
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun concat(others: List<NDArray>, axis: Int): NDArrayTFJS {
+    override suspend fun concat(others: List<NDArray>, axis: Int): NDArrayTFJS {
         others as List<NDArrayTFJS>
         return tfjsArray.concat(*others.getArrays(), axis = axis).toNDArray()
     }
 
-    override fun tile(repeats: IntArray): NDArrayTFJS {
+    override suspend fun tile(repeats: IntArray): NDArrayTFJS {
         return tfjsArray.tile(repeats.toTypedArray()).toNDArray()
     }
 
-    override fun transpose(permutations: IntArray): NDArrayTFJS {
+    override suspend fun transpose(permutations: IntArray): NDArrayTFJS {
         return tfjsArray.transpose(permutations.toTypedArray()).toNDArray()
     }
 
-    override fun transpose2D(): NDArrayTFJS = transpose(intArrayOf(1, 0))
+    override suspend fun transpose2D(): NDArrayTFJS = transpose(intArrayOf(1, 0))
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArrayTFJS {
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): NDArrayTFJS {
         val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
         return result.toNDArray()
     }
 
-    override fun split(parts: Int, axis: Int): List<NDArrayTFJS> {
+    override suspend fun split(parts: Int, axis: Int): List<NDArrayTFJS> {
         return tfjsArray.split(parts, axis).map { it.toNDArray() }
     }
 
-    override fun split(split: IntArray, axis: Int): List<NDArrayTFJS> {
+    override suspend fun split(split: IntArray, axis: Int): List<NDArrayTFJS> {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
+
+    override fun clone() = tfjsArray.clone().toNDArray()
 
     companion object {
         private var isActivated = false

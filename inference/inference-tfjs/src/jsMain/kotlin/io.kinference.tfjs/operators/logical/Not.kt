@@ -39,7 +39,7 @@ class NotVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val input = inputs[0]!!.data as BooleanNDArrayTFJS
             return@tidyNDArray input.not()
