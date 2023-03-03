@@ -12,17 +12,6 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class TFJSModel(val name: String, val opSet: OperatorSetRegistry, val graph: TFJSGraph) : Model<TFJSData<*>> {
-//    private val opSet = OperatorSetRegistry(proto.opSetImport)
-//    val graph = TFJSGraph(proto.graph!!, opSet)
-//    val name: String = "${proto.domain}:${proto.modelVersion}"
-
-    /* companion object {
-         fun load(bytes: ByteArray): TFJSModel {
-             val modelScheme = ModelProto.decode(bytes)
-             return TFJSModel(modelScheme)
-         }
-     }*/
-
     override suspend fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
         if (profile) logger.warning { "Profiling of models running on TFJS backend is not supported" }
         return withContext(Dispatchers.Unconfined) {
