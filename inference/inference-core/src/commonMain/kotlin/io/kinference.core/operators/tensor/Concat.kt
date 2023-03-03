@@ -39,7 +39,7 @@ class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         return listOf(inputs.requireNoNulls().concatenate(axis))
     }
 }

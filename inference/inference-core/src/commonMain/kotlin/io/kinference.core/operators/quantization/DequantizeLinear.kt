@@ -49,7 +49,7 @@ class DequantizeLinearVer1(name: String, attributes: Map<String, Attribute<Any>>
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data as NumberNDArrayCore
         val scale = inputs[1]!!.data as FloatNDArray
         val zeroPoint = inputs.getOrNull(2)?.data as? NumberNDArrayCore

@@ -5,7 +5,6 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
@@ -58,7 +57,7 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
     private val transposeLeft: Boolean by attribute("transA") { it: Long -> it == 1L }
     private val transposeRight: Boolean by attribute("transB") { it: Long -> it == 1L }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val left = inputs[0]!!.data as NumberNDArrayCore
         val right = inputs[1]!!.data as NumberNDArrayCore
 
@@ -72,7 +71,7 @@ class FusedMatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inp
             this[lastIndex - 1]++
         }) else right
 
-        val output = actualLeft.matmul(actualRight, contexts.execution.asCoroutineContext())
+        val output = actualLeft.matmul(actualRight)
         output.timesAssign(createScalarNDArray(output.type, alpha) as NumberNDArray)
         return listOf(output.asTensor("Y"))
     }

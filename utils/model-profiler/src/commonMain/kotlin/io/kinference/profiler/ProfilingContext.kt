@@ -9,7 +9,7 @@ class ProfilingContext(val name: String) {
     private val entries: MutableList<ProfileEntry> = ArrayList()
     private var time: Long = 0
 
-    fun profile(name: String, block: (context: ProfilingContext?) -> Unit) {
+    suspend fun profile(name: String, block: suspend (context: ProfilingContext?) -> Unit) {
         val context = ProfilingContext(name)
         val time = measureTime {
             block(context)
@@ -23,7 +23,7 @@ class ProfilingContext(val name: String) {
 }
 
 @ExperimentalTime
-fun ProfilingContext?.profile(name: String, block: (context: ProfilingContext?) -> Unit) =
+suspend fun ProfilingContext?.profile(name: String, block: suspend (context: ProfilingContext?) -> Unit) =
     this?.profile(name, block) ?: block(null)
 
 @ExperimentalTime

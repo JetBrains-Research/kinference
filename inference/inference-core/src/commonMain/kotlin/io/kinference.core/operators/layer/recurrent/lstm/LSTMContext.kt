@@ -13,7 +13,7 @@ internal object LSTMContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.lstm.LSTMContext")
 
     @OptIn(ExperimentalTime::class)
-    override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    override suspend fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)
@@ -25,26 +25,26 @@ internal object LSTMContext: ContextPrepare() {
         appendPeepholes(peepholesInit, context)
     }
 
-    internal fun prepareWeights(tensor: KITensor): KITensor {
+    internal suspend fun prepareWeights(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 4, shape[1] / 4, shape[2])
         val transposeShape = intArrayOf(0, 1, 3, 2)
         return tensor.data.reshape(newShape).transpose(transposeShape).asTensor("prepared_${tensor.name}")
     }
 
-    internal fun prepareBias(tensor: KITensor): KITensor {
+    internal suspend fun prepareBias(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 8, shape[1] / 8)
         return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
-    internal fun preparePeepholes(tensor: KITensor): KITensor {
+    internal suspend fun preparePeepholes(tensor: KITensor): KITensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 3, shape[1] / 3)
         return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
     }
 
-    private fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
+    private suspend fun appendWeights(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make the weights part of the model, otherwise the LSTM will be slow" }
         } else {
@@ -53,7 +53,7 @@ internal object LSTMContext: ContextPrepare() {
         }
     }
 
-    private fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
+    private suspend fun appendBias(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make bias part of the model, otherwise LSTM will be slow" }
         } else {
@@ -62,7 +62,7 @@ internal object LSTMContext: ContextPrepare() {
         }
     }
 
-    private fun appendPeepholes(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
+    private suspend fun appendPeepholes(tensor: KITensor?, context: GraphContext<KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Make peepholes part of the model, otherwise LSTM will be slow" }
         } else {

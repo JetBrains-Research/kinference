@@ -43,7 +43,7 @@ class WhereVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         private val INFO = OperatorInfo("Where", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val condition = inputs[0]!!.data
         val left = inputs[1]!!.data
         val right = inputs[2]!!.data

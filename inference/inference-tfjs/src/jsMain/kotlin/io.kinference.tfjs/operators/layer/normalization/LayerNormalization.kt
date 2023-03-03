@@ -58,7 +58,7 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val scale = inputs[1]!!.data as NumberNDArrayTFJS
         val bias = inputs[2]!!.data as NumberNDArrayTFJS

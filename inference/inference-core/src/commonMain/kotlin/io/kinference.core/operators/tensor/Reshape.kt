@@ -37,7 +37,7 @@ class ReshapeVer5(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         private val INFO = OperatorInfo("Reshape", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val targetShape = inputs[1]!!.data
         return listOf(inputs[0]!!.data.toMutable().reshape(targetShape).asTensor())
     }

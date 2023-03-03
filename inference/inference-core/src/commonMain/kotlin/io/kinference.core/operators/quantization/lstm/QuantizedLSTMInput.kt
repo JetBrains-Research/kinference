@@ -5,17 +5,14 @@ import io.kinference.ndarray.extensions.quantizeMatMul
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMInput
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMWeights
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
-import io.kinference.graph.asCoroutineContext
-import io.kinference.model.ExecutionContext
 import kotlin.time.ExperimentalTime
 
 class QuantizedLSTMInput(data: NumberNDArrayCore, val scale: FloatNDArray, val zeroPoint: NumberNDArrayCore): AbstractLSTMInput(data) {
     override fun view(vararg dims: Int): QuantizedLSTMInput = QuantizedLSTMInput(data.view(*dims), scale, zeroPoint)
 
-    override fun dot(
+    override suspend fun dot(
         weights: AbstractLSTMWeights,
-        destination: MutableNumberNDArrayCore,
-        executionContext: ExecutionContext?
+        destination: MutableNumberNDArrayCore
     ) {
         require(weights is QuantizedLSTMWeights) { "Cannot cast ${weights::class} to QuantizedLSTMWeights" }
         quantizeMatMul(
@@ -25,19 +22,18 @@ class QuantizedLSTMInput(data: NumberNDArrayCore, val scale: FloatNDArray, val z
             weights.zeroPoint,
             scale,
             weights.scale,
-            destination as MutableFloatNDArray,
-            executionContext.asCoroutineContext()
+            destination as MutableFloatNDArray
         )
     }
 
-    override fun recreate(data: NumberNDArrayCore): QuantizedLSTMInput {
+    override suspend fun recreate(data: NumberNDArrayCore): QuantizedLSTMInput {
         require(data is FloatNDArray)
         return create(data)
     }
 
     companion object {
         @OptIn(ExperimentalTime::class)
-        fun create(data: FloatNDArray): QuantizedLSTMInput {
+        suspend fun create(data: FloatNDArray): QuantizedLSTMInput {
             val (quantizedData, scale, zeroPoint) = data.dynamicQuantize()
             return QuantizedLSTMInput(quantizedData, scale, zeroPoint)
         }

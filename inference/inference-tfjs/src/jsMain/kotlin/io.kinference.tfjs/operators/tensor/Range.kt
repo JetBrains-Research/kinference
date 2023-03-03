@@ -3,12 +3,12 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.range
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.ndarray.arrays.range
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -42,14 +42,14 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         private val INFO = OperatorInfo("Range", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidy {
             val start = inputs[0]!!.data
             val limit = inputs[1]!!.data
             val delta = inputs[2]!!.data
 
             require(start.dtype == limit.dtype && limit.dtype == delta.dtype)
-                { "Input tensors must have equal dtype, present: start: ${start.dtype}, limit: ${limit.dtype}, delta: ${delta.dtype}" }
+            { "Input tensors must have equal dtype, present: start: ${start.dtype}, limit: ${limit.dtype}, delta: ${delta.dtype}" }
 
             val startNumber = if (start.dtype == "float32") start.dataFloat().first() else start.dataInt().first()
             val limitNumber = if (limit.dtype == "float32") limit.dataFloat().first() else limit.dataInt().first()

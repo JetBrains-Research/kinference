@@ -1,7 +1,6 @@
 package io.kinference
 
 import io.kinference.data.*
-import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.utils.KILogger
 import okio.Path
@@ -9,12 +8,10 @@ import okio.Path
 abstract class TestEngine<T : ONNXData<*, *>>(private val engine: InferenceEngine<T>) {
     abstract fun checkEquals(expected: T, actual: T, delta: Double)
     fun loadData(bytes: ByteArray, type: ONNXDataType): T = engine.loadData(bytes, type)
-    fun loadModel(bytes: ByteArray): Model<T> = engine.loadModel(bytes)
+    suspend fun loadModel(bytes: ByteArray): Model<T> = engine.loadModel(bytes)
 
     suspend fun loadModel(path: Path): Model<T> = engine.loadModel(path)
     suspend fun loadData(path: Path, type: ONNXDataType): T = engine.loadData(path, type)
-
-    open fun execContext(): ExecutionContext? = null
 }
 
 interface MemoryProfileable {

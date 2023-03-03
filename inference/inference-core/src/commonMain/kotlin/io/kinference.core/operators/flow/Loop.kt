@@ -47,7 +47,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     private val body: KIGraph by attribute()
 
-    private fun inner(contexts: Contexts<KIONNXData<*>>, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
+    private suspend fun inner(contexts: Contexts<KIONNXData<*>>, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
         val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
@@ -73,7 +73,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val maxTripCount = inputs[0]?.data?.singleValue() as Long?
         val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
 

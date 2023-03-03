@@ -24,7 +24,7 @@ sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes:
 
         private fun Float.toUByte() = this.toUInt().toUByte()
 
-        internal fun FloatNDArray.dynamicQuantize(): Triple<UByteNDArray, FloatNDArray, UByteNDArray> {
+        internal suspend fun FloatNDArray.dynamicQuantize(): Triple<UByteNDArray, FloatNDArray, UByteNDArray> {
             val inputMin = min(0f, this.min())
             val inputMax = max(0f, this.max())
 
@@ -76,7 +76,7 @@ class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute
     }
 
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!.data as FloatNDArray
 
         val (output, outputScaleScalar, outputZeroPointScalar) = input.dynamicQuantize()

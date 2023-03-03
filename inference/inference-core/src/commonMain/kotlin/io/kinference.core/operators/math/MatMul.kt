@@ -5,7 +5,6 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
@@ -47,9 +46,9 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         private val INFO = OperatorInfo("MatMul", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val first = inputs[0]!!.data as NumberNDArrayCore
         val second = inputs[1]!!.data as NumberNDArrayCore
-        return listOf((first.matmul(second, contexts.execution.asCoroutineContext())).asTensor("Y"))
+        return listOf((first.matmul(second)).asTensor("Y"))
     }
 }

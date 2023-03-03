@@ -6,6 +6,7 @@ class CreateTest {
     fun test_create() {
         val tensor = NDArrayTFJS.intScalar(300)
         println(tensor.linearSize)
+        tensor.close()
     }
 
 }

@@ -41,7 +41,7 @@ class TransposeVer1(name: String, attributes: Map<String, Attribute<Any>>, input
 
     private val perm: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         return listOf(inputs.first()!!.data.transpose(perm).asTensor())
     }
 }

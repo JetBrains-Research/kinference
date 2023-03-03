@@ -15,7 +15,7 @@ internal fun <T : NDArray> Collection<T>.asONNXTensors(names: List<String>): Lis
     return this.zip(names).map { (data, name) -> data.asTensor(name) }
 }
 
-fun Collection<KITensor>.stack(axis: Int): KITensor {
+suspend fun Collection<KITensor>.stack(axis: Int): KITensor {
     val fstShape = this.first().data.shape
     val newShape = IntArray(fstShape.size + 1)
     fstShape.copyInto(newShape, 0, 0, axis)
@@ -25,7 +25,7 @@ fun Collection<KITensor>.stack(axis: Int): KITensor {
     return this.map { it.data.reshape(newShape) }.concat(axis).asTensor()
 }
 
-fun List<KITensor>.concatenate(axis: Int): KITensor {
+suspend fun List<KITensor>.concatenate(axis: Int): KITensor {
     return this.map { it.data }.concat(axis).asTensor()
 }
 

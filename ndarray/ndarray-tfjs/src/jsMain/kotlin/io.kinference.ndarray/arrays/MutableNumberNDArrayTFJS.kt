@@ -46,28 +46,28 @@ class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArr
         fill(value as Number, from, to)
     }
 
-    override fun minusAssign(other: NumberNDArray) {
+    override suspend fun minusAssign(other: NumberNDArray) {
         val otherTFJS = (other as NDArrayTFJS).tfjsArray
         val result = tfjsArray.minus(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun plusAssign(other: NumberNDArray) {
+    override suspend fun plusAssign(other: NumberNDArray) {
         val otherTFJS = (other as NDArrayTFJS).tfjsArray
         val result = tfjsArray.plus(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun timesAssign(other: NumberNDArray) {
+    override suspend fun timesAssign(other: NumberNDArray) {
         val otherTFJS = (other as NumberNDArrayTFJS).tfjsArray
         val result = tfjsArray.times(otherTFJS)
         tfjsArray.dispose()
         tfjsArray = result
     }
 
-    override fun divAssign(other: NumberNDArray) {
+    override suspend fun divAssign(other: NumberNDArray) {
         val otherTFJS = (other as NumberNDArrayTFJS).tfjsArray
         val result = tfjsArray.div(otherTFJS)
         tfjsArray.dispose()

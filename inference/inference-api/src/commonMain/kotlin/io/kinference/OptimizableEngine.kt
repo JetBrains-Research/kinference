@@ -15,7 +15,7 @@ interface OptimizableEngine<T : ONNXData<*, *>> : InferenceEngine<T> {
      * Model should be previously loaded as [ByteArray].
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
-    fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
+    suspend fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
 
     /**
      * Reads model from the specified path.

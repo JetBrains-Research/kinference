@@ -3,10 +3,8 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.arrays.NumberNDArrayCore
-import io.kinference.ndarray.extensions.softmax
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import kotlin.time.ExperimentalTime
@@ -41,8 +39,8 @@ class SoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         input as NumberNDArrayCore
-        return input.softmax(axis, coroutineContext = contexts.execution.asCoroutineContext())
+        return input.softmax(axis)
     }
 }

@@ -4,7 +4,8 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.indexAxis
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.concat
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -42,7 +43,7 @@ class ConcatVer4(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val output = tidyNDArray {
             val inputsNotNull = inputs.requireNoNulls()
             val actualAxis = inputsNotNull.first().data.indexAxis(axis)

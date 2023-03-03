@@ -3,7 +3,6 @@ package io.kinference.core.model
 import io.kinference.core.KIONNXData
 import io.kinference.core.graph.KIGraph
 import io.kinference.graph.Contexts
-import io.kinference.model.ExecutionContext
 import io.kinference.model.Model
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
@@ -15,11 +14,10 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override fun predict(input: List<KIONNXData<*>>, profile: Boolean, executionContext: ExecutionContext?): Map<String, KIONNXData<*>> {
+    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>> {
         val contexts = Contexts<KIONNXData<*>>(
             null,
-            if (profile) addProfilingContext("Model $name") else null,
-            executionContext
+            if (profile) addProfilingContext("Model $name") else null
         )
         val execResult = graph.execute(input, contexts)
         return execResult.associateBy { it.name!! }
@@ -30,7 +28,7 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
     }
 
     companion object {
-        operator fun invoke(proto: ModelProto): KIModel {
+        suspend operator fun invoke(proto: ModelProto): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)

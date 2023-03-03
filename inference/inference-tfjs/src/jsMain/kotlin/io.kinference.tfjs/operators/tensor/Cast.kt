@@ -1,14 +1,15 @@
 package io.kinference.tfjs.operators.tensor
 
-import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import io.kinference.tfjs.data.tensors.*
+import io.kinference.protobuf.message.AttributeProto
+import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asNamedOutputs
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -53,7 +54,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         else -> error("Unsupported type: $type")
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidyNDArrays {
             val input = inputs[0]!!.data
             val casted = when (tfjsType) {

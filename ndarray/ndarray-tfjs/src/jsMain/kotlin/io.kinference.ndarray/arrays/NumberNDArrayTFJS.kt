@@ -26,11 +26,11 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun expand(shape: IntArray): MutableNumberNDArrayTFJS {
+    override suspend fun expand(shape: IntArray): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun nonZero(): NumberNDArrayTFJS {
+    override suspend fun nonZero(): NumberNDArrayTFJS {
         error("Operation nonZero() is not supported yet")
     }
 
@@ -39,104 +39,104 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(tensor)
     }
 
-    override fun min(): Number {
+    override suspend fun min(): Number {
         return tfjsArray.min().dataSync()[0] as Number
     }
 
-    override fun min(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
+    override suspend fun min(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
         val mins = tfjsArray.min(axis, keepDims)
         return NumberNDArrayTFJS(mins)
     }
 
-    override fun max(): Number {
+    override suspend fun max(): Number {
         return tfjsArray.max().dataSync()[0] as Number
     }
 
-    override fun max(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
+    override suspend fun max(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
         val max = tfjsArray.max(axis, keepDims)
         return NumberNDArrayTFJS(max)
     }
 
-    override fun sum(): Number {
+    override suspend fun sum(): Number {
         return tfjsArray.sum().dataSync()[0] as Number
     }
 
-    override fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArrayTFJS {
+    override suspend fun cumulativeSum(axis: Int, exclusive: Boolean, reverse: Boolean): MutableNumberNDArrayTFJS {
         val result = tfjsArray.cumsum(axis, exclusive, reverse)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun erf(): NumberNDArrayTFJS {
+    override suspend fun erf(): NumberNDArrayTFJS {
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
-    override fun softmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayTFJS {
+    override suspend fun softmax(axis: Int): NumberNDArrayTFJS {
         return NumberNDArrayTFJS(tfjsArray.softmax(axis))
     }
 
-    override fun logSoftmax(axis: Int, coroutineContext: CoroutineContext?): NumberNDArrayTFJS {
+    override suspend fun logSoftmax(axis: Int): NumberNDArrayTFJS {
         return NumberNDArrayTFJS(tfjsArray.logSoftmax(axis))
     }
 
-    override fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
+    override suspend fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.plus(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun minus(other: NumberNDArray): MutableNumberNDArrayTFJS {
+    override suspend fun minus(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.minus(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun times(other: NumberNDArray): MutableNumberNDArrayTFJS {
+    override suspend fun times(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.times(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun div(other: NumberNDArray): MutableNumberNDArrayTFJS {
+    override suspend fun div(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.div(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun dot(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
+    override suspend fun dot(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.dot(other.tfjsArray)
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
+    override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
         val result = tfjsArray.argmax(axis)
         return NumberNDArrayTFJS(result)
     }
 
-    override fun reduceSum(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
+    override suspend fun reduceSum(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
         val sum = tfjsArray.sum(axes.toTypedArray(), keepDims)
         return NumberNDArrayTFJS(sum)
     }
 
-    override fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
+    override suspend fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
         error("Operation topK() is not supported yet")
     }
 
-    override fun reshape(strides: Strides): NumberNDArrayTFJS {
+    override suspend fun reshape(strides: Strides): NumberNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape)
         return NumberNDArrayTFJS(result)
     }
 
-    override fun reshape(shape: IntArray): NumberNDArrayTFJS {
+    override suspend fun reshape(shape: IntArray): NumberNDArrayTFJS {
         return reshape(Strides(shape))
     }
 
-    override fun transpose(permutations: IntArray): NumberNDArrayTFJS {
+    override suspend fun transpose(permutations: IntArray): NumberNDArrayTFJS {
         val result = tfjsArray.transpose(permutations.toTypedArray())
         return NumberNDArrayTFJS(result)
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArrayTFJS {
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArrayTFJS {
         require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
         require(constantValue == null || constantValue is NDArrayTFJS)
         val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }
@@ -146,7 +146,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         }
     }
 
-    override fun matmul(other: NumberNDArray, coroutineContext: CoroutineContext): MutableNumberNDArrayTFJS {
+    override suspend fun matmul(other: NumberNDArray): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.matMul(other.tfjsArray, transposeLeft = false, transposeRight = false)
         return MutableNumberNDArrayTFJS(result)
@@ -163,7 +163,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return MutableNumberNDArrayTFJS(result)
     }
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayTFJS {
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray()))
     }
 

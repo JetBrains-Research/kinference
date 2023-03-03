@@ -48,47 +48,47 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return MutableStringNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableStringNDArray {
+    override suspend fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
+    override suspend fun map(function: PrimitiveToPrimitiveFunction) = map(function, MutableStringNDArray(strides))
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableStringNDArray {
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun concat(others: List<NDArray>, axis: Int): MutableStringNDArray {
+    override suspend fun concat(others: List<NDArray>, axis: Int): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun expand(shape: IntArray): MutableStringNDArray {
+    override suspend fun expand(shape: IntArray): MutableStringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): StringNDArray {
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): StringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun nonZero(): LongNDArray {
+    override suspend fun nonZero(): LongNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun tile(repeats: IntArray): StringNDArray {
+    override suspend fun tile(repeats: IntArray): StringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun reshape(strides: Strides): StringNDArray {
+    override suspend fun reshape(strides: Strides): StringNDArray {
         require(strides.linearSize == this.strides.linearSize)
 
         return StringNDArray(array, strides)
     }
 
-    override fun transpose(permutations: IntArray): StringNDArray {
+    override suspend fun transpose(permutations: IntArray): StringNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun transpose2D(): StringNDArray {
+    override suspend fun transpose2D(): StringNDArray {
         TODO("Not yet implemented")
     }
 
@@ -142,7 +142,7 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
         array[index] = value as String
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore {
+    override suspend fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore {
         TODO("Not yet implemented")
     }
 

@@ -65,7 +65,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
     }
 
     object MatMulIntegerPrepare : ContextPrepare() {
-        override fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
+        override suspend fun appendContext(context: GraphContext<KIONNXData<*>>, initializers: List<KITensor>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
             val leftTensor = initTensorByDefaultName("A", operator, initializers)
             val rightTensor = initTensorByDefaultName("B", operator, initializers)
             val leftZeroPoint = initTensorByDefaultName("a_zero_point", operator, initializers)
@@ -75,7 +75,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
             appendTensor(rightTensor, rightZeroPoint, context)
         }
 
-        internal fun prepareTensor(tensor: KITensor, zeroPoint: KITensor?): KITensor {
+        internal suspend fun prepareTensor(tensor: KITensor, zeroPoint: KITensor?): KITensor {
             val preparedTensor = if (zeroPoint == null)
                 (tensor.data as NumberNDArrayCore).toIntNDArray()
             else
@@ -84,7 +84,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
             return preparedTensor.asTensor("prepared_${tensor.name}")
         }
 
-        private fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, context: GraphContext<KIONNXData<*>>) {
+        private suspend fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, context: GraphContext<KIONNXData<*>>) {
             if (tensor != null) {
                 val preparedTensor = prepareTensor(tensor, zeroPoint)
                 context.putValue(preparedTensor.name!!, preparedTensor)
@@ -92,7 +92,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val first = inputs[0]!!
         val second = inputs[1]!!
         val firstZero = inputs.getOrNull(2)
@@ -102,7 +102,7 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
         val secondPrepared = (contexts.graph!!.getOrNullValue("prepared_${second.name}") ?: MatMulIntegerPrepare.prepareTensor(second, secondZero)) as KITensor
 
         val output = (firstPrepared.data as NumberNDArrayCore)
-            .matmul(secondPrepared.data as NumberNDArrayCore, contexts.execution.asCoroutineContext())
+            .matmul(secondPrepared.data as NumberNDArrayCore)
         return listOf(output.asTensor("y"))
     }
 }

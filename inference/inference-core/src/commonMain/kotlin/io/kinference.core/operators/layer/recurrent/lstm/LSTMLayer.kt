@@ -2,7 +2,6 @@ package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.core.operators.activations.Activation
-import io.kinference.model.ExecutionContext
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
@@ -14,7 +13,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         require(activations.size == 3)
     }
 
-    override fun apply(
+    override suspend fun apply(
         input: AbstractLSTMInput,
         weights: AbstractLSTMWeights,
         recurrentWeights: AbstractLSTMWeights,
@@ -23,8 +22,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         initialHiddenState: NumberNDArrayCore?,
         initialCellState: NumberNDArrayCore?,
         peepholes: NumberNDArrayCore?,
-        dataType: DataType,
-        executionContext: ExecutionContext?,
+        dataType: DataType
     ): LSTMLayerOutput {
         val h = Activation.create(activations[2], dataType)
 
@@ -48,12 +46,12 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
             batchSize, hiddenSize, dataType
         )
 
-        apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType, executionContext)
+        apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType)
 
         return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
 
-    fun apply(
+    suspend fun apply(
         input: AbstractLSTMInput,
         output: MutableNumberNDArrayCore,
         lstmStates: LSTMStates,
@@ -62,24 +60,23 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         numDirection: Int,
         seqLength: Int,
         batchSize: Int,
-        dataType: DataType,
-        executionContext: ExecutionContext? = null
+        dataType: DataType
     ) {
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
         val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
         val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
 
-        fun wrapper(seqNum: Int, body: (inner: () -> Unit) -> Unit = { it() }) {
+        suspend fun wrapper(seqNum: Int, body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
             for (batchNum in 0 until batchSize) {
                 if (seqNum >= seqLens[batchNum]) continue
                 body {
                     val localInput = input.view(seqNum, batchNum)
-                    lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
-                    lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
-                    lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum, executionContext)
+                    lstmGates.input.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmGates.forget.compute(localInput, lstmStates, f, numDirection, batchNum)
+                    lstmGates.cell.compute(localInput, lstmStates, g, numDirection, batchNum)
                     lstmStates.cellState.compute(lstmGates, numDirection, batchNum)
-                    lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum, executionContext)
+                    lstmGates.output.compute(localInput, lstmStates, f, numDirection, batchNum)
                     lstmStates.hiddenState.compute(lstmGates, lstmStates.cellState, numDirection, batchNum)
                     val outputVector = lstmStates.hiddenState.getVectorRaw(numDirection, batchNum)
 

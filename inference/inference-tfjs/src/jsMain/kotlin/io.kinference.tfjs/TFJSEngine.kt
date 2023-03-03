@@ -34,7 +34,7 @@ object TFJSEngine : InferenceEngine<TFJSData<*>> {
     private val TFJS_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = FlatTensorDecoder)
     private fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), TFJS_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray): TFJSModel {
+    override suspend fun loadModel(bytes: ByteArray): TFJSModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
         return TFJSModel(modelScheme)
     }

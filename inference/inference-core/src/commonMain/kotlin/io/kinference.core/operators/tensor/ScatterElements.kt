@@ -40,7 +40,7 @@ class ScatterElementsVer11(name: String, attributes: Map<String, Attribute<Any>>
         internal val VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
         private val INFO = OperatorInfo("ScatterElements", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
+        private suspend fun getIndices(indices: NDArray, axisLimit: Int): IntNDArray {
             if (indices !is IntNDArray && indices !is LongNDArray) error("Indices type must be either Long or Int. Current type = ${indices.type}")
 
             fun checkIndex(index: Int, axisLimit: Int): Int = if (index >= 0) index else index + axisLimit
@@ -75,7 +75,7 @@ class ScatterElementsVer11(name: String, attributes: Map<String, Attribute<Any>>
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data.toMutable()
         val indicesInput = inputs[1]!!.data
 

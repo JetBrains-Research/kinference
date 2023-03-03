@@ -16,6 +16,7 @@ import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.*
 import io.kinference.utils.ArrayAssertions
+import io.kinference.utils.TestRunner
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import kotlin.math.abs
@@ -87,7 +88,7 @@ class KIKMathAdapterTest {
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun test_kmath_adapter_inference() {
+    fun test_kmath_adapter_inference() = TestRunner.runTest {
         val inOutTensorType = TypeProto.Tensor(TensorProto.DataType.FLOAT, TensorShapeProto(listOf(TensorShapeProto.Dimension(dimValue = 6L))))
         val modelProto = ModelProto(
             graph = GraphProto(

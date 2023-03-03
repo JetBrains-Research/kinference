@@ -19,7 +19,7 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return tfjsArray.dataSync()[0] as Boolean
     }
 
-    override fun reshape(strides: Strides): BooleanNDArrayTFJS {
+    override suspend fun reshape(strides: Strides): BooleanNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape.toTypedArray())
         return BooleanNDArrayTFJS(result)
     }
@@ -37,20 +37,20 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return BooleanNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArrayTFJS {
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArrayTFJS {
         val result = tfjsArray.slice(starts.toTypedArray(), ends.toTypedArray(), steps.toTypedArray())
         return MutableBooleanNDArrayTFJS(result)
     }
 
-    override fun expand(shape: IntArray): MutableBooleanNDArrayTFJS {
+    override suspend fun expand(shape: IntArray): MutableBooleanNDArrayTFJS {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun nonZero(): NumberNDArrayTFJS {
+    override suspend fun nonZero(): NumberNDArrayTFJS {
         error("Operation nonZero() is not supported yet")
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArrayTFJS {
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArrayTFJS {
         require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
         require(constantValue == null || constantValue is NDArrayTFJS)
         val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }

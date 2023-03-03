@@ -42,7 +42,7 @@ class LeakyReluVer6(name: String, attributes: Map<String, Attribute<Any>> = empt
 
     private val alpha: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val outputs = tidyNDArray {
             val input = inputs[0]!!.data as NumberNDArrayTFJS
             return@tidyNDArray input.leakyRelu(alpha)

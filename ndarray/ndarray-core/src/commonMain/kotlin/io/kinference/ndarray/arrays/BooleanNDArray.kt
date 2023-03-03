@@ -88,7 +88,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableBooleanNDArray {
+    override suspend fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableBooleanNDArray {
         function as BooleanMap
         destination as MutableBooleanNDArray
         for (index in 0 until destination.linearSize) {
@@ -98,9 +98,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return destination
     }
 
-    override fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore = map(function, MutableBooleanNDArray(strides))
+    override suspend fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore = map(function, MutableBooleanNDArray(strides))
 
-    override fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArray {
+    override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableBooleanNDArray {
         val newShape = IntArray(shape.size) {
             val length = abs(ends[it] - starts[it])
             val rest = length % abs(steps[it])
@@ -149,7 +149,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         arrayPointer.mapTo(destPointer, destination.size) { it || scalar }
     }
 
-    fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
+    suspend fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         when {
             this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = this.array.blocks[0][0] or other.array.blocks[0][0]
             this.isScalar() -> orScalar(other.array, this.array.blocks[0][0], destination.array)
@@ -168,9 +168,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return destination
     }
 
-    infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
+    suspend infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
 
-    override fun concat(others: List<NDArray>, axis: Int): MutableBooleanNDArray {
+    override suspend fun concat(others: List<NDArray>, axis: Int): MutableBooleanNDArray {
         val actualAxis = indexAxis(axis)
 
         val inputs = others.toMutableList().also { it.add(0, this) }
@@ -194,7 +194,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return result
     }
 
-    override fun expand(shape: IntArray): MutableBooleanNDArray {
+    override suspend fun expand(shape: IntArray): MutableBooleanNDArray {
         val outputShape = broadcastShape(listOf(this.shape, shape))
         val output = MutableBooleanNDArray(outputShape)
         Broadcasting.applyWithBroadcast(listOf(this), output) { inputs: List<NDArray>, destination: MutableNDArray ->
@@ -206,7 +206,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return output
     }
 
-    override fun nonZero(): LongNDArray {
+    override suspend fun nonZero(): LongNDArray {
         if (isScalar()) {
             val value = singleValue()
             return if (value)
@@ -235,11 +235,11 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return LongNDArray(indicesByDim, nonZeroStrides)
     }
 
-    override fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArray {
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArray {
         TODO("Not yet implemented")
     }
 
-    override fun tile(repeats: IntArray): BooleanNDArray {
+    override suspend fun tile(repeats: IntArray): BooleanNDArray {
         TODO("Not yet implemented")
     }
 
@@ -287,7 +287,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(BooleanTiledArray(outputBlocks), outputStrides)
     }
 
-    override fun transpose(permutations: IntArray): BooleanNDArray {
+    override suspend fun transpose(permutations: IntArray): BooleanNDArray {
         require(permutations.size == rank)
         require(permutations.all { it in permutations.indices })
 
@@ -330,7 +330,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return outputArray
     }
 
-    override fun transpose2D(): BooleanNDArray {
+    override suspend fun transpose2D(): BooleanNDArray {
         require(rank == 2)
 
         val outputShape = shape.reversedArray()
@@ -356,7 +356,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(outputArray, outputStrides)
     }
 
-    override fun reshape(strides: Strides): BooleanNDArray {
+    override suspend fun reshape(strides: Strides): BooleanNDArray {
         require(strides.linearSize == this.strides.linearSize) { "Linear size must be equal" }
 
         if (strides.shape.isNotEmpty() && this.shape.isNotEmpty() && strides.shape.last() != this.shape.last()) {
@@ -457,7 +457,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         return MutableBooleanNDArray(array, strides)
     }
 
-    override fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableBooleanNDArray {
+    override suspend fun mapMutable(function: PrimitiveToPrimitiveFunction): MutableBooleanNDArray {
         function as BooleanMap
         for (index in 0 until linearSize) {
             array[index] = function.apply(array[index])
@@ -547,7 +547,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         array.fill(false)
     }
 
-    fun not(): MutableBooleanNDArray {
+    suspend fun not(): MutableBooleanNDArray {
         return mapMutable(object : BooleanMap {
             override fun apply(value: Boolean): Boolean = value.not()
         })

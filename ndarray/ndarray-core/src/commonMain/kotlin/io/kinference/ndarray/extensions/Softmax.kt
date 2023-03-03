@@ -2,9 +2,8 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.runBlocking
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
 private fun expFunc(type: DataType) = when (type) {
@@ -18,17 +17,16 @@ private fun expFunc(type: DataType) = when (type) {
     else -> error("Unsupported data type: $type")
 }
 
-private fun MutableNumberNDArrayCore.softmaxRow() {
+private suspend fun MutableNumberNDArrayCore.softmaxRow() {
     minusAssign(createScalarNDArray(type, max()) as NumberNDArray)
     mapMutable(expFunc(type))
     divAssign(createScalarNDArray(type, sum()) as NumberNDArray)
 }
 
-fun softmax(
+suspend fun softmax(
     input: NDArrayCore,
     axis: Int = 0,
-    strides: Strides = input.strides,
-    coroutineContext: CoroutineContext? = null
+    strides: Strides = input.strides
 ): MutableNumberNDArrayCore {
     fun resolveDims(dims: IntArray?): Int {
         return if (dims.isNullOrEmpty()) 1 else dims!!.reduce(Int::times)
@@ -44,8 +42,8 @@ fun softmax(
     val matrix = input.reshape(intArrayOf(rows, columns)).copyIfNotMutable()
     val matrixRows = Array(rows) { matrix.viewMutable(it) as MutableNumberNDArrayCore }
 
-    if (matrixRows.size > 128 && coroutineContext != null) {
-        runBlocking(coroutineContext) {
+    if (matrixRows.size > 128) {
+        coroutineScope {
             for (i in matrixRows.indices step 32) {
                 val end = min(i + 32, matrixRows.size)
                 launch {

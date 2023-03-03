@@ -32,7 +32,7 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
     private val ORT_READER_CONFIG = ProtobufReader.ReaderConfig(tensorDecoder = FlatTensorDecoder)
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), ORT_READER_CONFIG)
 
-    override fun loadModel(bytes: ByteArray): ORTModel {
+    override suspend fun loadModel(bytes: ByteArray): ORTModel {
         val env = OrtEnvironment.getEnvironment()
         val options = SessionOptions()
         options.setOptimizationLevel(SessionOptions.OptLevel.BASIC_OPT)
@@ -68,7 +68,7 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
         return ORTModel(session)
     }
 
-    override fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
+    override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): ORTModel {
         val env = OrtEnvironment.getEnvironment()
         val options = SessionOptions()
         if (optimize)

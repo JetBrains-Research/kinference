@@ -3,7 +3,8 @@ package io.kinference.tfjs.operators.layer.normalization
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
@@ -58,7 +59,7 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
 
     private val epsilon: Float by attribute()
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val skip = inputs[1]!!.data as NumberNDArrayTFJS
         val gamma = inputs[2]!!.data as NumberNDArrayTFJS

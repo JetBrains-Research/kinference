@@ -78,7 +78,7 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
     private val gruLayer = GRULayerBase.create(hiddenSize, activations, direction)
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
 
         val weights = inputs[1]!!
@@ -102,8 +102,7 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
             sequenceLens?.data as IntNDArray?,
             initialHiddenState?.data as NumberNDArrayCore?,
             input.data.type,
-            linearBeforeReset,
-            contexts
+            linearBeforeReset
         )
 
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"))

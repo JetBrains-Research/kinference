@@ -15,20 +15,20 @@ interface Model<T : ONNXData<*, *>> : Closeable {
      * Executes the model with profiling and given context.
      * If [profile] flag is true, prints profiling info after the model pass.
      */
-    fun predict(input: List<T>, profile: Boolean = false, executionContext: ExecutionContext? = null): Map<String, T>
+    suspend fun predict(input: List<T>, profile: Boolean = false): Map<String, T>
 
     companion object {
         /**
          * Reads model using given inference engine.
          * Model should be previously loaded as a [ByteArray].
          */
-        fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: InferenceEngine<T>) = engine.loadModel(bytes)
+        suspend fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: InferenceEngine<T>) = engine.loadModel(bytes)
 
         /**
          * Reads model using given inference engine.
          * Model should be previously loaded as a [ByteArray].
          * If [optimize] flag is true, runs available optimizations on the given model.
          */
-        fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: OptimizableEngine<T>, optimize: Boolean) = engine.loadModel(bytes, optimize)
+        suspend fun <T : ONNXData<*, *>> load(bytes: ByteArray, engine: OptimizableEngine<T>, optimize: Boolean) = engine.loadModel(bytes, optimize)
     }
 }

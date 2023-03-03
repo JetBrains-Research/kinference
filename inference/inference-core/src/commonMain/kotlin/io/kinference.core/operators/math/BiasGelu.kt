@@ -5,15 +5,14 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.asCoroutineContext
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.*
+import io.kinference.utils.PlatformUtils
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.*
 import kotlin.time.ExperimentalTime
 
@@ -85,12 +84,11 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
             }
         }
 
-        private fun <T : NumberNDArrayCore> computeBatched(
-            coroutineContext: CoroutineContext,
+        private suspend fun <T : NumberNDArrayCore> computeBatched(
             input: T,
             output: T,
             bias: T,
-            batchFunc: (T, T, T, Int, Int) -> Unit
+            batchFunc: suspend (T, T, T, Int, Int) -> Unit
         ) {
             val rowSize = bias.linearSize
             val numThreads = PlatformUtils.threads
@@ -101,7 +99,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
                 this[lastIndex] = input.linearSize
             }
 
-            runBlocking(coroutineContext) {
+            coroutineScope {
                 for ((i, endOffset) in endBatchOffsets.withIndex()) {
                     launch {
                         val startOffset = i * batchSize * rowSize
@@ -113,7 +111,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
         }
     }
 
-    override fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val bias = inputs[1]!!.data
 
@@ -130,8 +128,8 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
 
                 val output = MutableFloatNDArray(input.strides)
 
-                if (contexts.execution?.coroutineContext != null && input.linearSize > bias.linearSize) {
-                    computeBatched(contexts.execution.asCoroutineContext(), input, output, bias, ::computeFloat)
+                if (input.linearSize > bias.linearSize) {
+                    computeBatched(input, output, bias, ::computeFloat)
                 } else {
                     computeFloat(output, input, bias)
                 }
@@ -145,8 +143,8 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
 
                 val output = MutableDoubleNDArray(input.strides)
 
-                if (contexts.execution?.coroutineContext != null) {
-                    computeBatched(contexts.execution.asCoroutineContext(), input, output, bias, ::computeDouble)
+                if (input.linearSize > bias.linearSize) {
+                    computeBatched(input, output, bias, ::computeDouble)
                 } else {
                     computeDouble(output, input, bias)
                 }

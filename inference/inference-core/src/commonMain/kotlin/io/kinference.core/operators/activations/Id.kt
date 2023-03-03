@@ -31,5 +31,5 @@ class IdentityVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
         private val INFO = OperatorInfo("Identity", emptyMap(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore = allocateNDArray(input.type, input.shape).apply { copyFrom(0, input) }
+    override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore = allocateNDArray(input.type, input.shape).apply { copyFrom(0, input) }
 }

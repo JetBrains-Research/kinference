@@ -57,13 +57,13 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val actualOutputs: Map<String, T> = if (testEngine is MemoryProfileable) {
                 val memoryBeforeTest = testEngine.allocatedMemory()
                 logger.info { "Memory before predict: $memoryBeforeTest" }
-                val outputs = model.predict(inputs, executionContext = testEngine.execContext())
+                val outputs = model.predict(inputs)
                 val memoryAfterTest = testEngine.allocatedMemory()
                 logger.info { "Memory after predict: $memoryAfterTest" }
                 assertEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
                 outputs
             } else {
-                model.predict(inputs, executionContext = testEngine.execContext())
+                model.predict(inputs)
             }
 
             check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
