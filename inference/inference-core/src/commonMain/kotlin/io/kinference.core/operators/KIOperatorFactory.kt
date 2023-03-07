@@ -15,6 +15,7 @@ import io.kinference.core.operators.layer.recurrent.lstm.LSTM
 import io.kinference.core.operators.logical.*
 import io.kinference.core.operators.math.*
 import io.kinference.core.operators.ml.*
+import io.kinference.core.operators.convolution.*
 import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.seq.ConcatFromSequence
 import io.kinference.core.operators.seq.SplitToSequence
@@ -46,6 +47,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
+        "Conv" -> Conv(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "Div" -> Div(name, version, attributes, inputs, outputs)
