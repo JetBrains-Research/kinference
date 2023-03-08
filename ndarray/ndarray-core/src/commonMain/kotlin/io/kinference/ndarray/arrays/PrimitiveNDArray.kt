@@ -485,44 +485,45 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         require(actualThis.shape[1] == actualOther.shape[0])
 
         val n = actualThis.shape[0]
-//        val t = actualThis.shape[1]
+        val t = actualThis.shape[1]
+        val m = actualOther.shape[1]
+
 
         val lBlockSize = actualThis.array.blockSize
-        val rdBlockSize = destination.array.blockSize
+        val rowFlops = t * m
+        val batchSize = let {
+            var batchSize = 1
+            while (batchSize < n && rowFlops * batchSize < 261120) {
+                batchSize++
+            }
+            batchSize
+        }
 
         val lBlocksInRow = actualThis.blocksInRow
-        val rdBlocksInRow = other.blocksInRow
+        val rdBlocksInRow = actualOther.blocksInRow
 
-        suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
-            for (rdCol in 0 until rdBlocksInRow) {
-                body {
-                    for (i in 0 until n) {
-                        /*
-                        i * rdBlockInRow equals taking i-th line in destination matrix
-                        rdCol is number of current block in row
-                         */
-                        val destBlock = destination.array.blocks[i * rdBlocksInRow + rdCol]
-                        //i * lBlocksInRow equals taking i-th line in left matrix
-                        val leftBlockOffset = i * lBlocksInRow
-                        // iterating over blocks in i-th line in left matrix
-                        for (lCol in 0 until lBlocksInRow) {
-                            val leftBlock = actualThis.array.blocks[leftBlockOffset + lCol]
-                            val rightBlockOffset = lCol * lBlockSize
+        val leftBlocks = actualThis.array.blocks
+        val rightBlocks = actualOther.array.blocks
+        val destBlocks = destination.array.blocks
 
-                            // iterating in left block
-                            for (k in 0 until lBlockSize) {
-                                val temp = leftBlock[k]
-                                /*
-                                 * lCol * lBlockSize + k is linear index in row in left matrix
-                                 * number temp staying at [i, lCol * lBlockSize + k] in left matrix,
-                                 * therefore, we should take (lCol * lBlockSize + k) row in right matrix
-                                 * (lCol * lBlockSize) moved in rightBlockOffset due to performance purposes
-                                 */
-                                val rightBlock = actualOther.array.blocks[(rightBlockOffset + k) * rdBlocksInRow + rdCol]
+        fun wrapper(nStart: Int, nEnd: Int) {
+            for (i in nStart until nEnd) {
+                val leftBlockOffset = i * lBlocksInRow
+                val destBlockOffset = i * rdBlocksInRow
+                val rightBlockIterator = rightBlocks.iterator()
 
-                                for (j in 0 until rdBlockSize) {
-                                    destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
-                                }
+                for (lCol in 0 until lBlocksInRow) {
+                    val leftBlock = leftBlocks[leftBlockOffset + lCol]
+
+                    for (k in 0 until lBlockSize) {
+                        val temp = leftBlock[k]
+
+                        for (rdCol in 0 until rdBlocksInRow) {
+                            val destBlock = destBlocks[destBlockOffset + rdCol]
+                            val rightBlock = rightBlockIterator.next()
+
+                            for (j in destBlock.indices) {
+                                destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
                             }
                         }
                     }
@@ -530,14 +531,22 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             }
         }
 
-        if (rdBlocksInRow > 1) {
-            coroutineScope { wrapper { launch { it() } } }
+        if (batchSize >= n) {
+            wrapper(0, n)
         } else {
-            wrapper()
+            coroutineScope {
+                for (nStart in 0 until n step batchSize) {
+                    launch {
+                        wrapper(nStart, min(nStart + batchSize, n))
+                    }
+                }
+            }
         }
 
         return destination
     }
+
+
 
     override suspend fun dot(other: NumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray
