@@ -44,26 +44,8 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
 
-        private val SQRT_2_1_FLOAT = 1f / sqrt(2f)
         private val SQRT_2_1 = 1.0 / sqrt(2.0)
-
-        private fun computeFloat(output: FloatNDArray, input: FloatNDArray, bias: FloatNDArray, startOffset: Int = 0, count: Int = input.linearSize - startOffset) {
-            val inputPointer = input.array.pointer(startOffset)
-            val outputPointer = output.array.pointer(startOffset)
-            val biasPointer = bias.array.pointer()
-
-            outputPointer.acceptWithRecursive(inputPointer, biasPointer, count) { _: Float, input: Float, bias: Float ->
-                val value = input + bias
-
-                val valueForErf = value * SQRT_2_1_FLOAT
-                val sign = valueForErf.sign
-                val absValue = abs(valueForErf)
-                val t = 1f / (1f + ERF_P_VALUE_FLOAT * absValue)
-                val sum = t * (ERF_COEF_1_FLOAT + t * (ERF_COEF_2_FLOAT + t * (ERF_COEF_3_FLOAT + t * (ERF_COEF_4_FLOAT + t * ERF_COEF_5_FLOAT))))
-                val erfValue = sign * (1f - sum * exp(-absValue * absValue))
-                0.5f * value * (1.0f + erfValue)
-            }
-        }
+        private val SQRT_2 = sqrt(2f)
 
         private fun computeDouble(output: DoubleNDArray, input: DoubleNDArray, bias: DoubleNDArray, startOffset: Int = 0, count: Int = input.linearSize - startOffset) {
             val inputPointer = input.array.pointer(startOffset)
@@ -109,11 +91,89 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
                 }
             }
         }
+
+        suspend fun computeGelu(input: FloatNDArray, bias: FloatNDArray): MutableFloatNDArray {
+            val output = MutableFloatNDArray(input.strides)
+
+            val blocks = input.array.blocks
+            val biasBlocks = bias.array.blocks
+            val outputBlocks = output.array.blocks
+
+            val blockSize = input.array.blockSize
+            val batchSize = run {
+                var batchSize = 1
+                //1720
+                while (batchSize < blocks.size && batchSize * blockSize < 1024) {
+                    batchSize++
+                }
+                batchSize
+            }
+
+            fun wrapper(blockStart: Int, blockEnd: Int) {
+                val temporaryBlock = FloatArray(blockSize)
+                val temporaryBlockAbs = FloatArray(blockSize)
+                for (blockIdx in blockStart until blockEnd) {
+                    val outputBlock = outputBlocks[blockIdx]
+                    val block = blocks[blockIdx]
+                    val biasBlock = biasBlocks[blockIdx % biasBlocks.size]
+
+                    for (j in temporaryBlock.indices) {
+                        temporaryBlock[j] = block[j] + biasBlock[j]
+                    }
+
+                    for (j in temporaryBlockAbs.indices) {
+                        temporaryBlockAbs[j] = temporaryBlock[j] / SQRT_2
+                    }
+
+                    for (j in temporaryBlock.indices) {
+                        temporaryBlock[j] = temporaryBlock[j] * 0.5f
+                    }
+
+                    for (j in temporaryBlockAbs.indices) {
+                        temporaryBlockAbs[j] = temporaryBlockAbs[j].absoluteValue
+                    }
+
+                    for (j in outputBlock.indices) {
+                        outputBlock[j] = 1 / (temporaryBlockAbs[j] * ERF_P_VALUE_FLOAT + 1f)
+                    }
+
+                    for (j in temporaryBlockAbs.indices) {
+                        temporaryBlockAbs[j] = exp(-(temporaryBlockAbs[j].pow(2)))
+                    }
+
+                    for (j in outputBlock.indices) {
+                        outputBlock[j] = outputBlock[j] * (ERF_COEF_1_FLOAT + outputBlock[j] * (ERF_COEF_2_FLOAT + outputBlock[j] * (ERF_COEF_3_FLOAT + outputBlock[j] * (ERF_COEF_4_FLOAT + outputBlock[j] * ERF_COEF_5_FLOAT))))
+                    }
+
+                    for (j in outputBlock.indices) {
+                        outputBlock[j] = (1f - temporaryBlockAbs[j] * outputBlock[j]).withSign(temporaryBlock[j].sign)
+                    }
+
+                    for (j in outputBlock.indices) {
+                        outputBlock[j] = (1f + outputBlock[j]) * temporaryBlock[j]
+                    }
+                }
+            }
+
+            if (batchSize == blocks.size) {
+                wrapper(0, blocks.size)
+            } else {
+                coroutineScope {
+                    for (blockStart in blocks.indices step batchSize) {
+                        launch {
+                            wrapper(blockStart, min(blockStart + batchSize, blocks.size))
+                        }
+                    }
+                }
+            }
+
+            return output
+        }
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data
-        val bias = inputs[1]!!.data
+        val input = inputs[0]!!.data as NumberNDArrayCore
+        val bias = inputs[1]!!.data as NumberNDArrayCore
 
         require(input.shape.last() == bias.shape.last()) { "Last dimensions of input and bias tensors must be equal" }
 
@@ -126,13 +186,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
                 input as FloatNDArray
                 bias as FloatNDArray
 
-                val output = MutableFloatNDArray(input.strides)
-
-                if (input.linearSize > bias.linearSize) {
-                    computeBatched(input, output, bias, ::computeFloat)
-                } else {
-                    computeFloat(output, input, bias)
-                }
+                val output = computeGelu(input, bias)
 
                 listOf(output.asTensor("C"))
             }
