@@ -2,7 +2,7 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.primitives.types.PrimitiveType
 
-
+internal inline fun min(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal inline fun max(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal inline fun exp(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
