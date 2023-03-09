@@ -9,15 +9,15 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.*
 
-private val SQRT_2 = sqrt(2.0).toPrimitive()
-private val HALF = (0.5).toPrimitive()
-private val ONE = (1.0).toPrimitive()
-private val ERF_P_VALUE = (0.3275911).toPrimitive()
-private val ERF_COEF_1 = (0.254829592).toPrimitive()
-private val ERF_COEF_2 = (-0.284496736).toPrimitive()
-private val ERF_COEF_3 = (1.421413741).toPrimitive()
-private val ERF_COEF_4 = (-1.453152027).toPrimitive()
-private val ERF_COEF_5 = (1.061405429).toPrimitive()
+private val SQRT_2 by lazy { sqrt(2.0).toPrimitive() }
+private val HALF by lazy { (0.5).toPrimitive() }
+private val ONE by lazy { (1.0).toPrimitive() }
+private val ERF_P_VALUE by lazy { (0.3275911).toPrimitive() }
+private val ERF_COEF_1 by lazy { (0.254829592).toPrimitive() }
+private val ERF_COEF_2 by lazy { (-0.284496736).toPrimitive() }
+private val ERF_COEF_3 by lazy { (1.421413741).toPrimitive() }
+private val ERF_COEF_4 by lazy { (-1.453152027).toPrimitive() }
+private val ERF_COEF_5 by lazy { (1.061405429).toPrimitive() }
 
 @GenerateNameFromPrimitives
 internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray): MutablePrimitiveNDArray {
