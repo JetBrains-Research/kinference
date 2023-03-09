@@ -8,11 +8,9 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.softmax.softmax
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.PlatformUtils
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -489,24 +487,17 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val m = actualOther.shape[1]
 
 
-        val lBlockSize = actualThis.array.blockSize
-        val rowFlops = t * m
-        val batchSize = let {
-            var batchSize = 1
-            while (batchSize < n && rowFlops * batchSize < 261120) {
-                batchSize++
-            }
-            batchSize
-        }
-
         val lBlocksInRow = actualThis.blocksInRow
         val rdBlocksInRow = actualOther.blocksInRow
 
         val leftBlocks = actualThis.array.blocks
         val rightBlocks = actualOther.array.blocks
         val destBlocks = destination.array.blocks
+        val lBlockSize = actualThis.array.blockSize
 
-        fun wrapper(nStart: Int, nEnd: Int) {
+        val nRowFlop = t * m
+
+        parallelizeByRows(nRowFlop, n, 261120) { nStart, nEnd ->
             for (i in nStart until nEnd) {
                 val leftBlockOffset = i * lBlocksInRow
                 val destBlockOffset = i * rdBlocksInRow
@@ -526,18 +517,6 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
                                 destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        if (batchSize >= n) {
-            wrapper(0, n)
-        } else {
-            coroutineScope {
-                for (nStart in 0 until n step batchSize) {
-                    launch {
-                        wrapper(nStart, min(nStart + batchSize, n))
                     }
                 }
             }

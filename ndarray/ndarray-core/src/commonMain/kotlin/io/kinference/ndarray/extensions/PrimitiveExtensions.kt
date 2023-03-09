@@ -134,18 +134,10 @@ suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: Number
     val destBlocks = destination.array.blocks
     val leftBlocks = this.array.blocks
     val rightBlocks = other.array.blocks
-    val rowFlops = t * m
+    val rowFlop = t * m
     val zero = (0).toPrimitive()
 
-    val batchSize = run {
-        var batchSize = 1
-        while (batchSize < n && batchSize * rowFlops < 262144) {
-            batchSize++
-        }
-        batchSize
-    }
-
-    fun wrapper(nStart: Int, nEnd: Int) {
+    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int ->
         val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow
@@ -177,68 +169,5 @@ suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: Number
         }
     }
 
-    if (batchSize == n) {
-        wrapper(0, n)
-    } else {
-        coroutineScope {
-            for (nStart in 0 until n step batchSize) {
-                launch {
-                    wrapper(nStart, min(nStart + batchSize, n))
-                }
-            }
-        }
-    }
-
     return destination
-
-
-//    @Suppress("NAME_SHADOWING") val alpha = alpha.toPrimitive()
-//    val dRowsNum = destination.shape[0]
-//
-//    val dBlocksInRow = destination.blocksInRow
-//    val lrBlocksInRow = this.blocksInRow
-//
-//    val dBlockSize = destination.array.blockSize
-//    val lrBlockSize = array.blockSize
-//
-//    val dBlocks = destination.array.blocks
-//    val lBlocks = this.array.blocks
-//    val rBlocks = other.array.blocks
-//
-//    suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
-//        for (dRow in 0 until dRowsNum) {
-//            var rRow = 0
-//            val dBlockOffset = dRow * dBlocksInRow
-//            val lBlockOffset = dRow * lrBlocksInRow
-//
-//            for (dBlockInRow in 0 until dBlocksInRow) {
-//                val dBlock = dBlocks[dBlockOffset + dBlockInRow]
-//                val rRowOffset = rRow
-//                body {
-//                    var rBlockOffset = rRowOffset * lrBlocksInRow
-//                    for (dIdx in 0 until dBlockSize) {
-//                        for (lrBlockInRow in 0 until lrBlocksInRow) {
-//                            val lBlock = lBlocks[lBlockOffset + lrBlockInRow]
-//                            val rBlock = rBlocks[rBlockOffset + lrBlockInRow]
-//
-//                            for (lrIdx in 0 until lrBlockSize) {
-//                                dBlock[dIdx] = (dBlock[dIdx] + alpha * lBlock[lrIdx] * rBlock[lrIdx]).toPrimitive()
-//                            }
-//                        }
-//                        rBlockOffset += lrBlocksInRow
-//                    }
-//                }
-//
-//                rRow += dBlockSize
-//            }
-//        }
-//    }
-//
-//    if (destination.blocksInRow > 1) {
-//        coroutineScope { wrapper { launch { it() } } }
-//    } else {
-//        wrapper()
-//    }
-//
-//    return destination
 }

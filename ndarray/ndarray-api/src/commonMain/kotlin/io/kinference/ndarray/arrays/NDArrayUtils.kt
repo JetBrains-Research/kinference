@@ -26,7 +26,11 @@ fun NDArray.indexAxis(axis: Int): Int {
 }
 
 fun NDArray.computeBlockSize(fromDim: Int = 0, toDim: Int = this.shape.size): Int {
-    return this.shape.sliceArray(fromDim until toDim).fold(1, Int::times)
+    var blockSize = 1
+    for (idx in fromDim until toDim) {
+        blockSize *= shape[idx]
+    }
+    return blockSize
 }
 
 @Suppress("UNCHECKED_CAST")
