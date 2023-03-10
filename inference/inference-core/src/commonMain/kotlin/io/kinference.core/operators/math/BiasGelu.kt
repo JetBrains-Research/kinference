@@ -6,7 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.biasGelu.biasGelu
+import io.kinference.ndarray.extensions.gelu.biasGelu
 import io.kinference.operator.*
 import kotlin.time.ExperimentalTime
 

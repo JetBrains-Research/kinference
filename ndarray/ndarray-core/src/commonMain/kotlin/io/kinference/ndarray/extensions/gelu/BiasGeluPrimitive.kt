@@ -1,5 +1,5 @@
 @file:GeneratePrimitives(DataType.DOUBLE, DataType.FLOAT)
-package io.kinference.ndarray.extensions.biasGelu
+package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*

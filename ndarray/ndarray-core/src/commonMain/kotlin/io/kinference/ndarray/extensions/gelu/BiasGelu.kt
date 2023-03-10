@@ -1,4 +1,4 @@
-package io.kinference.ndarray.extensions.biasGelu
+package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
