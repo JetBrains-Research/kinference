@@ -497,6 +497,9 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
         val nRowFlop = t * m
 
+        // Constant 261120 was precomputed on M1 Max processor
+        // With this constant two launches work faster than single thread without launches
+        // TODO: (cupertank) Remove constants
         parallelizeByRows(nRowFlop, n, 261120) { nStart, nEnd ->
             for (i in nStart until nEnd) {
                 val leftBlockOffset = i * lBlocksInRow

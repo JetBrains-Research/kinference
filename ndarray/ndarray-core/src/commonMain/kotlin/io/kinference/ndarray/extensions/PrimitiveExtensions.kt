@@ -137,6 +137,9 @@ suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: Number
     val rowFlop = t * m
     val zero = (0).toPrimitive()
 
+    // Constant 262144 was precomputed on M1 Max processor
+    // With this constant two launches work faster than single thread without launches
+    // TODO: (cupertank) Remove constants
     parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int ->
         val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
         for (i in nStart until nEnd) {
