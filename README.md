@@ -119,7 +119,7 @@ dependencies {
 ```
 
 ## Getting started
-Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.2*
+Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.9*
 
 ### Setup dependencies repository
 
