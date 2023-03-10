@@ -29,6 +29,9 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
 
     val blockSize = input.array.blockSize
 
+    // Constant 1024 was precomputed on M1 Max processor
+    // With this constant two launches work faster than single thread without launches
+    // TODO: (cupertank) Remove constants
     parallelizeByBlocks(blockSize, inputBlocks.size, 1024) { blockStart, blockEnd ->
         val temporaryBlock = PrimitiveArray(blockSize)
         val temporaryBlockAbs = PrimitiveArray(blockSize)

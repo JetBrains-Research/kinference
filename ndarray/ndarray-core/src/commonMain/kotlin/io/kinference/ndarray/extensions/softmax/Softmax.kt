@@ -8,7 +8,8 @@ suspend fun softmax(
     axis: Int = 0,
     strides: Strides = input.strides
 ): MutableNumberNDArrayCore {
-    require(input.type == DataType.FLOAT || input.type == DataType.DOUBLE) { "Softmax operation supported only for DoubleNDArray and FloatNDArray" }
+    require(input.type == DataType.FLOAT || input.type == DataType.DOUBLE)
+        { "Softmax operation supported only for FLOAT and DOUBLE tensors, actual type is ${input.type}" }
 
     val actualAxis = input.indexAxis(axis)
     val rows = input.computeBlockSize(toDim = actualAxis)
@@ -17,6 +18,6 @@ suspend fun softmax(
     return when(input.type) {
         DataType.FLOAT -> softmaxFloat(input as FloatNDArray, rows, columns)
         DataType.DOUBLE ->  softmaxDouble(input as DoubleNDArray, rows, columns)
-        else -> error("Softmax operation supports only for DoubleNDArray and FloatNDArray")
+        else -> error("Softmax operation supported only for FLOAT and DOUBLE tensors, actual type is ${input.type}")
     }
 }
