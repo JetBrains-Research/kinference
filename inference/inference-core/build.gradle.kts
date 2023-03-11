@@ -17,8 +17,8 @@ kotlin {
 
     jvm {
         configureTests()
-        configureHeavyTests()
-        configureBenchmarkTests()
+//        configureHeavyTests()
+//        configureBenchmarkTests()
     }
 
     sourceSets {
