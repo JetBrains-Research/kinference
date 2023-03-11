@@ -1,4 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 group = "io.kinference"
@@ -43,11 +46,14 @@ subprojects {
         }
     }
 
+    plugins.withType<YarnPlugin>() {
+        rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
+    }
+
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         sourceSets.all {
             languageSettings {
                 optIn("kotlin.RequiresOptIn")
-                optIn("kotlin.time.ExperimentalTime")
                 optIn("kotlin.ExperimentalUnsignedTypes")
             }
 
