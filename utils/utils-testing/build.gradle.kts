@@ -29,5 +29,11 @@ kotlin {
                 api(kotlin("test-annotations-common"))
             }
         }
+
+        val jvmMain by getting {
+            dependencies {
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+            }
+        }
     }
 }

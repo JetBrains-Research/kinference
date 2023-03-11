@@ -17,9 +17,8 @@ kotlin {
 
     jvm {
         configureTests()
-//        TODO-tanvd leads to problems
-//        configureHeavyTests()
-//        configureBenchmarkTests()
+        configureHeavyTests()
+        configureBenchmarkTests()
     }
 
     sourceSets {
