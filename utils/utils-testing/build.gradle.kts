@@ -25,14 +25,20 @@ kotlin {
                 api(project(":utils:utils-profiling"))
                 api(project(":utils:utils-common"))
 
-                api(kotlin("test"))
+                api(kotlin("test-common"))
                 api(kotlin("test-annotations-common"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+                api(kotlin("test-junit5"))
+            }
+        }
+
+        val jsMain by getting {
+            dependencies {
+                api(kotlin("test-js"))
             }
         }
     }
