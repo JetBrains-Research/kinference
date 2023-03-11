@@ -19,6 +19,10 @@ allprojects {
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
     }
+
+    plugins.withType<YarnPlugin>() {
+        the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
+    }
 }
 
 subprojects {
@@ -44,10 +48,6 @@ subprojects {
                 }
             }
         }
-    }
-
-    plugins.withType<YarnPlugin>() {
-        the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
     }
 
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
