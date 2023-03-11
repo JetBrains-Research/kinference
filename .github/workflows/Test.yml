@@ -44,7 +44,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: JS IR Test
-        run: xvfb-run --auto-servernum ./gradlew jsIrTest jsTest --parallel --console=plain --no-daemon -Pci
+        run: xvfb-run --auto-servernum ./gradlew jsTest --parallel --console=plain --no-daemon -Pci
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v3

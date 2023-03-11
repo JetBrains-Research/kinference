@@ -20,7 +20,7 @@ job("KInference / Test / JVM") {
 job("KInference / Test / JS IR") {
     container("JS IR Tests", jsContainer) {
         shellScript {
-            content = xvfbRun("./gradlew jsIrTest jsTest --parallel --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsTest --parallel --console=plain -Pci --no-daemon")
         }
     }
 }
@@ -48,7 +48,7 @@ job("KInference / Heavy Test / JS IR") {
         addAwsKeys()
 
         shellScript {
-            content = xvfbRun("./gradlew jsIrHeavyTest --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsHeavyTest --console=plain -Pci --no-daemon")
         }
     }
 }
