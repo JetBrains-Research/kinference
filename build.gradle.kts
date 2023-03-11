@@ -47,7 +47,7 @@ subprojects {
     }
 
     plugins.withType<YarnPlugin>() {
-        rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
+        the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
     }
 
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
