@@ -11,7 +11,6 @@ import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gemm
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -26,7 +25,7 @@ sealed class Gemm(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class GemmVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Gemm(name, INFO, attributes, inputs, outputs) {
     private val alpha: Double by attribute { it: Number -> it.toDouble() }
     private val beta: Double by attribute { it: Number -> it.toDouble() }

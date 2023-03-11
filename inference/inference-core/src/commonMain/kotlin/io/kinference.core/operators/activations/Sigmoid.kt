@@ -3,11 +3,10 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.exp
-import kotlin.time.ExperimentalTime
 
 sealed class Sigmoid(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
@@ -28,7 +27,7 @@ sealed class Sigmoid(name: String, info: OperatorInfo, attributes: Map<String, A
     }
 }
 
-@ExperimentalTime
+
 class SigmoidVer6(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Sigmoid(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

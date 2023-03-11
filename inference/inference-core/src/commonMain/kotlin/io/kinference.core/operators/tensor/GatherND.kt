@@ -6,11 +6,10 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.operator.*
 import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class GatherND(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +22,6 @@ sealed class GatherND(name: String, info: OperatorInfo, attributes: Map<String, 
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class GatherNDVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GatherND(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = listOf(AttributeInfo("batch_dims", setOf(AttributeProto.AttributeType.INT), false, 0L))

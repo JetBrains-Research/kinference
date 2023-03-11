@@ -5,10 +5,10 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -23,7 +23,7 @@ sealed class DequantizeLinear(name: String, info: OperatorInfo, attributes: Map<
     }
 }
 
-@ExperimentalTime
+
 class DequantizeLinearVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DequantizeLinear(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT8, TensorProto.DataType.UINT8)

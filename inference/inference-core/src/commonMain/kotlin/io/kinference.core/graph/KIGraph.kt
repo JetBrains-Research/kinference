@@ -14,9 +14,8 @@ import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class KIGraph private constructor(
     proto: GraphProto,
     operators: ArrayList<Operator<KIONNXData<*>, KIONNXData<*>>>,

@@ -6,17 +6,17 @@ version = rootProject.version
 kotlin {
     jvm()
 
-    js(BOTH) {
+    js(IR) {
         browser()
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-common"))
 
-                api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
             }
         }
     }

@@ -12,7 +12,6 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.*
-import kotlin.time.ExperimentalTime
 
 sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -56,7 +55,7 @@ sealed class DynamicQuantizeLinear(name: String, info: OperatorInfo, attributes:
     }
 }
 
-@ExperimentalTime
+
 class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeLinear(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()

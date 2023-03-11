@@ -2,8 +2,9 @@ package io.kinference.gradle
 
 import io.kinference.gradle.s3.S3Dependency
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
-import org.gradle.kotlin.dsl.*
 
 fun KotlinJvmTarget.configureTests() {
     testRuns["test"].executionTask {

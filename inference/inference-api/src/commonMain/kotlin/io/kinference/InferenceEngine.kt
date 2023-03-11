@@ -1,6 +1,7 @@
 package io.kinference
 
-import io.kinference.data.*
+import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.model.Model
 import okio.Path
 

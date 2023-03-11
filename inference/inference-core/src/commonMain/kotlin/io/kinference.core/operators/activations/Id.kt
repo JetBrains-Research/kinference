@@ -3,10 +3,9 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.operator.*
+import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.extensions.allocateNDArray
-import kotlin.time.ExperimentalTime
+import io.kinference.operator.*
 
 sealed class Identity(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
@@ -19,7 +18,7 @@ sealed class Identity(name: String, info: OperatorInfo, attributes: Map<String, 
     }
 }
 
-@ExperimentalTime
+
 class IdentityVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Identity(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

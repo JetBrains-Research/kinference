@@ -11,7 +11,6 @@ import io.kinference.ndarray.extensions.erf
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import kotlin.math.sqrt
-import kotlin.time.ExperimentalTime
 
 sealed class Gelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -47,7 +46,7 @@ sealed class Gelu(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class GeluVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Gelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

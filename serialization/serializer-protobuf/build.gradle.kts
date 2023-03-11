@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js(BOTH) {
+    js(IR) {
         browser()
     }
 
@@ -13,7 +13,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
+                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
                 api("com.squareup.wire:wire-runtime:${Versions.wire}")
             }
         }

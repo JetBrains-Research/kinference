@@ -3,15 +3,14 @@ package io.kinference.core.operators.quantization.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.operator.*
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMLayerBase
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class DynamicQuantizeLSTM(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -24,7 +23,6 @@ sealed class DynamicQuantizeLSTM(name: String, info: OperatorInfo, attributes: M
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : DynamicQuantizeLSTM(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val BYTE_TYPES = setOf(

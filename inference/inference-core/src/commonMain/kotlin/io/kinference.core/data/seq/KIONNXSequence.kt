@@ -4,9 +4,9 @@ import io.kinference.core.CoreBackend
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
-import io.kinference.types.*
-import io.kinference.data.*
+import io.kinference.data.ONNXSequence
 import io.kinference.protobuf.message.SequenceProto
+import io.kinference.types.*
 
 class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data) {
     constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> KIONNXData<*>) : this(name, List(size, init), info)

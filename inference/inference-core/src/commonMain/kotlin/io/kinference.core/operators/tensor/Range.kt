@@ -11,7 +11,6 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.resolveProtoDataType
 import kotlin.math.ceil
-import kotlin.time.ExperimentalTime
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -24,7 +23,7 @@ sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Att
     }
 }
 
-@ExperimentalTime
+
 class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Range(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(

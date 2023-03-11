@@ -1,6 +1,6 @@
+import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureGpuTests
-import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
@@ -16,8 +16,8 @@ kotlin {
             dependencies {
                 api(project(":inference:inference-api"))
                 api(project(":serialization:serializer-protobuf"))
-                api(project(":utils:logger"))
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-logger"))
+                api(project(":utils:utils-common"))
             }
         }
 
@@ -25,13 +25,13 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api("com.microsoft.onnxruntime:onnxruntime_gpu:${Versions.ONNXRuntime}")
+                api("com.microsoft.onnxruntime:onnxruntime_gpu:${Versions.ort}")
             }
         }
 

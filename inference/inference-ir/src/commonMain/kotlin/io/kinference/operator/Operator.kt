@@ -9,7 +9,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.Closeable
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
-import kotlin.time.ExperimentalTime
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) : Closeable {
     init {
@@ -72,7 +71,7 @@ data class OperatorInfo(
     }
 }
 
-@ExperimentalTime
+
 @Suppress("UNCHECKED_CAST")
 abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     val name: String,

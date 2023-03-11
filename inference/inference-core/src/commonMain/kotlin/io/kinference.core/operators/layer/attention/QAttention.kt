@@ -10,7 +10,6 @@ import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class QAttention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +22,7 @@ sealed class QAttention(name: String, info: OperatorInfo, attributes: Map<String
     }
 }
 
-@ExperimentalTime
+
 class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : QAttention(name, INFO, attributes, inputs, outputs) {
 
     companion object {

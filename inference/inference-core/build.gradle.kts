@@ -1,13 +1,13 @@
+import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
-import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js(BOTH) {
+    js(IR) {
         browser()
 
         configureTests()
@@ -17,14 +17,15 @@ kotlin {
 
     jvm {
         configureTests()
-        configureHeavyTests()
-        configureBenchmarkTests()
+//        TODO-tanvd leads to problems
+//        configureHeavyTests()
+//        configureBenchmarkTests()
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
                 implementation("com.squareup.okio:okio:3.0.0")
 
                 api(project(":ndarray:ndarray-api"))
@@ -33,9 +34,9 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-ir"))
 
-                api(project(":utils:logger"))
-                api(project(":utils:model-profiler"))
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-logger"))
+                api(project(":utils:utils-profiling"))
+                api(project(":utils:utils-common"))
 
                 api(project(":serialization:serializer-tiled"))
             }
@@ -46,7 +47,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
 

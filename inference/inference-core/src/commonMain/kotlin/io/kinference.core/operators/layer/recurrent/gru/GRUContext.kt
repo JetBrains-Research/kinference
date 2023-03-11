@@ -3,13 +3,11 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.*
+import io.kinference.core.graph.ContextPrepare
 import io.kinference.graph.GraphContext
 import io.kinference.operator.Operator
 import io.kinference.utils.LoggerFactory
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 internal object GRUContext: ContextPrepare() {
     private val logger = LoggerFactory.create("io.kinference.core.operators.layer.recurrent.gru.GRUContext")
 

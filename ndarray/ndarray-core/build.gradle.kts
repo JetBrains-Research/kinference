@@ -10,7 +10,7 @@ plugins {
 kotlin {
     jvm()
 
-    js(BOTH) {
+    js(IR) {
         browser()
     }
 
@@ -18,8 +18,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
-                api("io.kinference.primitives:primitives-annotations:${Versions.kinferencePrimitives}")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
             }
         }
     }

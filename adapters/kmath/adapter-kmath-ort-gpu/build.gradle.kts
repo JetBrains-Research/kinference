@@ -1,5 +1,5 @@
-import io.kinference.gradle.configureGpuTests
 import io.kinference.gradle.Versions
+import io.kinference.gradle.configureGpuTests
 
 group = rootProject.group
 version = rootProject.version
@@ -25,7 +25,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
 

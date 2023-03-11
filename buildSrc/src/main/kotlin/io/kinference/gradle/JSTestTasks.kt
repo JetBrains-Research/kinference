@@ -1,10 +1,10 @@
 package io.kinference.gradle
 
 import io.kinference.gradle.s3.S3Dependency
-import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
-import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.targets.js.KotlinJsPlatformTestRun
+import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 
 fun KotlinJsPlatformTestRun.configureBrowsers() {
     executionTask.get().useKarma {
@@ -33,7 +33,6 @@ fun KotlinJsTargetDsl.configureTests() {
 
     (this as? KotlinJsTarget)?.irTarget?.testRuns?.get("test")?.configureAllExecutions {
         configureTests()
-        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
     }
 }
 
@@ -53,9 +52,8 @@ fun KotlinJsTargetDsl.configureHeavyTests() {
         configureHeavyTests()
         configureBrowsers()
     }
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
+    (this as? KotlinJsTarget)?.irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
         configureHeavyTests()
-        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
     }
 }
 
@@ -77,8 +75,7 @@ fun KotlinJsTargetDsl.configureBenchmarkTests() {
         configureBrowsers()
     }
 
-    (this as KotlinJsTarget).irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
+    (this as? KotlinJsTarget)?.irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
         configureBenchmarkTests()
-        executionTask.get().dependsOn(":utils:test-utils:jsLegacyProcessResources")
     }
 }

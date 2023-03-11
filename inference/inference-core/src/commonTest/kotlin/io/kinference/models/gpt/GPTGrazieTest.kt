@@ -5,9 +5,8 @@ import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.Platform
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class GPTGrazieTest {
     @Test
     fun heavy_test_jvm_gpt_grazie_model() = TestRunner.runTest(Platform.JVM) {

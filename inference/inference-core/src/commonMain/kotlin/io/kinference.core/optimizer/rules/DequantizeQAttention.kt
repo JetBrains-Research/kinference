@@ -5,10 +5,12 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.layer.attention.*
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear
 import io.kinference.graph.Graph
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
-import io.kinference.optimizer.*
+import io.kinference.optimizer.OptimizerRule
+import io.kinference.optimizer.findPath
 
 object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttention", type = RuleType.MERGE) {
     override fun shouldApply(graph: Graph<KIONNXData<*>>, name: String): Boolean {

@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
 sealed class Split(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -22,7 +21,7 @@ sealed class Split(name: String, info: OperatorInfo, attributes: Map<String, Att
     }
 }
 
-@ExperimentalTime
+
 class SplitVer2(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Split(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

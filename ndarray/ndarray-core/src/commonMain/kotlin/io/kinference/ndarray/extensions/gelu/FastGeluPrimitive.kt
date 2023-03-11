@@ -1,4 +1,6 @@
 @file:GeneratePrimitives(DataType.DOUBLE, DataType.FLOAT)
+@file:Suppress("UnusedImport")
+
 package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray

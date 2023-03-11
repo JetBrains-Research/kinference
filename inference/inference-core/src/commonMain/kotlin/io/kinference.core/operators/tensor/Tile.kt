@@ -4,12 +4,11 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.toIntArray
+import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Tile(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -22,7 +21,7 @@ sealed class Tile(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Tile(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

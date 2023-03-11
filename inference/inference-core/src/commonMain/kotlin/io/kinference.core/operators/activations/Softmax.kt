@@ -7,7 +7,6 @@ import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
-import kotlin.time.ExperimentalTime
 
 sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,7 @@ sealed class Softmax(name: String, info: OperatorInfo, attributes: Map<String, A
 }
 
 //only for float and double types
-@ExperimentalTime
+
 class SoftmaxVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Softmax(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

@@ -12,7 +12,6 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
-import kotlin.time.ExperimentalTime
 
 sealed class SkipLayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -25,7 +24,7 @@ sealed class SkipLayerNormalization(name: String, info: OperatorInfo, attributes
     }
 }
 
-@ExperimentalTime
+
 class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SkipLayerNormalization(name, INFO, attributes, inputs, outputs) {
     private val epsilon: Float by attribute()
 

@@ -6,9 +6,8 @@ import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.Platform
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class GPTRTest {
     @Test
     fun heavy_test_jvm_gpt_model() = TestRunner.runTest(Platform.JVM) {

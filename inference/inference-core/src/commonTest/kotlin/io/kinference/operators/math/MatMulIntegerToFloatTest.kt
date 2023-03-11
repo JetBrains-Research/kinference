@@ -4,9 +4,8 @@ import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class MatMulIntegerTestToFloatTest {
     private fun getTargetPath(dirName: String) = "matmul_integer_to_float/$dirName/"
 

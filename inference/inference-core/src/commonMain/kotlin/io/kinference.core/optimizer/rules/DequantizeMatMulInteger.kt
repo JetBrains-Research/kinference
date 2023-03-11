@@ -8,7 +8,8 @@ import io.kinference.graph.Graph
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.tryZeroPoint
 import io.kinference.operator.Operator
-import io.kinference.optimizer.*
+import io.kinference.optimizer.OptimizerRule
+import io.kinference.optimizer.findPath
 
 fun IntNDArray.toFloatNDArray(): FloatNDArray {
     val intPointer = this.array.pointer()

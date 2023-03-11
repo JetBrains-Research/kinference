@@ -8,9 +8,8 @@ import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.utils.LoggerFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class TFJSModel(val name: String, val opSet: OperatorSetRegistry, val graph: TFJSGraph) : Model<TFJSData<*>> {
     override suspend fun predict(input: List<TFJSData<*>>, profile: Boolean): Map<String, TFJSData<*>> {
         if (profile) logger.warning { "Profiling of models running on TFJS backend is not supported" }

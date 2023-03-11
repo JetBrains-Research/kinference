@@ -4,10 +4,11 @@ import io.kinference.core.CoreBackend
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
+import io.kinference.data.ONNXMap
+import io.kinference.protobuf.message.MapProto
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.data.*
-import io.kinference.protobuf.message.*
 
 class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data) {
     constructor(data: Map<Any, KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)

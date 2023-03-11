@@ -3,9 +3,7 @@ package io.kinference.operators.logical
 import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 class OrTest {
     private fun getTargetPath(dirName: String) = "or/$dirName/"
 

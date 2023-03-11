@@ -15,7 +15,6 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
-import kotlin.time.ExperimentalTime
 
 sealed class LayerNormalization(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -28,7 +27,7 @@ sealed class LayerNormalization(name: String, info: OperatorInfo, attributes: Ma
     }
 }
 
-@ExperimentalTime
+
 class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : LayerNormalization(name, INFO, attributes, inputs, outputs) {
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val epsilon: Float by attribute()

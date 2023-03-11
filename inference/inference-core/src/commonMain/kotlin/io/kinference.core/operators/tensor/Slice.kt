@@ -9,7 +9,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.TensorProto
 
 sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -23,7 +22,7 @@ sealed class Slice(name: String, info: OperatorInfo, attributes: Map<String, Att
     }
 }
 
-@ExperimentalTime
+
 class SliceVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Slice(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val DATA_TYPE_CONSTRAINTS = ALL_DATA_TYPES

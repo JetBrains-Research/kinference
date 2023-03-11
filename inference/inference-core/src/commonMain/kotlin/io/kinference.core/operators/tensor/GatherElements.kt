@@ -5,10 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
-import kotlin.time.ExperimentalTime
+import io.kinference.ndarray.extensions.allocateNDArray
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -23,7 +22,7 @@ sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<St
     }
 }
 
-@ExperimentalTime
+
 class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GatherElements(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
