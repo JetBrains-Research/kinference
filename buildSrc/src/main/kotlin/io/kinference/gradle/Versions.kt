@@ -5,7 +5,7 @@ object Versions {
     const val wire = "4.5.2"
 
     // Don't forget change version for plugin
-    const val primitives = "0.1.19"
+    const val primitives = "0.1.20"
 
     const val coroutines = "1.6.4"
     const val slf4j = "1.7.30"

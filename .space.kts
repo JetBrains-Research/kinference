@@ -28,7 +28,7 @@ job("KInference / Test / JS IR") {
 job("KInference / Test / JS Legacy") {
     container("JS Legacy Tests", jsContainer) {
         shellScript {
-            content = xvfbRun("./gradlew jsLegacyTest --parallel --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsTest --parallel --console=plain -Pci --no-daemon")
         }
     }
 }
@@ -58,7 +58,7 @@ job("KInference / Heavy Test / JS Legacy") {
         addAwsKeys()
 
         shellScript {
-            content = xvfbRun("./gradlew jsLegacyHeavyTest --console=plain -Pci --no-daemon")
+            content = xvfbRun("./gradlew jsHeavyTest --console=plain -Pci --no-daemon")
         }
     }
 }
