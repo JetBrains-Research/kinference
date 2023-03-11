@@ -7,9 +7,9 @@ import io.kinference.data.ONNXDataType
 import io.kinference.model.Model
 import io.kinference.profiler.Profilable
 import io.kinference.utils.*
+import io.kinference.utils.time.Timer
 import okio.Path
 import okio.Path.Companion.toPath
-import kotlin.time.measureTime
 
 class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
@@ -36,7 +36,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
         logger.info { "Predict: $path" }
 
         lateinit var model: Model<T>
-        val modelLoadTime = measureTime {
+        val modelLoadTime = Timer.measure {
             model = engine.loadModel(loader.getFullPath(path / "model.onnx"))
         }
         logger.info { "Model load time: $modelLoadTime" }
@@ -61,9 +61,9 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
             val times = LongArray(count)
             for (i in (0 until count)) {
                 lateinit var outputs: Map<String, T>
-                val time = measureTime {
+                val time = Timer.measure {
                     outputs = model.predict(inputs, withProfiling)
-                }.inWholeMilliseconds
+                }.millis
                 times[i] = time
 
                 outputs.values.forEach { it.close() }
