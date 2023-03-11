@@ -29,7 +29,7 @@ fun KotlinJsTargetDsl.configureTests() {
     testRuns["test"].configureAllExecutions{
         configureTests()
         executionTask.get().dependsOn("assemble")
-        executionTask.get().dependsOn(":utils:test-utils:jsProcessResources")
+        executionTask.get().dependsOn(":utils:utils-testing:jsProcessResources")
         configureBrowsers()
     }
 
@@ -53,7 +53,7 @@ fun KotlinJsTargetDsl.configureHeavyTests() {
     testRuns.create("heavy").configureAllExecutions{
         configureHeavyTests()
         executionTask.get().dependsOn("assemble")
-        executionTask.get().dependsOn(":utils:test-utils:jsProcessResources")
+        executionTask.get().dependsOn(":utils:utils-testing:jsProcessResources")
         configureBrowsers()
     }
     (this as? KotlinJsTarget)?.irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
@@ -77,7 +77,7 @@ fun KotlinJsTargetDsl.configureBenchmarkTests() {
     testRuns.create("benchmark").configureAllExecutions {
         configureBenchmarkTests()
         executionTask.get().dependsOn("assemble")
-        executionTask.get().dependsOn(":utils:test-utils:jsProcessResources")
+        executionTask.get().dependsOn(":utils:utils-testing:jsProcessResources")
         configureBrowsers()
     }
 
