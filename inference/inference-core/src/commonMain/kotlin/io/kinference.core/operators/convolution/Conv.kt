@@ -3,11 +3,11 @@ package io.kinference.core.operators.convolution
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.utils.divCeil
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.conv
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -49,7 +49,9 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
             IOInfo(2, TYPE_CONSTRAINTS, "B", optional = true, differentiable = true)    // [num_of_feature_maps]
         )
 
-        private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
+        private val OUTPUTS_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false)
+        )
 
         internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("Conv", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
@@ -70,9 +72,9 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         if (inputs.size == 3)
             b = inputs[2]!!.data
 
-        val parsedStrides = parseStrides(x.shape.size)
-        val parsedPads = parsePads(x.shape, w.shape, parsedStrides)
-        val parsedDilations = parseDilations(w.shape.size)
+        val parsedStrides = parseStrides(strides, x.shape.size)
+        val parsedPads = parsePads(autoPad, pads, x.shape, w.shape, parsedStrides)
+        val parsedDilations = parseDilations(dilations, w.shape.size)
 
         val y = when (x.type) {
             DataType.FLOAT -> (x as FloatNDArray).conv(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
@@ -81,53 +83,5 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         }
 
         return listOf(y.asTensor("Y"))
-    }
-
-    private fun parseStrides(shapeSize: Int) = strides ?: IntArray(shapeSize - 2) { 1 }
-
-    private fun parseDilations(shapeSize: Int) = dilations ?: IntArray(shapeSize - 2) { 1 }
-
-    private fun parsePads(xShape: IntArray, wShape: IntArray, strides: IntArray): IntArray {
-        if (autoPad != "NOTSET")
-            require(pads == null) { "Explicit pads cannot be used simultaneously with auto_pad attribute." }
-
-        val size = xShape.size - 2
-
-        return when (autoPad) {
-            "SAME_UPPER" -> {
-                IntArray(size * 2) { i ->
-                    val outputShape = xShape[i % size + 2] divCeil strides[i % size]
-                    var pad = (outputShape - 1) * strides[i % size] + wShape[i % size + 2] - xShape[i % size + 2]
-                    if (i >= size && pad % 2 == 1)
-                        pad++
-                    pad / 2
-                }
-            }
-
-            "SAME_LOWER" -> {
-                IntArray(size * 2) { i ->
-                    val outputShape = xShape[i % size + 2] divCeil strides[i % size]
-                    var pad = (outputShape - 1) * strides[i % size] + wShape[i % size + 2] - xShape[i % size + 2]
-                    if (i < size && pad % 2 == 1) // not necessary to check whether pad is odd or not
-                        pad++
-                    pad / 2
-                }
-            }
-
-            "VALID" -> {
-                xShape.forEachIndexed { index, i -> require(i >= wShape[index]) }
-
-                IntArray(xShape.size * 2)
-            }
-
-            "NOTSET" -> {
-                if (pads == null)
-                    IntArray(xShape.size * 2)
-                else
-                    pads as IntArray
-            }
-
-            else -> throw IllegalArgumentException("Invalid auto_pad argument: $autoPad.")
-        }
     }
 }
