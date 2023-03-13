@@ -1,7 +1,7 @@
 package io.kinference.gradle
 
 object Versions {
-    const val okio = "3.3.0"
+    const val okio = "3.0.0"
     const val wire = "4.5.2"
 
     // Don't forget change version for plugin

@@ -28,12 +28,5 @@ kotlin {
                 api(project(":inference:inference-ort-gpu"))
             }
         }
-
-        val jvmTest by getting {
-            dependencies {
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
-                implementation(kotlin("test-junit5"))
-            }
-        }
     }
 }

@@ -8,12 +8,12 @@ import kotlin.test.Test
 class QAttentionTest {
     private fun getTargetPath(dirName: String) = "qattention/$dirName/"
 
-        @Test
+    @Test
     fun test_quantized_attention_defaults() = TestRunner.runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_qattention_defaults"), delta = AccuracyRunner.QUANT_DELTA)
     }
 
-        @Test
+    @Test
     fun test_quantized_attention() = TestRunner.runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_qattention_op"), delta = AccuracyRunner.QUANT_DELTA)
     }

@@ -32,6 +32,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
                 api(kotlin("test-junit5"))
             }
         }

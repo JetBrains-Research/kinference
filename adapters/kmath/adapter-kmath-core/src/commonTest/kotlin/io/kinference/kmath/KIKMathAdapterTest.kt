@@ -24,7 +24,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class KIKMathAdapterTest {
-        @Test
+    @Test
     fun test_kmath_adapter_convert_to_onnx_tensor() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
@@ -34,7 +34,7 @@ class KIKMathAdapterTest {
         assertKIEquals(expectedTensor, convertedTensor)
     }
 
-        @Test
+    @Test
     fun test_kmath_adapter_convert_to_onnx_map() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
@@ -56,7 +56,7 @@ class KIKMathAdapterTest {
         assertKIEquals(expectedMap, convertedMap)
     }
 
-        @Test
+    @Test
     fun test_kmath_adapter_convert_to_onnx_sequence() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
@@ -71,7 +71,7 @@ class KIKMathAdapterTest {
         assertKIEquals(expectedSeq, convertedSeq)
     }
 
-        @Test
+    @Test
     fun test_kmath_adapter_convert_from_onnx_tensor() {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
@@ -81,7 +81,7 @@ class KIKMathAdapterTest {
         StructureND.contentEquals(expectedArray.data as StructureND<Int>, convertedArray.data as StructureND<Int>)
     }
 
-        @Test
+    @Test
     fun test_kmath_adapter_inference() = TestRunner.runTest {
         val inOutTensorType = TypeProto.Tensor(TensorProto.DataType.FLOAT, TensorShapeProto(listOf(TensorShapeProto.Dimension(dimValue = 6L))))
         val modelProto = ModelProto(

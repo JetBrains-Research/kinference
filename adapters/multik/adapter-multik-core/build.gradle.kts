@@ -32,11 +32,5 @@ kotlin {
                 implementation(project(":utils:utils-testing"))
             }
         }
-
-        val jvmTest by getting {
-            dependencies {
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
-            }
-        }
     }
 }

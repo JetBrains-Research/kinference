@@ -10,7 +10,7 @@ object ORTTestEngine : TestEngine<ORTData<*>>(ORTEngine) {
         ORTAssertions.assertEquals(expected, actual, delta)
     }
 
-        val ORTAccuracyRunner = AccuracyRunner(ORTTestEngine)
+    val ORTAccuracyRunner = AccuracyRunner(ORTTestEngine)
 
-        val ORTPerformanceRunner = PerformanceRunner(ORTTestEngine)
+    val ORTPerformanceRunner = PerformanceRunner(ORTTestEngine)
 }

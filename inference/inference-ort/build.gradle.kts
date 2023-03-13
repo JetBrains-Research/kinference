@@ -32,12 +32,5 @@ kotlin {
                 api("com.microsoft.onnxruntime:onnxruntime:${Versions.ort}")
             }
         }
-
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test-junit5"))
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
-            }
-        }
     }
 }
