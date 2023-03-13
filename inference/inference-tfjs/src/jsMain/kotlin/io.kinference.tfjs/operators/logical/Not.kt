@@ -9,7 +9,6 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import kotlin.time.ExperimentalTime
 
 sealed class Not(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -24,7 +23,7 @@ sealed class Not(name: String, info: OperatorInfo, attributes: Map<String, Attri
     }
 }
 
-@ExperimentalTime
+
 class NotVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Not(name, INFO, attributes, inputs, outputs) {
     companion object {

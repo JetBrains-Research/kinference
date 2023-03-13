@@ -1,5 +1,5 @@
-import io.kinference.gradle.configureGpuTests
 import io.kinference.gradle.Versions
+import io.kinference.gradle.configureGpuTests
 
 group = rootProject.group
 version = rootProject.version
@@ -23,22 +23,13 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
                 api(project(":inference:inference-ort-gpu"))
-            }
-        }
-
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test-junit5"))
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
             }
         }
     }

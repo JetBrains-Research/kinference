@@ -63,40 +63,7 @@ jobs:
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew jsIrHeavyTest --console=plain -Pci --no-daemon
-
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: test-report
-          path: |
-            **/build/**/test-results/**/* |
-            **/build/**/reports/**/*
-
-  JS-Legacy:
-    runs-on: ubuntu-latest
-    container:
-      image: registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1
-      options: --user 1001
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Cache test data
-        uses: actions/cache@v3
-        with:
-          path: test-data
-          key: test-data-${{ hashFiles('buildSrc/src/main/**/DefaultS3Deps.kt') }}
-
-      - name: JS Legacy Heavy Test
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew jsLegacyHeavyTest --console=plain -Pci --no-daemon
+        run: xvfb-run --auto-servernum ./gradlew jsHeavyTest --console=plain -Pci --no-daemon
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v3

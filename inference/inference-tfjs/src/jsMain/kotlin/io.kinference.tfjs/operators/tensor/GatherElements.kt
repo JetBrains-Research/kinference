@@ -10,7 +10,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import kotlin.time.ExperimentalTime
 
 sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -25,7 +24,7 @@ sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<St
     }
 }
 
-@ExperimentalTime
+
 class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     GatherElements(name, INFO, attributes, inputs, outputs) {
     companion object {

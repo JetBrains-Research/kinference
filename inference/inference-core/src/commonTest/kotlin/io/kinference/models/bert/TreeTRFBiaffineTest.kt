@@ -1,7 +1,6 @@
 package io.kinference.models.bert
 
 import io.kinference.KITestEngine
-import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.Platform
 import io.kinference.utils.TestRunner
 import kotlin.test.Test

@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class MatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,7 @@ sealed class MatMul(name: String, info: OperatorInfo, attributes: Map<String, At
     }
 }
 
-@ExperimentalTime
+
 class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMul(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(

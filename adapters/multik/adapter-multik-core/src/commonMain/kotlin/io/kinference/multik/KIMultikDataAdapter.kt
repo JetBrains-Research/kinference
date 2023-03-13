@@ -5,14 +5,14 @@ import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.types.TensorShape
-import io.kinference.types.ValueTypeInfo
 import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.types.TensorShape
+import io.kinference.types.ValueTypeInfo
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.first

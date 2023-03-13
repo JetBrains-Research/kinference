@@ -5,7 +5,8 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.graph.ContextPrepare
 import io.kinference.graph.GraphContext
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
 

@@ -2,9 +2,6 @@ package io.kinference.protobuf
 
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.arrays.*
-import io.kinference.protobuf.arrays.FloatArraySerializer
-import io.kinference.protobuf.arrays.LongArraySerializer
-import io.kinference.protobuf.arrays.ULongArraySerializer
 import io.kinference.protobuf.message.TensorProto
 
 fun LongArray.toIntArray() = IntArray(size) { this[it].toInt() }

@@ -2,13 +2,13 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.tensor
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.ndarray.extensions.*
-import io.kinference.protobuf.toIntArray
 
 class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data) {
     constructor(data: NDArrayTFJS, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)

@@ -16,21 +16,20 @@ import io.kinference.core.operators.logical.*
 import io.kinference.core.operators.math.*
 import io.kinference.core.operators.ml.*
 import io.kinference.core.operators.quantization.*
+import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
 import io.kinference.core.operators.seq.ConcatFromSequence
 import io.kinference.core.operators.seq.SplitToSequence
 import io.kinference.core.operators.tensor.*
-import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
 import io.kinference.graph.Graph
 import io.kinference.operator.*
 import io.kinference.protobuf.message.*
-import kotlin.time.ExperimentalTime
 
 object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
     override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
     override suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<KIONNXData<*>> = KIGraph(proto, opSet)
 }
 
-@ExperimentalTime
+
 object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
     override fun attributeFactory(): AttributeFactory<KIONNXData<*>> = KIAttributeFactory
 

@@ -1,6 +1,7 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.IntNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.primitives.types.DataType
 
 

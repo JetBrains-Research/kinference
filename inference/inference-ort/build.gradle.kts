@@ -1,6 +1,6 @@
+import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
-import io.kinference.gradle.Versions
 
 group = rootProject.group
 version = rootProject.version
@@ -16,29 +16,20 @@ kotlin {
             dependencies {
                 api(project(":inference:inference-api"))
                 api(project(":serialization:serializer-protobuf"))
-                api(project(":utils:logger"))
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-logger"))
+                api(project(":utils:utils-common"))
             }
         }
 
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api("com.microsoft.onnxruntime:onnxruntime:${Versions.ONNXRuntime}")
-            }
-        }
-
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test-junit5"))
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
+                api("com.microsoft.onnxruntime:onnxruntime:${Versions.ort}")
             }
         }
     }

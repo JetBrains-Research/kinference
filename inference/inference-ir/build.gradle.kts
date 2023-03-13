@@ -2,7 +2,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js(BOTH) {
+    js(IR) {
         browser()
     }
 
@@ -12,9 +12,9 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":inference:inference-api"))
-                api(project(":utils:logger"))
+                api(project(":utils:utils-logger"))
                 api(project(":serialization:serializer-protobuf"))
-                api(project(":utils:model-profiler"))
+                api(project(":utils:utils-profiling"))
             }
         }
     }

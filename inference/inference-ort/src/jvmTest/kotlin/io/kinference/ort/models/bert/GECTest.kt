@@ -3,9 +3,8 @@ package io.kinference.ort.models.bert
 import io.kinference.ort.ORTTestEngine
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class GECTest {
     @Test
     fun heavy_test_gec_model() = TestRunner.runTest {

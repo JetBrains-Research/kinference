@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.reshape
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Reshape(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,7 @@ sealed class Reshape(name: String, info: OperatorInfo, attributes: Map<String, A
     }
 }
 
-@ExperimentalTime
+
 class ReshapeVer5(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Reshape(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

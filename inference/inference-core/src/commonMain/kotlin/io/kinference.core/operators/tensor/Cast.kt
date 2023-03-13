@@ -10,7 +10,6 @@ import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -25,7 +24,7 @@ sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Cast(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

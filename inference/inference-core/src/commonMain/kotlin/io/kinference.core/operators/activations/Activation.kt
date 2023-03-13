@@ -10,9 +10,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorInfo
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 abstract class Activation protected constructor(
     name: String,
     info: OperatorInfo,

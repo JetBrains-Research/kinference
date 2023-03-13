@@ -3,7 +3,6 @@ package io.kinference.core.operators.ml.trees
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.DoublePointer
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 internal fun NDArray.toFloatNDArray() = if (this is FloatNDArray) {
     this
@@ -13,7 +12,7 @@ internal fun NDArray.toFloatNDArray() = if (this is FloatNDArray) {
     FloatNDArray(this.shape) { pointer.getAndIncrement().toFloat() }
 }
 
-@ExperimentalTime
+
 class TreeEnsemble(
     private val aggregator: Aggregator,
     private val transform: PostTransform,

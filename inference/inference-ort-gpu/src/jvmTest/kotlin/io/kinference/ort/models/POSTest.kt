@@ -3,9 +3,8 @@ package io.kinference.ort.models
 import io.kinference.ort.ORTTestEngine
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class POSTest {
     @Test
     fun gpu_test_pos_tagger() = TestRunner.runTest {

@@ -11,7 +11,6 @@ import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Less(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -24,7 +23,7 @@ sealed class Less(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class LessVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Less(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16

@@ -3,9 +3,9 @@ package io.kinference.core.operators.activations
 import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayCore
+import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 
 sealed class Erf(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
@@ -18,7 +18,7 @@ sealed class Erf(name: String, info: OperatorInfo, attributes: Map<String, Attri
     }
 }
 
-@ExperimentalTime
+
 class ErfVer9(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Erf(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES

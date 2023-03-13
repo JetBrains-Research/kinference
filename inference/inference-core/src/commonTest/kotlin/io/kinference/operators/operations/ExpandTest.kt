@@ -3,9 +3,8 @@ package io.kinference.operators.operations
 import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class ExpandTest {
     private fun getTargetPath(dirName: String) = "expand/$dirName/"
 

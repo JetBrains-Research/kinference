@@ -5,12 +5,11 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.pointers.forEachIndexed
 import io.kinference.ndarray.arrays.tiled.LongTiledArray
+import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Expand(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +22,6 @@ sealed class Expand(name: String, info: OperatorInfo, attributes: Map<String, At
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class ExpandVer8(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Expand(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(

@@ -1,12 +1,12 @@
 package io.kinference.core.operators.ml.trees
 
 import io.kinference.core.KIONNXData
-import io.kinference.operator.Operator
+import io.kinference.core.operators.ml.TreeEnsembleClassifier
+import io.kinference.core.operators.ml.TreeEnsembleRegressor
 import io.kinference.ndarray.toIntArray
-import io.kinference.core.operators.ml.*
+import io.kinference.operator.Operator
 import kotlin.math.ceil
 import kotlin.math.log2
-import kotlin.time.ExperimentalTime
 
 internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) {
     init {
@@ -25,7 +25,7 @@ internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>)
     val postTransform: String? = op.getAttributeOrNull("post_transform")
 }
 
-@ExperimentalTime
+
 internal class TreeEnsembleBuilder(private val info: BaseEnsembleInfo, private val labelsInfo: TreeEnsemble.LabelsInfo<*>?) {
     private val numTargets = labelsInfo?.labels?.size ?: 1
     private val numTrees: Int = info.treeIds.distinct().size

@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
-import kotlin.time.ExperimentalTime
 
 sealed class Flatten(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,6 @@ sealed class Flatten(name: String, info: OperatorInfo, attributes: Map<String, A
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class FlattenVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Flatten(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(

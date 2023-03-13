@@ -1,13 +1,12 @@
 package io.kinference.core.operators.seq
 
 import io.kinference.attribute.Attribute
-import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.*
 import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
 sealed class ConcatFromSequence(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KIONNXSequence, KITensor>(name, info, attributes, inputs, outputs) {
@@ -21,7 +20,7 @@ sealed class ConcatFromSequence(name: String, info: OperatorInfo, attributes: Ma
     }
 }
 
-@ExperimentalTime
+
 class ConcatFromSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ConcatFromSequence(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

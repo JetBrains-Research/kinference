@@ -7,7 +7,6 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -22,7 +21,7 @@ sealed class If(name: String, info: OperatorInfo, attributes: Map<String, Attrib
     }
 }
 
-@ExperimentalTime
+
 class IfVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : If(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

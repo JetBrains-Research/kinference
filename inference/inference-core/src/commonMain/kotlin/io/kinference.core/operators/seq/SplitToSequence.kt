@@ -1,16 +1,16 @@
 package io.kinference.core.operators.seq
 
 import io.kinference.attribute.Attribute
-import io.kinference.data.ONNXDataType
 import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensor.*
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.core.data.tensor.split
+import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
+import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueTypeInfo.SequenceTypeInfo
-import io.kinference.data.ONNXData
-import io.kinference.graph.Contexts
-import kotlin.time.ExperimentalTime
 
 sealed class SplitToSequence(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KIONNXSequence>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +23,7 @@ sealed class SplitToSequence(name: String, info: OperatorInfo, attributes: Map<S
     }
 }
 
-@ExperimentalTime
+
 class SplitToSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : SplitToSequence(name, INFO, attributes, inputs, outputs) {
     companion object {
         private const val DEFAULT_SPLIT_LENGTH = 1

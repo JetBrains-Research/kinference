@@ -6,9 +6,7 @@ import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): GRULayerBase(hiddenSize, activations, direction) {
     init {
         require(activations.size == 2)

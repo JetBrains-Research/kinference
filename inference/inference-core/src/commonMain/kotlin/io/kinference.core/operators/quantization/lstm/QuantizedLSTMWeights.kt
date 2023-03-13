@@ -1,7 +1,8 @@
 package io.kinference.core.operators.quantization.lstm
 
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMWeights
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 
 class QuantizedLSTMWeights(data: NumberNDArrayCore, val scale: FloatNDArray, val zeroPoint: NumberNDArrayCore): AbstractLSTMWeights(data) {
     override fun view(dim: Int): QuantizedLSTMWeights {

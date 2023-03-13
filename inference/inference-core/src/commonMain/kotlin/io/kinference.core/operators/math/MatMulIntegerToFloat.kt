@@ -5,11 +5,11 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class MatMulIntegerToFloat(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -22,7 +22,7 @@ sealed class MatMulIntegerToFloat(name: String, info: OperatorInfo, attributes: 
     }
 }
 
-@ExperimentalTime
+
 class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : MatMulIntegerToFloat(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val IN_TYPE_CONSTRAINTS = setOf(

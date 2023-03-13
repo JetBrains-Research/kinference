@@ -9,7 +9,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.Closeable
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
-import kotlin.time.ExperimentalTime
 
 class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeType>, val required: Boolean = false, val default: Any? = null) : Closeable {
     init {
@@ -72,7 +71,7 @@ data class OperatorInfo(
     }
 }
 
-@ExperimentalTime
+
 @Suppress("UNCHECKED_CAST")
 abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     val name: String,
@@ -82,14 +81,16 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     val outputs: List<String>
 ) : Closeable {
     val type: String
-     get() = info.type
+        get() = info.type
 
     init {
         for (info in info.attributes.values) {
             if (info.required) require(info.name in attributes) { "Required attribute '${info.name}' not specified in ${this.info.type} operator" }
 
             attributes[info.name]?.let { attribute ->
-                require(attribute.type in info.types) { "Attribute '${attribute.name}' type doesn't match specification\nPresent: ${attribute.type}, Expected: one of ${info.types}" }
+                require(attribute.type in info.types) {
+                    "Attribute '${attribute.name}' type doesn't match specification\nPresent: ${attribute.type}, Expected: one of ${info.types}"
+                }
             }
         }
 
@@ -130,14 +131,18 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
                 //if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
             }
 
-            require(value.type == constraint.onnxDataType) { "Wrong $what ONNX data type '${value.name}' for '${info.type}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}" }
+            require(value.type == constraint.onnxDataType) {
+                "Wrong $what ONNX data type '${value.name}' for '${info.type}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}"
+            }
         }
     }
 
     suspend fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
         val outputs = apply(contexts, inputs)
-        require(outputs.size >= this.outputs.size) { "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}" }
+        require(outputs.size >= this.outputs.size) {
+            "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}"
+        }
         check(info.outputs, outputs, "output")
         return outputs
     }

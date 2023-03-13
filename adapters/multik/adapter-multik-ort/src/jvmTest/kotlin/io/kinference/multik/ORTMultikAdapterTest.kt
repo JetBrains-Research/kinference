@@ -7,9 +7,7 @@ import io.kinference.utils.ArrayAssertions
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import java.nio.IntBuffer
 import kotlin.math.abs
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ORTMultikAdapterTest {
     @Test

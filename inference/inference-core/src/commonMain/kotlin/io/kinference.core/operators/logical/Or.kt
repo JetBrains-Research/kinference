@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Or(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,6 @@ sealed class Or(name: String, info: OperatorInfo, attributes: Map<String, Attrib
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class OrVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Or(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.BOOL)

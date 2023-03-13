@@ -1,14 +1,13 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.core.CoreBackend
+import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.data.ONNXTensor
-import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
 //TODO: support external data

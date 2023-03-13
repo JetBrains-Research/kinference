@@ -1,6 +1,7 @@
 package io.kinference.ort.model
 
-import ai.onnxruntime.*
+import ai.onnxruntime.OnnxTensor
+import ai.onnxruntime.OrtSession
 import io.kinference.model.Model
 import io.kinference.ort.ORTData
 import io.kinference.ort.data.utils.createORTData

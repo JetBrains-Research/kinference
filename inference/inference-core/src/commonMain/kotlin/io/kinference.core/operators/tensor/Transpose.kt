@@ -8,7 +8,6 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.transpose
 import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
-import kotlin.time.ExperimentalTime
 import io.kinference.protobuf.message.AttributeProto
 
 sealed class Transpose(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -22,7 +21,7 @@ sealed class Transpose(name: String, info: OperatorInfo, attributes: Map<String,
     }
 }
 
-@ExperimentalTime
+
 class TransposeVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Transpose(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

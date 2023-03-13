@@ -5,9 +5,8 @@ import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.Platform
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class BERTTest {
     @Test
     fun heavy_test_jvm_vanilla_bert_model() = TestRunner.runTest(Platform.JVM) {
