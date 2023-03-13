@@ -31,10 +31,6 @@ fun KotlinJsTargetDsl.configureTests() {
         executionTask.get().dependsOn("assemble")
         configureBrowsers()
     }
-
-    (this as? KotlinJsTarget)?.irTarget?.testRuns?.get("test")?.configureAllExecutions {
-        configureTests()
-    }
 }
 
 fun KotlinJsPlatformTestRun.configureHeavyTests() {
@@ -53,9 +49,6 @@ fun KotlinJsTargetDsl.configureHeavyTests() {
         configureHeavyTests()
         executionTask.get().dependsOn("assemble")
         configureBrowsers()
-    }
-    (this as? KotlinJsTarget)?.irTarget?.testRuns?.create("heavy")?.configureAllExecutions {
-        configureHeavyTests()
     }
 }
 
@@ -76,9 +69,5 @@ fun KotlinJsTargetDsl.configureBenchmarkTests() {
         configureBenchmarkTests()
         executionTask.get().dependsOn("assemble")
         configureBrowsers()
-    }
-
-    (this as? KotlinJsTarget)?.irTarget?.testRuns?.create("benchmark")?.configureAllExecutions {
-        configureBenchmarkTests()
     }
 }
