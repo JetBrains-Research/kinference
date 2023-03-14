@@ -51,6 +51,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "Div" -> Div(name, version, attributes, inputs, outputs)
+        "Dropout" -> Dropout(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLSTM" -> DynamicQuantizeLSTM(name, version, attributes, inputs, outputs)
         "DynamicQuantizeMatMul" -> DynamicQuantizeMatMul(name, version, attributes, inputs, outputs)
