@@ -22,6 +22,8 @@ object TiledTensorDecoder : TensorDecoder() {
             TensorProto.DataType.UINT8 -> UByteTiledArray(proto.dims) { pointer.getAndIncrement().toUByte() }
             TensorProto.DataType.INT16 -> ShortTiledArray(proto.dims) { pointer.getAndIncrement().toShort() }
             TensorProto.DataType.UINT16 -> UShortTiledArray(proto.dims) { pointer.getAndIncrement().toUShort() }
+            TensorProto.DataType.BFLOAT16 -> FloatTiledArray(proto.dims) { pointer.getAndIncrement().parseAsBFloat() }
+            TensorProto.DataType.FLOAT16 -> FloatTiledArray(proto.dims) { pointer.getAndIncrement().parseAsFloat16() }
             else -> error("Conversion from int32 to $type is not supported")
         }
     }
