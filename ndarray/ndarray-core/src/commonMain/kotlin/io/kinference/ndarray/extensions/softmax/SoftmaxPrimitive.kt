@@ -57,7 +57,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, column
     }
 
     // Apply exp for output array
-    // Constant 512 was precomputed on M1 Max processor
+    // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
