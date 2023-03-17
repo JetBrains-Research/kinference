@@ -22,5 +22,11 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
             }
         }
+
+        val jvmMain by getting {
+            dependencies {
+                api("org.apache.commons:commons-math4-core:4.0-beta1")
+            }
+        }
     }
 }
