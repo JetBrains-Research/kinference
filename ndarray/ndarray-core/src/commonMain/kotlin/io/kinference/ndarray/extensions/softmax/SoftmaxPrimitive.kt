@@ -2,14 +2,15 @@
 
 package io.kinference.ndarray.extensions.softmax
 
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.parallelizeByBlocks
-import io.kinference.ndarray.parallelizeByRows
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.math.FastMath
+import io.kinference.ndarray.math.exp
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -59,12 +60,12 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, column
     // Constant 512 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 512) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputArray.blocks[blockNum]
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = exp(outputBlock[j])
+                outputBlock[j] = FastMath.exp(outputBlock[j])
             }
         }
     }

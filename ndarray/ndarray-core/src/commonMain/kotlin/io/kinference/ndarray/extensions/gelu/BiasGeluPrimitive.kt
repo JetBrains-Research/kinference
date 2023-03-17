@@ -4,20 +4,22 @@ package io.kinference.ndarray.extensions.gelu
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.pow
+import io.kinference.ndarray.math.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.*
 
-private val SQRT_2 by lazy { sqrt(2.0).toPrimitive() }
-private val HALF by lazy { (0.5).toPrimitive() }
-private val ONE by lazy { (1.0).toPrimitive() }
-private val ERF_P_VALUE by lazy { (0.3275911).toPrimitive() }
-private val ERF_COEF_1 by lazy { (0.254829592).toPrimitive() }
-private val ERF_COEF_2 by lazy { (-0.284496736).toPrimitive() }
-private val ERF_COEF_3 by lazy { (1.421413741).toPrimitive() }
-private val ERF_COEF_4 by lazy { (-1.453152027).toPrimitive() }
-private val ERF_COEF_5 by lazy { (1.061405429).toPrimitive() }
+private val SQRT_1_2 = (0.7071067811865475).toPrimitive()
+private val HALF = (0.5).toPrimitive()
+private val ONE = (1.0).toPrimitive()
+private val ERF_P_VALUE = (0.3275911).toPrimitive()
+private val ERF_COEF_1 = (0.254829592).toPrimitive()
+private val ERF_COEF_2 = (-0.284496736).toPrimitive()
+private val ERF_COEF_3 = (1.421413741).toPrimitive()
+private val ERF_COEF_4 = (-1.453152027).toPrimitive()
+private val ERF_COEF_5 = (1.061405429).toPrimitive()
 
 @GenerateNameFromPrimitives
 internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray): MutablePrimitiveNDArray {
@@ -32,7 +34,7 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
     // Constant 1024 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(blockSize, inputBlocks.size, 1024) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
         val temporaryBlock = PrimitiveArray(blockSize)
         val temporaryBlockAbs = PrimitiveArray(blockSize)
         for (blockIdx in blockStart until blockEnd) {
@@ -45,7 +47,7 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
             }
 
             for (j in temporaryBlockAbs.indices) {
-                temporaryBlockAbs[j] = temporaryBlock[j] / SQRT_2
+                temporaryBlockAbs[j] = temporaryBlock[j] * SQRT_1_2
             }
 
             for (j in temporaryBlock.indices) {
@@ -61,7 +63,7 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
             }
 
             for (j in temporaryBlockAbs.indices) {
-                temporaryBlockAbs[j] = exp(-(temporaryBlockAbs[j].pow(2)))
+                temporaryBlockAbs[j] = FastMath.exp(-(temporaryBlockAbs[j].pow(2)))
             }
 
             for (j in outputBlock.indices) {
@@ -69,7 +71,12 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
             }
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = (ONE - temporaryBlockAbs[j] * outputBlock[j]).withSign(temporaryBlock[j].sign)
+                outputBlock[j] = ONE - temporaryBlockAbs[j] * outputBlock[j]
+//                outputBlock[j] = (ONE - temporaryBlockAbs[j] * outputBlock[j]).withSign(temporaryBlock[j].sign)
+            }
+
+            for (j in outputBlock.indices) {
+                outputBlock[j] = FastMath.copySign(outputBlock[j], temporaryBlock[j])
             }
 
             for (j in outputBlock.indices) {
