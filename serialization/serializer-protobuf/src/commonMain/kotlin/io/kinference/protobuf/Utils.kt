@@ -21,10 +21,12 @@ internal fun ProtobufReader.readULongArray(tag: Int, dims: IntArray?, dest: Arra
 
 fun ProtobufReader.readTensor() = config.tensorDecoder.decode(this)
 
+val FLOAT_TENSOR_TYPES = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16, TensorProto.DataType.BFLOAT16)
+
 fun TensorProto.DataType.resolveLocalDataType(): DataType {
     return when (this) {
         TensorProto.DataType.DOUBLE -> DataType.DOUBLE
-        TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16, TensorProto.DataType.BFLOAT16 -> DataType.FLOAT
+        in FLOAT_TENSOR_TYPES -> DataType.FLOAT
         TensorProto.DataType.INT32 -> DataType.INT
         TensorProto.DataType.INT64 -> DataType.LONG
         TensorProto.DataType.INT16 -> DataType.SHORT

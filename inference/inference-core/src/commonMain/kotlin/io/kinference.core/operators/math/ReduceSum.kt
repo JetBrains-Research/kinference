@@ -32,7 +32,8 @@ class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, input
             TensorProto.DataType.INT64,
             TensorProto.DataType.FLOAT16,
             TensorProto.DataType.FLOAT,
-            TensorProto.DataType.DOUBLE
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.BFLOAT16
         )
 
         private val INPUTS_INFO = listOf(

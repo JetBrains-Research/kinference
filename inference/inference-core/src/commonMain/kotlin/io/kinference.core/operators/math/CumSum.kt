@@ -24,7 +24,10 @@ sealed class CumSum(name: String, info: OperatorInfo, attributes: Map<String, At
 
 class CumSumVer11(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : CumSum(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = setOf(DataType.UINT32, DataType.UINT64, DataType.INT32, DataType.INT64, DataType.FLOAT, DataType.DOUBLE)
+        private val TYPE_CONSTRAINTS = setOf(
+            DataType.UINT32, DataType.UINT64, DataType.INT32, DataType.INT64,
+            DataType.FLOAT, DataType.DOUBLE, DataType.BFLOAT16, DataType.FLOAT16
+        )
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("exclusive", setOf(AttributeProto.AttributeType.INT), false, 0),

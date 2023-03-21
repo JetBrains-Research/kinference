@@ -6,6 +6,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
+import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -47,7 +48,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
         TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> DataType.INT
 
-        TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE, TensorProto.DataType.BFLOAT16 -> DataType.FLOAT
+        in FLOAT_TENSOR_TYPES -> DataType.FLOAT
 
         TensorProto.DataType.BOOL -> DataType.BOOLEAN
 

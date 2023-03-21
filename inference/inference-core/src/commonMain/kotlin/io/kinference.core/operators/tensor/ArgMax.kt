@@ -32,7 +32,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         )
 
         private val INPUTS_INFO = listOf(
-            IOInfo(0, PRIMITIVE_DATA_TYPES, "data", differentiable = false)
+            IOInfo(0, PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16, "data", differentiable = false)
         )
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "reduced", optional = false))
