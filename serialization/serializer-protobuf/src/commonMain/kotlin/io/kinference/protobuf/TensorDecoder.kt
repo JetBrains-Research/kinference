@@ -8,7 +8,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.Companion.hasData
 import okio.Buffer
 import okio.ByteString
-import kotlin.math.pow
 
 abstract class TensorDecoder {
     protected abstract fun initContainer(): ArrayContainer
@@ -72,22 +71,14 @@ abstract class TensorDecoder {
             TensorProto.DataType.INT8 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readByte() })
             TensorProto.DataType.UINT8 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readByte().toUByte() })
             TensorProto.DataType.BOOL -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readByte() != 0.toByte() })
-            TensorProto.DataType.BFLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().toInt().parseAsBFloat() })
-            TensorProto.DataType.FLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().toInt().parseAsFloat16() })
+            TensorProto.DataType.BFLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().parseAsBFloat() })
+            TensorProto.DataType.FLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().parseAsFloat16() })
             TensorProto.DataType.STRING -> error("String data must not be present in rawData field")
             else -> error("Unsupported data type ${proto.dataType}")
         }
     }
 
     companion object {
-        private const val BFLOAT_EXP_SIZE = 8
-        private const val BFLOAT_MANTISSA_SIZE = 7
-
-        private const val FLOAT16_EXP_SIZE = 5
-        private const val FLOAT16_MANTISSA_SIZE = 10
-
-        private val SIGN_MASK = 1 shl 31
-
         private val int32AvailableTypes = setOf(
             TensorProto.DataType.BOOL, TensorProto.DataType.INT8,
             TensorProto.DataType.UINT8, TensorProto.DataType.INT16,
@@ -95,26 +86,50 @@ abstract class TensorDecoder {
             TensorProto.DataType.FLOAT16
         )
 
-        // exp = 8 frac = 7
+        private const val FLOAT16_EXP_MASK = ((1 shl 10) - 1).inv()
+        private const val FLOAT16_EXP_BIAS = 0x38000000
 
+        //float32 frac bits - float16 frac bits == 23 - 10 == 13
+        private const val FLOAT16_SHIFT_BITS = 13
+
+        private const val BFLOAT_FRAC_MASK = (1 shl 7) - 1
+        private const val BFLOAT_EXP_MASK = BFLOAT_FRAC_MASK.inv()
+
+        private const val UNSIGNED_16_BIT_MASK = 0x7fff
+        private const val SIGN_16_BIT_MASK = 0x8000
+
+        //bfloat size = 16 bits, exp = 8 bits, frac = 7 bits
         fun Int.parseAsBFloat(): Float {
-            val exponent = this shr 7
-            val precision = this - (exponent shl 7)
-            val sign = (exponent and 256) == 256
-            val power = (exponent and 255) - 127
-            val rawValue = ((precision * 2.0.pow(-7) + 1) * 2.0.pow(power)).toFloat()
-            return if (sign) -rawValue else rawValue
+            val valueUnsigned = this and UNSIGNED_16_BIT_MASK
+
+            val exponent = (valueUnsigned and BFLOAT_EXP_MASK) shl 16
+            if (exponent == 0) return 0.0f
+
+            //move sign bit to leftmost position
+            val sign = (this and SIGN_16_BIT_MASK) shl 16
+            //move exp and frac bits to their corresponding positions in 32-bit representation
+            val frac = (valueUnsigned and BFLOAT_FRAC_MASK) shl 16
+
+            return Float.fromBits((exponent or frac) or sign)
         }
 
-        //exp = 5 frac = 10
+        fun Short.parseAsBFloat(): Float = this.toInt().parseAsBFloat()
 
+        //float16 size = 16 bits, exp = 5 bits, frac = 10 bits
         fun Int.parseAsFloat16(): Float {
-            val exponent = this shr 10
-            val precision = this - (exponent shl 10)
-            val sign = (exponent and 32) == 32
-            val power = (exponent and 31) - 15
-            val rawValue = ((precision * 2.0.pow(-10) + 1) * 2.0.pow(power)).toFloat()
-            return if (sign) -rawValue else rawValue
+            val valueUnsigned = this and UNSIGNED_16_BIT_MASK
+
+            val exponent = valueUnsigned and FLOAT16_EXP_MASK
+            if (exponent == 0) return 0.0f
+
+            //move sign bit to leftmost position
+            val sign = (this and SIGN_16_BIT_MASK) shl 16
+            //move exp and frac bits to their corresponding positions in 32-bit representation
+            val valueShift = (valueUnsigned shl FLOAT16_SHIFT_BITS) + FLOAT16_EXP_BIAS
+
+            return Float.fromBits(valueShift or sign)
         }
+
+        fun Short.parseAsFloat16(): Float = this.toInt().parseAsFloat16()
     }
 }
