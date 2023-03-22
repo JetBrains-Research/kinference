@@ -86,14 +86,17 @@ abstract class TensorDecoder {
             TensorProto.DataType.FLOAT16
         )
 
-        private const val FLOAT16_EXP_MASK = ((1 shl 10) - 1).inv()
+        private const val FLOAT32_FRAC_BITS = 23
+
+        private const val FLOAT16_FRAC_MASK = (1 shl 10) - 1
+        private const val FLOAT16_EXP_MASK = 0x7c00
         private const val FLOAT16_EXP_BIAS = 0x38000000
 
         //float32 frac bits - float16 frac bits == 23 - 10 == 13
         private const val FLOAT16_SHIFT_BITS = 13
 
         private const val BFLOAT_FRAC_MASK = (1 shl 7) - 1
-        private const val BFLOAT_EXP_MASK = BFLOAT_FRAC_MASK.inv()
+        private const val BFLOAT_EXP_MASK = 0x7f80
 
         private const val UNSIGNED_16_BIT_MASK = 0x7fff
         private const val SIGN_16_BIT_MASK = 0x8000
@@ -101,16 +104,14 @@ abstract class TensorDecoder {
         //bfloat size = 16 bits, exp = 8 bits, frac = 7 bits
         fun Int.parseAsBFloat(): Float {
             val valueUnsigned = this and UNSIGNED_16_BIT_MASK
-
-            val exponent = (valueUnsigned and BFLOAT_EXP_MASK) shl 16
-            if (exponent == 0) return 0.0f
-
             //move sign bit to leftmost position
             val sign = (this and SIGN_16_BIT_MASK) shl 16
+
             //move exp and frac bits to their corresponding positions in 32-bit representation
+            val exponent = (valueUnsigned and BFLOAT_EXP_MASK) shl 16
             val frac = (valueUnsigned and BFLOAT_FRAC_MASK) shl 16
 
-            return Float.fromBits((exponent or frac) or sign)
+            return Float.fromBits(sign or exponent or frac)
         }
 
         fun Short.parseAsBFloat(): Float = this.toInt().parseAsBFloat()
@@ -118,12 +119,30 @@ abstract class TensorDecoder {
         //float16 size = 16 bits, exp = 5 bits, frac = 10 bits
         fun Int.parseAsFloat16(): Float {
             val valueUnsigned = this and UNSIGNED_16_BIT_MASK
-
-            val exponent = valueUnsigned and FLOAT16_EXP_MASK
-            if (exponent == 0) return 0.0f
-
             //move sign bit to leftmost position
             val sign = (this and SIGN_16_BIT_MASK) shl 16
+
+            val exponent = valueUnsigned and FLOAT16_EXP_MASK
+            val frac = valueUnsigned and FLOAT16_FRAC_MASK
+            if (exponent == 0) {
+                if (frac == 0) return 0.0f
+
+                //process denormalized values
+                var exponentDenormalized = 127 - 14
+                var fracDenormalized = frac
+                while (fracDenormalized and (FLOAT16_FRAC_MASK + 1) == 0) {
+                    exponentDenormalized--
+                    fracDenormalized = fracDenormalized shl 1
+                }
+                fracDenormalized = (fracDenormalized and FLOAT16_FRAC_MASK) shl FLOAT16_SHIFT_BITS
+                exponentDenormalized = exponentDenormalized shl FLOAT32_FRAC_BITS
+                return Float.fromBits(sign or exponentDenormalized or fracDenormalized)
+            } else if (exponent == FLOAT16_EXP_MASK) { // check if all exponent bits are set to 1
+                if (frac != 0) return Float.NaN
+
+                return if (sign == 0) Float.POSITIVE_INFINITY else Float.NEGATIVE_INFINITY
+            }
+
             //move exp and frac bits to their corresponding positions in 32-bit representation
             val valueShift = (valueUnsigned shl FLOAT16_SHIFT_BITS) + FLOAT16_EXP_BIAS
 
