@@ -125,7 +125,7 @@ abstract class TensorDecoder {
             val exponent = valueUnsigned and FLOAT16_EXP_MASK
             val frac = valueUnsigned and FLOAT16_FRAC_MASK
             if (exponent == 0) {
-                if (frac == 0) return 0.0f
+                if (frac == 0) Float.fromBits(sign)
 
                 //process denormalized values
                 var exponentDenormalized = 127 - 14
@@ -138,9 +138,7 @@ abstract class TensorDecoder {
                 exponentDenormalized = exponentDenormalized shl FLOAT32_FRAC_BITS
                 return Float.fromBits(sign or exponentDenormalized or fracDenormalized)
             } else if (exponent == FLOAT16_EXP_MASK) { // check if all exponent bits are set to 1
-                if (frac != 0) return Float.NaN
-
-                return if (sign == 0) Float.POSITIVE_INFINITY else Float.NEGATIVE_INFINITY
+                return Float.fromBits(sign or 0x7f800000 or frac)
             }
 
             //move exp and frac bits to their corresponding positions in 32-bit representation
