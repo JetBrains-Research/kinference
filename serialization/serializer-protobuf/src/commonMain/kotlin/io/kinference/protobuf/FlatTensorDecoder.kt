@@ -20,6 +20,8 @@ object FlatTensorDecoder : TensorDecoder() {
             TensorProto.DataType.UINT8 -> UByteArray(size) { data[it].toUByte() }
             TensorProto.DataType.INT16 -> ShortArray(size) { data[it].toShort() }
             TensorProto.DataType.UINT16 -> UShortArray(size) { data[it].toUShort() }
+            TensorProto.DataType.BFLOAT16 -> FloatArray(size) { data[it].parseAsBFloat() }
+            TensorProto.DataType.FLOAT16 -> FloatArray(size) { data[it].parseAsFloat16() }
             else -> error("Conversion from int32 to $type is not supported")
         }
     }
@@ -36,6 +38,8 @@ object FlatTensorDecoder : TensorDecoder() {
             TensorProto.DataType.BOOL -> BooleanArray(size) { init(it) as Boolean }
             TensorProto.DataType.INT8 -> ByteArray(size) { init(it) as Byte }
             TensorProto.DataType.UINT8 -> UByteArray(size) { init(it) as UByte }
+            TensorProto.DataType.BFLOAT16 -> FloatArray(size) { init(it) as Float }
+            TensorProto.DataType.FLOAT16 -> FloatArray(size) { init(it) as Float }
             else -> error("Unsupported data type: $type")
         }
     }
