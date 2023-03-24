@@ -9,11 +9,19 @@ import kotlin.math.ceil
 import kotlin.math.log2
 
 internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    val aggregateFunc: String?
+
     init {
         require(op.info.type == "TreeEnsembleClassifier" || op.info.type == "TreeEnsembleRegressor")
+
+        aggregateFunc =
+            if (op.info.type == "TreeEnsembleClassifier") {
+                null
+            } else {
+                op.getAttributeOrNull("aggregate_function")
+            }
     }
 
-    val aggregateFunc: String? = op.getAttributeOrNull("aggregate_function")
     val baseValues: FloatArray? = op.getAttributeOrNull("base_values")
     val falseNodeIds: LongArray = op.getAttribute("nodes_falsenodeids")
     val featureIds: LongArray = op.getAttribute("nodes_featureids")
