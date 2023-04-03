@@ -35,7 +35,7 @@ internal fun calculateInnerShift(shape: IntArray, index: IntArray): Int {
 /***
  * Amount of elements, ignoring first and second dimensions.
  */
-internal fun calculateInnerShapeSize(shape: IntArray) = shape.foldIndexed(1) { index, acc, i -> if (index >= 2) acc * i else acc }
+fun calculateInnerShapeSize(shape: IntArray) = shape.foldIndexed(1) { index, acc, i -> if (index >= 2) acc * i else acc }
 
 /***
  * Calculates the raw position of the following type of indexes [pos0, pos1, 0, 0, ..., 0].
@@ -46,13 +46,23 @@ internal operator fun IntArray.plus(oth: IntArray) = IntArray(this.size) { this[
 
 internal operator fun IntArray.minus(oth: IntArray) = IntArray(this.size) { this[it] - oth[it] }
 
+internal fun IntArray.add(oth: IntArray) {
+    for (i in indices)
+        this[i] += oth[i]
+}
+
+internal fun IntArray.subtract(oth: IntArray) {
+    for (i in indices)
+        this[i] -= oth[i]
+}
+
 /***
  * Iterates over elements inside IntProgression.
  */
 internal class ProgressionIterator(
-    internal val progression: IntProgression
+    private val progression: IntProgression
 ) : Iterator<Int> {
-    internal var cur = progression.first - progression.step
+    private var cur = progression.first - progression.step
     override fun hasNext(): Boolean {
         return cur + progression.step <= progression.last
     }
@@ -69,4 +79,11 @@ internal class ProgressionIterator(
     fun decrement() {
         cur -= progression.step
     }
+}
+
+fun calcA(sh: IntArray) : Int {
+    var x = 1
+    for (i in sh)
+        x *= i
+    return x
 }

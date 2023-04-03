@@ -1,115 +1,15 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
+
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.PrimitivePointer
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.utils.*
-
-
-/***
- * Performs convolution as described by ONNX docs.
- */
-fun PrimitiveNDArray.conv(
-    w: PrimitiveNDArray,
-    b: PrimitiveNDArray?,
-    pads: IntArray,
-    strides: IntArray,
-    dilations: IntArray,
-    groups: Int
-): PrimitiveNDArray {
-    val xShapeWithPads = getShapeWithPads(this.shape, pads)
-    val wShapeWithDilations = getShapeWithDilations(w.shape, dilations)
-
-    val resultShape = IntArray(this.shape.size) {
-        when (it) {
-            0 -> this.shape[0]
-            1 -> w.shape[0]
-            else -> (xShapeWithPads[it] - wShapeWithDilations[it] + 1) divCeil strides[it - 2]
-        }
-    }
-
-    val result = MutablePrimitiveNDArray(resultShape) { pos: IntArray -> b?.get(intArrayOf(pos[1])) ?: 0.toPrimitive() }
-
-    val xShrankShape = this.shape - wShapeWithDilations + IntArray(this.shape.size) { 1 }
-    xShrankShape[1] = this.shape[1]
-    xShrankShape[0] = this.shape[0]
-    val xIterator = PrimitiveTensorIterator(this, xShrankShape, pads, strides)
-    var totalIterations = 1
-    for (i in this.shape.size - 1 downTo 2)
-        totalIterations *= (xShrankShape[i] + pads[i - 2] + pads[i + this.shape.size - 4]) divCeil strides[i - 2]
-
-
-    val resultSize = calculateInnerShapeSize(result.shape)
-    val wSize = calculateInnerShapeSize(w.shape)
-
-    val wIterator = PrimitiveTensorIterator(w, w.shape)
-    val rawShifts = IntArray(wSize)
-    val indexShifts = Array(wSize) {
-        val cur = wIterator.next() * dilations
-        rawShifts[it] = calculateInnerShift(this.shape, cur)
-        cur
-    }
-
-    val lastFeature = w.shape[0] / groups
-    for (item in 0 until this.shape[0]) {
-        for (feature in 0 until lastFeature - 1) {
-            this.internalConvolve(w, result, xIterator, lastFeature, item, feature, resultSize, wSize, indexShifts, rawShifts, totalIterations)
-            xIterator.resetPos1()
-        }
-        this.internalConvolve(w, result, xIterator, lastFeature, item, lastFeature - 1, resultSize, wSize, indexShifts, rawShifts, totalIterations)
-    }
-
-    return result
-}
-
-/***
- * Performs convolution with a fixed item in the batch and a fixed outChannel.
- */
-private fun PrimitiveNDArray.internalConvolve(
-    w: PrimitiveNDArray,
-    result: MutablePrimitiveNDArray,
-    xIterator: PrimitiveTensorIterator,
-    outChannels: Int,
-    item: Int,
-    feature: Int,
-    resultSize: Int,
-    wSize: Int,
-    indexShift: Array<IntArray>,
-    rawShifts: IntArray,
-    innerIterations: Int
-) {
-    var outShift = 0
-    var wChannel = 0
-    for (i in 0 until this.shape[1]) {
-        val outFeature = feature + outShift * outChannels
-        val resultPointer = PrimitivePointer(result.array, calculateSignificantShift(item, outFeature, result.shape[1], resultSize))
-
-        val wStartIndex = calculateSignificantShift(outFeature, wChannel, w.shape[1], wSize)
-        repeat(innerIterations) {
-            val wPointer = PrimitivePointer(w.array, wStartIndex)
-
-            xIterator.next()
-
-            repeat(wSize) {
-                resultPointer.add(xIterator.getShifted(indexShift[it], rawShifts[it]) * wPointer.getAndIncrement())
-            }
-
-            resultPointer.increment()
-        }
-
-        wChannel++
-        if (wChannel == w.shape[1]) {
-            wChannel = 0
-            outShift++
-        }
-    }
-}
-
-private fun PrimitivePointer.add(value: PrimitiveType) {
-    currentBlock[indexInBlock] += value
-}
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 /***
  * Provides the ability to iterate over a tensor, maintaining the n-dimensional and raw indexes.
@@ -144,7 +44,7 @@ internal class PrimitiveTensorIterator(
         }
     }
 
-    private fun isInPadding(index: IntArray): Boolean {
+    fun isInPadding(index: IntArray): Boolean {
         if (index.any { i -> i < 0 })
             return true
         index.forEachIndexed { ind, i -> if (i >= x.shape[ind]) return true }
@@ -152,7 +52,7 @@ internal class PrimitiveTensorIterator(
     }
 
     override fun hasNext(): Boolean {
-        return true
+        return iterator.any { it.hasNext() }
     }
 
     fun resetPos1() {
@@ -182,9 +82,416 @@ internal class PrimitiveTensorIterator(
         return current
     }
 
-    fun getShifted(indexShift: IntArray, rawShift: Int): PrimitiveType {
-        if (isInPadding(current + indexShift))
-            return 0.toPrimitive()
-        return x.array[rawCurrent + rawShift]
+    fun getShifted(indexShift: IntArray, rawShift: Int, default: PrimitiveType = 0.toPrimitive()): PrimitiveType {
+        current.add(indexShift)
+        val inPadding = isInPadding(current)
+        current.subtract(indexShift)
+        if (inPadding)
+            return default
+        return default // x.array[rawCurrent + rawShift]
+    }
+}
+
+suspend fun PrimitiveNDArray.conv2(
+    w: PrimitiveNDArray,
+    b: PrimitiveNDArray?,
+    pads: IntArray,
+    strides: IntArray,
+    dilations: IntArray,
+    groups: Int
+): PrimitiveNDArray {
+    val inputShape = shape.slice(2..shape.lastIndex).toIntArray()
+    val xShapeWithPads = getShapeWithPads(this.shape, pads)
+    val wShapeWithDilations = getShapeWithDilations(w.shape, dilations)
+
+    val resultShape = IntArray(this.shape.size) {
+        when (it) {
+            0 -> this.shape[0]
+            1 -> w.shape[0]
+            else -> (xShapeWithPads[it] - wShapeWithDilations[it] + 1) divCeil strides[it - 2]
+        }
+    }
+    val result = MutablePrimitiveNDArray(resultShape)
+    val outputShape = resultShape.slice(2..resultShape.lastIndex).toIntArray()
+
+    val kernel = w.shape.slice(2..shape.lastIndex).toIntArray()
+    val xOffset = shape[1] / groups * calculateInnerShapeSize(shape)
+    val yOffset = result.shape.shapeSize() / result.shape[0] / groups
+    val wOffset = w.shape.shapeSize() / groups
+    val kernelDim = shape[1] / groups * calculateInnerShapeSize(w.shape)
+    val colSize = kernelDim * calculateInnerShapeSize(w.shape)
+    val col = PrimitiveNDArray(outputShape.shapeSize() * kernelDim)
+
+    val xPointer = array.pointer()
+    val wPointer = w.array.pointer()
+    val yPointer = result.array.pointer()
+
+    for (imageId in 0 until shape[0]) {
+        for (groupId in 0 until groups) {
+            val prevLiX = xPointer.linearIndex
+            xPointer.linearIndex += xOffset * groupId
+            primitiveIm2Col(
+                xPointer,
+                shape[1] / groups,
+                inputShape[0],
+                inputShape[1],
+                kernel[0],
+                kernel[1],
+                dilations[0],
+                dilations[1],
+                pads[0],
+                pads[1],
+                pads[2],
+                pads[3],
+                strides[0],
+                strides[1],
+                PrimitivePointer(col.array)
+            )
+            xPointer.linearIndex = prevLiX
+
+            val prevLiW = wPointer.linearIndex
+            val prevLiY = yPointer.linearIndex
+            wPointer.linearIndex += wOffset * groupId
+            yPointer.linearIndex += yOffset * groupId
+            myGemm(
+                wPointer,
+                PrimitivePointer(col.array),
+                yPointer,
+                w.shape[0] / groups,
+                outputShape.shapeSize(),
+                kernelDim
+            )
+            wPointer.linearIndex = prevLiW
+            yPointer.linearIndex = prevLiY
+        }
+
+        if (imageId != shape[0] - 1) {
+            xPointer.linearIndex += xOffset * groups
+            yPointer.linearIndex += yOffset * groups
+        }
+    }
+
+    return result
+}
+
+suspend fun myGemm(
+    aPointer: PrimitivePointer,
+    bPointer: PrimitivePointer,
+    cPointer: PrimitivePointer,
+    m: Int,
+    n: Int,
+    k: Int,
+    ldb: Int = n,
+    lda: Int = k,
+    ldc: Int = n
+) {
+    if (m > 128) {
+        myGemmCoroutines(aPointer, bPointer, cPointer, m, n, k, ldb, lda, ldc)
+        return
+    }
+
+    val aLocalPointer = PrimitivePointer(aPointer)
+    val bLocalPointer = PrimitivePointer(bPointer)
+    val cLocalPointer = PrimitivePointer(cPointer)
+
+    //coroutineScope {
+    //val bPointerIndex = bPointer.linearIndex
+    for (t in 0 until m) {
+        val cIdx = t * ldc
+        aLocalPointer.linearIndex = aPointer.linearIndex + t * lda
+
+        //val cPointerIndex = cPointer.linearIndex
+        for (i in 0 until k) {
+            val temp = aLocalPointer.getAndIncrement()
+
+            bLocalPointer.linearIndex = bPointer.linearIndex + i * ldb
+            cLocalPointer.linearIndex = cPointer.linearIndex + cIdx
+
+//                launch {
+//                    val bLocalPointer = PrimitivePointer(bPointer)
+//                    val cLocalPointer = PrimitivePointer(cPointer)
+            //cLocalPointer.myAccept(bLocalPointer, n, temp)
+            //}
+
+            cLocalPointer.myAccept(bLocalPointer, n, temp)
+
+            //cPointer.linearIndex = cPointerIndex
+        }
+
+//            bPointer.linearIndex = bPointerIndex
+//            if (t != m - 1) {
+//                cPointer.linearIndex = cPointerIndex + ldc
+        //}
+    }
+    //}
+}
+
+@SpecifyPrimitives(include = [])
+fun IntArray.shapeSize(): Int {
+    return this.reduce { size, i -> size * i }
+}
+
+fun PrimitivePointer.myAccept(
+    other: PrimitivePointer,
+    count: Int,
+    temp: PrimitiveType
+) {
+    var end = count
+    var dstBlock = this.currentBlock
+    var dstOffset = this.indexInBlock
+
+    var srcBlock = other.currentBlock
+    var srcOffset = other.indexInBlock
+
+    var dstShift: Int = 0
+    var srcShift: Int = 0
+    var iter: Int = -1
+
+    while (end > 0) {
+        if (iter == dstShift) {
+            this.unsafeAcceptBlockIncrement()
+            dstBlock = this.currentBlock
+            dstOffset = 0
+        }
+
+        if (iter == srcShift) {
+            other.unsafeAcceptBlockIncrement()
+            srcBlock = other.currentBlock
+            srcOffset = 0
+        }
+
+        dstShift = dstBlock.size - dstOffset
+        srcShift = srcBlock.size - srcOffset
+        iter = minOf(dstShift, srcShift, end)
+
+        extracted(iter, dstBlock, dstOffset, srcBlock, srcOffset, temp)
+        dstOffset += iter
+        srcOffset += iter
+
+        end -= iter
+    }
+
+    this.indexInBlock = dstOffset
+    other.indexInBlock = srcOffset
+}
+
+fun PrimitivePointer.unsafeAcceptBlockIncrement() {
+    blockNum++
+    currentBlock = array.blocks[blockNum]
+}
+
+private fun extracted(
+    iter: Int,
+    dstBlock: PrimitiveArray,
+    dstOffset: Int,
+    srcBlock: PrimitiveArray,
+    srcOffset: Int,
+    temp: PrimitiveType
+) {
+    for (i in 0 until iter) {
+        dstBlock[dstOffset + i] += srcBlock[srcOffset + i] * temp
+    }
+}
+
+suspend fun myGemmCoroutines(
+    aPointer: PrimitivePointer,
+    bPointer: PrimitivePointer,
+    cPointer: PrimitivePointer,
+    m: Int,
+    n: Int,
+    k: Int,
+    ldb: Int = n,
+    lda: Int = k,
+    ldc: Int = n
+) {
+    coroutineScope {
+        for (startT in 0 until m step 32) {
+            launch {
+                val aLocalPointer = PrimitivePointer(aPointer)
+                val bLocalPointer = PrimitivePointer(bPointer)
+                val cLocalPointer = PrimitivePointer(cPointer)
+                val endT = minOf(startT + 32, m)
+                for (t in startT until endT) {
+                    val cIdx = t * ldc
+                    aLocalPointer.linearIndex = aPointer.linearIndex + t * lda
+
+                    for (i in 0 until k) {
+                        val temp = aLocalPointer.getAndIncrement()
+
+                        bLocalPointer.linearIndex = bPointer.linearIndex + i * ldb
+                        cLocalPointer.linearIndex = cPointer.linearIndex + cIdx
+                        cLocalPointer.myAccept(bLocalPointer, n, temp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+/*
+Everything below this commit was used for test purposes.
+ */
+suspend fun PrimitiveNDArray.conv2Array(
+    w: PrimitiveNDArray,
+    b: PrimitiveNDArray?,
+    pads: IntArray,
+    strides: IntArray,
+    dilations: IntArray,
+    groups: Int
+): PrimitiveNDArray {
+    val inputShape = shape.slice(2..shape.lastIndex).toIntArray()
+    val xShapeWithPads = getShapeWithPads(this.shape, pads)
+    val wShapeWithDilations = getShapeWithDilations(w.shape, dilations)
+
+    val resultShape = IntArray(this.shape.size) {
+        when (it) {
+            0 -> this.shape[0]
+            1 -> w.shape[0]
+            else -> (xShapeWithPads[it] - wShapeWithDilations[it] + 1) divCeil strides[it - 2]
+        }
+    }
+    val result = FloatArray(resultShape.shapeSize())
+    val outputShape = resultShape.slice(2..resultShape.lastIndex).toIntArray()
+
+    val kernel = w.shape.slice(2..shape.lastIndex).toIntArray()
+    val xOffset = shape[1] / groups * calculateInnerShapeSize(shape)
+    val yOffset = resultShape.shapeSize() / resultShape[0] / groups
+    val wOffset = w.shape.shapeSize() / groups
+    val kernelDim = shape[1] / groups * calculateInnerShapeSize(w.shape)
+    val colSize = kernelDim * calculateInnerShapeSize(w.shape)
+    val col = FloatArray(outputShape.shapeSize() * kernelDim)
+
+    val xPointer = array.pointer()
+    val wPointer = w.array.pointer()
+    //val yPointer = result.array.pointer()
+    var yPointer = 0
+
+    for (imageId in 0 until shape[0]) {
+        for (groupId in 0 until groups) {
+            val prevLiX = xPointer.linearIndex
+            xPointer.linearIndex += xOffset * groupId
+            primitiveIm2ColArray(
+                xPointer,
+                shape[1] / groups,
+                inputShape[0],
+                inputShape[1],
+                kernel[0],
+                kernel[1],
+                dilations[0],
+                dilations[1],
+                pads[0],
+                pads[1],
+                pads[2],
+                pads[3],
+                strides[0],
+                strides[1],
+                col
+            )
+            xPointer.linearIndex = prevLiX
+
+            val prevLiW = wPointer.linearIndex
+            val prevLiY = yPointer
+            wPointer.linearIndex += wOffset * groupId
+            yPointer += yOffset * groupId
+            myGemmArray(
+                wPointer,
+                col,
+                yPointer,
+                result,
+                w.shape[0] / groups,
+                outputShape.shapeSize(),
+                kernelDim
+            )
+            wPointer.linearIndex = prevLiW
+            yPointer = prevLiY
+        }
+
+        if (imageId != shape[0] - 1) {
+            xPointer.linearIndex += xOffset * groups
+            yPointer += yOffset * groups
+        }
+    }
+
+    return PrimitiveNDArray(resultShape) { i -> result[i].toPrimitive() }
+}
+
+suspend fun myGemmArray(
+    aPointer: PrimitivePointer,
+    bPointer: FloatArray,
+    cPointer: Int,
+    c: FloatArray,
+    m: Int,
+    n: Int,
+    k: Int,
+    ldb: Int = n,
+    lda: Int = k,
+    ldc: Int = n
+) {
+    if (m > 128) {
+        myGemmArrayCor(aPointer, bPointer, cPointer, c, m, n, k, ldb, lda, ldc)
+        return
+    }
+
+    val aLocalPointer = PrimitivePointer(aPointer)
+    var bLocalPointer = 0
+    var cLocalPointer = cPointer
+
+    for (t in 0 until m) {
+        val cIdx = t * ldc
+        aLocalPointer.linearIndex = aPointer.linearIndex + t * lda
+
+        for (i in 0 until k) {
+            val temp = aLocalPointer.getAndIncrement()
+
+            bLocalPointer = i * ldb
+            cLocalPointer = cPointer + cIdx
+
+            repeat(n) {
+                c[cLocalPointer + it] += bPointer[bLocalPointer + it] * temp.toFloat()
+            }
+        }
+    }
+}
+
+suspend fun myGemmArrayCor(
+    aPointer: PrimitivePointer,
+    bPointer: FloatArray,
+    cPointer: Int,
+    c: FloatArray,
+    m: Int,
+    n: Int,
+    k: Int,
+    ldb: Int = n,
+    lda: Int = k,
+    ldc: Int = n
+) {
+    val stepM = m / 7
+    coroutineScope {
+        for (startT in 0 until m step stepM) {
+            launch {
+                val endT = minOf(startT + stepM, m)
+                val aLocalPointer = PrimitivePointer(aPointer)
+                var bLocalPointer = 0
+                var cLocalPointer = cPointer
+
+                for (t in startT until endT) {
+                    val cIdx = t * ldc
+                    aLocalPointer.linearIndex = aPointer.linearIndex + t * lda
+
+                    for (i in 0 until k) {
+                        val temp = aLocalPointer.getAndIncrement()
+
+                        bLocalPointer = i * ldb
+                        cLocalPointer = cPointer + cIdx
+
+                        repeat(n) {
+                            c[cLocalPointer + it] += bPointer[bLocalPointer + it] * temp.toFloat()
+                        }
+                    }
+                }
+            }
+        }
     }
 }

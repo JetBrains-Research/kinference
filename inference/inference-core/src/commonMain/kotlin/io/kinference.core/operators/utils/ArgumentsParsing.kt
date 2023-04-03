@@ -41,7 +41,7 @@ public fun parsePads(autoPad: String, pads: IntArray?, xShape: IntArray, wShape:
 
         "NOTSET" -> {
             if (pads == null)
-                IntArray(xShape.size * 2)
+                IntArray(size * 2)
             else
                 pads as IntArray
         }

@@ -7,7 +7,7 @@ import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.conv
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -73,12 +73,12 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
             b = inputs[2]!!.data
 
         val parsedStrides = parseStrides(strides, x.shape.size)
-        val parsedPads = parsePads(autoPad, pads, x.shape, w.shape, parsedStrides)
+        val parsedPads = parsePads(autoPad, pads, x.shape, w.shape, parsedStrides) // bug with dilations
         val parsedDilations = parseDilations(dilations, w.shape.size)
 
         val y = when (x.type) {
-            DataType.FLOAT -> (x as FloatNDArray).conv(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
-            DataType.DOUBLE -> (x as DoubleNDArray).conv(w as DoubleNDArray, b as DoubleNDArray?, parsedPads, parsedStrides, parsedDilations, group)
+            DataType.FLOAT -> (x as FloatNDArray).conv2(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
+            DataType.DOUBLE -> (x as DoubleNDArray).conv2(w as DoubleNDArray, b as DoubleNDArray?, parsedPads, parsedStrides, parsedDilations, group)
             else -> { throw IllegalArgumentException("Data type ${x.type} is not supported.") }
         }
 
