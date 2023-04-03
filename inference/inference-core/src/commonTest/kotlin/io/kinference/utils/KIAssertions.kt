@@ -7,6 +7,7 @@ import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.arrays.*
+import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.ArrayAssertions.assertArrayEquals
 import kotlin.test.assertEquals
@@ -22,7 +23,7 @@ object KIAssertions {
         val typeInfo = expected.info
         logger.info { "Errors for ${expected.name}:" }
         when (typeInfo.type) {
-            TensorProto.DataType.FLOAT -> {
+            in FLOAT_TENSOR_TYPES -> {
                 val expectedArray = (expected.data as FloatNDArray).array
                 val actualArray = (actual.data as FloatNDArray).array
 

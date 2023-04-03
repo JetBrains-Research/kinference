@@ -5,13 +5,11 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NDArrayCore
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.NumberNDArray
 import io.kinference.ndarray.toIntArray
+import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class ReduceSum(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -24,7 +22,7 @@ sealed class ReduceSum(name: String, info: OperatorInfo, attributes: Map<String,
     }
 }
 
-@ExperimentalTime
+
 class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ReduceSum(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -34,7 +32,8 @@ class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, input
             TensorProto.DataType.INT64,
             TensorProto.DataType.FLOAT16,
             TensorProto.DataType.FLOAT,
-            TensorProto.DataType.DOUBLE
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.BFLOAT16
         )
 
         private val INPUTS_INFO = listOf(

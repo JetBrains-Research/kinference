@@ -5,7 +5,6 @@ import io.kinference.graph.Graph
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.protobuf.message.*
 import io.kinference.utils.Closeable
-import kotlin.time.ExperimentalTime
 
 class Attribute<T>(proto: AttributeProto, val value: T) : Closeable {
     val name: String = proto.name!!
@@ -28,7 +27,7 @@ interface AttributeFactory<T : ONNXData<*, *>> {
     fun createTensor(proto: TensorProto): T
     suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<T>
 
-    @ExperimentalTime
+    
     suspend fun create(proto: AttributeProto, currentOpSet: OperatorSetRegistry): Attribute<Any> = when (proto.type) {
         AttributeProto.AttributeType.FLOAT -> Attribute(proto, proto.f!!)
         AttributeProto.AttributeType.INT -> Attribute(proto, proto.i!!)

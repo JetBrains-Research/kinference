@@ -2,10 +2,9 @@ package io.kinference.core.operators.ml.trees
 
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.MutableFloatNDArray
-import kotlin.time.ExperimentalTime
 
 //TODO: SOFTMAX_ZERO, LOGISTIC, PROBIT
-@ExperimentalTime
+
 sealed class PostTransform {
     abstract suspend fun apply(array: MutableFloatNDArray): FloatNDArray
 

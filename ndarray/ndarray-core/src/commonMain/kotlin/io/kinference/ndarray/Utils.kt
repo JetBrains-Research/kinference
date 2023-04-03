@@ -1,6 +1,9 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.arrays.Strides
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
@@ -106,3 +109,32 @@ internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
     this[leftIdx] = this[rightIdx]
     this[rightIdx] = temp
 }
+/*
+ * Parallelize with batching by minDataPerLaunch
+ */
+suspend fun parallelizeByBlocks(blockSize: Int,
+                                countBlocks: Int,
+                                minDataPerLaunch: Int,
+                                body: (blockStart: Int, blockEnd: Int) -> Unit) {
+    val batchSize = run {
+        var batchSize = 1
+        while (batchSize < countBlocks && batchSize * blockSize < minDataPerLaunch) {
+            batchSize++
+        }
+        batchSize
+    }
+
+    if (batchSize == countBlocks) {
+        body(0, countBlocks)
+    } else {
+        coroutineScope {
+            for (blockStart in 0 until countBlocks step batchSize) {
+                launch {
+                    body(blockStart, min(blockStart + batchSize, countBlocks))
+                }
+            }
+        }
+    }
+}
+
+suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, noinline body: (rowStart: Int, rowEnd: Int) -> Unit) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)

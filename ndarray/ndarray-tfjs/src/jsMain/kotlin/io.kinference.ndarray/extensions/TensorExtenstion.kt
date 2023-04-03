@@ -1,12 +1,10 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.*
+import io.kinference.ndarray.MomentsOutput
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.core.addN
-import io.kinference.ndarray.core.argMax
+import io.kinference.ndarray.core.*
 import io.kinference.ndarray.core.broadcastTo
 import io.kinference.ndarray.core.cast
-import io.kinference.ndarray.core.clipByValue
 import io.kinference.ndarray.core.clone
 import io.kinference.ndarray.core.concat
 import io.kinference.ndarray.core.cumsum
@@ -15,20 +13,14 @@ import io.kinference.ndarray.core.dot
 import io.kinference.ndarray.core.equal
 import io.kinference.ndarray.core.erf
 import io.kinference.ndarray.core.gather
-import io.kinference.ndarray.core.gatherND
 import io.kinference.ndarray.core.greater
 import io.kinference.ndarray.core.greaterEqual
 import io.kinference.ndarray.core.leakyRelu
 import io.kinference.ndarray.core.less
-import io.kinference.ndarray.core.logicalNot
 import io.kinference.ndarray.core.matMul
 import io.kinference.ndarray.core.max
-import io.kinference.ndarray.core.maximum
 import io.kinference.ndarray.core.min
-import io.kinference.ndarray.core.minimum
 import io.kinference.ndarray.core.moments
-import io.kinference.ndarray.core.mul
-import io.kinference.ndarray.core.neg
 import io.kinference.ndarray.core.pad
 import io.kinference.ndarray.core.reshape
 import io.kinference.ndarray.core.reverse
@@ -39,8 +31,6 @@ import io.kinference.ndarray.core.split
 import io.kinference.ndarray.core.sqrt
 import io.kinference.ndarray.core.squeeze
 import io.kinference.ndarray.core.stack
-import io.kinference.ndarray.core.stridedSlice
-import io.kinference.ndarray.core.sub
 import io.kinference.ndarray.core.sum
 import io.kinference.ndarray.core.tanh
 import io.kinference.ndarray.core.tile

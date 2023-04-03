@@ -5,12 +5,12 @@ import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.types.TensorShape
-import io.kinference.types.ValueTypeInfo
 import io.kinference.data.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.types.TensorShape
+import io.kinference.types.ValueTypeInfo
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 

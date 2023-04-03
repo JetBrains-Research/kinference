@@ -8,11 +8,9 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.softmax.softmax
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.PlatformUtils
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -485,44 +483,41 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         require(actualThis.shape[1] == actualOther.shape[0])
 
         val n = actualThis.shape[0]
-//        val t = actualThis.shape[1]
+        val t = actualThis.shape[1]
+        val m = actualOther.shape[1]
 
-        val lBlockSize = actualThis.array.blockSize
-        val rdBlockSize = destination.array.blockSize
 
         val lBlocksInRow = actualThis.blocksInRow
-        val rdBlocksInRow = other.blocksInRow
+        val rdBlocksInRow = actualOther.blocksInRow
 
-        suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
-            for (rdCol in 0 until rdBlocksInRow) {
-                body {
-                    for (i in 0 until n) {
-                        /*
-                        i * rdBlockInRow equals taking i-th line in destination matrix
-                        rdCol is number of current block in row
-                         */
-                        val destBlock = destination.array.blocks[i * rdBlocksInRow + rdCol]
-                        //i * lBlocksInRow equals taking i-th line in left matrix
-                        val leftBlockOffset = i * lBlocksInRow
-                        // iterating over blocks in i-th line in left matrix
-                        for (lCol in 0 until lBlocksInRow) {
-                            val leftBlock = actualThis.array.blocks[leftBlockOffset + lCol]
-                            val rightBlockOffset = lCol * lBlockSize
+        val leftBlocks = actualThis.array.blocks
+        val rightBlocks = actualOther.array.blocks
+        val destBlocks = destination.array.blocks
+        val lBlockSize = actualThis.array.blockSize
 
-                            // iterating in left block
-                            for (k in 0 until lBlockSize) {
-                                val temp = leftBlock[k]
-                                /*
-                                 * lCol * lBlockSize + k is linear index in row in left matrix
-                                 * number temp staying at [i, lCol * lBlockSize + k] in left matrix,
-                                 * therefore, we should take (lCol * lBlockSize + k) row in right matrix
-                                 * (lCol * lBlockSize) moved in rightBlockOffset due to performance purposes
-                                 */
-                                val rightBlock = actualOther.array.blocks[(rightBlockOffset + k) * rdBlocksInRow + rdCol]
+        val nRowFlop = t * m
 
-                                for (j in 0 until rdBlockSize) {
-                                    destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
-                                }
+        // Constant 261120 was precomputed on M1 Max processor
+        // With this constant two launches work faster than single thread without launches
+        // TODO: (cupertank) Remove constants
+        parallelizeByRows(nRowFlop, n, 261120) { nStart, nEnd ->
+            for (i in nStart until nEnd) {
+                val leftBlockOffset = i * lBlocksInRow
+                val destBlockOffset = i * rdBlocksInRow
+                val rightBlockIterator = rightBlocks.iterator()
+
+                for (lCol in 0 until lBlocksInRow) {
+                    val leftBlock = leftBlocks[leftBlockOffset + lCol]
+
+                    for (k in 0 until lBlockSize) {
+                        val temp = leftBlock[k]
+
+                        for (rdCol in 0 until rdBlocksInRow) {
+                            val destBlock = destBlocks[destBlockOffset + rdCol]
+                            val rightBlock = rightBlockIterator.next()
+
+                            for (j in destBlock.indices) {
+                                destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
                             }
                         }
                     }
@@ -530,14 +525,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             }
         }
 
-        if (rdBlocksInRow > 1) {
-            coroutineScope { wrapper { launch { it() } } }
-        } else {
-            wrapper()
-        }
-
         return destination
     }
+
+
 
     override suspend fun dot(other: NumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray

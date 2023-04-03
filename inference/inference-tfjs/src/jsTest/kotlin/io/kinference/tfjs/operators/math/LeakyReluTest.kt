@@ -1,8 +1,8 @@
 package io.kinference.tfjs.operators.math
 
+import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 
 class LeakyReluTest {
     private fun getTargetPath(dirName: String) = "leakyrelu/$dirName/"

@@ -11,7 +11,6 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import kotlin.math.sqrt
-import kotlin.time.ExperimentalTime
 
 sealed class EmbedLayerNormalization(
     name: String,
@@ -31,7 +30,7 @@ sealed class EmbedLayerNormalization(
     }
 }
 
-@ExperimentalTime
+
 class EmbedLayerNormalizationVer1(
     name: String,
     attributes: Map<String, Attribute<Any>>,

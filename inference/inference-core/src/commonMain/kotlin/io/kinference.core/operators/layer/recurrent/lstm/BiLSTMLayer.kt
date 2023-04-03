@@ -1,12 +1,10 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
+import io.kinference.core.operators.activations.Activation
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
-import io.kinference.core.operators.activations.Activation
 import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hiddenSize, activations, "bidirectional") {
     init {
         require(activations.size == 6)

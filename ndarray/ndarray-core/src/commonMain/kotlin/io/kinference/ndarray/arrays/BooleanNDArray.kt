@@ -2,15 +2,12 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
 import kotlin.math.abs
-import kotlin.ranges.reversed
 
 interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean

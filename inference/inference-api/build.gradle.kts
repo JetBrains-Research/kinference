@@ -2,7 +2,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js(BOTH) {
+    js(IR) {
         browser()
     }
 
@@ -12,7 +12,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("com.squareup.okio:okio:3.0.0")
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-common"))
             }
         }
     }

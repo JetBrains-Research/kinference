@@ -5,12 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.acceptRecursive
-import io.kinference.ndarray.arrays.pointers.map
+import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.extensions.gelu.fastGelu
 import io.kinference.operator.*
-import io.kinference.primitives.types.DataType
-import kotlin.time.ExperimentalTime
 
 sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +20,7 @@ sealed class FastGelu(name: String, info: OperatorInfo, attributes: Map<String, 
     }
 }
 
-@ExperimentalTime
+
 class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : FastGelu(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
@@ -42,37 +39,12 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs.first()!!
-        val bias = inputs.getOrNull(1)
+        val input = inputs.first()!!.data as NumberNDArrayCore
+        val bias = inputs.getOrNull(1)?.data as NumberNDArrayCore?
 
-        val result = when (val type = input.data.type) {
-            DataType.FLOAT -> {
-                val biasData = bias?.data as? FloatNDArray
-                val result = input.data.toMutable() as MutableFloatNDArray
-                val pointer = result.array.pointer()
-                if (biasData == null) {
-                    pointer.map(result.linearSize) { fgelu(it) }
-                } else {
-                    pointer.acceptRecursive(biasData.array.pointer(), result.linearSize) { dst, src -> fgelu(dst + src) }
-                }
-                result
-            }
+        require(bias == null || input.shape.last() == bias.shape.last())
+            { "Last dimensions of input and bias tensors must be equal" }
 
-            DataType.DOUBLE -> {
-                val biasData = bias?.data as? DoubleNDArray
-                val result = input.data.toMutable() as MutableDoubleNDArray
-                val pointer = result.array.pointer()
-                if (biasData == null) {
-                    pointer.map(result.linearSize) { fgelu(it) }
-                } else {
-                    pointer.acceptRecursive(biasData.array.pointer(), result.linearSize) { dst, src -> fgelu(dst + src) }
-                }
-                result
-            }
-
-            else -> error("Unsupported operation for data type $type")
-        }.asTensor("Y")
-
-        return listOf(result)
+        return listOf(fastGelu(input, bias).asTensor("Y"))
     }
 }

@@ -2,13 +2,14 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.tensor
+import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.ndarray.extensions.*
-import io.kinference.protobuf.toIntArray
 
 class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data) {
     constructor(data: NDArrayTFJS, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
@@ -85,7 +86,7 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             val nameNotNull = name.orEmpty()
             val typedDims = dims.toTypedArray()
             return when (type) {
-                DataType.FLOAT -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32")).asTensor(nameNotNull)
+                in FLOAT_TENSOR_TYPES -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32")).asTensor(nameNotNull)
                 DataType.INT32 -> NumberNDArrayTFJS(tensor(value as IntArray, typedDims, "int32")).asTensor(nameNotNull)
                 DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toTypedArray(), typedDims, "int32")).asTensor(nameNotNull)
                 DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32")).asTensor(nameNotNull)

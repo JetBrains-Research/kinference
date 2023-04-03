@@ -1,14 +1,14 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.core.CoreBackend
+import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.data.ONNXTensor
-import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 
 //TODO: support segments
 //TODO: support external data
@@ -42,7 +42,6 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        @Suppress("UNCHECKED_CAST")
         fun create(proto: TensorProto): KITensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
@@ -55,7 +54,7 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
             val strides = Strides(dims)
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleTiledArray, strides).asTensor(name)
-                DataType.FLOAT -> FloatNDArray(value as FloatTiledArray, strides).asTensor(name)
+                in FLOAT_TENSOR_TYPES -> FloatNDArray(value as FloatTiledArray, strides).asTensor(name)
                 DataType.INT32 -> IntNDArray(value as IntTiledArray, strides).asTensor(name)
                 DataType.INT8 -> ByteNDArray(value as ByteTiledArray, strides).asTensor(name)
                 DataType.UINT8 -> UByteNDArray(value as UByteTiledArray, strides).asTensor(name)

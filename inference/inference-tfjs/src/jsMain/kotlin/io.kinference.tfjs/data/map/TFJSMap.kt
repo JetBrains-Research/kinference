@@ -1,9 +1,10 @@
 package io.kinference.tfjs.data.map
 
-import io.kinference.data.*
+import io.kinference.data.ONNXMap
 import io.kinference.protobuf.message.MapProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.*
+import io.kinference.tfjs.TFJSBackend
+import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.seq.TFJSSequence.Companion.extractTypeInfo
 import io.kinference.types.ValueInfo

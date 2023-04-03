@@ -7,7 +7,7 @@ group = rootProject.group
 version = rootProject.version
 
 kotlin {
-    js(BOTH) {
+    js(IR) {
         browser()
 
         configureTests()
@@ -26,19 +26,17 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-ir"))
 
-                api(project(":utils:logger"))
-                api(project(":utils:model-profiler"))
-                api(project(":utils:common-utils"))
+                api(project(":utils:utils-logger"))
+                api(project(":utils:utils-profiling"))
+                api(project(":utils:utils-common"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
             }
         }
 
         val jsTest by getting {
             dependencies {
-                implementation(kotlin("test-js"))
-                implementation(kotlin("test-annotations-common"))
-                implementation(project(":utils:test-utils"))
+                implementation(project(":utils:utils-testing"))
             }
         }
     }

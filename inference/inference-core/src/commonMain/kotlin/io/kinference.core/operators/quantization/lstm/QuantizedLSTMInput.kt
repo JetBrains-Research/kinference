@@ -1,11 +1,10 @@
 package io.kinference.core.operators.quantization.lstm
 
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.quantizeMatMul
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMInput
 import io.kinference.core.operators.layer.recurrent.lstm.AbstractLSTMWeights
 import io.kinference.core.operators.quantization.DynamicQuantizeLinear.Companion.dynamicQuantize
-import kotlin.time.ExperimentalTime
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.quantizeMatMul
 
 class QuantizedLSTMInput(data: NumberNDArrayCore, val scale: FloatNDArray, val zeroPoint: NumberNDArrayCore): AbstractLSTMInput(data) {
     override fun view(vararg dims: Int): QuantizedLSTMInput = QuantizedLSTMInput(data.view(*dims), scale, zeroPoint)
@@ -32,8 +31,7 @@ class QuantizedLSTMInput(data: NumberNDArrayCore, val scale: FloatNDArray, val z
     }
 
     companion object {
-        @OptIn(ExperimentalTime::class)
-        suspend fun create(data: FloatNDArray): QuantizedLSTMInput {
+                suspend fun create(data: FloatNDArray): QuantizedLSTMInput {
             val (quantizedData, scale, zeroPoint) = data.dynamicQuantize()
             return QuantizedLSTMInput(quantizedData, scale, zeroPoint)
         }

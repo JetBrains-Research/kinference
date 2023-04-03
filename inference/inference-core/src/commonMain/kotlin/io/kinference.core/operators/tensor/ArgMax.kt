@@ -10,7 +10,6 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -23,7 +22,7 @@ sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, At
     }
 }
 
-@ExperimentalTime
+
 class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Constant(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = listOf(
@@ -33,7 +32,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
         )
 
         private val INPUTS_INFO = listOf(
-            IOInfo(0, PRIMITIVE_DATA_TYPES, "data", differentiable = false)
+            IOInfo(0, PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16, "data", differentiable = false)
         )
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "reduced", optional = false))

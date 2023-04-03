@@ -30,7 +30,8 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT,
             TensorProto.DataType.DOUBLE,
-            TensorProto.DataType.FLOAT16
+            TensorProto.DataType.FLOAT16,
+            TensorProto.DataType.BFLOAT16
         )
 
         private val ATTRIBUTES_INFO = listOf(

@@ -17,7 +17,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.sqrt
-import kotlin.time.ExperimentalTime
 
 sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -170,7 +169,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
     }
 }
 
-@ExperimentalTime
+
 class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Attention(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
@@ -207,19 +206,17 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
 
             coroutineScope {
                 for (qkvIdx in 0 until 3) {
-                    launch {
-                        val output = qkv[qkvIdx]
-                        for (batchNum in 0 until batchSize) {
-                            val inputMatrix = input.view(batchNum)
-                            for (numHead in 0 until numHeads) {
-                                val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArrayCore
-                                val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
+                    val output = qkv[qkvIdx]
+                    for (batchNum in 0 until batchSize) {
+                        val inputMatrix = input.view(batchNum)
+                        for (numHead in 0 until numHeads) launch {
+                            val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArrayCore
+                            val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
 
-                                val outputMatrix = output.viewMutable(batchNum, numHead)
+                            val outputMatrix = output.viewMutable(batchNum, numHead)
 
-                                inputMatrix.dot(weightsMatrix, outputMatrix as MutableNumberNDArray)
-                                outputMatrix.plusAssign(biasMatrix)
-                            }
+                            inputMatrix.dot(weightsMatrix, outputMatrix as MutableNumberNDArray)
+                            outputMatrix.plusAssign(biasMatrix)
                         }
                     }
                 }

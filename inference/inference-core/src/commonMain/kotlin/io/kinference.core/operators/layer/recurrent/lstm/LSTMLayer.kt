@@ -1,13 +1,10 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
-import io.kinference.ndarray.arrays.*
 import io.kinference.core.operators.activations.Activation
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
-import kotlin.time.ExperimentalTime
-
-@OptIn(ExperimentalTime::class)
 class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMLayerBase(hiddenSize, activations, direction) {
     init {
         require(activations.size == 3)

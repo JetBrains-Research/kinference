@@ -1,7 +1,8 @@
 package io.kinference.ort.data.tensor
 
 import ai.onnxruntime.*
-import io.kinference.data.*
+import io.kinference.data.ONNXDataType
+import io.kinference.data.ONNXTensor
 import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
 import java.nio.*

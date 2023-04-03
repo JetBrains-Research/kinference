@@ -5,10 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.operator.*
 import io.kinference.ndarray.arrays.*
+import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class ScatterND(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -21,7 +20,6 @@ sealed class ScatterND(name: String, info: OperatorInfo, attributes: Map<String,
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class ScatterNDVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ScatterND(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val INPUTS_INFO = listOf(

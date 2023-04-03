@@ -1,6 +1,7 @@
 package io.kinference.ort
 
-import ai.onnxruntime.*
+import ai.onnxruntime.OrtEnvironment
+import ai.onnxruntime.OrtLoggingLevel
 import ai.onnxruntime.OrtSession.SessionOptions
 import io.kinference.BackendInfo
 import io.kinference.OptimizableEngine

@@ -1,8 +1,8 @@
 package io.kinference.tfjs.operators.logical
 
+import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 
 class NotTest {
     private fun getTargetPath(dirName: String) = "not/$dirName/"

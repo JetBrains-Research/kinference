@@ -1,17 +1,16 @@
 package io.kinference.graph
 
 import io.kinference.data.ONNXData
-import io.kinference.operator.*
+import io.kinference.operator.Operator
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
 import io.kinference.utils.*
 import kotlinx.coroutines.coroutineScope
-import kotlin.time.ExperimentalTime
 
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
-@ExperimentalTime
+
 abstract class Graph<T : ONNXData<*, *>> protected constructor(
     proto: GraphProto,
     private var _operators: ArrayList<Operator<T, T>>,
@@ -187,7 +186,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         closeAll(operators)
     }
 
-    @ExperimentalTime
+    
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)

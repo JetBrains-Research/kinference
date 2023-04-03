@@ -1,7 +1,7 @@
 package io.kinference.ndarray.broadcasting
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
 // TODO remove to different module

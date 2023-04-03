@@ -3,9 +3,8 @@ package io.kinference.operators.math
 import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+
 class ReduceSumTest {
     private fun getTargetPath(dirName: String) = "reduce_sum/$dirName/"
 

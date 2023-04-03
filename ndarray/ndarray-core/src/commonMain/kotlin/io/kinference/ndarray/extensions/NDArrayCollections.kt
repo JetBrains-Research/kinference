@@ -1,6 +1,7 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.MutableNDArrayCore
+import io.kinference.ndarray.arrays.NDArrayCore
 
 suspend fun Collection<NDArrayCore>.concat(axis: Int): MutableNDArrayCore {
     return this.first().concat(this.drop(1), axis)

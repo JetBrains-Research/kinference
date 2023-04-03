@@ -1,7 +1,7 @@
 package io.kinference.core.operators.flow
 
-import io.kinference.core.KIONNXData
 import io.kinference.attribute.Attribute
+import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.*
 import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
@@ -11,7 +11,6 @@ import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Loop(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -24,7 +23,7 @@ sealed class Loop(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
+
 class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Loop(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES

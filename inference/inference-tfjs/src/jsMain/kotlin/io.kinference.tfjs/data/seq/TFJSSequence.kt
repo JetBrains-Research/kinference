@@ -1,6 +1,6 @@
 package io.kinference.tfjs.data.seq
 
-import io.kinference.data.*
+import io.kinference.data.ONNXSequence
 import io.kinference.protobuf.message.SequenceProto
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.tfjs.TFJSData

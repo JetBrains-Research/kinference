@@ -1,8 +1,9 @@
 package io.kinference.protobuf.message
 
 import com.squareup.wire.*
-import io.kinference.protobuf.*
-import io.kinference.protobuf.arrays.*
+import io.kinference.protobuf.ProtobufReader
+import io.kinference.protobuf.arrays.ArrayContainer
+import io.kinference.protobuf.arrays.hasData
 import okio.*
 
 class TensorProto internal constructor(

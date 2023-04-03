@@ -1,19 +1,27 @@
 package io.kinference.core.operators.ml.trees
 
 import io.kinference.core.KIONNXData
-import io.kinference.operator.Operator
+import io.kinference.core.operators.ml.TreeEnsembleClassifier
+import io.kinference.core.operators.ml.TreeEnsembleRegressor
 import io.kinference.ndarray.toIntArray
-import io.kinference.core.operators.ml.*
+import io.kinference.operator.Operator
 import kotlin.math.ceil
 import kotlin.math.log2
-import kotlin.time.ExperimentalTime
 
 internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) {
+    val aggregateFunc: String?
+
     init {
         require(op.info.type == "TreeEnsembleClassifier" || op.info.type == "TreeEnsembleRegressor")
+
+        aggregateFunc =
+            if (op.info.type == "TreeEnsembleClassifier") {
+                null
+            } else {
+                op.getAttributeOrNull("aggregate_function")
+            }
     }
 
-    val aggregateFunc: String? = op.getAttributeOrNull("aggregate_function")
     val baseValues: FloatArray? = op.getAttributeOrNull("base_values")
     val falseNodeIds: LongArray = op.getAttribute("nodes_falsenodeids")
     val featureIds: LongArray = op.getAttribute("nodes_featureids")
@@ -25,7 +33,7 @@ internal open class BaseEnsembleInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>)
     val postTransform: String? = op.getAttributeOrNull("post_transform")
 }
 
-@ExperimentalTime
+
 internal class TreeEnsembleBuilder(private val info: BaseEnsembleInfo, private val labelsInfo: TreeEnsemble.LabelsInfo<*>?) {
     private val numTargets = labelsInfo?.labels?.size ?: 1
     private val numTrees: Int = info.treeIds.distinct().size
