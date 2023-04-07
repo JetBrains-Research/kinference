@@ -69,27 +69,27 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
                 val blocksInRow = headSize / past.array.blockSize
 
-                val pastRowBlockSize = pastSeqLen * blocksInRow
-                val kvRowBlockSize = seqLen * blocksInRow
+                val pastRowBlocksCount = pastSeqLen * blocksInRow
+                val kvRowBlocksCount = seqLen * blocksInRow
 
                 val rowsSize = batchSize * numHeads
                 val futureRes = arrayOfNulls<FloatArray>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
 
-                var resIdx = 0
-                var pastIdx = 0
+                var resBlockIdx = 0
+                var pastBlocIdx = 0
 
-                repeat(2) {
-                    val kvBlocks = if (it == 0) kBlocks else vBlocks
-                    var kvIdx = 0
+                repeat(2) { presentKeyValueIdx ->
+                    val kvBlocks = if (presentKeyValueIdx == 0) kBlocks else vBlocks
+                    var kvBlockIdx = 0
 
                     repeat(rowsSize) {
-                        pastBlocks.copyInto(futureRes, resIdx, pastIdx, pastIdx + pastRowBlockSize)
-                        resIdx += pastRowBlockSize
-                        pastIdx += pastRowBlockSize
+                        pastBlocks.copyInto(futureRes, resBlockIdx, pastBlocIdx, pastBlocIdx + pastRowBlocksCount)
+                        resBlockIdx += pastRowBlocksCount
+                        pastBlocIdx += pastRowBlocksCount
 
-                        kvBlocks.copyInto(futureRes, resIdx, kvIdx, kvIdx + kvRowBlockSize)
-                        resIdx += kvRowBlockSize
-                        kvIdx += kvRowBlockSize
+                        kvBlocks.copyInto(futureRes, resBlockIdx, kvBlockIdx, kvBlockIdx + kvRowBlocksCount)
+                        resBlockIdx += kvRowBlocksCount
+                        kvBlockIdx += kvRowBlocksCount
                     }
                 }
 

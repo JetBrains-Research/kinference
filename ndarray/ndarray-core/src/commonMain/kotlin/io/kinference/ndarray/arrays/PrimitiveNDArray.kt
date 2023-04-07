@@ -8,7 +8,6 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.dot.DotUtils
 import io.kinference.ndarray.extensions.dot.dotParallelM
 import io.kinference.ndarray.extensions.dot.dotParallelN
@@ -494,8 +493,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
         val rdBlockSize = actualOther.array.blockSize
 
-        val countCoroutinesForNParallelization = countOfCoroutinesByData(t * m, n, DotUtils.MIN_DATA_PER_LAUNCH)
-        val countCoroutinesForMParallelization = countOfCoroutinesByData(rdBlockSize * n * t, rdBlocksInRow, DotUtils.MIN_DATA_PER_LAUNCH)
+        val countCoroutinesForNParallelization = countCoroutinesByData(t * m, n, DotUtils.MIN_DATA_PER_LAUNCH)
+        val countCoroutinesForMParallelization = countCoroutinesByData(rdBlockSize * n * t, rdBlocksInRow, DotUtils.MIN_DATA_PER_LAUNCH)
 
         return when {
             countCoroutinesForNParallelization > 1 -> dotParallelN(actualThis, actualOther, destination)
