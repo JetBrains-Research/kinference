@@ -8,6 +8,9 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.dot.DotUtils
+import io.kinference.ndarray.extensions.dot.dotParallelM
+import io.kinference.ndarray.extensions.dot.dotParallelN
 import io.kinference.ndarray.extensions.softmax.softmax
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
@@ -486,48 +489,20 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         val t = actualThis.shape[1]
         val m = actualOther.shape[1]
 
-
-        val lBlocksInRow = actualThis.blocksInRow
         val rdBlocksInRow = actualOther.blocksInRow
 
-        val leftBlocks = actualThis.array.blocks
-        val rightBlocks = actualOther.array.blocks
-        val destBlocks = destination.array.blocks
-        val lBlockSize = actualThis.array.blockSize
+        val rdBlockSize = actualOther.array.blockSize
 
-        val nRowFlop = t * m
+        val countCoroutinesForNParallelization = countCoroutinesByData(t * m, n, DotUtils.MIN_DATA_PER_LAUNCH)
+        val countCoroutinesForMParallelization = countCoroutinesByData(rdBlockSize * n * t, rdBlocksInRow, DotUtils.MIN_DATA_PER_LAUNCH)
 
-        // Constant 261120 was precomputed on M1 Max processor
-        // With this constant two launches work faster than single thread without launches
-        // TODO: (cupertank) Remove constants
-        parallelizeByRows(nRowFlop, n, 261120) { nStart, nEnd ->
-            for (i in nStart until nEnd) {
-                val leftBlockOffset = i * lBlocksInRow
-                val destBlockOffset = i * rdBlocksInRow
-                val rightBlockIterator = rightBlocks.iterator()
-
-                for (lCol in 0 until lBlocksInRow) {
-                    val leftBlock = leftBlocks[leftBlockOffset + lCol]
-
-                    for (k in 0 until lBlockSize) {
-                        val temp = leftBlock[k]
-
-                        for (rdCol in 0 until rdBlocksInRow) {
-                            val destBlock = destBlocks[destBlockOffset + rdCol]
-                            val rightBlock = rightBlockIterator.next()
-
-                            for (j in destBlock.indices) {
-                                destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()
-                            }
-                        }
-                    }
-                }
-            }
+        return when {
+            countCoroutinesForNParallelization > 1 -> dotParallelN(actualThis, actualOther, destination)
+            countCoroutinesForMParallelization > 1 -> dotParallelM(actualThis, actualOther, destination)
+            // Fallback without parallelization
+            else -> dotParallelN(actualThis, actualOther, destination)
         }
-
-        return destination
     }
-
 
 
     override suspend fun dot(other: NumberNDArray): MutablePrimitiveNDArray {

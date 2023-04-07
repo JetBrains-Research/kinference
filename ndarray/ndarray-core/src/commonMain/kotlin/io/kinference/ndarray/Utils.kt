@@ -138,3 +138,14 @@ suspend fun parallelizeByBlocks(blockSize: Int,
 }
 
 suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, noinline body: (rowStart: Int, rowEnd: Int) -> Unit) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+
+internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
+    val batchSize = run {
+        var batchSize = 1
+        while (batchSize < countRows && batchSize * rowSize < minDataPerLaunch) {
+            batchSize++
+        }
+        batchSize
+    }
+    return if (countRows % batchSize == 0) countRows / batchSize else countRows / batchSize + 1
+}
