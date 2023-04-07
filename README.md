@@ -104,7 +104,7 @@ Array adapter for the [kmath](https://github.com/SciProgCentre/kmath) library th
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adater-kmath-{backend_name}", "0.2.13")
+    api("io.kinference", "adapter-kmath-{backend_name}", "0.2.13")
 }
 ```
 
@@ -114,7 +114,7 @@ Array adapter for the [multik](https://github.com/Kotlin/multik) library that wo
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adater-multik-{backend_name}", "0.2.13")
+    api("io.kinference", "adapter-multik-{backend_name}", "0.2.13")
 }
 ```
 
