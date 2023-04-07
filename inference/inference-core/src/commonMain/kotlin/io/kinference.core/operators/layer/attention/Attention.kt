@@ -22,7 +22,7 @@ import kotlin.math.sqrt
 sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private suspend fun attentionScore(
-            scores: NDArrayCore, values: NDArrayCore, batchSize: Int, seqLen: Int,
+            scores: NDArrayCore, batchSize: Int, seqLen: Int,
             numHeads: Int, hiddenSize: Int, present: NDArrayCore
         ): Pair<NDArrayCore, NDArrayCore> {
             val headSize = hiddenSize / numHeads
@@ -109,12 +109,12 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val pastSeqLen = past?.shape?.get(3) ?: 0
             val present = makePresent(past, k, v, batchSize, seqLen, numHeads, hiddenSize)
 
-            val scores = normalizedScores(unidir, q, k, mask, batchSize, seqLen, pastSeqLen, headSize, numHeads, present)
-            return attentionScore(scores, v, batchSize, seqLen, numHeads, hiddenSize, present)
+            val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, numHeads, present)
+            return attentionScore(scores, batchSize, seqLen, numHeads, hiddenSize, present)
         }
 
         private suspend fun normalizedScores(
-            unidir: Boolean, queries: NDArrayCore, keys: NDArrayCore, maskIndices: IntNDArray?, batchSize: Int,
+            unidir: Boolean, queries: NDArrayCore, maskIndices: IntNDArray?, batchSize: Int,
             seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, present: NDArrayCore
         ): NumberNDArrayCore {
             val allSeqLen = present.shape[3]
