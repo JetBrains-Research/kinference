@@ -24,7 +24,6 @@ sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, A
     }
 }
 
-@ExperimentalTime
 class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Dropout(name, INFO, attributes, inputs, outputs) {
     companion object {
@@ -66,6 +65,10 @@ class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val data = inputs[0]!!.data
+
+        if (outputs.size == 1)
+            return listOf(data.asTensor("output"))
+
         val mask = BooleanNDArray(data.shape) { true }
         return listOf(data.asTensor("output"), mask.asTensor("mask"))
     }
