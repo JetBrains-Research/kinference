@@ -13,28 +13,62 @@ import kotlin.math.pow
 
 fun PrimitiveNDArray.lrn(alpha: Float, beta: Float, bias: Float, size: Int) : PrimitiveNDArray {
     val result = PrimitiveNDArray(shape)
-    val resultPointer = PrimitivePointer(result.array)
+    var resultIndex = 0
 
     val shift = calculateInnerShapeSize(shape)
-    val cur = PrimitivePointer(array)
-    var curChannel = 0
-    var curInnerIndex = 0
+    var curIndex = 0
 
-    while (cur.isValid()) {
-        val lowerBound = maxOf(0, curChannel - (size - 1) / 2)
-        val upperBound = minOf(shape[1] - 1, curChannel + ((size - 1) divCeil 2))
+    val halfSize = (size - 1) / 2
+    val halfSizeCeil = (size - 1) divCeil 2
 
-        var squareSum = 0.toPrimitive()
-        for (i in lowerBound..upperBound)
-            squareSum += array[cur.linearIndex + (i - curChannel) * shift] * array[cur.linearIndex + (i - curChannel) * shift]
+    repeat (shape[0]) {
+        repeat(shift) {
+            var lowerBound = 0
+            var upperBound = minOf(shape[1] - 1, halfSizeCeil)
+            var squareSum = 0.toPrimitive()
 
-        resultPointer.setAndIncrement(cur.getAndIncrement() / (bias.toPrimitive() + (alpha.toPrimitive() / size.toPrimitive() * squareSum)).pow(beta.toPrimitive()))
+            val startCurIndex = curIndex
+            for (channel in lowerBound..upperBound) {
+                val value = array[startCurIndex + channel * shift]
+                squareSum += value * value
+            }
 
-        curInnerIndex++
-        if (curInnerIndex == shift) {
-            curInnerIndex = 0
-            curChannel++
+            result.array[resultIndex] = array[curIndex] / (bias.toPrimitive() + (alpha.toPrimitive() / size.toPrimitive() * squareSum)).pow(beta.toPrimitive())
+
+            for (channel in 1 until shape[1]) {
+                resultIndex += shift
+                curIndex += shift
+
+                val newLowerBound = channel - halfSize
+                val newUpperBound = minOf(shape[1] - 1, channel + halfSizeCeil)
+
+                if (newLowerBound > lowerBound) {
+                    val value = array[startCurIndex + lowerBound * shift]
+                    squareSum -= value * value
+                    lowerBound = newLowerBound
+                }
+
+                if (newUpperBound > upperBound) {
+                    val value = array[startCurIndex + newUpperBound * shift]
+                    squareSum += value * value
+                    upperBound = newUpperBound
+                }
+
+                result.array[resultIndex] = array[curIndex] / (bias.toPrimitive() + (alpha.toPrimitive() / size.toPrimitive() * squareSum)).pow(beta.toPrimitive())
+            }
+
+            resultIndex -= (shape[1] - 1) * shift
+            curIndex -= (shape[1] - 1) * shift
+
+            curIndex++
+            resultIndex++
         }
+
+        curIndex -= shift
+        resultIndex -= shift
+
+        curIndex += shape[1] * shift
+        resultIndex += shape[1] * shift
     }
 
     return result

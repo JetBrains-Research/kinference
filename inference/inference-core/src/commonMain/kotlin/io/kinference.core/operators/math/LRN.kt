@@ -28,7 +28,6 @@ sealed class LRN(name: String, info: OperatorInfo, attributes: Map<String, Attri
     }
 }
 
-@ExperimentalTime
 class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     LRN(name, INFO, attributes, inputs, outputs) {
     companion object {
