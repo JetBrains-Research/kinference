@@ -5,15 +5,13 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.BooleanNDArray
+import io.kinference.ndarray.arrays.DoubleNDArray
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.extensions.lrn
-import io.kinference.ndarray.extensions.utils.calculateInnerShapeSize
 import io.kinference.operator.*
+import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.protobuf.toIntArray
-import kotlin.time.ExperimentalTime
 
 sealed class LRN(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -65,8 +63,11 @@ class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val x = inputs[0]!!.data
 
-        x as FloatNDArray
-        val y = x.lrn(alpha, beta, bias, size)
+        val y = when (x.type) {
+            DataType.FLOAT -> (x as FloatNDArray).lrn(alpha, beta, bias, size)
+            DataType.DOUBLE -> (x as DoubleNDArray).lrn(alpha, beta, bias, size)
+            else -> { throw IllegalArgumentException("Data type ${x.type} is not supported.") }
+        }
 
         return listOf(y.asTensor("y"))
     }
