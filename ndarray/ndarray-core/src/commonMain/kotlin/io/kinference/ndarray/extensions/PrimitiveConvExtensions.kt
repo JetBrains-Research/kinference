@@ -11,7 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-suspend fun PrimitiveNDArray.conv2(
+suspend fun PrimitiveNDArray.conv(
     w: PrimitiveNDArray,
     b: PrimitiveNDArray?,
     pads: IntArray,
@@ -19,7 +19,7 @@ suspend fun PrimitiveNDArray.conv2(
     dilations: IntArray,
     groups: Int
 ): PrimitiveNDArray {
-    val inputShape = shape.slice(2..shape.lastIndex).toIntArray()
+    val inputShape = IntArray(shape.size - 2) { shape[it + 2] }
     val xShapeWithPads = getShapeWithPads(this.shape, pads)
     val wShapeWithDilations = getShapeWithDilations(w.shape, dilations)
 
@@ -27,14 +27,14 @@ suspend fun PrimitiveNDArray.conv2(
         when (it) {
             0 -> this.shape[0]
             1 -> w.shape[0]
-            else -> (xShapeWithPads[it] - wShapeWithDilations[it] + 1) divCeil strides[it - 2]
+            else -> ((xShapeWithPads[it] - wShapeWithDilations[it]) divCeil strides[it - 2]) + 1
         }
     }
     val result = MutablePrimitiveNDArray(resultShape)
-    val outputShape = resultShape.slice(2..resultShape.lastIndex).toIntArray()
+    val outputShape = IntArray(resultShape.size - 2) { resultShape[it + 2] }
 
-    val kernel = w.shape.slice(2..shape.lastIndex).toIntArray()
-    val xOffset = shape[1] / groups * calculateInnerShapeSize(shape)
+    val kernel = IntArray(w.shape.size - 2) { w.shape[it + 2] }
+    val xOffset = shape[1] / groups * inputShape.shapeSize()
     val yOffset = result.shape.shapeSize() / result.shape[0] / groups
     val wOffset = w.shape.shapeSize() / groups
     val kernelDim = shape[1] / groups * kernel.shapeSize()

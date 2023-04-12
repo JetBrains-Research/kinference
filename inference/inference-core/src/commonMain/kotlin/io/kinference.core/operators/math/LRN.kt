@@ -66,7 +66,7 @@ class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<
         val y = when (x.type) {
             DataType.FLOAT -> (x as FloatNDArray).lrn(alpha, beta, bias, size)
             DataType.DOUBLE -> (x as DoubleNDArray).lrn(alpha, beta, bias, size)
-            else -> { throw IllegalArgumentException("Data type ${x.type} is not supported.") }
+            else -> error("Data type ${x.type} is not supported.")
         }
 
         return listOf(y.asTensor("y"))

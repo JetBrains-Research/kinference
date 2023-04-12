@@ -86,9 +86,7 @@ class MaxPool12(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
             DataType.DOUBLE -> (x as DoubleNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices, -Double.MAX_VALUE)
             DataType.UBYTE -> (x as UByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
             DataType.BYTE -> (x as ByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
-            else -> {
-                throw IllegalArgumentException("Data type ${x.type} is not supported.")
-            }
+            else -> error("Data type ${x.type} is not supported.")
         }
 
         if (outputs.size == 1)

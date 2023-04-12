@@ -6,14 +6,14 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.arrays.DoubleNDArray
+import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.extensions.conv
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.toIntArray
-import kotlin.time.ExperimentalTime
 
 sealed class Conv(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -66,19 +66,16 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val x = inputs[0]!!.data
         val w = inputs[1]!!.data
-        var b: NDArrayCore? = null
-
-        if (inputs.size == 3)
-            b = inputs[2]!!.data
+        val b = inputs.getOrNull(2)?.data
 
         val parsedStrides = parseStrides(strides, x.shape.size)
         val parsedPads = parsePads(autoPad, pads, x.shape, w.shape, parsedStrides) // bug with dilations
         val parsedDilations = parseDilations(dilations, w.shape.size)
 
         val y = when (x.type) {
-            DataType.FLOAT -> (x as FloatNDArray).conv2(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
-            DataType.DOUBLE -> (x as DoubleNDArray).conv2(w as DoubleNDArray, b as DoubleNDArray?, parsedPads, parsedStrides, parsedDilations, group)
-            else -> { throw IllegalArgumentException("Data type ${x.type} is not supported.") }
+            DataType.FLOAT -> (x as FloatNDArray).conv(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
+            DataType.DOUBLE -> (x as DoubleNDArray).conv(w as DoubleNDArray, b as DoubleNDArray?, parsedPads, parsedStrides, parsedDilations, group)
+            else -> error("Data type ${x.type} is not supported.")
         }
 
         return listOf(y.asTensor("Y"))
