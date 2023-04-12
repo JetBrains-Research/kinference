@@ -10,8 +10,7 @@ import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.*
 
 fun primitiveIm2Col(
-    im: PrimitiveNDArray,
-    imShift: Int,
+    im: PrimitivePointer,
     imageShape: IntArray,
     outputShape: IntArray,
     channelsCol: Int,
@@ -20,49 +19,50 @@ fun primitiveIm2Col(
     dilation: IntArray,
     pad: IntArray,
     rank: Int,
-    col: PrimitiveNDArray
+    col: PrimitiveTiledArray,
+    padValue: PrimitiveType = 0.toPrimitive()
 ) {
-    val kernelSize = kernelShape.reduce { size, el -> size * el }
+    val kernelSize = kernelShape.shapeSize()
     val dOffset = IntArray(rank)
     val dIter = IntArray(rank)
 
-    for (i in 0 until channelsCol) {
-        var offset = i
-        for (j in rank - 1 downTo 0) {
-            if (j < rank - 1) {
-                offset /= kernelShape[j + 1]
+    for (cCol in 0 until channelsCol) {
+        var offset = cCol
+        for (dI in rank - 1 downTo 0) {
+            if (dI < rank - 1) {
+                offset /= kernelShape[dI + 1]
             }
-            dOffset[j] = offset % kernelShape[j]
+            dOffset[dI] = offset % kernelShape[dI]
         }
 
         var hasNextOutput: Boolean
         do {
-            var indexCol = i
-            var indexIm = i / kernelSize
+            var indexCol = cCol
+            var indexIm = cCol / kernelSize
             var isPadding = false
 
-            for (j in 0 until rank) {
-                val d = dIter[j]
-                val dIm = d * stride[j] - pad[j] + dOffset[j] * dilation[j]
-                if (dIm < 0 || dIm >= imageShape[j])
+            for (dI in 0 until rank) {
+                val d = dIter[dI]
+                val dIm = d * stride[dI] - pad[dI] + dOffset[dI] * dilation[dI]
+                if (dIm < 0 || dIm >= imageShape[dI])
                     isPadding = true
 
-                indexCol *= outputShape[j]
+                indexCol *= outputShape[dI]
                 indexCol += d
 
-                indexIm *= imageShape[j]
+                indexIm *= imageShape[dI]
                 indexIm += dIm
             }
 
             if (isPadding)
-                col.array[indexCol] = 0.toPrimitive()
+                col[indexCol] = padValue
             else
-                col.array[indexCol] = im.array[indexIm + imShift]
+                col[indexCol] = im.array[indexIm + im.linearIndex]
 
             hasNextOutput = false
             for (j in rank - 1 downTo 0) {
-                val dMax = outputShape[j]
-                if (dIter[j] < dMax) {
+                val dMax = outputShape[j] - 1
+                if (dIter[j] >= dMax) {
                     dIter[j] = 0
                 } else {
                     ++dIter[j]

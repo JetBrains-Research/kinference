@@ -37,8 +37,7 @@ suspend fun PrimitiveNDArray.conv2(
     val xOffset = shape[1] / groups * calculateInnerShapeSize(shape)
     val yOffset = result.shape.shapeSize() / result.shape[0] / groups
     val wOffset = w.shape.shapeSize() / groups
-    val kernelDim = shape[1] / groups * calculateInnerShapeSize(w.shape)
-    val colSize = kernelDim * calculateInnerShapeSize(w.shape)
+    val kernelDim = shape[1] / groups * kernel.shapeSize()
     val col = PrimitiveNDArray(outputShape.shapeSize() * kernelDim)
 
     val xPointer = array.pointer()
@@ -49,23 +48,38 @@ suspend fun PrimitiveNDArray.conv2(
         for (groupId in 0 until groups) {
             val prevLiX = xPointer.linearIndex
             xPointer.linearIndex += xOffset * groupId
-            primitiveIm2Col(
-                xPointer,
-                shape[1] / groups,
-                inputShape[0],
-                inputShape[1],
-                kernel[0],
-                kernel[1],
-                dilations[0],
-                dilations[1],
-                pads[0],
-                pads[1],
-                pads[2],
-                pads[3],
-                strides[0],
-                strides[1],
-                PrimitivePointer(col.array)
-            )
+            if (kernel.size == 2) {
+                primitiveIm2Col(
+                    xPointer,
+                    shape[1] / groups,
+                    inputShape[0],
+                    inputShape[1],
+                    kernel[0],
+                    kernel[1],
+                    dilations[0],
+                    dilations[1],
+                    pads[0],
+                    pads[1],
+                    pads[2],
+                    pads[3],
+                    strides[0],
+                    strides[1],
+                    PrimitivePointer(col.array)
+                )
+            } else {
+                primitiveIm2Col(
+                    xPointer,
+                    inputShape,
+                    outputShape,
+                    kernelDim,
+                    kernel,
+                    strides,
+                    dilations,
+                    pads,
+                    kernel.size,
+                    col.array
+                )
+            }
             xPointer.linearIndex = prevLiX
 
             val prevLiW = wPointer.linearIndex
@@ -87,6 +101,17 @@ suspend fun PrimitiveNDArray.conv2(
         if (imageId != shape[0] - 1) {
             xPointer.linearIndex += xOffset * groups
             yPointer.linearIndex += yOffset * groups
+        }
+    }
+
+    if (b != null) {
+        val resultPointer = PrimitivePointer(result.array)
+        repeat(shape[0]) {
+            val bPointer = PrimitivePointer(b.array)
+            repeat(w.shape[0]) {
+                resultPointer.map(outputShape.shapeSize()) { it + bPointer.get() }
+                bPointer.increment()
+            }
         }
     }
 

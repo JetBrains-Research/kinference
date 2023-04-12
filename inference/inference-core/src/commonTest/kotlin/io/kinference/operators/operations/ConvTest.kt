@@ -56,9 +56,4 @@ class ConvTest {
     fun test_conv_with_5_dims() = TestRunner.runTest {
         KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_conv_with_5_dims"))
     }
-
-//    @Test
-//    fun test_conv_big() = TestRunner.runTest {
-//        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_conv_big"))
-//    }
 }

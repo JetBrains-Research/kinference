@@ -124,7 +124,7 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
         if (block.size <= offset + end) {
             this.blockIncrement()
         } else {
-            this.indexInBlock += offset + end
+            this.indexInBlock += end
         }
 
         for (index in offset until min(block.size, offset + end)) {
