@@ -28,7 +28,6 @@ sealed class Conv(name: String, info: OperatorInfo, attributes: Map<String, Attr
     }
 }
 
-@ExperimentalTime
 class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Conv(name, INFO, attributes, inputs, outputs) {
     companion object {
