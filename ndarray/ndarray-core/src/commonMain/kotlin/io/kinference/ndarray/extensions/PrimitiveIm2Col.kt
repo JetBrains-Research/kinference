@@ -19,7 +19,7 @@ fun primitiveIm2Col(
     dilation: IntArray,
     pad: IntArray,
     rank: Int,
-    col: PrimitiveTiledArray,
+    col: PrimitiveArray,
     padValue: PrimitiveType = 0.toPrimitive()
 ) {
     val kernelSize = kernelShape.shapeSize()
@@ -74,6 +74,11 @@ fun primitiveIm2Col(
     }
 }
 
+@SpecifyPrimitives(include = [])
+fun isInPadding(actual: Int, bound: Int) : Boolean {
+    return actual < 0 || actual >= bound
+}
+
 fun primitiveIm2Col(
     im: PrimitivePointer,
     channels: Int,
@@ -89,68 +94,7 @@ fun primitiveIm2Col(
     padRight: Int,
     strideHeight: Int,
     strideWidth: Int,
-    col: PrimitivePointer,
-    padValue: PrimitiveType = 0.toPrimitive()
-) {
-    val outputHeight = (height + padBottom + padTop - (dilationHeight * (kernelHeight - 1) + 1)) / strideHeight + 1
-    val outputWidth = (width + padLeft + padRight - (dilationWidth * (kernelWidth - 1) + 1)) / strideWidth + 1
-
-    val channelSize = height * width
-    repeat(channels) {
-        for (kernelRow in 0 until kernelHeight) {
-            for (kernelCol in 0 until kernelWidth) {
-                var inputRow = -padTop + kernelRow * dilationHeight
-                repeat(outputHeight) {
-                    if (isInPadding(inputRow, height)) {
-                        for (i in 0 until outputWidth) {
-                            col.setAndIncrement(padValue)
-                        }
-                    } else {
-                        var inputCol = -padLeft + kernelCol * dilationWidth
-                        val imOffset = inputRow * width + inputCol
-                        for (i in 0 until outputWidth) {  // TODO(CASES)
-                            if (!isInPadding(inputCol, width)) {
-                                val localIm = PrimitivePointer(im)
-                                localIm.linearIndex += imOffset + i * strideWidth
-                                col.setAndIncrement(localIm.get())
-                            } else {
-                                col.setAndIncrement(padValue)
-                            }
-
-                            inputCol += strideWidth
-                        }
-                    }
-                    inputRow += strideHeight
-                }
-            }
-        }
-        if (it != channels - 1)
-            im.linearIndex += channelSize
-    }
-}
-
-@SpecifyPrimitives(include = [])
-fun isInPadding(actual: Int, bound: Int) : Boolean {
-    return actual < 0 || actual >= bound
-}
-
-
-fun primitiveIm2ColArray(
-    im: PrimitivePointer,
-    channels: Int,
-    height: Int,
-    width: Int,
-    kernelHeight: Int,
-    kernelWidth: Int,
-    dilationHeight: Int,
-    dilationWidth: Int,
-    padTop: Int,
-    padLeft: Int,
-    padBottom: Int,
-    padRight: Int,
-    strideHeight: Int,
-    strideWidth: Int,
-    col: FloatArray,
+    col: PrimitiveArray,
     padValue: PrimitiveType = 0.toPrimitive()
 ) {
     val outputHeight = (height + padBottom + padTop - (dilationHeight * (kernelHeight - 1) + 1)) / strideHeight + 1
@@ -166,7 +110,7 @@ fun primitiveIm2ColArray(
                 repeat(outputHeight) {
                     if (isInPadding(inputRow, height)) {
                         for (i in 0 until outputWidth) {
-                            col[colInd] = padValue.toFloat()
+                            col[colInd] = padValue
                             colInd++
                         }
                     } else {
@@ -176,10 +120,10 @@ fun primitiveIm2ColArray(
                             if (!isInPadding(inputCol, width)) {
                                 val localIm = PrimitivePointer(im)
                                 localIm.linearIndex += imOffset + i * strideWidth
-                                col[colInd] = localIm.get().toFloat()
+                                col[colInd] = localIm.get()
                                 colInd++
                             } else {
-                                col[colInd] = padValue.toFloat()
+                                col[colInd] = padValue
                                 colInd++
                             }
 
