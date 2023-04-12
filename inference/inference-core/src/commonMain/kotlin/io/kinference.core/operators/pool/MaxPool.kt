@@ -7,14 +7,12 @@ import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.utils.divCeil
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.toIntArray
-import kotlin.time.ExperimentalTime
 
 sealed class MaxPool(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -29,7 +27,6 @@ sealed class MaxPool(name: String, info: OperatorInfo, attributes: Map<String, A
     }
 }
 
-@ExperimentalTime
 class MaxPool12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     MaxPool(name, INFO, attributes, inputs, outputs) {
     companion object {
@@ -82,14 +79,21 @@ class MaxPool12(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         val parsedStrides = parseStrides(strides, x.shape.size)
         val parsedPads = parsePads(autoPad, pads, x.shape, IntArray(kernelShape.size + 2) { i -> if (i < 2) 1 else kernelShape[i - 2] }, parsedStrides)
         val parsedDilations = parseDilations(dilations, x.shape.size)
+        val computeIndices = if (outputs.size == 1) -1 else storageOrder
 
-        val y = when (x.type) {
-            DataType.FLOAT -> (x as FloatNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode)
+        val results = when (x.type) {
+            DataType.FLOAT -> (x as FloatNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices, -Float.MAX_VALUE)
+            DataType.DOUBLE -> (x as DoubleNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices, -Double.MAX_VALUE)
+            DataType.UBYTE -> (x as UByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
+            DataType.BYTE -> (x as ByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
             else -> {
                 throw IllegalArgumentException("Data type ${x.type} is not supported.")
             }
         }
 
-        return listOf(y.asTensor("Y"))
+        if (outputs.size == 1)
+            return listOf(results[0].asTensor("Y"))
+
+        return listOf(results[0].asTensor("Y"), results[1].asTensor("Indices"))
     }
 }
