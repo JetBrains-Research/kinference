@@ -9,6 +9,8 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveArray
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 suspend fun PrimitiveNDArray.conv(
     w: PrimitiveNDArray,
@@ -40,7 +42,6 @@ suspend fun PrimitiveNDArray.conv(
     val col = PrimitiveArray(outputShape.shapeSize() * kernelDim)
 
     val xPointer = array.pointer()
-    val wPointer = w.array.pointer()
     var yPointer = 0
 
     for (imageId in 0 until shape[0]) {
@@ -81,11 +82,10 @@ suspend fun PrimitiveNDArray.conv(
             }
             xPointer.linearIndex = prevLiX
 
-            val prevLiW = wPointer.linearIndex
             val prevLiY = yPointer
-            wPointer.linearIndex += wOffset * groupId
+            val wPointer = w.array.pointer(wOffset * groupId)
             yPointer += yOffset * groupId
-            gemmConv(
+            gemmConvCoroutines(
                 wPointer,
                 col,
                 yPointer,
@@ -94,7 +94,6 @@ suspend fun PrimitiveNDArray.conv(
                 outputShape.shapeSize(),
                 kernelDim
             )
-            wPointer.linearIndex = prevLiW
             yPointer = prevLiY
         }
 
@@ -126,35 +125,69 @@ fun IntArray.shapeSize(): Int {
     return this.reduce { size, i -> size * i }
 }
 
-suspend fun gemmConv(
+suspend fun gemmConvCoroutines(
     aPointer: PrimitivePointer,
-    bPointer: PrimitiveArray,
+    b: PrimitiveArray,
+    cPointer: Int,
+    c: PrimitiveArray,
+    m: Int,
+    n: Int,
+    k: Int
+) {
+    val corNum = 8
+    val step = m / corNum
+
+    if (step < 8) {
+        gemmConv(aPointer, b, cPointer, c, m, n, k)
+        return
+    }
+
+    coroutineScope {
+        repeat(corNum) {
+            launch {
+                val start = it * step
+                var end = it * step + step
+                if (it == corNum - 1)
+                    end = m
+
+                val aLocalPointer = PrimitivePointer(aPointer)
+                aLocalPointer.linearIndex += start * k
+                val cLocalPointer = cPointer + start * n
+
+                gemmConv(aLocalPointer, b, cLocalPointer, c, m, n, k, start, end)
+            }
+        }
+    }
+}
+
+fun gemmConv(
+    aPointer: PrimitivePointer,
+    b: PrimitiveArray,
     cPointer: Int,
     c: PrimitiveArray,
     m: Int,
     n: Int,
     k: Int,
-    ldb: Int = n,
-    lda: Int = k,
-    ldc: Int = n
+    start: Int = 0,
+    end: Int = m
 ) {
-    val aLocalPointer = PrimitivePointer(aPointer)
     var bLocalPointer = 0
     var cLocalPointer = cPointer
 
-    for (t in 0 until m) {
-        val cIdx = t * ldc
-        aLocalPointer.linearIndex = aPointer.linearIndex + t * lda
+    for (t in start until end) {
+        bLocalPointer = 0
 
-        for (i in 0 until k) {
-            val temp = aLocalPointer.getAndIncrement()
-
-            bLocalPointer = i * ldb
-            cLocalPointer = cPointer + cIdx
+        repeat(k) {
+            val temp = aPointer.getAndIncrement()
 
             repeat(n) {
-                c[cLocalPointer + it] += bPointer[bLocalPointer + it] * temp
+                c[cLocalPointer + it] += b[bLocalPointer + it] * temp
             }
+
+            bLocalPointer += n
         }
+
+        cLocalPointer += n
     }
 }
+
