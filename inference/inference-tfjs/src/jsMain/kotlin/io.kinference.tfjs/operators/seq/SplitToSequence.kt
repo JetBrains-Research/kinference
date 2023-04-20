@@ -30,7 +30,7 @@ sealed class SplitToSequence(
             attributes: Map<String, Attribute<Any>>,
             inputs: List<String>,
             outputs: List<String>
-        ): SplitToSequenceVer11 {
+        ): SplitToSequence {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in SplitToSequenceVer11.VERSION.asRange() -> SplitToSequenceVer11(name, attributes, inputs, outputs)
                 else -> error("Unsupported version of SplitToSequence operator: $version")

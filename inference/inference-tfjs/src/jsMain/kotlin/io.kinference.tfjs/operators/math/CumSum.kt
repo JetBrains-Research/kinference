@@ -26,7 +26,7 @@ sealed class CumSum(
             version: Int?,
             attributes: Map<String, Attribute<Any>>,
             inputs: List<String>, outputs: List<String>
-        ): CumSumVer11 {
+        ): CumSum {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in CumSumVer11.VERSION.asRange() -> CumSumVer11(name, attributes, inputs, outputs)
                 else -> error("Unsupported version of CumSum operator: $version")

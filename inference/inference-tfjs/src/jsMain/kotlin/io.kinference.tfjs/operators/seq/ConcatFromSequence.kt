@@ -22,15 +22,27 @@ sealed class ConcatFromSequence(
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ConcatFromSequenceVer11.VERSION.asRange() -> ConcatFromSequenceVer11(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of ConcatFromSequence operator: $version")
+        operator fun invoke(
+            name: String,
+            version: Int?,
+            attributes: Map<String, Attribute<Any>>,
+            inputs: List<String>, outputs: List<String>
+        ): ConcatFromSequence {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ConcatFromSequenceVer11.VERSION.asRange() -> ConcatFromSequenceVer11(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ConcatFromSequence operator: $version")
+            }
         }
     }
 }
 
 
-class ConcatFromSequenceVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ConcatFromSequence(name, INFO, attributes, inputs, outputs) {
+class ConcatFromSequenceVer11(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : ConcatFromSequence(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
