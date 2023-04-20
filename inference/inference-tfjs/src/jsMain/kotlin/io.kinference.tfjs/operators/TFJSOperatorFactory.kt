@@ -42,6 +42,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
+        "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)
