@@ -52,6 +52,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Erf" -> Erf(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
         "FastGelu" -> FastGelu(name, version, attributes, inputs, outputs)
+        "Flatten" -> Flatten(name, version, attributes, inputs, outputs)
         "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
         "Gather" -> Gather(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
