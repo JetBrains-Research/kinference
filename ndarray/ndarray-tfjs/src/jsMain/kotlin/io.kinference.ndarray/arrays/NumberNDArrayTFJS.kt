@@ -156,7 +156,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         other: NumberNDArray,
         transposeLeft: Boolean = false,
         transposeRight: Boolean = false,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
     ): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.matMul(other.tfjsArray, transposeLeft, transposeRight)
