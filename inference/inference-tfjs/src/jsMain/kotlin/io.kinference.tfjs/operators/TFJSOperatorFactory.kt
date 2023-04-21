@@ -9,6 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.activations.Erf
 import io.kinference.tfjs.operators.activations.Softmax
 import io.kinference.tfjs.operators.flow.Loop
 import io.kinference.tfjs.operators.flow.Where
@@ -48,6 +49,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Equal" -> Equal(name, version, attributes, inputs, outputs)
+        "Erf" -> Erf(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
         "FastGelu" -> FastGelu(name, version, attributes, inputs, outputs)
         "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
