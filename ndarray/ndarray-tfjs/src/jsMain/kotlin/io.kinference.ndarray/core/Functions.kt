@@ -49,6 +49,8 @@ internal external val softmax: (logits: ArrayTFJS, dim: Int) -> ArrayTFJS
 
 internal external val logSoftmax: (logits: ArrayTFJS, axis: Int) -> ArrayTFJS
 
+internal external val log: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val erf: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val min: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean?) -> ArrayTFJS

@@ -61,6 +61,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)
         "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
+        "Log" -> Log(name, version, attributes, inputs, outputs)
         "Loop" -> Loop(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
