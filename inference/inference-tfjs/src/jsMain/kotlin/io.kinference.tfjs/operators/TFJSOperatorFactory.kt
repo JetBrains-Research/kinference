@@ -10,8 +10,7 @@ import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.operators.activations.*
-import io.kinference.tfjs.operators.flow.Loop
-import io.kinference.tfjs.operators.flow.Where
+import io.kinference.tfjs.operators.flow.*
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
@@ -58,6 +57,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
+        "If" -> If(name, version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)
         "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
