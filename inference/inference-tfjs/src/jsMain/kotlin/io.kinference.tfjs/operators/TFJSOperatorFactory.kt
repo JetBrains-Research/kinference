@@ -57,6 +57,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Gather" -> Gather(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
+        "Greater" -> Greater(name, version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)
         "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
         "Less" -> Less(name, version, attributes, inputs, outputs)
