@@ -21,7 +21,7 @@ sealed class LRN(name: String, info: OperatorInfo, attributes: Map<String, Attri
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in LRN13.VERSION.asRange() -> LRN13(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Greater operator: $version")
+                else -> error("Unsupported version of LRN operator: $version")
             }
     }
 }

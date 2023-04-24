@@ -9,7 +9,6 @@ import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import kotlin.time.ExperimentalTime
 
 sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -19,7 +18,7 @@ sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, A
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in Dropout13.VERSION.asRange() -> Dropout13(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Greater operator: $version")
+                else -> error("Unsupported version of Dropout operator: $version")
             }
     }
 }

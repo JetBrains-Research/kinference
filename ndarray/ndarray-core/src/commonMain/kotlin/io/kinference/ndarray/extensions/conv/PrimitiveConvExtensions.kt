@@ -1,12 +1,12 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
 
-package io.kinference.ndarray.extensions
+package io.kinference.ndarray.extensions.conv
 
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.extensions.utils.*
+import io.kinference.ndarray.extensions.utils.inferShapeSize
 import io.kinference.primitives.annotations.GeneratePrimitives
-import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveArray
 import kotlinx.coroutines.coroutineScope
@@ -15,71 +15,38 @@ import kotlinx.coroutines.launch
 suspend fun PrimitiveNDArray.conv(
     w: PrimitiveNDArray,
     b: PrimitiveNDArray?,
-    pads: IntArray,
-    strides: IntArray,
-    dilations: IntArray,
-    groups: Int
+    inputInfo: InputInfo
 ): PrimitiveNDArray {
-    val inputShape = IntArray(shape.size - 2) { shape[it + 2] }
-    val xShapeWithPads = getShapeWithPads(this.shape, pads)
-    val wShapeWithDilations = getShapeWithDilations(w.shape, dilations)
-
-    val resultShape = IntArray(this.shape.size) {
+    val resultBatchSize = shape[0]
+    val resultChannels = w.shape[0]
+    val resultShape = IntArray(rank) {
         when (it) {
-            0 -> this.shape[0]
-            1 -> w.shape[0]
-            else -> ((xShapeWithPads[it] - wShapeWithDilations[it]) divCeil strides[it - 2]) + 1
+            0 -> resultBatchSize
+            1 -> resultChannels
+            else -> inputInfo.outputShape[it - 2]
         }
     }
-    val result = PrimitiveArray(resultShape.shapeSize())
-    val outputShape = IntArray(resultShape.size - 2) { resultShape[it + 2] }
+    val resultSize = resultShape.inferShapeSize()
+    val result = PrimitiveArray(resultSize)
 
-    val kernel = IntArray(w.shape.size - 2) { w.shape[it + 2] }
-    val xOffset = shape[1] / groups * inputShape.shapeSize()
-    val yOffset = resultShape.shapeSize() / resultShape[0] / groups
-    val wOffset = w.shape.shapeSize() / groups
-    val kernelDim = shape[1] / groups * kernel.shapeSize()
-    val col = PrimitiveArray(outputShape.shapeSize() * kernelDim)
+    val xOffset = shape[1] / inputInfo.groups * inputInfo.inputSize
+    val yOffset = resultSize / resultBatchSize / inputInfo.groups
+    val wOffset = (inputInfo.kernelSize * w.shape[0] * w.shape[1]) / inputInfo.groups
+
+    val kernelDim = shape[1] / inputInfo.groups * inputInfo.kernelSize
+    val col = PrimitiveArray(inputInfo.outputSize * kernelDim)
 
     val xPointer = array.pointer()
     var yPointer = 0
 
     for (imageId in 0 until shape[0]) {
-        for (groupId in 0 until groups) {
+        for (groupId in 0 until inputInfo.groups) {
             val prevLiX = xPointer.linearIndex
             xPointer.linearIndex += xOffset * groupId
-            if (kernel.size == 2) {
-                primitiveIm2Col(
-                    xPointer,
-                    shape[1] / groups,
-                    inputShape[0],
-                    inputShape[1],
-                    kernel[0],
-                    kernel[1],
-                    dilations[0],
-                    dilations[1],
-                    pads[0],
-                    pads[1],
-                    pads[2],
-                    pads[3],
-                    strides[0],
-                    strides[1],
-                    col
-                )
-            } else {
-                primitiveIm2Col(
-                    xPointer,
-                    inputShape,
-                    outputShape,
-                    kernelDim,
-                    kernel,
-                    strides,
-                    dilations,
-                    pads,
-                    kernel.size,
-                    col
-                )
-            }
+            if (inputInfo.rank == 2)
+                primitiveIm2ColRank2(xPointer, inputInfo, shape[1] / inputInfo.groups, col)
+            else
+                primitiveIm2Col(xPointer, inputInfo, kernelDim, col)
             xPointer.linearIndex = prevLiX
 
             val prevLiY = yPointer
@@ -90,25 +57,27 @@ suspend fun PrimitiveNDArray.conv(
                 col,
                 yPointer,
                 result,
-                w.shape[0] / groups,
-                outputShape.shapeSize(),
+                w.shape[0] / inputInfo.groups,
+                inputInfo.outputSize,
                 kernelDim
             )
             yPointer = prevLiY
         }
 
         if (imageId != shape[0] - 1) {
-            xPointer.linearIndex += xOffset * groups
-            yPointer += yOffset * groups
+            xPointer.linearIndex += xOffset * inputInfo.groups
+            yPointer += yOffset * inputInfo.groups
         }
     }
 
     if (b != null) {
         var resultPointer = 0
-        repeat(shape[0]) {
+
+        repeat(resultBatchSize) {
             val bPointer = PrimitivePointer(b.array)
-            repeat(w.shape[0]) {
-                repeat(outputShape.shapeSize()) {
+
+            repeat(resultChannels) {
+                repeat(inputInfo.outputSize) {
                     result[resultPointer] += bPointer.get()
                     resultPointer++
                 }
@@ -117,12 +86,7 @@ suspend fun PrimitiveNDArray.conv(
         }
     }
 
-    return PrimitiveNDArray(resultShape) { i -> result[i].toPrimitive() }
-}
-
-@SpecifyPrimitives(include = [])
-fun IntArray.shapeSize(): Int {
-    return this.reduce { size, i -> size * i }
+    return PrimitiveNDArray(resultShape) { i -> result[i] }
 }
 
 suspend fun gemmConvCoroutines(

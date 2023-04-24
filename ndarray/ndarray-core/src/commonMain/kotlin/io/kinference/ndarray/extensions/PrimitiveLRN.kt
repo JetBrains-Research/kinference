@@ -3,13 +3,12 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.PrimitiveNDArray
-import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.extensions.utils.calculateInnerShapeSize
 import io.kinference.ndarray.extensions.utils.divCeil
 import io.kinference.primitives.annotations.GeneratePrimitives
-import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.pow
+
 
 fun PrimitiveNDArray.lrn(alpha: Float, beta: Float, bias: Float, size: Int) : PrimitiveNDArray {
     val result = PrimitiveNDArray(shape)
@@ -72,9 +71,4 @@ fun PrimitiveNDArray.lrn(alpha: Float, beta: Float, bias: Float, size: Int) : Pr
     }
 
     return result
-}
-
-@SpecifyPrimitives(include = [])
-private fun PrimitiveType.pow(toPrimitive: PrimitiveType): PrimitiveType {
-    return 0.toPrimitive()
 }

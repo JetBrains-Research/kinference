@@ -3,11 +3,11 @@ package io.kinference.core.operators.pool
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.pool.maxPool
+import io.kinference.ndarray.extensions.utils.InputInfo
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -22,7 +22,7 @@ sealed class MaxPool(name: String, info: OperatorInfo, attributes: Map<String, A
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in MaxPool12.VERSION.asRange() -> MaxPool12(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Greater operator: $version")
+                else -> error("Unsupported version of MaxPool operator: $version")
             }
     }
 }
@@ -76,16 +76,24 @@ class MaxPool12(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val x = inputs[0]!!.data
 
-        val parsedStrides = parseStrides(strides, x.shape.size)
-        val parsedPads = parsePads(autoPad, pads, x.shape, IntArray(kernelShape.size + 2) { i -> if (i < 2) 1 else kernelShape[i - 2] }, parsedStrides)
-        val parsedDilations = parseDilations(dilations, x.shape.size)
+        val inputInfo = InputInfo.Builder()
+            .specifyDimensions(kernelShape.size)
+            .specifyInputShape(x.shape.sliceArray(2 .. x.shape.lastIndex))
+            .specifyKernelShape(kernelShape)
+            .specifyStrides(strides)
+            .specifyDilations(dilations)
+            .specifyPads(pads)
+            .specifyAutoPad(autoPad)
+            .specifyCeilMode(ceilMode)
+            .build()
+
         val computeIndices = if (outputs.size == 1) -1 else storageOrder
 
         val results = when (x.type) {
-            DataType.FLOAT -> (x as FloatNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices, -Float.MAX_VALUE)
-            DataType.DOUBLE -> (x as DoubleNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices, -Double.MAX_VALUE)
-            DataType.UBYTE -> (x as UByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
-            DataType.BYTE -> (x as ByteNDArray).maxPool(kernelShape, parsedPads, parsedStrides, parsedDilations, ceilMode, computeIndices)
+            DataType.FLOAT -> (x as FloatNDArray).maxPool(inputInfo, computeIndices, -Float.MAX_VALUE)
+            DataType.DOUBLE -> (x as DoubleNDArray).maxPool(inputInfo, computeIndices, -Double.MAX_VALUE)
+            DataType.UBYTE -> (x as UByteNDArray).maxPool(inputInfo, computeIndices)
+            DataType.BYTE -> (x as ByteNDArray).maxPool(inputInfo, computeIndices)
             else -> error("Data type ${x.type} is not supported.")
         }
 

@@ -3,12 +3,12 @@ package io.kinference.core.operators.convolution
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.utils.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.DoubleNDArray
 import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.extensions.conv
+import io.kinference.ndarray.extensions.conv.conv
+import io.kinference.ndarray.extensions.utils.InputInfo
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -23,7 +23,7 @@ sealed class Conv(name: String, info: OperatorInfo, attributes: Map<String, Attr
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in ConvVer11.VERSION.asRange() -> ConvVer11(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Greater operator: $version")
+                else -> error("Unsupported version of Conv operator: $version")
             }
     }
 }
@@ -35,7 +35,7 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("auto_pad", setOf(AttributeProto.AttributeType.STRING), false, "NOTSET"),
-            AttributeInfo("dilations", setOf(AttributeProto.AttributeType.INTS), false),  // Dilation not supported for AutoPadType::SAME_UPPER or AutoPadType::SAME_LOWER.
+            AttributeInfo("dilations", setOf(AttributeProto.AttributeType.INTS), false),
             AttributeInfo("group", setOf(AttributeProto.AttributeType.INT), false, 1),
             AttributeInfo("kernel_shape", setOf(AttributeProto.AttributeType.INTS), false),
             AttributeInfo("pads", setOf(AttributeProto.AttributeType.INTS), false),
@@ -68,13 +68,20 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         val w = inputs[1]!!.data
         val b = inputs.getOrNull(2)?.data
 
-        val parsedStrides = parseStrides(strides, x.shape.size)
-        val parsedPads = parsePads(autoPad, pads, x.shape, w.shape, parsedStrides) // bug with dilations
-        val parsedDilations = parseDilations(dilations, w.shape.size)
+        val inputInfo = InputInfo.Builder()
+            .specifyDimensions(x.rank - 2)
+            .specifyInputShape(x.shape.sliceArray(2 .. x.shape.lastIndex))
+            .specifyKernelShape(w.shape.sliceArray(2 .. w.shape.lastIndex))
+            .specifyStrides(strides)
+            .specifyGroups(group)
+            .specifyDilations(dilations)
+            .specifyPads(pads)
+            .specifyAutoPad(autoPad)
+            .build()
 
         val y = when (x.type) {
-            DataType.FLOAT -> (x as FloatNDArray).conv(w as FloatNDArray, b as FloatNDArray?, parsedPads, parsedStrides, parsedDilations, group)
-            DataType.DOUBLE -> (x as DoubleNDArray).conv(w as DoubleNDArray, b as DoubleNDArray?, parsedPads, parsedStrides, parsedDilations, group)
+            DataType.FLOAT -> (x as FloatNDArray).conv(w as FloatNDArray, b as FloatNDArray?, inputInfo)
+            DataType.DOUBLE -> (x as DoubleNDArray).conv(w as DoubleNDArray, b as DoubleNDArray?, inputInfo)
             else -> error("Data type ${x.type} is not supported.")
         }
 
