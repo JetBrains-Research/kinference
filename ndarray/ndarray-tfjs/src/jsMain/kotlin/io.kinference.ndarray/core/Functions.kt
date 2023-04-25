@@ -103,6 +103,8 @@ internal external val clone: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val logicalNot: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val logicalOr: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
 internal external val pad: (x: ArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> ArrayTFJS
 
 internal external val gatherND: (x: ArrayTFJS, indices: ArrayTFJS) -> ArrayTFJS

@@ -67,6 +67,10 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     fun not(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.not())
     }
+
+    fun or(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
+        return BooleanNDArrayTFJS(tfjsArray.or(other.tfjsArray))
+    }
 }
 
 class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsArray), MutableNDArray {

@@ -69,6 +69,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
+        "Or" -> Or(name, version, attributes, inputs, outputs)
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
