@@ -9,6 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.activations.Acosh
 import io.kinference.tfjs.operators.activations.Softmax
 import io.kinference.tfjs.operators.flow.Loop
 import io.kinference.tfjs.operators.flow.Where
@@ -31,6 +32,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
 
     @Suppress("UNCHECKED_CAST")
     override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
+        "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "Add" -> Add(name, version, attributes, inputs, outputs)
