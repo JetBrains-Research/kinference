@@ -223,6 +223,8 @@ fun ArrayTFJS.gatherNd(indices: ArrayTFJS) = gatherND(this, indices)
 
 fun ArrayTFJS.leakyRelu(alpha: Number) = leakyRelu(this, alpha)
 
+fun ArrayTFJS.relu() = relu(this)
+
 fun ArrayTFJS.cumsum(axis: Int = 0, exclusive: Boolean = false, reverse: Boolean = false) =
     cumsum(this, axis, exclusive, reverse)
 

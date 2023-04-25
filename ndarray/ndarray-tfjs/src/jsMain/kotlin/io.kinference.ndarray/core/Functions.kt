@@ -111,6 +111,8 @@ internal external val gatherND: (x: ArrayTFJS, indices: ArrayTFJS) -> ArrayTFJS
 
 internal external val leakyRelu: (x: ArrayTFJS, alpha: Number) -> ArrayTFJS
 
+internal external val relu: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val cumsum: (x: ArrayTFJS, axis: Int, exclusive: Boolean, reverse: Boolean) -> ArrayTFJS
 
 internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<ArrayTFJS, ArrayTFJS>
