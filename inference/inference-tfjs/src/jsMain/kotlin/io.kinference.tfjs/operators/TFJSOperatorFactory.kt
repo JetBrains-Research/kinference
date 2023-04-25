@@ -81,6 +81,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)
         "Slice" -> Slice(name, version, attributes, inputs, outputs)
         "Softmax" -> Softmax(name, version, attributes, inputs, outputs)
+        "Split" -> Split(name, version, attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
