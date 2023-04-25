@@ -201,6 +201,8 @@ fun ArrayTFJS.greaterEqual(other: ArrayTFJS) = greaterEqual(this, other)
 
 fun ArrayTFJS.equal(other: ArrayTFJS) = equal(this, other)
 
+fun ArrayTFJS.notEqual(other: ArrayTFJS) = notEqual(this, other)
+
 fun ArrayTFJS.where(condition: ArrayTFJS, other: ArrayTFJS) = where(condition, this, other)
 
 fun ArrayTFJS.clone() = clone(this)

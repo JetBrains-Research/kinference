@@ -53,7 +53,11 @@ fun <T : NDArrayTFJS> T.reverse() = reverse(tfjsArray, null).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.equal(other: NDArrayTFJS) = BooleanNDArrayTFJS(equal(tfjsArray, other.tfjsArray))
 
+fun <T : NDArrayTFJS> T.notEqual(other: NDArrayTFJS) = BooleanNDArrayTFJS(notEqual(tfjsArray, other.tfjsArray))
+
 fun <T : NDArrayTFJS> T.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition.tfjsArray, tfjsArray, other.tfjsArray).toNDArray()
+
+fun <T : NDArrayTFJS> T.where() = whereAsync(tfjsArray).then { it.toNDArray() }
 
 fun <T : NDArrayTFJS> T.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(tfjsArray, paddings, constantValue).toNDArray() as T
 

@@ -49,10 +49,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override suspend fun nonZero(): NumberNDArrayTFJS {
-        error("Operation nonZero() is not supported yet")
-    }
-
     override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArrayTFJS {
         require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
         require(constantValue == null || constantValue is NDArrayTFJS)

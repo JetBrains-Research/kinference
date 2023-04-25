@@ -67,6 +67,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
+        "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)

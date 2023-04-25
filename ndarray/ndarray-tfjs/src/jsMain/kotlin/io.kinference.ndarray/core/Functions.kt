@@ -4,6 +4,7 @@ package io.kinference.ndarray.core
 
 import io.kinference.ndarray.arrays.ArrayTFJS
 import kotlin.js.Json
+import kotlin.js.Promise
 
 internal external val add: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
@@ -92,7 +93,11 @@ internal external val greaterEqual: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val equal: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
+internal external val notEqual: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
 internal external val where: (condition: ArrayTFJS, a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
+internal external val whereAsync: (condition: ArrayTFJS) -> Promise<ArrayTFJS>
 
 internal external val clone: (x: ArrayTFJS) -> ArrayTFJS
 
