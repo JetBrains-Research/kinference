@@ -73,6 +73,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
+        "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)
