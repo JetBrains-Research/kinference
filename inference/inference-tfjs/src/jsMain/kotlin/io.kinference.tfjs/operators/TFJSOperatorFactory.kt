@@ -84,6 +84,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Split" -> Split(name, version, attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
+        "Sub" -> Sub(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
