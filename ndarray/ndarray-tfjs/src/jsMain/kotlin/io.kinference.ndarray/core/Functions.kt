@@ -5,6 +5,8 @@ package io.kinference.ndarray.core
 import io.kinference.ndarray.arrays.ArrayTFJS
 import kotlin.js.Json
 
+internal external val abs: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val add: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val broadcastTo: (x: ArrayTFJS, shape: Array<Int>) -> ArrayTFJS

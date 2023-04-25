@@ -4,8 +4,8 @@ import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.arrays.*
 import kotlin.jvm.JvmName
 
-@JvmName("absExtension")
-fun NumberNDArrayCore.abs() = abs(this)
+//@JvmName("absExtension")
+//fun NumberNDArrayCore.abs() = abs(this)
 
 fun abs(x: NumberNDArrayCore): NumberNDArrayCore {
     return when (x) {

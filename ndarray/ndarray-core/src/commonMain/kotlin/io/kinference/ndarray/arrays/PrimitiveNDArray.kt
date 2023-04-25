@@ -8,6 +8,7 @@ import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.abs.abs
 import io.kinference.ndarray.extensions.dot.DotUtils
 import io.kinference.ndarray.extensions.dot.dotParallelM
 import io.kinference.ndarray.extensions.dot.dotParallelN
@@ -100,6 +101,8 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         }
         return destination
     }
+
+    override suspend fun abs(): NumberNDArray = abs(this)
 
     override suspend fun concat(others: List<NDArray>, axis: Int): MutablePrimitiveNDArray {
         val actualAxis = indexAxis(axis)
