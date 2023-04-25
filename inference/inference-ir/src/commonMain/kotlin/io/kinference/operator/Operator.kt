@@ -209,6 +209,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED
         val PRIMITIVE_DATA_TYPES = setOf(
             TensorProto.DataType.BOOL,
+            TensorProto.DataType.BFLOAT16,
             TensorProto.DataType.FLOAT16,
             TensorProto.DataType.FLOAT,
             TensorProto.DataType.DOUBLE,
