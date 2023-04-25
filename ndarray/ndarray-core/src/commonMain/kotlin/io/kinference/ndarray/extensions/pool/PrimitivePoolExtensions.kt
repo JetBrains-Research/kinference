@@ -23,26 +23,25 @@ fun PrimitiveNDArray.maxPool(
     val indices = if (storageOrder == -1) MutableLongNDArray.scalar(0) else MutableLongNDArray(resultShape)
 
     val kernelDim = shape[1] / inputInfo.groups * inputInfo.kernelSize
-    val col = PrimitiveArray(inputInfo.outputSize * kernelDim)
-    val indCol = IntArray(inputInfo.outputSize * kernelDim)
+    val col = PrimitiveNDArray(inputInfo.outputSize * kernelDim)
+    val indCol = IntNDArray(inputInfo.outputSize * kernelDim)
 
     val resultPointer = result.array.pointer()
     val indicesPointer = indices.array.pointer()
 
     repeat(shape[0]) {
-        val xPointer = array.pointer(it * inputInfo.inputSize * shape[1])
-        primitiveIm2Col(xPointer, inputInfo, kernelDim, col, minValue, storageOrder, indCol)
+        primitiveIm2Col(this.view(it), inputInfo, kernelDim, col, minValue, storageOrder, indCol)
 
         repeat(shape[1]) { channel ->
             val start = channel * inputInfo.outputSize * inputInfo.kernelSize
             repeat(inputInfo.outputSize) { j ->
                 resultPointer.set(minValue)
                 repeat(inputInfo.kernelSize) { i ->
-                    val cur = col[start + i * inputInfo.outputSize + j]
+                    val cur = col.array[start + i * inputInfo.outputSize + j]
                     if (resultPointer.get() < cur) {
                         resultPointer.set(cur)
                         if (storageOrder != -1)
-                            indicesPointer.set((indCol[start + i * inputInfo.outputSize + j]).toLong())
+                            indicesPointer.set((indCol.array[start + i * inputInfo.outputSize + j] + it * shape[1] * inputInfo.inputSize).toLong())
                     }
                 }
                 resultPointer.increment()

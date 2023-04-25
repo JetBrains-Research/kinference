@@ -32,3 +32,7 @@ internal fun computeColumnMajorIndex(
     }
     return indexImR1
 }
+
+internal fun isInPadding(actual: Int, bound: Int) : Boolean {
+    return actual < 0 || actual >= bound
+}

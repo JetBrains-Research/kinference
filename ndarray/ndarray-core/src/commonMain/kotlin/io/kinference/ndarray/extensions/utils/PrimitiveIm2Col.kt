@@ -2,19 +2,21 @@
 
 package io.kinference.ndarray.extensions.utils
 
+import io.kinference.ndarray.arrays.IntNDArray
+import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.*
 
 fun primitiveIm2Col(
-    im: PrimitivePointer,
+    im: PrimitiveNDArray,
     inputInfo: InputInfo,
     channelsCol: Int,
-    col: PrimitiveArray,
+    col: PrimitiveNDArray,
     padValue: PrimitiveType = 0.toPrimitive(),
     storageOrder: Int = -1,
-    indCol: IntArray = IntArray(0)
+    indCol: IntNDArray = IntNDArray.scalar(-1)
 ) {
     val dOffset = IntArray(inputInfo.rank)
     val dIter = IntArray(inputInfo.rank)
@@ -47,20 +49,20 @@ fun primitiveIm2Col(
                 indexIm += dIm
             }
 
-            var indexImR = cCol / inputInfo.kernelSize
+            var indexImR = 0
             if (storageOrder == 1)
-                indexImR = computeColumnMajorIndex(inputInfo, dIter, dOffset, indexImR)
+                indexImR = computeColumnMajorIndex(inputInfo, dIter, dOffset, cCol / inputInfo.kernelSize)
 
             if (isPadding) {
-                col[indexCol] = padValue
+                col.array[indexCol] = padValue
                 if (storageOrder != -1)
-                    indCol[indexCol] = -1
+                    indCol.array[indexCol] = -1
             }
             else {
-                col[indexCol] = im.array[indexIm + im.linearIndex]
+                col.array[indexCol] = im.array[indexIm]
                 when (storageOrder) {
-                    0 -> indCol[indexCol] = indexIm + im.linearIndex
-                    1 -> indCol[indexCol] = indexImR + im.linearIndex
+                    0 -> indCol.array[indexCol] = indexIm
+                    1 -> indCol.array[indexCol] = indexImR
                 }
             }
 
@@ -79,19 +81,15 @@ fun primitiveIm2Col(
     }
 }
 
-@SpecifyPrimitives(include = [])
-fun isInPadding(actual: Int, bound: Int) : Boolean {
-    return actual < 0 || actual >= bound
-}
-
 fun primitiveIm2ColRank2(
-    im: PrimitivePointer,
+    im: PrimitiveNDArray,
     inputInfo: InputInfo,
     channels: Int,
-    col: PrimitiveArray,
+    col: PrimitiveNDArray,
     padValue: PrimitiveType = 0.toPrimitive()
 ) {
     var colInd = 0
+    var linearIndex = 0
 
     val channelSize = inputInfo.inputSize
     repeat(channels) {
@@ -101,7 +99,7 @@ fun primitiveIm2ColRank2(
                 repeat(inputInfo.outputShape[0]) {
                     if (isInPadding(inputRow, inputInfo.inputShape[0])) {
                         for (i in 0 until inputInfo.outputShape[1]) {
-                            col[colInd] = padValue
+                            col.array[colInd] = padValue
                             colInd++
                         }
                     } else {
@@ -109,12 +107,12 @@ fun primitiveIm2ColRank2(
                         val imOffset = inputRow * inputInfo.inputShape[1] + inputCol
                         for (i in 0 until inputInfo.outputShape[1]) {  // TODO(CASES)
                             if (!isInPadding(inputCol, inputInfo.inputShape[1])) {
-                                val localIm = PrimitivePointer(im)
+                                val localIm = im.array.pointer(linearIndex)
                                 localIm.linearIndex += imOffset + i * inputInfo.strides[1]
-                                col[colInd] = localIm.get()
+                                col.array[colInd] = localIm.get()
                                 colInd++
                             } else {
-                                col[colInd] = padValue
+                                col.array[colInd] = padValue
                                 colInd++
                             }
 
@@ -126,6 +124,6 @@ fun primitiveIm2ColRank2(
             }
         }
         if (it != channels - 1)
-            im.linearIndex += channelSize
+            linearIndex += channelSize
     }
 }
