@@ -117,6 +117,8 @@ fun NumberNDArrayTFJS.greaterEqual(other: NumberNDArrayTFJS) = BooleanNDArrayTFJ
 
 fun NumberNDArrayTFJS.log() = NumberNDArrayTFJS(tfjsArray.log())
 
+fun NumberNDArrayTFJS.sigmoid() = NumberNDArrayTFJS(sigmoid(tfjsArray))
+
 fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
     val out = moments(this.tfjsArray, arrayOf(axis), keepDims)
     return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)

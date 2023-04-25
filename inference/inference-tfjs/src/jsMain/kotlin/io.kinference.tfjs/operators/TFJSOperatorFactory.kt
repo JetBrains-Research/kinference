@@ -77,6 +77,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
+        "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)
         "Slice" -> Slice(name, version, attributes, inputs, outputs)
         "Softmax" -> Softmax(name, version, attributes, inputs, outputs)

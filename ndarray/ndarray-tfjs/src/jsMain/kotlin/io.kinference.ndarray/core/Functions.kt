@@ -116,3 +116,5 @@ internal external val relu: (x: ArrayTFJS) -> ArrayTFJS
 internal external val cumsum: (x: ArrayTFJS, axis: Int, exclusive: Boolean, reverse: Boolean) -> ArrayTFJS
 
 internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<ArrayTFJS, ArrayTFJS>
+
+internal external val sigmoid: (x: ArrayTFJS) -> ArrayTFJS
