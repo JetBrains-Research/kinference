@@ -4,6 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.acos
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.*
 

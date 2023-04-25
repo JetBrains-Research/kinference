@@ -12,10 +12,11 @@ sealed class Acos(name: String, info: OperatorInfo, attributes: Map<String, Attr
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in AcosVer7.VERSION.asRange() -> AcosVer7(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Acos operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in AcosVer7.VERSION.asRange() -> AcosVer7(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Acos operator: $version")
+            }
     }
 }
 
