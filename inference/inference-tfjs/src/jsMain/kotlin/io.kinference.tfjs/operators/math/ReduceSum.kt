@@ -65,12 +65,12 @@ class ReduceSumVer1(
         private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axes: LongArray by attribute()
+    private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
     private val keepDims: Boolean by attribute("keepdims") { it: Long -> it == 1L }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
-        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
+        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes
         return listOf(input.reduceSum(actualAxes, keepDims).asTensor("reduced"))
     }
 }

@@ -36,20 +36,7 @@ class SubVer7(
     outputs: List<String>
 ) : Sub(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = setOf(
-            TensorProto.DataType.UINT8,
-            TensorProto.DataType.UINT16,
-            TensorProto.DataType.UINT32,
-            TensorProto.DataType.UINT64,
-            TensorProto.DataType.INT8,
-            TensorProto.DataType.INT16,
-            TensorProto.DataType.INT32,
-            TensorProto.DataType.INT64,
-            TensorProto.DataType.FLOAT16,
-            TensorProto.DataType.FLOAT,
-            TensorProto.DataType.DOUBLE,
-            TensorProto.DataType.BFLOAT16
-        )
+        private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "A", optional = false),

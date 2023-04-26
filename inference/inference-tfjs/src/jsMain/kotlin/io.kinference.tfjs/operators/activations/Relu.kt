@@ -17,7 +17,7 @@ sealed class Relu(
     outputs: List<String>
 ) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6, untilVersion = 14)
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 6)
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Relu {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {

@@ -15,7 +15,7 @@ sealed class Identity(
     outputs: List<String>
 ) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 14)
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Identity {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
