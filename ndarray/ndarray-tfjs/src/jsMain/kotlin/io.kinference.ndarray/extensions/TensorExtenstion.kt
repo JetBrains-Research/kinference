@@ -127,6 +127,8 @@ fun ArrayTFJS.softmax(axis: Int = -1) = softmax(this, axis)
 
 fun ArrayTFJS.logSoftmax(axis: Int = -1) = io.kinference.ndarray.core.logSoftmax(this , axis)
 
+fun ArrayTFJS.log() = log(this)
+
 fun ArrayTFJS.erf() = erf(this)
 
 fun ArrayTFJS.flatten() = reshape(this, arrayOf(this.size))
@@ -199,6 +201,8 @@ fun ArrayTFJS.greaterEqual(other: ArrayTFJS) = greaterEqual(this, other)
 
 fun ArrayTFJS.equal(other: ArrayTFJS) = equal(this, other)
 
+fun ArrayTFJS.notEqual(other: ArrayTFJS) = notEqual(this, other)
+
 fun ArrayTFJS.where(condition: ArrayTFJS, other: ArrayTFJS) = where(condition, this, other)
 
 fun ArrayTFJS.clone() = clone(this)
@@ -208,11 +212,18 @@ fun ArrayTFJS.not(): ArrayTFJS {
     return logicalNot(this)
 }
 
+fun ArrayTFJS.or(other: ArrayTFJS): ArrayTFJS {
+    require(this.dtype == "bool" && other.dtype == "bool") { "Only boolean arrays are accepted" }
+    return logicalOr(this, other)
+}
+
 fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
 fun ArrayTFJS.gatherNd(indices: ArrayTFJS) = gatherND(this, indices)
 
 fun ArrayTFJS.leakyRelu(alpha: Number) = leakyRelu(this, alpha)
+
+fun ArrayTFJS.relu() = relu(this)
 
 fun ArrayTFJS.cumsum(axis: Int = 0, exclusive: Boolean = false, reverse: Boolean = false) =
     cumsum(this, axis, exclusive, reverse)

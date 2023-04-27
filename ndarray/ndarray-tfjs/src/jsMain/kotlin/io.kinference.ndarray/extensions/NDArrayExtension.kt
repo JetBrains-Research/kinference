@@ -53,7 +53,11 @@ fun <T : NDArrayTFJS> T.reverse() = reverse(tfjsArray, null).toNDArray() as T
 
 fun <T : NDArrayTFJS> T.equal(other: NDArrayTFJS) = BooleanNDArrayTFJS(equal(tfjsArray, other.tfjsArray))
 
+fun <T : NDArrayTFJS> T.notEqual(other: NDArrayTFJS) = BooleanNDArrayTFJS(notEqual(tfjsArray, other.tfjsArray))
+
 fun <T : NDArrayTFJS> T.where(condition: NDArrayTFJS, other: NDArrayTFJS) = where(condition.tfjsArray, tfjsArray, other.tfjsArray).toNDArray()
+
+fun <T : NDArrayTFJS> T.where() = whereAsync(tfjsArray).then { it.toNDArray() }
 
 fun <T : NDArrayTFJS> T.pad(paddings: Array<Array<Int>>, constantValue: Number) = pad(tfjsArray, paddings, constantValue).toNDArray() as T
 
@@ -103,11 +107,19 @@ fun NumberNDArrayTFJS.tanh() = NumberNDArrayTFJS(tanh(tfjsArray))
 
 fun NumberNDArrayTFJS.acosh() = NumberNDArrayTFJS(tfjsArray.acosh())
 
+fun NumberNDArrayTFJS.relu() = NumberNDArrayTFJS(tfjsArray.relu())
+
+fun relu(value: NumberNDArrayTFJS) = value.relu()
+
 fun NumberNDArrayTFJS.less(other: NumberNDArrayTFJS) = BooleanNDArrayTFJS(less(tfjsArray, other.tfjsArray))
 
 fun NumberNDArrayTFJS.greater(other: NumberNDArrayTFJS) = BooleanNDArrayTFJS(greater(tfjsArray, other.tfjsArray))
 
 fun NumberNDArrayTFJS.greaterEqual(other: NumberNDArrayTFJS) = BooleanNDArrayTFJS(greaterEqual(tfjsArray, other.tfjsArray))
+
+fun NumberNDArrayTFJS.log() = NumberNDArrayTFJS(tfjsArray.log())
+
+fun NumberNDArrayTFJS.sigmoid() = NumberNDArrayTFJS(sigmoid(tfjsArray))
 
 fun NumberNDArrayTFJS.acos(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.acos())
 

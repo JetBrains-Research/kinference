@@ -7,16 +7,19 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.BOOLEAN
 
     override fun get(index: IntArray): Boolean {
-        return tfjsArray.bufferSync().get(*index) as Boolean
+        val value = tfjsArray.bufferSync().get(*index)
+        return value != 0
     }
 
     override fun getLinear(index: Int): Boolean {
-        return tfjsArray.dataSync()[index] as Boolean
+        val value = tfjsArray.dataSync()[index]
+        return value != 0
     }
 
     override fun singleValue(): Boolean {
         require(this.linearSize == 1) { "NDArrays has more than 1 value" }
-        return tfjsArray.dataSync()[0] as Boolean
+        val value = tfjsArray.dataSync()[0]
+        return value != 0
     }
 
     override suspend fun reshape(strides: Strides): BooleanNDArrayTFJS {
@@ -46,10 +49,6 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return MutableBooleanNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override suspend fun nonZero(): NumberNDArrayTFJS {
-        error("Operation nonZero() is not supported yet")
-    }
-
     override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArrayTFJS {
         require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
         require(constantValue == null || constantValue is NDArrayTFJS)
@@ -67,6 +66,10 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
 
     fun not(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.not())
+    }
+
+    fun or(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
+        return BooleanNDArrayTFJS(tfjsArray.or(other.tfjsArray))
     }
 }
 

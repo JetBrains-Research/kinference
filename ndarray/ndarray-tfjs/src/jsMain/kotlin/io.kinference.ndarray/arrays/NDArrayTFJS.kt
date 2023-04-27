@@ -4,6 +4,7 @@ import io.kinference.ndarray.activateDefaultBackend
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.resolveTFJSDataType
 import io.kinference.primitives.types.DataType
+import kotlinx.coroutines.await
 
 abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
     init {
@@ -52,6 +53,14 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
 
     override suspend fun reshape(shape: IntArray): NDArrayTFJS {
         return tfjsArray.reshape(shape.toTypedArray()).toNDArray()
+    }
+
+    override suspend fun nonZero(): NumberNDArrayTFJS {
+        return tidyNDArray {
+            val zero = zero(tfjsArray.dtype)
+            val zeroFlags = this.notEqual(zero)
+            zeroFlags.where().await().transpose() as NumberNDArrayTFJS
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

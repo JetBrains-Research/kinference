@@ -4,6 +4,7 @@ package io.kinference.ndarray.core
 
 import io.kinference.ndarray.arrays.ArrayTFJS
 import kotlin.js.Json
+import kotlin.js.Promise
 
 internal external val abs: (x: ArrayTFJS) -> ArrayTFJS
 
@@ -55,6 +56,8 @@ internal external val softmax: (logits: ArrayTFJS, dim: Int) -> ArrayTFJS
 
 internal external val logSoftmax: (logits: ArrayTFJS, axis: Int) -> ArrayTFJS
 
+internal external val log: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val erf: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val min: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean?) -> ArrayTFJS
@@ -96,11 +99,17 @@ internal external val greaterEqual: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val equal: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
+internal external val notEqual: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
 internal external val where: (condition: ArrayTFJS, a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
+internal external val whereAsync: (condition: ArrayTFJS) -> Promise<ArrayTFJS>
 
 internal external val clone: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val logicalNot: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val logicalOr: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val pad: (x: ArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> ArrayTFJS
 
@@ -108,6 +117,10 @@ internal external val gatherND: (x: ArrayTFJS, indices: ArrayTFJS) -> ArrayTFJS
 
 internal external val leakyRelu: (x: ArrayTFJS, alpha: Number) -> ArrayTFJS
 
+internal external val relu: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val cumsum: (x: ArrayTFJS, axis: Int, exclusive: Boolean, reverse: Boolean) -> ArrayTFJS
 
 internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<ArrayTFJS, ArrayTFJS>
+
+internal external val sigmoid: (x: ArrayTFJS) -> ArrayTFJS

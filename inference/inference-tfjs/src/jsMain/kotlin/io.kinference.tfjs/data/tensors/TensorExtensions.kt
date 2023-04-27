@@ -26,3 +26,9 @@ fun <T : NDArrayTFJS> Array<T>.asNamedOutputs(names: List<String>): List<TFJSTen
         this[it].asTensor(names.getOrNull(it))
     }
 }
+
+fun <T : NDArrayTFJS> List<T>.asNamedOutputs(names: List<String>): List<TFJSTensor> {
+    return List(this.size) {
+        this[it].asTensor(names.getOrNull(it))
+    }
+}

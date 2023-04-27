@@ -1,8 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {
@@ -28,10 +26,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
 
     override suspend fun expand(shape: IntArray): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
-    }
-
-    override suspend fun nonZero(): NumberNDArrayTFJS {
-        error("Operation nonZero() is not supported yet")
     }
 
     override fun toMutable(): MutableNumberNDArrayTFJS {
@@ -156,7 +150,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         other: NumberNDArray,
         transposeLeft: Boolean = false,
         transposeRight: Boolean = false,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
     ): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.matMul(other.tfjsArray, transposeLeft, transposeRight)

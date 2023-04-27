@@ -86,14 +86,15 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             val nameNotNull = name.orEmpty()
             val typedDims = dims.toTypedArray()
             return when (type) {
-                in FLOAT_TENSOR_TYPES -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32")).asTensor(nameNotNull)
-                DataType.INT32 -> NumberNDArrayTFJS(tensor(value as IntArray, typedDims, "int32")).asTensor(nameNotNull)
-                DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toTypedArray(), typedDims, "int32")).asTensor(nameNotNull)
-                DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32")).asTensor(nameNotNull)
-                DataType.INT64 -> NumberNDArrayTFJS(tensor((value as LongArray).toIntArray(), typedDims, "int32")).asTensor(nameNotNull)
-                DataType.BOOL -> BooleanNDArrayTFJS(tensor((value as BooleanArray).toTypedArray(), typedDims, "bool")).asTensor(nameNotNull)
+                in FLOAT_TENSOR_TYPES -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32"))
+                DataType.DOUBLE -> NumberNDArrayTFJS(tensor((value as DoubleArray).toTypedArray(), typedDims, "float32"))
+                DataType.INT32 -> NumberNDArrayTFJS(tensor(value as IntArray, typedDims, "int32"))
+                DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toTypedArray(), typedDims, "int32"))
+                DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32"))
+                DataType.INT64 -> NumberNDArrayTFJS(tensor((value as LongArray).toIntArray(), typedDims, "int32"))
+                DataType.BOOL -> BooleanNDArrayTFJS(tensor((value as BooleanArray).toTypedArray(), typedDims, "bool"))
                 else -> error("Unsupported type: $type")
-            }
+            }.asTensor(nameNotNull)
         }
 
         private fun parseArray(proto: TensorProto): Any {
