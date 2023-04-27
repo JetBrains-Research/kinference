@@ -219,4 +219,8 @@ fun ArrayTFJS.cumsum(axis: Int = 0, exclusive: Boolean = false, reverse: Boolean
 
 fun ArrayTFJS.topk(k: Int, sorted: Boolean = false) = topk(this, k, sorted)
 
+fun ArrayTFJS.abs() = abs(this)
+
+fun ArrayTFJS.acos() = acos(this)
+
 fun ArrayTFJS.acosh() = acosh(this)
