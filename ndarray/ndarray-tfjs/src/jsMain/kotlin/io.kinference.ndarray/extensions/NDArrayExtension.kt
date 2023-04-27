@@ -101,7 +101,7 @@ fun sqrt(value: NumberNDArrayTFJS) = value.sqrt()
 
 fun NumberNDArrayTFJS.tanh() = NumberNDArrayTFJS(tanh(tfjsArray))
 
-fun NumberNDArrayTFJS.tanh(x: NumberNDArrayTFJS) = x.tanh()
+fun NumberNDArrayTFJS.acosh() = NumberNDArrayTFJS(tfjsArray.acosh())
 
 fun NumberNDArrayTFJS.less(other: NumberNDArrayTFJS) = BooleanNDArrayTFJS(less(tfjsArray, other.tfjsArray))
 

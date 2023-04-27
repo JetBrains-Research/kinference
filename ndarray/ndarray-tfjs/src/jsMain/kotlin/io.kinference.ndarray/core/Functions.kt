@@ -9,6 +9,8 @@ internal external val abs: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val acos: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val acosh: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val add: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val broadcastTo: (x: ArrayTFJS, shape: Array<Int>) -> ArrayTFJS
