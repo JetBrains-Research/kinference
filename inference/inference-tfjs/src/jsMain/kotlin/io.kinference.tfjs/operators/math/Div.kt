@@ -6,7 +6,6 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.operator.*
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class Div(
@@ -37,7 +36,7 @@ class DivVer7(
     outputs: List<String>
 ) : Div(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES + TensorProto.DataType.BFLOAT16
+        private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
         private val INPUTS_INFO = listOf(
             IOInfo(0, TYPE_CONSTRAINTS, "A", differentiable = true, optional = false),
