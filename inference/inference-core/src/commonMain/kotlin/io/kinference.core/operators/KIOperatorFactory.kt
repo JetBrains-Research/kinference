@@ -36,6 +36,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
     @Suppress("UNCHECKED_CAST")
     override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
+        "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Add" -> Add(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "Sub" -> Sub(name, version, attributes, inputs, outputs)
