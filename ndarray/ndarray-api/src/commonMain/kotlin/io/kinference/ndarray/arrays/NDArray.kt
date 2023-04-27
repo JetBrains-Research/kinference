@@ -214,6 +214,8 @@ interface NumberNDArray : NDArray {
 
     override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
 
+    suspend fun abs(): NumberNDArray
+
     /**
      * Computes the minimum value of an array.
      */

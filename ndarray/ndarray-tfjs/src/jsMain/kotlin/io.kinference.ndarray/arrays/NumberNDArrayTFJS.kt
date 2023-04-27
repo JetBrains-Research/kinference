@@ -164,4 +164,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         val indices = tensor(axes, arrayOf(axes.size), "int32")
         return NumberNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
     }
+
+    override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
 }

@@ -105,6 +105,8 @@ fun sqrt(value: NumberNDArrayTFJS) = value.sqrt()
 
 fun NumberNDArrayTFJS.tanh() = NumberNDArrayTFJS(tanh(tfjsArray))
 
+fun NumberNDArrayTFJS.acosh() = NumberNDArrayTFJS(tfjsArray.acosh())
+
 fun NumberNDArrayTFJS.relu() = NumberNDArrayTFJS(tfjsArray.relu())
 
 fun relu(value: NumberNDArrayTFJS) = value.relu()
@@ -118,6 +120,8 @@ fun NumberNDArrayTFJS.greaterEqual(other: NumberNDArrayTFJS) = BooleanNDArrayTFJ
 fun NumberNDArrayTFJS.log() = NumberNDArrayTFJS(tfjsArray.log())
 
 fun NumberNDArrayTFJS.sigmoid() = NumberNDArrayTFJS(sigmoid(tfjsArray))
+
+fun NumberNDArrayTFJS.acos(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.acos())
 
 fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
     val out = moments(this.tfjsArray, arrayOf(axis), keepDims)
