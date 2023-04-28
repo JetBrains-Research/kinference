@@ -68,8 +68,12 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
         return BooleanNDArrayTFJS(tfjsArray.not())
     }
 
-    fun or(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
+    infix fun or(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.or(other.tfjsArray))
+    }
+
+    infix fun and(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
+        return BooleanNDArrayTFJS(tfjsArray.and(other.tfjsArray))
     }
 }
 

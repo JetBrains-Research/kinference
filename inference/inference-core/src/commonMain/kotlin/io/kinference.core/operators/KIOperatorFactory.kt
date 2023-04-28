@@ -22,7 +22,8 @@ import io.kinference.core.operators.seq.SplitToSequence
 import io.kinference.core.operators.tensor.*
 import io.kinference.graph.Graph
 import io.kinference.operator.*
-import io.kinference.protobuf.message.*
+import io.kinference.protobuf.message.GraphProto
+import io.kinference.protobuf.message.TensorProto
 
 object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
     override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
@@ -39,6 +40,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
         "Add" -> Add(name, version, attributes, inputs, outputs)
+        "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)

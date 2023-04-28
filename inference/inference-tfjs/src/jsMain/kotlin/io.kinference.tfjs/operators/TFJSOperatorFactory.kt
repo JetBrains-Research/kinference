@@ -36,6 +36,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
+        "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
