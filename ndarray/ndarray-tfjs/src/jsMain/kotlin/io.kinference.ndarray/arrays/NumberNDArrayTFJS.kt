@@ -103,7 +103,50 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
-        val result = tfjsArray.argmax(axis)
+        val actualAxis = indexAxis(axis)
+        val result = tidy {
+            val output = if (selectLastIndex) {
+                val reversedInput = tfjsArray.reverse(actualAxis)
+                val argMaxResult = reversedInput.argmax(actualAxis)
+                val axisDimension = intScalar(this.shape[actualAxis] - 1).tfjsArray
+                axisDimension - argMaxResult
+            } else {
+                tfjsArray.argmax(actualAxis)
+            }
+
+            arrayOf(
+                if (keepDims) {
+                    output.reshape(this.shape.copyOf().apply { set(actualAxis, 1) })
+                } else {
+                    output
+                }
+            )
+        }.first()
+
+        return NumberNDArrayTFJS(result)
+    }
+
+    override suspend fun argmin(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
+        val actualAxis = indexAxis(axis)
+        val result = tidy {
+            val output = if (selectLastIndex) {
+                val reversedInput = tfjsArray.reverse(actualAxis)
+                val argMaxResult = reversedInput.argmin(actualAxis)
+                val axisDimension = intScalar(this.shape[actualAxis] - 1).tfjsArray
+                axisDimension - argMaxResult
+            } else {
+                tfjsArray.argmin(actualAxis)
+            }
+
+            arrayOf(
+                if (keepDims) {
+                    output.reshape(this.shape.copyOf().apply { set(actualAxis, 1) })
+                } else {
+                    output
+                }
+            )
+        }.first()
+
         return NumberNDArrayTFJS(result)
     }
 

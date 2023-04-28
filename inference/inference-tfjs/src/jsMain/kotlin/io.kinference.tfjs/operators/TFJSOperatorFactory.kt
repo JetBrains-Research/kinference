@@ -38,6 +38,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
         "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
+        "ArgMin" -> ArgMin(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)

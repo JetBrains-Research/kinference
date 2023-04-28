@@ -3,18 +3,19 @@
 
 package io.kinference.ndarray.arrays
 
-import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.arrays.tiled.LongTiledArray
+import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.extensions.abs.abs
-import io.kinference.ndarray.extensions.dot.DotUtils
-import io.kinference.ndarray.extensions.dot.dotParallelM
-import io.kinference.ndarray.extensions.dot.dotParallelN
-import io.kinference.ndarray.extensions.dot.dotResizeParallel
+import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
+import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.softmax.softmax
-import io.kinference.primitives.annotations.*
+import io.kinference.ndarray.reversed
+import io.kinference.primitives.annotations.GenerateNameFromPrimitives
+import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName
 import kotlin.math.*
@@ -628,113 +629,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
         return c
     }
 
-    override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): IntNDArray {
-        val actualAxis = indexAxis(axis)
+    override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean) =
+        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, isMin = false)
 
-        val countIterations = computeBlockSize(toDim = actualAxis)
-        val countElements = computeBlockSize(fromDim = actualAxis + 1)
-        val countDims = shape[actualAxis]
-
-        val outputShape = if (keepDims) shape.copyOf().apply { set(actualAxis, 1) } else shape.sliceArray(shape.indices.minus(actualAxis))
-        val outputArray = MutableIntNDArray(outputShape)
-
-        val inputPointer = this.array.pointer()
-
-        if (actualAxis == shape.lastIndex || countElements == 1) {
-            val outputPointer = outputArray.array.pointer()
-            for (i in 0 until countIterations) {
-                var maxValue = inputPointer.getAndIncrement()
-                var maxIndex = 0
-
-                if (selectLastIndex) {
-                    inputPointer.forEachIndexed(countDims - 1) { index: Int, value: PrimitiveType ->
-                        if (value >= maxValue) {
-                            maxValue = value
-                            maxIndex = index + 1
-                        }
-                    }
-                } else {
-                    inputPointer.forEachIndexed(countDims - 1) { index: Int, value: PrimitiveType ->
-                        if (value > maxValue) {
-                            maxValue = value
-                            maxIndex = index + 1
-                        }
-                    }
-                }
-                outputPointer.set(maxIndex)
-                outputPointer.increment()
-            }
-
-            return outputArray
-        }
-
-        val tempMaxValues = PrimitiveTiledArray(countElements, outputArray.array.blockSize)
-
-        for (i in 0 until countIterations) {
-            var maxValuesPointer = tempMaxValues.pointer()
-
-            maxValuesPointer.accept(inputPointer, countElements) { _, src -> src }
-
-            for (j in 1 until countDims) {
-                val outputPointer = outputArray.array.pointer(i * countElements)
-                maxValuesPointer = tempMaxValues.pointer()
-
-                var end = countElements
-
-                if (inputPointer.isCompatibleWith(outputPointer) && inputPointer.isCompatibleWith(maxValuesPointer)) {
-                    while (end > 0) {
-                        val outputBlock = outputPointer.currentBlock
-                        val offset = outputPointer.indexInBlock
-                        outputPointer.blockIncrement()
-
-                        val inputBlock = inputPointer.currentBlock
-                        inputPointer.blockIncrement()
-
-                        val maxValuesBlock = maxValuesPointer.currentBlock
-                        maxValuesPointer.blockIncrement()
-
-                        if (selectLastIndex) {
-                            for (index in offset until min(outputBlock.size, offset + end)) {
-                                val value = inputBlock[index]
-                                if (value >= maxValuesBlock[index]) {
-                                    maxValuesBlock[index] = value
-                                    outputBlock[index] = j
-                                }
-                            }
-                        } else {
-                            for (index in offset until min(outputBlock.size, offset + end)) {
-                                val value = inputBlock[index]
-                                if (value > maxValuesBlock[index]) {
-                                    maxValuesBlock[index] = value
-                                    outputBlock[index] = j
-                                }
-                            }
-                        }
-
-                        end -= outputBlock.size - offset
-                    }
-                } else {
-                    while (end > 0) {
-                        val value = inputPointer.getAndIncrement()
-                        val oldMaxValue = maxValuesPointer.get()
-
-                        if (value > oldMaxValue) {
-                            maxValuesPointer.set(value)
-                            outputPointer.set(j)
-                        } else if (selectLastIndex && value == oldMaxValue) {
-                            outputPointer.set(j)
-                        }
-
-                        maxValuesPointer.increment()
-                        outputPointer.increment()
-                        end--
-                    }
-                }
-            }
-        }
-
-        return outputArray
-    }
+    override suspend fun argmin(axis: Int, keepDims: Boolean, selectLastIndex: Boolean) =
+        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, isMin = true)
 
     private fun findComparable(axis: Int, keepDims: Boolean, compare: (PrimitiveType, PrimitiveType) -> Boolean): PrimitiveNDArray {
         val actualAxis = indexAxis(axis)
