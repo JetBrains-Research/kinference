@@ -3,9 +3,9 @@
 
 package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
+import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.extensions.*
@@ -13,7 +13,6 @@ import io.kinference.ndarray.extensions.abs.abs
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.softmax.softmax
-import io.kinference.ndarray.reversed
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
