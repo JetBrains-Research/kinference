@@ -1,10 +1,12 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.arrays.pointers.*
-import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.arrays.tiled.BooleanTiledArray
+import io.kinference.ndarray.arrays.tiled.LongTiledArray
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
-import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.applyWithBroadcast
+import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
 import kotlin.math.abs
@@ -166,6 +168,37 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     suspend infix fun or(other: BooleanNDArray) = or(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
+
+    private fun andScalar(array: BooleanTiledArray, scalar: Boolean, destination: BooleanTiledArray) {
+        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
+
+        val arrayPointer = array.pointer()
+        val destPointer = destination.pointer()
+
+        arrayPointer.mapTo(destPointer, destination.size) { it and scalar }
+    }
+
+    suspend fun and(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
+        when {
+            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = this.array.blocks[0][0] and other.array.blocks[0][0]
+            this.isScalar() -> andScalar(other.array, this.array.blocks[0][0], destination.array)
+            other.isScalar() -> andScalar(this.array, other.array.blocks[0][0], destination.array)
+            else -> this.applyWithBroadcast(other, destination) { left, right, dest ->
+                left as BooleanNDArray; right as BooleanNDArray; dest as MutableBooleanNDArray
+
+                val leftPointer = left.array.pointer()
+                val rightPointer = right.array.pointer()
+                val destPointer = dest.array.pointer()
+
+                destPointer.acceptDouble(leftPointer, rightPointer, dest.array.size) { _, a, b -> a and b }
+            }
+        }
+
+        return destination
+    }
+
+    suspend infix fun and(other: BooleanNDArray) = and(other, MutableBooleanNDArray(broadcastShape(listOf(this.shape, other.shape))))
+
 
     override suspend fun concat(others: List<NDArray>, axis: Int): MutableBooleanNDArray {
         val actualAxis = indexAxis(axis)
