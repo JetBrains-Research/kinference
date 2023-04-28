@@ -111,6 +111,8 @@ internal external val logicalNot: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val logicalOr: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
+internal external val logicalAnd: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
 internal external val pad: (x: ArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> ArrayTFJS
 
 internal external val gatherND: (x: ArrayTFJS, indices: ArrayTFJS) -> ArrayTFJS
@@ -124,3 +126,4 @@ internal external val cumsum: (x: ArrayTFJS, axis: Int, exclusive: Boolean, reve
 internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<ArrayTFJS, ArrayTFJS>
 
 internal external val sigmoid: (x: ArrayTFJS) -> ArrayTFJS
+

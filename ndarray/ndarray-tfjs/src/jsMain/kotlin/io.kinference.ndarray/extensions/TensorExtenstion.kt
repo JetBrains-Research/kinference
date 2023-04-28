@@ -217,6 +217,11 @@ fun ArrayTFJS.or(other: ArrayTFJS): ArrayTFJS {
     return logicalOr(this, other)
 }
 
+fun ArrayTFJS.and(other: ArrayTFJS): ArrayTFJS {
+    require(this.dtype == "bool" && other.dtype == "bool") { "Only boolean arrays are accepted" }
+    return logicalAnd(this, other)
+}
+
 fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
 fun ArrayTFJS.gatherNd(indices: ArrayTFJS) = gatherND(this, indices)
