@@ -10,6 +10,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.extensions.abs.abs
+import io.kinference.ndarray.extensions.argMinMax.ArgMinMaxMode
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.softmax.softmax
@@ -629,10 +630,10 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
     }
 
     override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean) =
-        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, isMin = false)
+        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, mode = ArgMinMaxMode.MAX)
 
     override suspend fun argmin(axis: Int, keepDims: Boolean, selectLastIndex: Boolean) =
-        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, isMin = true)
+        argMinMaxPrimitive(this, axis, keepDims, selectLastIndex, mode = ArgMinMaxMode.MIN)
 
     private fun findComparable(axis: Int, keepDims: Boolean, compare: (PrimitiveType, PrimitiveType) -> Boolean): PrimitiveNDArray {
         val actualAxis = indexAxis(axis)

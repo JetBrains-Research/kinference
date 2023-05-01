@@ -9,8 +9,13 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
+private val lessOrEqual = { a: PrimitiveType, b: PrimitiveType -> a <= b  }
+private val less = { a: PrimitiveType, b: PrimitiveType -> a < b  }
+private val greaterOrEqual = { a: PrimitiveType, b: PrimitiveType -> a >= b  }
+private val greater = { a: PrimitiveType, b: PrimitiveType -> a > b  }
+
 @GenerateNameFromPrimitives
-internal fun argMinMaxPrimitive(input: PrimitiveNDArray, axis: Int, keepDims: Boolean, selectLastIndex: Boolean, isMin: Boolean = false): IntNDArray {
+internal fun argMinMaxPrimitive(input: PrimitiveNDArray, axis: Int, keepDims: Boolean, selectLastIndex: Boolean, mode: ArgMinMaxMode = ArgMinMaxMode.MAX): IntNDArray {
     val actualAxis = input.indexAxis(axis)
 
     val iterations = input.computeBlockSize(toDim = actualAxis)
@@ -20,11 +25,9 @@ internal fun argMinMaxPrimitive(input: PrimitiveNDArray, axis: Int, keepDims: Bo
     val outputShape = if (keepDims) input.shape.copyOf().apply { set(actualAxis, 1) } else input.shape.sliceArray(input.shape.indices.minus(actualAxis))
     val outputArray = MutableIntNDArray(outputShape)
 
-    val comparator = when {
-        isMin && selectLastIndex -> { a: PrimitiveType, b: PrimitiveType -> a <= b }
-        !isMin && selectLastIndex -> { a: PrimitiveType, b: PrimitiveType -> a >= b }
-        isMin -> { a: PrimitiveType, b: PrimitiveType -> a < b }
-        else -> { a: PrimitiveType, b: PrimitiveType -> a > b }
+    val comparator = when(mode) {
+        ArgMinMaxMode.MIN -> if (selectLastIndex) lessOrEqual else less
+        ArgMinMaxMode.MAX -> if (selectLastIndex) greaterOrEqual else greater
     }
 
     return when {

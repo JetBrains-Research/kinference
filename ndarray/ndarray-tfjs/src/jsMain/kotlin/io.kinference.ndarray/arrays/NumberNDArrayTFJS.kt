@@ -131,9 +131,9 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         val result = tidy {
             val output = if (selectLastIndex) {
                 val reversedInput = tfjsArray.reverse(actualAxis)
-                val argMaxResult = reversedInput.argmin(actualAxis)
+                val argMinResult = reversedInput.argmin(actualAxis)
                 val axisDimension = intScalar(this.shape[actualAxis] - 1).tfjsArray
-                axisDimension - argMaxResult
+                axisDimension - argMinResult
             } else {
                 tfjsArray.argmin(actualAxis)
             }

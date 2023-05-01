@@ -19,7 +19,7 @@ sealed class ArgMin(name: String, info: OperatorInfo, attributes: Map<String, At
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in ArgMinVer12.VERSION.asRange() -> ArgMinVer12(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of ArgMax operator: $version")
+                else -> error("Unsupported version of ArgMin operator: $version")
             }
     }
 }
@@ -42,7 +42,7 @@ class ArgMinVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
         //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("ArgMax", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("ArgMin", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
