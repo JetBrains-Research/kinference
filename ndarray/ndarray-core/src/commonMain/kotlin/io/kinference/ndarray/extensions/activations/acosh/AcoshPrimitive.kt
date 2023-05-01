@@ -3,7 +3,7 @@
     DataType.DOUBLE
 )
 
-package io.kinference.ndarray.extensions.acosh
+package io.kinference.ndarray.extensions.activations.acosh
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray

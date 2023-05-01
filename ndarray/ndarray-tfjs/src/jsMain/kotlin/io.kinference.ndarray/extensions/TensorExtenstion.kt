@@ -240,3 +240,11 @@ fun ArrayTFJS.abs() = abs(this)
 fun ArrayTFJS.acos() = acos(this)
 
 fun ArrayTFJS.acosh() = acosh(this)
+
+fun ArrayTFJS.asin() = asin(this)
+
+fun ArrayTFJS.asinh() = asinh(this)
+
+fun ArrayTFJS.atan() = atan(this)
+
+fun ArrayTFJS.atanh() = atanh(this)

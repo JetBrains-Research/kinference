@@ -4,40 +4,42 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.activations.acosh.acosh
+import io.kinference.ndarray.extensions.activations.asin.asin
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 
-sealed class Acosh(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+sealed class Asin(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Activation(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 9)
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
-                in AcoshVer9.VERSION.asRange() -> AcoshVer9(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Acosh operator: $version")
+                in AsinVer7.VERSION.asRange() -> AsinVer7(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Asin operator: $version")
             }
     }
 }
 
 
-class AcoshVer9(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) : Acosh(name, INFO, attributes, inputs, outputs) {
+class AsinVer7(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
+    Asin(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
         private val INPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false))
         private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        internal val VERSION = VersionInfo(sinceVersion = 9)
-        private val INFO = OperatorInfo("Acosh", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        internal val VERSION = VersionInfo(sinceVersion = 7)
+        private val INFO = OperatorInfo("Asin", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
         return when (val type = input.type) {
-            DataType.FLOAT -> (input as FloatNDArray).acosh()
-            DataType.DOUBLE -> (input as DoubleNDArray).acosh()
+            DataType.FLOAT -> (input as FloatNDArray).asin()
+            DataType.DOUBLE -> (input as DoubleNDArray).asin()
             else -> error("Unsupported data type for this operation: $type")
         }
     }
 }
+
