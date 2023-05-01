@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
+import kotlin.math.atan
 
 fun PrimitiveNDArray.atan(): PrimitiveNDArray {
     val output = MutablePrimitiveNDArray(this.strides)
