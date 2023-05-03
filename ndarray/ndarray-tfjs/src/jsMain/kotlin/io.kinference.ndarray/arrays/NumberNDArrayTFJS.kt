@@ -64,8 +64,25 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
+    private suspend fun softmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+        return tidyNDArray {
+            val rows = this.computeBlockSize(toDim = axis)
+            val columns = this.computeBlockSize(fromDim = axis)
+            val matrixShape = intArrayOf(rows,columns)
+
+            val matrixLike = this.reshape(matrixShape).softmax(axis = -1)
+            matrixLike.reshape(this.shape)
+        }
+    }
+
     override suspend fun softmax(axis: Int): NumberNDArrayTFJS {
-        return NumberNDArrayTFJS(tfjsArray.softmax(axis))
+        val actualAxis = indexAxis(axis)
+
+        return if (actualAxis == shape.lastIndex) {
+            NumberNDArrayTFJS(tfjsArray.softmax(actualAxis))
+        } else {
+            softmaxNonLastAxis(actualAxis)
+        }
     }
 
     override suspend fun logSoftmax(axis: Int): NumberNDArrayTFJS {

@@ -48,17 +48,6 @@ class SoftmaxVer1(
 
         internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
         private val INFO = OperatorInfo("Softmax", ATTRIBUTES_INFO, INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        private suspend fun NumberNDArrayTFJS.softmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
-            return tidyNDArray {
-                val rows = this.computeBlockSize(toDim = axis)
-                val columns = this.computeBlockSize(fromDim = axis)
-                val matrixShape = intArrayOf(rows,columns)
-
-                val matrixLike = this.reshape(matrixShape).softmax(axis = -1)
-                matrixLike.reshape(this.shape)
-            }
-        }
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }
@@ -67,11 +56,7 @@ class SoftmaxVer1(
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val actualAxis = input.indexAxis(axis)
 
-        val result = if (actualAxis == input.shape.lastIndex) {
-            input.softmax(actualAxis)
-        } else {
-            input.softmaxNonLastAxis(actualAxis)
-        }
+        val result = input.softmax(actualAxis)
 
         return listOf(result.asTensor("output"))
     }
