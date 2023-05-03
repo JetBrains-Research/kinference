@@ -86,7 +86,16 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override suspend fun logSoftmax(axis: Int): NumberNDArrayTFJS {
-        return NumberNDArrayTFJS(tfjsArray.logSoftmax(axis))
+        val actualAxis = indexAxis(axis)
+
+        return if (actualAxis == shape.lastIndex) {
+            NumberNDArrayTFJS(tfjsArray.logSoftmax(actualAxis))
+        } else {
+            val softmaxArray = softmax(actualAxis)
+            val result = softmaxArray.log()
+            softmaxArray.close()
+            result
+        }
     }
 
     override suspend fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
