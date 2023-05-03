@@ -3,12 +3,13 @@
 package io.kinference.ndarray.extensions.pool
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.utils.InputInfo
-import io.kinference.ndarray.extensions.utils.primitiveIm2Col
+import io.kinference.ndarray.arrays.pointers.forEach
+import io.kinference.ndarray.arrays.pointers.forEachWith
+import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 
-fun PrimitiveNDArray.maxPool(
+suspend fun PrimitiveNDArray.maxPool(
     inputInfo: InputInfo,
     storageOrder: Int,
     minValue: PrimitiveType = PrimitiveType.MIN_VALUE
@@ -19,36 +20,72 @@ fun PrimitiveNDArray.maxPool(
             else -> inputInfo.outputShape[it - 2]
         }
     }
-    val result = MutablePrimitiveNDArray(resultShape)
-    val indices = if (storageOrder == -1) MutableLongNDArray.scalar(0) else MutableLongNDArray(resultShape)
+    val result = PrimitiveNDArray(resultShape)
+    val kernelDim = shape[1] * inputInfo.kernelSize
+    val col = PrimitiveNDArray(kernelDim, inputInfo.outputSize)
 
-    val kernelDim = shape[1] / inputInfo.groups * inputInfo.kernelSize
-    val col = PrimitiveNDArray(inputInfo.outputSize * kernelDim)
-    val indCol = IntNDArray(inputInfo.outputSize * kernelDim)
+    var resultIndices: LongNDArray? = null
+    var indCol: LongNDArray? = null
 
-    val resultPointer = result.array.pointer()
-    val indicesPointer = indices.array.pointer()
+    if (storageOrder != -1) {
+        resultIndices = LongNDArray(resultShape)
+        indCol = LongNDArray(kernelDim, inputInfo.outputSize)
+    }
 
-    repeat(shape[0]) {
-        primitiveIm2Col(this.view(it), inputInfo, kernelDim, col, minValue, storageOrder, indCol)
+    val defaultIndices = when (storageOrder) {
+        0 -> LongNDArray(shape) { it.toLong() }
+        1 -> LongNDArray(shape) { computeColumnMajorIndex(it, shape).toLong() }
+        else -> null
+    }
 
-        repeat(shape[1]) { channel ->
-            val start = channel * inputInfo.outputSize * inputInfo.kernelSize
-            repeat(inputInfo.outputSize) { j ->
-                resultPointer.set(minValue)
-                repeat(inputInfo.kernelSize) { i ->
-                    val cur = col.array[start + i * inputInfo.outputSize + j]
-                    if (resultPointer.get() < cur) {
-                        resultPointer.set(cur)
-                        if (storageOrder != -1)
-                            indicesPointer.set((indCol.array[start + i * inputInfo.outputSize + j] + it * shape[1] * inputInfo.inputSize).toLong())
+    repeat(shape[0]) { batch ->
+        val batchOffset = batch  * shape[1] * inputInfo.inputSize
+
+        if (inputInfo.rank == 2) {
+            primitiveIm2ColRank2(this.view(batch), inputInfo, shape[1], col, minValue)
+            if (defaultIndices != null && indCol != null)
+                primitiveIm2ColRank2(defaultIndices.view(batch), inputInfo, shape[1], indCol, -1L)
+        } else {
+            primitiveIm2Col(this.view(batch), inputInfo, kernelDim, col, minValue)
+            if (defaultIndices != null && indCol != null)
+                primitiveIm2Col(defaultIndices.view(batch), inputInfo, kernelDim, indCol, -1L)
+        }
+        val transposedCol = col.transpose2D()
+        val transposedIndCol = indCol?.transpose2D()
+
+        repeat(inputInfo.outputSize) { i ->
+            val currentCol = transposedCol.view(i)
+            val currentInd = transposedIndCol?.view(i)
+            repeat(shape[1]) { channel ->
+                val resultIndex = i + inputInfo.outputSize * channel + inputInfo.outputSize * shape[1] * batch
+                val curColPointer =  currentCol.array.pointer(channel * inputInfo.kernelSize)
+                val curIndColPointer = currentInd?.array?.pointer(channel * inputInfo.kernelSize)
+                var curResult = minValue
+                var curResultIndex = -1L
+
+                if (curIndColPointer != null) {
+                    curColPointer.forEachWith(curIndColPointer, inputInfo.kernelSize) { it, ind ->
+                        if (curResult < it) {
+                            curResult = it
+                            curResultIndex = ind
+                        }
+                    }
+                } else {
+                    curColPointer.forEach(inputInfo.kernelSize) {
+                        if (curResult < it)
+                            curResult = it
                     }
                 }
-                resultPointer.increment()
-                indicesPointer.increment()
+
+                //curResultIndex += batchOffset
+                result.array[resultIndex] = curResult
+                if (resultIndices != null)
+                    resultIndices.array[resultIndex] = curResultIndex
             }
         }
     }
 
-    return listOf(result, indices)
+    if (resultIndices != null)
+        return listOf(result, resultIndices)
+    return listOf(result)
 }
