@@ -64,15 +64,19 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
-    private suspend fun softmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+    private suspend fun applyMatrixLike(axis: Int, func: suspend NumberNDArrayTFJS.() -> NumberNDArrayTFJS): NumberNDArrayTFJS {
         return tidyNDArray {
             val rows = this.computeBlockSize(toDim = axis)
             val columns = this.computeBlockSize(fromDim = axis)
             val matrixShape = intArrayOf(rows,columns)
 
-            val matrixLike = this.reshape(matrixShape).softmax(axis = -1)
+            val matrixLike = this.reshape(matrixShape).func()
             matrixLike.reshape(this.shape)
         }
+    }
+
+    private suspend fun softmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+        return applyMatrixLike(axis) { this.softmax(axis = -1) }
     }
 
     override suspend fun softmax(axis: Int): NumberNDArrayTFJS {
@@ -85,16 +89,17 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         }
     }
 
+    private suspend fun logSoftmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+        return applyMatrixLike(axis) { this.logSoftmax(axis = -1) }
+    }
+
     override suspend fun logSoftmax(axis: Int): NumberNDArrayTFJS {
         val actualAxis = indexAxis(axis)
 
         return if (actualAxis == shape.lastIndex) {
             NumberNDArrayTFJS(tfjsArray.logSoftmax(actualAxis))
         } else {
-            val softmaxArray = softmax(actualAxis)
-            val result = softmaxArray.log()
-            softmaxArray.close()
-            result
+            logSoftmaxNonLastAxis(actualAxis)
         }
     }
 
