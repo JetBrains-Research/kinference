@@ -8,8 +8,13 @@ import io.kinference.ndarray.extensions.activations.atan.atan
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 
-sealed class Atan(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Activation(name, info, attributes, inputs, outputs) {
+sealed class Atan(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -22,8 +27,12 @@ sealed class Atan(name: String, info: OperatorInfo, attributes: Map<String, Attr
 }
 
 
-class AtanVer7(name: String, attributes: Map<String, Attribute<Any>> = emptyMap(), inputs: List<String>, outputs: List<String>) :
-    Atan(name, INFO, attributes, inputs, outputs) {
+class AtanVer7(
+    name: String,
+    attributes: Map<String, Attribute<Any>> = emptyMap(),
+    inputs: List<String>,
+    outputs: List<String>
+) : Atan(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

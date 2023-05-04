@@ -27,8 +27,12 @@ sealed class Atan(
     }
 }
 
-class AtanVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Atan(name, INFO, attributes, inputs, outputs) {
+class AtanVer7(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Atan(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 

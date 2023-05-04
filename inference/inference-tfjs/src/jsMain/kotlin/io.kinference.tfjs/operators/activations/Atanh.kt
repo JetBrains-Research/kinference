@@ -27,8 +27,12 @@ sealed class Atanh(
     }
 }
 
-class AtanhVer9(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Atanh(name, INFO, attributes, inputs, outputs) {
+class AtanhVer9(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Atanh(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
 
