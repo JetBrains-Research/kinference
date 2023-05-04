@@ -298,7 +298,7 @@ interface NumberNDArray : NDArray {
     suspend fun matmul(other: NumberNDArray): MutableNumberNDArray
 
     /**
-     * Computes the indices of the maximum values along given axis.
+     * Computes the indices of the maximum values along the given axis.
      *
      * @param axis the axis along which the indices are computed.
      * @param keepDims if this flag is true, the target axis will be set to 1. In any other case, it will be reduced.
@@ -306,6 +306,16 @@ interface NumberNDArray : NDArray {
      *                        or the last one (True -- last, False -- first).
      */
     suspend fun argmax(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
+
+    /**
+     * Computes the indices of the minimum values along the given axis.
+     *
+     * @param axis the axis along which the indices are computed.
+     * @param keepDims if this flag is true, the target axis will be set to 1. In any other case, it will be reduced.
+     * @param selectLastIndex this flag determines whether the first occurrence of the maximum index should be selected,
+     *                        or the last one (True -- last, False -- first).
+     */
+    suspend fun argmin(axis: Int = 0, keepDims: Boolean = true, selectLastIndex: Boolean = false): NumberNDArray
 
     /**
      * Computes the sum of array elements along provided axes.

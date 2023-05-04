@@ -97,6 +97,8 @@ internal external val squeeze: (x: ArrayTFJS, axis: Array<Int>?) -> ArrayTFJS
 
 internal external val argMax: (x: ArrayTFJS, axis: Int) -> ArrayTFJS
 
+internal external val argMin: (x: ArrayTFJS, axis: Int) -> ArrayTFJS
+
 internal external val tile: (x: ArrayTFJS, reps: Array<Int>) -> ArrayTFJS
 
 internal external val less: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS

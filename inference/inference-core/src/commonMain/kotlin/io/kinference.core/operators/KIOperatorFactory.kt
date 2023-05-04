@@ -42,6 +42,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Add" -> Add(name, version, attributes, inputs, outputs)
         "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
+        "ArgMin" -> ArgMin(name, version, attributes, inputs, outputs)
         "Asin" -> Asin(name, version, attributes, inputs, outputs)
         "Asinh" -> Asinh(name, version, attributes, inputs, outputs)
         "Atan" -> Atan(name, version, attributes, inputs, outputs)
