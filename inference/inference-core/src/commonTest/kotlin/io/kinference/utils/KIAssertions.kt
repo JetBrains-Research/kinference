@@ -59,6 +59,28 @@ object KIAssertions {
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
+
+            TensorProto.DataType.UINT16 -> {
+                val expectedArray = (expected.data as UShortNDArray).array
+                val actualArray = (actual.data as UShortNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
+            TensorProto.DataType.UINT32 -> {
+                val expectedArray = (expected.data as UIntNDArray).array
+                val actualArray = (actual.data as UIntNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
+            TensorProto.DataType.UINT64 -> {
+                val expectedArray = (expected.data as ULongNDArray).array
+                val actualArray = (actual.data as ULongNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
             else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
         }
     }
