@@ -191,6 +191,8 @@ fun ArrayTFJS.squeeze(axes: Array<Int>? = null) = squeeze(this, axes)
 
 fun ArrayTFJS.argmax(axis: Int = 0) = argMax(this, axis)
 
+fun ArrayTFJS.argmin(axis: Int = 0) = argMin(this, axis)
+
 fun ArrayTFJS.tile(repeats: Array<Int>) = tile(this, repeats)
 
 fun ArrayTFJS.less(other: ArrayTFJS) = less(this, other)
