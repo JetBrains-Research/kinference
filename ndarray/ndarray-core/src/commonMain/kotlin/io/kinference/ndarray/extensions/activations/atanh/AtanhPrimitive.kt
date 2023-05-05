@@ -3,15 +3,15 @@
     DataType.DOUBLE
 )
 
-package io.kinference.ndarray.extensions.acos
+package io.kinference.ndarray.extensions.activations.atanh
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
-import kotlin.math.acos
+import kotlin.math.atanh
 
-fun PrimitiveNDArray.acos(): PrimitiveNDArray {
+fun PrimitiveNDArray.atanh(): PrimitiveNDArray {
     val output = MutablePrimitiveNDArray(this.strides)
 
     val outputIter = output.array.blocks.iterator()
@@ -22,7 +22,7 @@ fun PrimitiveNDArray.acos(): PrimitiveNDArray {
         val outputBlock = outputIter.next()
 
         for (j in outputBlock.indices) {
-            outputBlock[j] = acos(inputBlock[j])
+            outputBlock[j] = atanh(inputBlock[j])
         }
     }
 

@@ -4,7 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.KIONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.acos.acos
+import io.kinference.ndarray.extensions.activations.acos.acos
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 

@@ -1,4 +1,4 @@
-package io.kinference.ndarray.extensions.acos
+package io.kinference.ndarray.extensions.activations.acos
 
 import io.kinference.primitives.types.PrimitiveType
 
