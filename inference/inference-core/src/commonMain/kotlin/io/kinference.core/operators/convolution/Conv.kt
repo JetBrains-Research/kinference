@@ -57,11 +57,11 @@ class ConvVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
     private val autoPad: String by attribute("auto_pad")
-    private val dilations: IntArray? by attributeOrNull("dilations") { it: LongArray? -> it?.toIntArray() }
-    private val group: Int by attribute("group") { it: Number -> it.toInt() }
+    private val dilations: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
+    private val group: Int by attribute { it: Number -> it.toInt() }
     private val kernelShape: IntArray? by attributeOrNull("kernel_shape") { it: LongArray? -> it?.toIntArray() }
-    private val pads: IntArray? by attributeOrNull("pads") { it: LongArray? -> it?.toIntArray() }
-    private val strides: IntArray? by attributeOrNull("strides") { it: LongArray? -> it?.toIntArray() }
+    private val pads: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
+    private val strides: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val x = inputs[0]!!.data

@@ -55,10 +55,10 @@ class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<
         private val INFO = OperatorInfo("LRN", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val size: Int by attribute("size") { it: Number -> it.toInt() }
-    private val alpha: Float by attribute("alpha")
-    private val beta: Float by attribute("beta")
-    private val bias: Float by attribute("bias")
+    private val size: Int by attribute { it: Number -> it.toInt() }
+    private val alpha: Float by attribute()
+    private val beta: Float by attribute()
+    private val bias: Float by attribute()
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val x = inputs[0]!!.data
