@@ -63,12 +63,12 @@ class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val data = inputs[0]!!.data
+        val data = inputs[0]!!
 
         if (outputs.size == 1)
-            return listOf(data.asTensor("output"))
+            return listOf(data.rename("output"))
 
-        val mask = BooleanNDArray(data.shape) { true }
-        return listOf(data.asTensor("output"), mask.asTensor("mask"))
+        val mask = BooleanNDArray(data.data.shape) { true }
+        return listOf(data.rename("output"), mask.asTensor("mask"))
     }
 }
