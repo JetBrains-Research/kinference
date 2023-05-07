@@ -17,18 +17,28 @@ infix fun Int.divCeil(b: Int) = (this + b - 1) / b
  */
 internal fun calculateInnerShapeSize(shape: IntArray) = shape.foldIndexed(1) { index, acc, i -> if (index >= 2) acc * i else acc }
 
+@Suppress("NAME_SHADOWING")
 internal fun computeColumnMajorIndex(
-    inputInfo: InputInfo,
-    dIter: IntArray,
-    dOffset: IntArray,
-    indexImR: Int
+    rowMajorIndex: Int,
+    shape: IntArray
 ): Int {
-    var indexImR1 = indexImR
-    for (dI in inputInfo.rank - 1 downTo 0) {
-        val dIm = dIter[dI] * inputInfo.strides[dI] - inputInfo.padBegin(dI) + dOffset[dI] * inputInfo.dilations[dI]
-
-        indexImR1 *= inputInfo.inputShape[dI]
-        indexImR1 += dIm
+    val index = IntArray(shape.size)
+    var rowMajorIndex = rowMajorIndex
+    for (i in shape.lastIndex downTo 0) {
+        index[i] = rowMajorIndex % shape[i]
+        rowMajorIndex /= shape[i]
     }
-    return indexImR1
+    var result = 0
+    var shapeSize = 1
+    for (i in 2 .. index.lastIndex) {
+        result += shapeSize * index[i]
+        shapeSize *= shape[i]
+    }
+    result += shapeSize * index[1]
+    result += shapeSize * shape[1] * index[0]
+    return result
+}
+
+internal fun isInPadding(actual: Int, bound: Int) : Boolean {
+    return actual < 0 || actual >= bound
 }

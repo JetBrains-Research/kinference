@@ -1,26 +1,24 @@
-@file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE, DataType.UBYTE, DataType.BYTE)
+@file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE, DataType.UBYTE, DataType.BYTE, DataType.LONG)
 
 package io.kinference.ndarray.extensions.utils
 
-import io.kinference.ndarray.arrays.pointers.PrimitivePointer
+import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.primitives.annotations.GeneratePrimitives
-import io.kinference.primitives.annotations.SpecifyPrimitives
 import io.kinference.primitives.types.*
 
 fun primitiveIm2Col(
-    im: PrimitivePointer,
+    im: PrimitiveNDArray,
     inputInfo: InputInfo,
-    channelsCol: Int,
-    col: PrimitiveArray,
-    padValue: PrimitiveType = 0.toPrimitive(),
-    storageOrder: Int = -1,
-    indCol: IntArray = IntArray(0)
+    channelsTotal: Int,
+    col: PrimitiveNDArray,
+    padValue: PrimitiveType = 0.toPrimitive()
 ) {
     val dOffset = IntArray(inputInfo.rank)
     val dIter = IntArray(inputInfo.rank)
 
-    for (cCol in 0 until channelsCol) {
-        var offset = cCol
+    repeat(channelsTotal) { colChannel ->
+        var offset = colChannel
         for (dI in inputInfo.rank - 1 downTo 0) {
             if (dI < inputInfo.rank - 1) {
                 offset /= inputInfo.kernelShape[dI + 1]
@@ -30,8 +28,8 @@ fun primitiveIm2Col(
 
         var hasNextOutput: Boolean
         do {
-            var indexCol = cCol
-            var indexIm = cCol / inputInfo.kernelSize
+            var indexCol = colChannel
+            var indexIm = colChannel / inputInfo.kernelSize
             var isPadding = false
 
             for (dI in 0 until inputInfo.rank) {
@@ -47,22 +45,10 @@ fun primitiveIm2Col(
                 indexIm += dIm
             }
 
-            var indexImR = cCol / inputInfo.kernelSize
-            if (storageOrder == 1)
-                indexImR = computeColumnMajorIndex(inputInfo, dIter, dOffset, indexImR)
-
-            if (isPadding) {
-                col[indexCol] = padValue
-                if (storageOrder != -1)
-                    indCol[indexCol] = -1
-            }
-            else {
-                col[indexCol] = im.array[indexIm + im.linearIndex]
-                when (storageOrder) {
-                    0 -> indCol[indexCol] = indexIm + im.linearIndex
-                    1 -> indCol[indexCol] = indexImR + im.linearIndex
-                }
-            }
+            if (isPadding)
+                col.array[indexCol] = padValue
+            else
+                col.array[indexCol] = im.array[indexIm]
 
             hasNextOutput = false
             for (j in inputInfo.rank - 1 downTo 0) {
@@ -79,53 +65,53 @@ fun primitiveIm2Col(
     }
 }
 
-@SpecifyPrimitives(include = [])
-fun isInPadding(actual: Int, bound: Int) : Boolean {
-    return actual < 0 || actual >= bound
-}
-
 fun primitiveIm2ColRank2(
-    im: PrimitivePointer,
+    im: PrimitiveNDArray,
     inputInfo: InputInfo,
-    channels: Int,
-    col: PrimitiveArray,
+    channelsCol: Int,
+    col: PrimitiveNDArray,
     padValue: PrimitiveType = 0.toPrimitive()
 ) {
-    var colInd = 0
+    val colPointer = col.array.pointer()
+    var linearIndex = 0
 
     val channelSize = inputInfo.inputSize
-    repeat(channels) {
+    repeat(channelsCol) {
         for (kernelRow in 0 until inputInfo.kernelShape[0]) {
             for (kernelCol in 0 until inputInfo.kernelShape[1]) {
                 var inputRow = -inputInfo.padBegin(0) + kernelRow * inputInfo.dilations[0]
                 repeat(inputInfo.outputShape[0]) {
                     if (isInPadding(inputRow, inputInfo.inputShape[0])) {
-                        for (i in 0 until inputInfo.outputShape[1]) {
-                            col[colInd] = padValue
-                            colInd++
-                        }
+                        colPointer.map(inputInfo.outputShape[1]) { padValue }
                     } else {
                         var inputCol = -inputInfo.padBegin(1) + kernelCol * inputInfo.dilations[1]
                         val imOffset = inputRow * inputInfo.inputShape[1] + inputCol
-                        for (i in 0 until inputInfo.outputShape[1]) {  // TODO(CASES)
-                            if (!isInPadding(inputCol, inputInfo.inputShape[1])) {
-                                val localIm = PrimitivePointer(im)
-                                localIm.linearIndex += imOffset + i * inputInfo.strides[1]
-                                col[colInd] = localIm.get()
-                                colInd++
+                        var i = 0
+                        while (i < inputInfo.outputShape[1]) {
+                            if (isInPadding(inputCol, inputInfo.inputShape[1])) {
+                                colPointer.setAndIncrement(padValue)
+                                i++
+                                inputCol += inputInfo.strides[1]
                             } else {
-                                col[colInd] = padValue
-                                colInd++
+                                if (inputInfo.strides[1] == 1) {
+                                    val cnt = minOf(inputInfo.inputShape[1] - inputCol, inputInfo.outputShape[1] - i)
+                                    val imPointer = im.array.pointer(linearIndex + imOffset + i)
+                                    imPointer.mapTo(colPointer, cnt) { it }
+                                    i += cnt
+                                    inputCol += cnt
+                                } else {
+                                    colPointer.setAndIncrement(im.array[linearIndex + imOffset + i * inputInfo.strides[1]])
+                                    i++
+                                    inputCol += inputInfo.strides[1]
+                                }
                             }
-
-                            inputCol += inputInfo.strides[1]
                         }
                     }
                     inputRow += inputInfo.strides[0]
                 }
             }
         }
-        if (it != channels - 1)
-            im.linearIndex += channelSize
+
+        linearIndex += channelSize
     }
 }
