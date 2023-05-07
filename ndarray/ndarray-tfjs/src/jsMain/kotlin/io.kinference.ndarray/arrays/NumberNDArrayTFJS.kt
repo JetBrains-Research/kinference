@@ -1,8 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {
@@ -28,10 +26,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
 
     override suspend fun expand(shape: IntArray): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
-    }
-
-    override suspend fun nonZero(): NumberNDArrayTFJS {
-        error("Operation nonZero() is not supported yet")
     }
 
     override fun toMutable(): MutableNumberNDArrayTFJS {
@@ -70,12 +64,43 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         return NumberNDArrayTFJS(tfjsArray.erf())
     }
 
+    private suspend fun applyMatrixLike(axis: Int, func: suspend NumberNDArrayTFJS.() -> NumberNDArrayTFJS): NumberNDArrayTFJS {
+        return tidyNDArray {
+            val rows = this.computeBlockSize(toDim = axis)
+            val columns = this.computeBlockSize(fromDim = axis)
+            val matrixShape = intArrayOf(rows,columns)
+
+            val matrixLike = this.reshape(matrixShape).func()
+            matrixLike.reshape(this.shape)
+        }
+    }
+
+    private suspend fun softmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+        return applyMatrixLike(axis) { this.softmax(axis = -1) }
+    }
+
     override suspend fun softmax(axis: Int): NumberNDArrayTFJS {
-        return NumberNDArrayTFJS(tfjsArray.softmax(axis))
+        val actualAxis = indexAxis(axis)
+
+        return if (actualAxis == shape.lastIndex) {
+            NumberNDArrayTFJS(tfjsArray.softmax(actualAxis))
+        } else {
+            softmaxNonLastAxis(actualAxis)
+        }
+    }
+
+    private suspend fun logSoftmaxNonLastAxis(axis: Int): NumberNDArrayTFJS {
+        return applyMatrixLike(axis) { this.logSoftmax(axis = -1) }
     }
 
     override suspend fun logSoftmax(axis: Int): NumberNDArrayTFJS {
-        return NumberNDArrayTFJS(tfjsArray.logSoftmax(axis))
+        val actualAxis = indexAxis(axis)
+
+        return if (actualAxis == shape.lastIndex) {
+            NumberNDArrayTFJS(tfjsArray.logSoftmax(actualAxis))
+        } else {
+            logSoftmaxNonLastAxis(actualAxis)
+        }
     }
 
     override suspend fun plus(other: NumberNDArray): MutableNumberNDArrayTFJS {
@@ -109,7 +134,50 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override suspend fun argmax(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
-        val result = tfjsArray.argmax(axis)
+        val actualAxis = indexAxis(axis)
+        val result = tidy {
+            val output = if (selectLastIndex) {
+                val reversedInput = tfjsArray.reverse(actualAxis)
+                val argMaxResult = reversedInput.argmax(actualAxis)
+                val axisDimension = intScalar(this.shape[actualAxis] - 1).tfjsArray
+                axisDimension - argMaxResult
+            } else {
+                tfjsArray.argmax(actualAxis)
+            }
+
+            arrayOf(
+                if (keepDims) {
+                    output.reshape(this.shape.copyOf().apply { set(actualAxis, 1) })
+                } else {
+                    output
+                }
+            )
+        }.first()
+
+        return NumberNDArrayTFJS(result)
+    }
+
+    override suspend fun argmin(axis: Int, keepDims: Boolean, selectLastIndex: Boolean): NumberNDArrayTFJS {
+        val actualAxis = indexAxis(axis)
+        val result = tidy {
+            val output = if (selectLastIndex) {
+                val reversedInput = tfjsArray.reverse(actualAxis)
+                val argMinResult = reversedInput.argmin(actualAxis)
+                val axisDimension = intScalar(this.shape[actualAxis] - 1).tfjsArray
+                axisDimension - argMinResult
+            } else {
+                tfjsArray.argmin(actualAxis)
+            }
+
+            arrayOf(
+                if (keepDims) {
+                    output.reshape(this.shape.copyOf().apply { set(actualAxis, 1) })
+                } else {
+                    output
+                }
+            )
+        }.first()
+
         return NumberNDArrayTFJS(result)
     }
 
@@ -156,7 +224,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         other: NumberNDArray,
         transposeLeft: Boolean = false,
         transposeRight: Boolean = false,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
     ): MutableNumberNDArrayTFJS {
         other as NumberNDArrayTFJS
         val result = tfjsArray.matMul(other.tfjsArray, transposeLeft, transposeRight)
@@ -171,4 +238,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
         val indices = tensor(axes, arrayOf(axes.size), "int32")
         return NumberNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
     }
+
+    override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
 }

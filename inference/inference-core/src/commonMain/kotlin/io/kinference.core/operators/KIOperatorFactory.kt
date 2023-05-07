@@ -24,7 +24,8 @@ import io.kinference.core.operators.seq.SplitToSequence
 import io.kinference.core.operators.tensor.*
 import io.kinference.graph.Graph
 import io.kinference.operator.*
-import io.kinference.protobuf.message.*
+import io.kinference.protobuf.message.GraphProto
+import io.kinference.protobuf.message.TensorProto
 
 object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
     override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
@@ -37,9 +38,17 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
 
     @Suppress("UNCHECKED_CAST")
     override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
+        "Abs" -> Abs(name, version, attributes, inputs, outputs)
+        "Acos" -> Acos(name, version, attributes, inputs, outputs)
+        "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
         "Add" -> Add(name, version, attributes, inputs, outputs)
+        "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
-        "Sub" -> Sub(name, version, attributes, inputs, outputs)
+        "ArgMin" -> ArgMin(name, version, attributes, inputs, outputs)
+        "Asin" -> Asin(name, version, attributes, inputs, outputs)
+        "Asinh" -> Asinh(name, version, attributes, inputs, outputs)
+        "Atan" -> Atan(name, version, attributes, inputs, outputs)
+        "Atanh" -> Atanh(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
@@ -59,7 +68,6 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Equal" -> Equal(name, version, attributes, inputs, outputs)
         "Erf" -> Erf(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
-        "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "FastGelu" -> FastGelu(name, version, attributes, inputs, outputs)
         "Flatten" -> Flatten(name, version, attributes, inputs, outputs)
         "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
@@ -72,14 +80,14 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "GRU" -> GRU(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
         "If" -> If(name, version, attributes, inputs, outputs)
-        "Less" -> Less(name, version, attributes, inputs, outputs)
-        "LSTM" -> LSTM(name, version, attributes, inputs, outputs)
-        "Loop" -> Loop(name, version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)
         "LeakyRelu" -> LeakyRelu(name, version, attributes, inputs, outputs)
+        "Less" -> Less(name, version, attributes, inputs, outputs)
         "Log" -> Log(name, version, attributes, inputs, outputs)
         "LogSoftmax" -> LogSoftmax(name, version, attributes, inputs, outputs)
         "LRN" -> LRN(name, version, attributes, inputs, outputs)
+        "Loop" -> Loop(name, version, attributes, inputs, outputs)
+        "LSTM" -> LSTM(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "MatMulIntegerToFloat" -> MatMulIntegerToFloat(name, version, attributes, inputs, outputs)
@@ -88,9 +96,11 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "Or" -> Or(name, version, attributes, inputs, outputs)
+        "Pad" -> Pad(name, version, attributes, inputs, outputs)
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
+        "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
@@ -103,13 +113,13 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Split" -> Split(name, version, attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
+        "Sub" -> Sub(name, version, attributes, inputs, outputs)
         "Tanh" -> Tanh(name, version, attributes, inputs, outputs)
+        "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "TopK" -> TopK(name, version, attributes, inputs, outputs)
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(name, version, attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(name, version, attributes, inputs, outputs)
-        "Tile" -> Tile(name, version, attributes, inputs, outputs)
-        "Pad" -> Pad(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
         "ZipMap" -> ZipMap(name, version, attributes, inputs, outputs)

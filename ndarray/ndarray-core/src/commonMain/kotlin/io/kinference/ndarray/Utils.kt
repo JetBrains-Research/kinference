@@ -3,6 +3,7 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.Strides
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
@@ -116,13 +117,8 @@ suspend fun parallelizeByBlocks(blockSize: Int,
                                 countBlocks: Int,
                                 minDataPerLaunch: Int,
                                 body: (blockStart: Int, blockEnd: Int) -> Unit) {
-    val batchSize = run {
-        var batchSize = 1
-        while (batchSize < countBlocks && batchSize * blockSize < minDataPerLaunch) {
-            batchSize++
-        }
-        batchSize
-    }
+
+    val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
 
     if (batchSize == countBlocks) {
         body(0, countBlocks)
@@ -138,3 +134,15 @@ suspend fun parallelizeByBlocks(blockSize: Int,
 }
 
 suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, noinline body: (rowStart: Int, rowEnd: Int) -> Unit) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+
+internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
+    val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)
+
+    return (countRows + batchSize - 1) / batchSize
+}
+
+internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
+    val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
+
+    return min(batchSize, countRows)
+}

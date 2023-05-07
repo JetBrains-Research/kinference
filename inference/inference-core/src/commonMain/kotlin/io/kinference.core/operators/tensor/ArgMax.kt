@@ -11,19 +11,22 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ArgMaxVer12.VERSION.asRange() -> ArgMaxVer12(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of ArgMax operator: $version")
-        }
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
+            when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ArgMaxVer12.VERSION.asRange() -> ArgMaxVer12(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ArgMax operator: $version")
+            }
     }
 }
 
 
-class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Constant(name, INFO, attributes, inputs, outputs) {
+class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+    ArgMax(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), required = false, default = 0),

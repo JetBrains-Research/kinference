@@ -15,3 +15,4 @@ internal fun PrimitiveType.withSign(sign: PrimitiveType): PrimitiveType = throw 
 
 internal val PrimitiveType.sign: PrimitiveType
     get() = throw UnsupportedOperationException()
+

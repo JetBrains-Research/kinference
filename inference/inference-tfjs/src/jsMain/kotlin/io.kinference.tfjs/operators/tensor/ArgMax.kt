@@ -3,9 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.reverse
-import io.kinference.ndarray.extensions.tidyNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -26,7 +24,7 @@ sealed class ArgMax(name: String, info: OperatorInfo, attributes: Map<String, At
 }
 
 class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Constant(name, INFO, attributes, inputs, outputs) {
+    ArgMax(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), required = false, default = 0),
@@ -52,24 +50,7 @@ class ArgMaxVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
-        val actualAxis = input.indexAxis(axis)
 
-        val normalizedOutput = tidyNDArray {
-            val output = if (selectLastIndex) {
-                val reversedInput = input.reverse(actualAxis)
-                val argMaxResult = reversedInput.argmax(actualAxis)
-                val axisDimension = NDArrayTFJS.intScalar(input.shape[actualAxis] - 1)
-                axisDimension - argMaxResult
-            } else {
-                input.argmax(actualAxis)
-            }
-
-            return@tidyNDArray if (keepDims) {
-                output.reshape(input.shape.copyOf().apply { this[actualAxis] = 1 })
-            } else {
-                output
-            }
-        }
-        return listOf(normalizedOutput.asTensor("reduced"))
+        return listOf(input.argmax(axis, keepDims, selectLastIndex).asTensor("reduced"))
     }
 }
