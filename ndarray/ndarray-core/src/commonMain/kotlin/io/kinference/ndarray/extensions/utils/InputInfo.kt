@@ -42,14 +42,14 @@ data class InputInfo(
 
     data class Builder(
         private var dimensions: Int? = null,
-        private var autoPad: String = "NOTSET",
+        private var autoPad: AutoPad = AutoPad.NOTSET,
         private var pads: IntArray? = null,
         private var strides: IntArray? = null,
         private var dilations: IntArray? = null,
         private var inputShape: IntArray? = null,
         private var kernelShape: IntArray? = null,
         private var groups: Int = 1,
-        private var ceilMode: Int = 1
+        private var ceilMode: Int = 0
     ) {
         fun specifyDimensions(dimensions: Int) = apply { this.dimensions = dimensions }
 
@@ -59,7 +59,7 @@ data class InputInfo(
 
         fun specifyKernelShape(kernelShape: IntArray) = apply { this.kernelShape = kernelShape }
 
-        fun specifyAutoPad(autoPad: String) = apply { this.autoPad = autoPad }
+        fun specifyAutoPad(autoPad: String) = apply { this.autoPad = AutoPad.valueOf(autoPad) }
         
         fun specifyStrides(strides: IntArray?) = apply { this.strides = strides }
 
@@ -78,9 +78,9 @@ data class InputInfo(
         private fun defaultPads() = IntArray(dimensions!! * 2) { 0 }
 
         private fun inferPads() : IntArray {
-            require(autoPad == "NOTSET" || pads == null) { "Explicit pads cannot be used simultaneously with auto_pad attribute." }
+            require(autoPad == AutoPad.NOTSET || pads == null) { "Explicit pads cannot be used simultaneously with auto_pad attribute." }
 
-            if (autoPad == "VALID" || autoPad == "NOTSET")
+            if (autoPad == AutoPad.VALID || autoPad == AutoPad.NOTSET)
                 return defaultPads()
 
             require(inputShape != null && strides != null && kernelShape != null && dilations != null) { "inputShape, strides, dilations and kernelShape must be specified, when auto_pad is SAME_UPPER or SAME_LOWER" }
@@ -88,13 +88,12 @@ data class InputInfo(
                 if (it < dimensions!!) {
                     val outputShape = inputShape!![it] divCeil strides!![it]
                     (outputShape - 1) * strides!![it] + ((kernelShape!![it] - 1) * dilations!![it] + 1) - inputShape!![it]
-                    //(outputShape - 1) * strides!![it] + kernelShape!![it] - inputShape!![it]
                 } else {
                     0
                 }
             }
 
-            if (autoPad == "SAME_UPPER") {
+            if (autoPad == AutoPad.SAME_UPPER) {
                 for (i in 0 until dimensions!!) {
                     val padEnd = pads[i] divCeil 2
                     pads[i + dimensions!!] = padEnd
@@ -104,7 +103,7 @@ data class InputInfo(
                 return pads
             }
 
-            if (autoPad == "SAME_LOWER") {
+            if (autoPad == AutoPad.SAME_LOWER) {
                 for (i in 0 until dimensions!!) {
                     val padEnd = pads[i] / 2
                     pads[i + dimensions!!] = padEnd
@@ -115,6 +114,13 @@ data class InputInfo(
             }
 
             error("Invalid auto_pad argument: $autoPad.")
+        }
+
+        enum class AutoPad {
+            NOTSET,
+            VALID,
+            SAME_UPPER,
+            SAME_LOWER
         }
 
         fun build(): InputInfo {
