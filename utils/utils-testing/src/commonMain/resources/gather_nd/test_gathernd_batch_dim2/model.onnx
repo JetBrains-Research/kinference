@@ -1,0 +1,13 @@
+:t
+4
+data
+indicesoutput"GatherND*
+
+batch_dims test_GatherNDZ
+data
+Z
+indices
+b
+output
+B
+ai.onnx
