@@ -106,7 +106,7 @@ class GatherNDVer11(
         val input = inputs[0]!!.data
         val indices = inputs[1]!!.data
 
-        require(indices.rank < batchDims) {
+        require(indices.rank > batchDims) {
             "Indices tensor rank should be less than batch_dims. Indices rank=${indices.rank}, batch_dims=${batchDims}"
         }
 
