@@ -63,6 +63,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
         "Gather" -> Gather(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
+        "GatherND" -> GatherND(name, version, attributes, inputs, outputs)
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
