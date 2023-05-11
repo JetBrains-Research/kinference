@@ -70,33 +70,31 @@ class GatherNDVer11(
         }
 
         private suspend fun NDArrayTFJS.gatherNDWithBatchDims(indices: NDArrayTFJS, batchDims: Int): NDArrayTFJS {
-                val indicesShape = indices.shape
-                val indicesRank = indices.rank
+            val indicesShape = indices.shape
+            val indicesRank = indices.rank
 
+            return tidyNDArray {
                 val batchIndicesGrid = indicesMeshgrid(indicesShape, batchDims)
-                return tidyNDArray {
-                    val batchIndices = batchIndicesGrid.stack(axis = -1)
+                val batchIndices = batchIndicesGrid.stack(axis = -1)
 
-                    val batchShape = IntArray(indicesRank)
-                    val batchTileRepeats = IntArray(indicesRank)
-                    for (i in 0 until indicesRank - 1) {
-                        if (i < batchDims) {
-                            batchShape[i] = indicesShape[i]
-                            batchTileRepeats[i] = 1
-                        } else {
-                            batchShape[i] = 1
-                            batchTileRepeats[i] = indicesShape[i]
-                        }
+                val batchShape = IntArray(indicesRank)
+                val batchTileRepeats = IntArray(indicesRank)
+                for (i in 0 until indicesRank - 1) {
+                    if (i < batchDims) {
+                        batchShape[i] = indicesShape[i]
+                        batchTileRepeats[i] = 1
+                    } else {
+                        batchShape[i] = 1
+                        batchTileRepeats[i] = indicesShape[i]
                     }
-                    batchShape[indicesRank - 1] = batchDims
-                    batchTileRepeats[indicesRank - 1] = 1
-                    val batchIndicesFull = batchIndices.reshape(batchShape).tile(batchTileRepeats)
-
-                    val actualIndices = batchIndicesFull.concat(listOf(indices), axis = -1)
-                    this.gatherNd(actualIndices)
-                }.also {
-                    closeAll(*batchIndicesGrid)
                 }
+                batchShape[indicesRank - 1] = batchDims
+                batchTileRepeats[indicesRank - 1] = 1
+                val batchIndicesFull = batchIndices.reshape(batchShape).tile(batchTileRepeats)
+
+                val actualIndices = batchIndicesFull.concat(listOf(indices), axis = -1)
+                this.gatherNd(actualIndices)
+            }
         }
     }
 
