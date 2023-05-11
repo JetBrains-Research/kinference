@@ -34,7 +34,7 @@ class BitwiseAndVer18(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : BitShift(name, INFO, attributes, inputs, outputs) {
+) : BitwiseAnd(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = UINT_DATA_TYPES + INT_DATA_TYPES
 

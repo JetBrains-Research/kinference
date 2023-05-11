@@ -46,6 +46,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
         "BitShift" -> BitShift(name, version, attributes, inputs, outputs)
         "BitwiseAnd" -> BitwiseAnd(name, version, attributes, inputs, outputs)
+        "BitwiseNot" -> BitwiseNot(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
         "Concat" -> Concat(name, version, attributes, inputs, outputs)
