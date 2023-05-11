@@ -32,10 +32,10 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
 
     @Suppress("UNCHECKED_CAST")
     override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
-        "Add" -> Add(name, version, attributes, inputs, outputs)
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
+        "Add" -> Add(name, version, attributes, inputs, outputs)
         "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "ArgMin" -> ArgMin(name, version, attributes, inputs, outputs)
@@ -63,6 +63,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "FusedMatMul" -> FusedMatMul(name, version, attributes, inputs, outputs)
         "Gather" -> Gather(name, version, attributes, inputs, outputs)
         "GatherElements" -> GatherElements(name, version, attributes, inputs, outputs)
+        "GatherND" -> GatherND(name, version, attributes, inputs, outputs)
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
