@@ -1,4 +1,4 @@
-package io.kinference.operators.operations
+package io.kinference.operators.bitwise
 
 import io.kinference.KITestEngine
 import io.kinference.utils.TestRunner

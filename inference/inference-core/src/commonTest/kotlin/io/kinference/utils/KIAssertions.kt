@@ -47,6 +47,12 @@ object KIAssertions {
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
+            TensorProto.DataType.INT16 -> {
+                val expectedArray = (expected.data as ShortNDArray).array
+                val actualArray = (actual.data as ShortNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
             TensorProto.DataType.BOOL -> {
                 val expectedArray = (expected.data as BooleanNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as BooleanNDArray).array.toArray().toTypedArray()

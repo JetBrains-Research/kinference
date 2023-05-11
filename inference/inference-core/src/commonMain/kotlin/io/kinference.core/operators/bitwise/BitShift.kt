@@ -1,4 +1,4 @@
-package io.kinference.core.operators.tensor
+package io.kinference.core.operators.bitwise
 
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
