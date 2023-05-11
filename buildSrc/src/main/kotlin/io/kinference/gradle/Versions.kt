@@ -12,7 +12,7 @@ object Versions {
     const val loglevel = "1.7.1"
 
     const val ort = "1.13.1.patched"
-    const val tfjs = "4.0.0"
+    const val tfjs = "4.4.0"
 
     const val kmath = "0.3.0"
     const val multik = "0.2.0"

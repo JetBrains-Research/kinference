@@ -32,10 +32,10 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
 
     @Suppress("UNCHECKED_CAST")
     override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
-        "Add" -> Add(name, version, attributes, inputs, outputs)
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)
+        "Add" -> Add(name, version, attributes, inputs, outputs)
         "And" -> And(name, version, attributes, inputs, outputs)
         "ArgMax" -> ArgMax(name, version, attributes, inputs, outputs)
         "ArgMin" -> ArgMin(name, version, attributes, inputs, outputs)
@@ -85,6 +85,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
+        "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)

@@ -140,3 +140,7 @@ fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): Mome
     val out = moments(this.tfjsArray, axes, keepDims)
     return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
 }
+
+fun <T : NDArrayTFJS> T.tensorScatterUpdate(indices: NDArrayTFJS, updates: NDArrayTFJS): T {
+    return tfjsArray.tensorScatterUpdate(indices.tfjsArray, updates.tfjsArray).toNDArray() as T
+}

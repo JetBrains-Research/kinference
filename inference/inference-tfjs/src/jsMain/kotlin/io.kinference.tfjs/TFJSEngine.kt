@@ -25,7 +25,7 @@ object TFJSBackend : BackendInfo(name = "TensorFlow for JS")
  * Essentially, it employs GPU operations provided by TensorFlow.js to boost the computations.
  * Recommended backend for JavaScript projects.
  *
- * TensorFlow.js version: 4.0.0
+ * TensorFlow.js version: 4.4.0
  */
 object TFJSEngine : InferenceEngine<TFJSData<*>> {
     override val info: BackendInfo
