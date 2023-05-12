@@ -16,6 +16,8 @@ import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitiv
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
+import kotlin.experimental.xor
+
 
 suspend fun PrimitiveNDArray.bitXor(other: PrimitiveNDArray): MutablePrimitiveNDArray {
     val destShape = broadcastShape(listOf(this.shape, other.shape))
