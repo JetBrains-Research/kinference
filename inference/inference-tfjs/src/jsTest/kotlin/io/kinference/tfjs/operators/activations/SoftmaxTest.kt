@@ -8,8 +8,23 @@ class SoftmaxTest {
     private fun getTargetPath(dirName: String) = "softmax/$dirName/"
 
     @Test
+    fun test_softmax_axis_0() = TestRunner.runTest {
+        TFJSAccuracyRunner.runFromResources(getTargetPath("test_softmax_axis_0"))
+    }
+
+    @Test
+    fun test_softmax_axis_1() = TestRunner.runTest {
+        TFJSAccuracyRunner.runFromResources(getTargetPath("test_softmax_axis_1"))
+    }
+
+    @Test
     fun test_softmax_axis_2() = TestRunner.runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_softmax_axis_2"))
+    }
+
+    @Test
+    fun test_softmax_with_default_axis() = TestRunner.runTest {
+        TFJSAccuracyRunner.runFromResources(getTargetPath("test_softmax_default_axis"))
     }
 
     @Test

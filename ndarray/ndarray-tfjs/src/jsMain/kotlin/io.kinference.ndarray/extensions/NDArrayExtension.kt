@@ -121,7 +121,15 @@ fun NumberNDArrayTFJS.log() = NumberNDArrayTFJS(tfjsArray.log())
 
 fun NumberNDArrayTFJS.sigmoid() = NumberNDArrayTFJS(sigmoid(tfjsArray))
 
-fun NumberNDArrayTFJS.acos(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.acos())
+fun NumberNDArrayTFJS.acos() = NumberNDArrayTFJS(tfjsArray.acos())
+
+fun NumberNDArrayTFJS.asin() = NumberNDArrayTFJS(tfjsArray.asin())
+
+fun NumberNDArrayTFJS.asinh() = NumberNDArrayTFJS(tfjsArray.asinh())
+
+fun NumberNDArrayTFJS.atan() = NumberNDArrayTFJS(tfjsArray.atan())
+
+fun NumberNDArrayTFJS.atanh() = NumberNDArrayTFJS(tfjsArray.atanh())
 
 fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
     val out = moments(this.tfjsArray, arrayOf(axis), keepDims)

@@ -8,6 +8,14 @@ import kotlin.js.Promise
 
 internal external val abs: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val asin: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val asinh: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val atan: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val atanh: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val acos: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val acosh: (x: ArrayTFJS) -> ArrayTFJS
@@ -88,6 +96,8 @@ internal external val stridedSlice: (
 internal external val squeeze: (x: ArrayTFJS, axis: Array<Int>?) -> ArrayTFJS
 
 internal external val argMax: (x: ArrayTFJS, axis: Int) -> ArrayTFJS
+
+internal external val argMin: (x: ArrayTFJS, axis: Int) -> ArrayTFJS
 
 internal external val tile: (x: ArrayTFJS, reps: Array<Int>) -> ArrayTFJS
 
