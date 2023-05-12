@@ -140,3 +140,5 @@ fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): Mome
     val out = moments(this.tfjsArray, axes, keepDims)
     return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
 }
+
+fun NumberNDArrayTFJS.ceil() = NumberNDArrayTFJS(tfjsArray.ceil())

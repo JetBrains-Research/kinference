@@ -56,6 +56,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "BitwiseXor" -> BitwiseXor(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
+        "Ceil" -> Ceil(name, version, attributes, inputs, outputs)
         "Concat" -> Concat(name, version, attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)

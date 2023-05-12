@@ -250,3 +250,5 @@ fun ArrayTFJS.asinh() = asinh(this)
 fun ArrayTFJS.atan() = atan(this)
 
 fun ArrayTFJS.atanh() = atanh(this)
+
+fun ArrayTFJS.ceil() = ceil(this)
