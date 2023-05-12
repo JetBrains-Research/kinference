@@ -10,6 +10,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.extensions.abs.abs
+import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
 import io.kinference.ndarray.extensions.argMinMax.ArgMinMaxMode
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
@@ -283,204 +284,51 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 
     override suspend fun plus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
-        val destStrides = Strides(destShape)
-        return plus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+        return plus(other, MutablePrimitiveNDArray(destShape))
     }
 
-    private fun plusScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (arrayBlock[idx] + scalar).toPrimitive()
-            }
-        }
-    }
-
-    override suspend fun plus(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
-        require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
-
-        when {
-            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (array.blocks[0][0] + other.array.blocks[0][0]).toPrimitive()
-            this.isScalar() -> plusScalar(other.array, this.array.blocks[0][0], destination.array)
-            other.isScalar() -> plusScalar(this.array, other.array.blocks[0][0], destination.array)
-            else -> this.applyWithBroadcast(other, destination, false) { left, right, dest ->
-                left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] + rightBlock[idx]).toPrimitive()
-                    }
-                }
-            }
-        }
-
-        return destination
-    }
+    override suspend fun plus(other: NumberNDArray, destination: MutableNumberNDArray) =
+        broadcastTwoTensorsPrimitive(
+            this,
+            other as PrimitiveNDArray,
+            destination as MutablePrimitiveNDArray
+        ) { left: PrimitiveType, right: PrimitiveType -> (left + right).toPrimitive() }
 
     override suspend fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
-        val destStrides = Strides(destShape)
-        return minus(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+        return minus(other, MutablePrimitiveNDArray(destShape))
     }
 
-    private fun minusScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (arrayBlock[idx] - scalar).toPrimitive()
-            }
-        }
-    }
-
-    private fun minusFromScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (scalar - arrayBlock[idx]).toPrimitive()
-            }
-        }
-    }
-
-    override suspend fun minus(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
-        require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
-
-        when {
-            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (this.array.blocks[0][0] - other.array.blocks[0][0]).toPrimitive()
-            other.isScalar() -> minusScalar(array, other.array.blocks[0][0], destination.array)
-            this.isScalar() -> minusFromScalar(other.array, array.blocks[0][0], destination.array)
-            else -> this.applyWithBroadcast(other, destination, true) { left, right, dest ->
-                left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
-
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] - rightBlock[idx]).toPrimitive()
-                    }
-                }
-            }
-        }
-
-        return destination
-    }
+    override suspend fun minus(other: NumberNDArray, destination: MutableNumberNDArray) =
+        broadcastTwoTensorsPrimitive(
+            this,
+            other as PrimitiveNDArray,
+            destination as MutablePrimitiveNDArray
+        ) { left: PrimitiveType, right: PrimitiveType -> (left - right).toPrimitive() }
 
     override suspend fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
-        val destStrides = Strides(destShape)
-        return times(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+        return times(other, MutablePrimitiveNDArray(destShape))
     }
 
-    private fun timesScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (arrayBlock[idx] * scalar).toPrimitive()
-            }
-        }
-    }
-
-    override suspend fun times(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
-        require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
-
-        when {
-            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (this.array.blocks[0][0] * other.array.blocks[0][0]).toPrimitive()
-            this.isScalar() -> timesScalar(other.array, this.array.blocks[0][0], destination.array)
-            other.isScalar() -> timesScalar(this.array, other.array.blocks[0][0], destination.array)
-            else -> this.applyWithBroadcast(other, destination, false) { left, right, dest ->
-                left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
-
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] * rightBlock[idx]).toPrimitive()
-                    }
-                }
-            }
-        }
-
-        return destination
-    }
+    override suspend fun times(other: NumberNDArray, destination: MutableNumberNDArray) =
+        broadcastTwoTensorsPrimitive(
+            this,
+            other as PrimitiveNDArray,
+            destination as MutablePrimitiveNDArray
+        ) { left: PrimitiveType, right: PrimitiveType -> (left * right).toPrimitive() }
 
     override suspend fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
-        val destStrides = Strides(destShape)
-        return div(other, MutablePrimitiveNDArray(PrimitiveTiledArray(destStrides), destStrides))
+        return div(other, MutablePrimitiveNDArray(destShape))
     }
 
-    private fun divByScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (arrayBlock[idx] / scalar).toPrimitive()
-            }
-        }
-    }
-
-    private fun divScalar(array: PrimitiveTiledArray, scalar: PrimitiveType, destination: PrimitiveTiledArray) {
-        require(array.blocksNum == destination.blocksNum && array.blockSize == destination.blockSize)
-
-        for (blockNum in 0 until array.blocksNum) {
-            val arrayBlock = array.blocks[blockNum]
-            val destBlock = destination.blocks[blockNum]
-
-            for (idx in arrayBlock.indices) {
-                destBlock[idx] = (scalar / arrayBlock[idx]).toPrimitive()
-            }
-        }
-    }
-
-    override suspend fun div(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
-        require(other is PrimitiveNDArray && destination is MutablePrimitiveNDArray) { "Operands must have the same types" }
-
-        when {
-            this.isScalar() && other.isScalar() -> destination.array.blocks[0][0] = (this.array.blocks[0][0] / other.array.blocks[0][0]).toPrimitive()
-            other.isScalar() -> divByScalar(array, other.array.blocks[0][0], destination.array)
-            this.isScalar() -> divScalar(other.array, array.blocks[0][0], destination.array)
-            else -> this.applyWithBroadcast(other, destination, true) { left, right, dest ->
-                left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
-
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
-
-                    for (idx in leftBlock.indices) {
-                        destBlock[idx] = (leftBlock[idx] / rightBlock[idx]).toPrimitive()
-                    }
-                }
-            }
-        }
-
-        return destination
-    }
+    override suspend fun div(other: NumberNDArray, destination: MutableNumberNDArray) =
+        broadcastTwoTensorsPrimitive(
+            this,
+            other as PrimitiveNDArray,
+            destination as MutablePrimitiveNDArray
+        ) { left: PrimitiveType, right: PrimitiveType -> (left / right).toPrimitive() }
 
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray

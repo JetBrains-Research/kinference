@@ -55,11 +55,14 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
             return when (type) {
                 DataType.DOUBLE -> DoubleNDArray(value as DoubleTiledArray, strides).asTensor(name)
                 in FLOAT_TENSOR_TYPES -> FloatNDArray(value as FloatTiledArray, strides).asTensor(name)
-                DataType.INT32 -> IntNDArray(value as IntTiledArray, strides).asTensor(name)
                 DataType.INT8 -> ByteNDArray(value as ByteTiledArray, strides).asTensor(name)
-                DataType.UINT8 -> UByteNDArray(value as UByteTiledArray, strides).asTensor(name)
-                DataType.INT64 -> LongNDArray(value as LongTiledArray, strides).asTensor(name)
                 DataType.INT16 -> ShortNDArray(value as ShortTiledArray, strides).asTensor(name)
+                DataType.INT32 -> IntNDArray(value as IntTiledArray, strides).asTensor(name)
+                DataType.INT64 -> LongNDArray(value as LongTiledArray, strides).asTensor(name)
+                DataType.UINT8 -> UByteNDArray(value as UByteTiledArray, strides).asTensor(name)
+                DataType.UINT16 -> UShortNDArray(value as UShortTiledArray, strides).asTensor(name)
+                DataType.UINT32 -> UIntNDArray(value as UIntTiledArray, strides).asTensor(name)
+                DataType.UINT64 -> ULongNDArray(value as ULongTiledArray, strides).asTensor(name)
                 DataType.BOOL -> BooleanNDArray(value as BooleanTiledArray, strides).asTensor(name)
                 DataType.STRING -> {
                     value as List<String>
