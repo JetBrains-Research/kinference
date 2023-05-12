@@ -7,8 +7,6 @@
 package io.kinference.ndarray.extensions.bitwise.shift
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
@@ -20,10 +18,11 @@ suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, directio
 }
 
 suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, direction: BitShiftDirection, destination: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
-    val shiftFunction = when(direction) {
-        BitShiftDirection.LEFT -> PrimitiveType::shl
-        BitShiftDirection.RIGHT -> PrimitiveType::shr
-    } as PrimitiveType.(Int) -> PrimitiveType
+    val shiftFunction: PrimitiveType.(Int) -> PrimitiveType
+        = when(direction) {
+            BitShiftDirection.LEFT -> PrimitiveType::shl
+            BitShiftDirection.RIGHT -> PrimitiveType::shr
+        }
 
     return broadcastTwoTensorsPrimitive(this, amountsOfShift, destination) { left: PrimitiveType, right: PrimitiveType ->
         left.shiftFunction(right.toInt())

@@ -64,7 +64,7 @@ class BitwiseNotVer18(
             DataType.USHORT -> (input as UShortNDArray).bitNot()
             DataType.UINT -> (input as UIntNDArray).bitNot()
             DataType.ULONG -> (input as ULongNDArray).bitNot()
-            else -> error("Unsupported input type, current type ${input.type}")
+            else -> error("Unsupported input type in BitwiseNot operator, current type ${input.type}")
         }
 
         return listOf(dest.asTensor("C"))

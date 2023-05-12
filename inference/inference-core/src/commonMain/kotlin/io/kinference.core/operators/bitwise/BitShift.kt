@@ -61,13 +61,14 @@ class BitShiftVer11(name: String, attributes: Map<String, Attribute<Any>>, input
         val shiftTensor = inputs[1]!!.data
 
         require(input.type == shiftTensor.type)
+            { "Both tensors in BitShift operator should have same DataType, now X = ${input.type}, Y = ${shiftTensor.type}" }
 
         val output = when (input.type) {
             DataType.UINT -> (input as UIntNDArray).bitShift(shiftTensor as UIntNDArray, direction)
             DataType.USHORT -> (input as UShortNDArray).bitShift(shiftTensor as UShortNDArray, direction)
             DataType.UBYTE -> (input as UByteNDArray).bitShift(shiftTensor as UByteNDArray, direction)
             DataType.ULONG -> (input as ULongNDArray).bitShift(shiftTensor as ULongNDArray, direction)
-            else -> error("")
+            else -> error("Unsupported input type, current type ${input.type}")
         }
 
         return listOf(output.asTensor("Z"))

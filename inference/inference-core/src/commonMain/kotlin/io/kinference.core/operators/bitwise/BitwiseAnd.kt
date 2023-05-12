@@ -57,7 +57,8 @@ class BitwiseAndVer18(
         val left = inputs[0]!!.data
         val right = inputs[1]!!.data
 
-        require(left.type == right.type) { "" }
+        require(left.type == right.type)
+            { "Both tensors in BitwiseAnd operator should have same DataType, now A = ${left.type}, B = ${right.type}" }
 
         val dest = when (left.type) {
             DataType.BYTE -> (left as ByteNDArray).bitAnd(right as ByteNDArray)
@@ -68,7 +69,7 @@ class BitwiseAndVer18(
             DataType.USHORT -> (left as UShortNDArray).bitAnd(right as UShortNDArray)
             DataType.UINT -> (left as UIntNDArray).bitAnd(right as UIntNDArray)
             DataType.ULONG -> (left as ULongNDArray).bitAnd(right as ULongNDArray)
-            else -> error("Unsupported input type, current type ${left.type}")
+            else -> error("Unsupported input type in BitwiseOperator, current type ${left.type}")
         }
 
         return listOf(dest.asTensor("C"))
