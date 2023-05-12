@@ -223,5 +223,18 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
             TensorProto.DataType.UINT64
         )
         val FLOAT_DATA_TYPES = setOf(TensorProto.DataType.BFLOAT16, TensorProto.DataType.FLOAT16, TensorProto.DataType.FLOAT, TensorProto.DataType.DOUBLE)
+        val UINT_DATA_TYPES = setOf(
+            TensorProto.DataType.UINT8,
+            TensorProto.DataType.UINT16,
+            TensorProto.DataType.UINT32,
+            TensorProto.DataType.UINT64,
+        )
+
+        val INT_DATA_TYPES = setOf(
+            TensorProto.DataType.INT8,
+            TensorProto.DataType.INT16,
+            TensorProto.DataType.INT32,
+            TensorProto.DataType.INT64,
+        )
     }
 }

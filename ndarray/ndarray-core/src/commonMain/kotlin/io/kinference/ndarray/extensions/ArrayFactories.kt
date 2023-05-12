@@ -6,29 +6,34 @@ import io.kinference.primitives.types.DataType
 
 inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
     return when (type) {
-        DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
         DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
-        DataType.LONG -> LongTiledArray(shape) { init(it) as Long }
+        DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
+        DataType.BYTE -> ByteTiledArray(shape) { init(it) as Byte }
         DataType.INT -> IntTiledArray(shape) { init(it) as Int }
         DataType.SHORT -> ShortTiledArray(shape) { init(it) as Short }
-        DataType.BOOLEAN -> BooleanTiledArray(shape) { init(it) as Boolean }
-        DataType.BYTE -> ByteTiledArray(shape) { init(it) as Byte }
+        DataType.LONG -> LongTiledArray(shape) { init(it) as Long }
         DataType.UBYTE -> UByteTiledArray(shape) { init(it) as UByte }
+        DataType.USHORT -> UShortTiledArray(shape) { init(it) as UShort }
+        DataType.UINT -> UIntTiledArray(shape) { init(it) as UInt }
+        DataType.ULONG -> ULongTiledArray(shape) { init(it) as ULong }
+        DataType.BOOLEAN -> BooleanTiledArray(shape) { init(it) as Boolean }
         else -> error("Unsupported data type: $type")
     }
 }
 
 inline fun <reified T> createPrimitiveArray(type: DataType, size: Int, noinline init: (Int) -> T): Any {
     return when (type) {
-        DataType.DOUBLE -> DoubleArray(size) { init(it) as Double }
         DataType.FLOAT -> FloatArray(size) { init(it) as Float }
-        DataType.LONG -> LongArray(size) { init(it) as Long }
+        DataType.DOUBLE -> DoubleArray(size) { init(it) as Double }
         DataType.INT -> IntArray(size) { init(it) as Int }
         DataType.SHORT -> ShortArray(size) { init(it) as Short }
-        DataType.USHORT -> UShortArray(size) { init(it) as UShort }
-        DataType.BOOLEAN -> BooleanArray(size) { init(it) as Boolean }
+        DataType.LONG -> LongArray(size) { init(it) as Long }
         DataType.BYTE -> ByteArray(size) { init(it) as Byte }
         DataType.UBYTE -> UByteArray(size) { init(it) as UByte }
+        DataType.USHORT -> UShortArray(size) { init(it) as UShort }
+        DataType.UINT -> UIntArray(size) { init(it) as UInt }
+        DataType.ULONG -> ULongArray(size) { init(it) as ULong }
+        DataType.BOOLEAN -> BooleanArray(size) { init(it) as Boolean }
         else -> error("Unsupported data type: $type")
     }
 }
