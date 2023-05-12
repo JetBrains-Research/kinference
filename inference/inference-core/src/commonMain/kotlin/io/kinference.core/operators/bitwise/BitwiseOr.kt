@@ -6,11 +6,11 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.bitwise.and.bitAnd
+import io.kinference.ndarray.extensions.bitwise.or.bitOr
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 
-sealed class BitwiseAnd(
+sealed class BitwiseOr(
     name: String,
     info: OperatorInfo,
     attributes: Map<String, Attribute<Any>>,
@@ -22,19 +22,19 @@ sealed class BitwiseAnd(
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
-                in BitwiseAndVer18.VERSION.asRange() -> BitwiseAndVer18(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of BitwiseAnd operator: $version")
+                in BitwiseOrVer18.VERSION.asRange() -> BitwiseOrVer18(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of BitwiseOr operator: $version")
             }
     }
 }
 
 
-class BitwiseAndVer18(
+class BitwiseOrVer18(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : BitwiseAnd(name, INFO, attributes, inputs, outputs) {
+) : BitwiseOr(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = UINT_DATA_TYPES + INT_DATA_TYPES
 
@@ -50,7 +50,7 @@ class BitwiseAndVer18(
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 18)
-        private val INFO = OperatorInfo("BitwiseAnd", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("BitwiseOr", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
@@ -60,14 +60,14 @@ class BitwiseAndVer18(
         require(left.type == right.type) { "" }
 
         val dest = when (left.type) {
-            DataType.BYTE -> (left as ByteNDArray).bitAnd(right as ByteNDArray)
-            DataType.SHORT -> (left as ShortNDArray).bitAnd(right as ShortNDArray)
-            DataType.INT -> (left as IntNDArray).bitAnd(right as IntNDArray)
-            DataType.LONG -> (left as LongNDArray).bitAnd(right as LongNDArray)
-            DataType.UBYTE -> (left as UByteNDArray).bitAnd(right as UByteNDArray)
-            DataType.USHORT -> (left as UShortNDArray).bitAnd(right as UShortNDArray)
-            DataType.UINT -> (left as UIntNDArray).bitAnd(right as UIntNDArray)
-            DataType.ULONG -> (left as ULongNDArray).bitAnd(right as ULongNDArray)
+            DataType.BYTE -> (left as ByteNDArray).bitOr(right as ByteNDArray)
+            DataType.SHORT -> (left as ShortNDArray).bitOr(right as ShortNDArray)
+            DataType.INT -> (left as IntNDArray).bitOr(right as IntNDArray)
+            DataType.LONG -> (left as LongNDArray).bitOr(right as LongNDArray)
+            DataType.UBYTE -> (left as UByteNDArray).bitOr(right as UByteNDArray)
+            DataType.USHORT -> (left as UShortNDArray).bitOr(right as UShortNDArray)
+            DataType.UINT -> (left as UIntNDArray).bitOr(right as UIntNDArray)
+            DataType.ULONG -> (left as ULongNDArray).bitOr(right as ULongNDArray)
             else -> error("Unsupported input type, current type ${left.type}")
         }
 
