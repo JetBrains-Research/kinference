@@ -291,7 +291,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> left + right }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left + right).toPrimitive() }
 
     override suspend fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -303,7 +303,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> left - right }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left - right).toPrimitive() }
 
     override suspend fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -315,7 +315,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> left * right }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left * right).toPrimitive() }
 
     override suspend fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -327,7 +327,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> left / right }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left / right).toPrimitive() }
 
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
