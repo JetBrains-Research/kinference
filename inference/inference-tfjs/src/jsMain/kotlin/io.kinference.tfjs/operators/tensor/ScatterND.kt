@@ -1,13 +1,13 @@
-package io.kinference.core.operators.tensor
+package io.kinference.tfjs.operators.tensor
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.tensorScatterUpdate
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class ScatterND(
     name: String,
@@ -15,7 +15,7 @@ sealed class ScatterND(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
 
@@ -45,33 +45,13 @@ class ScatterNDVer11(
 
         internal val VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
         private val INFO = OperatorInfo("ScatterND", emptyList(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        private fun getActualIndices(input: NDArray, indices: LongNDArray, kDim: Int): IntArray {
-            val inputStrides = input.strides.strides
-            val numBlocks = indices.linearSize / kDim
-            val indicesPointer = indices.array.pointer()
-            return IntArray(numBlocks) {
-                var acc = 0
-                for (i in 0 until kDim) acc += indicesPointer.getAndIncrement().toInt() * inputStrides[i]
-                acc
-            }
-        }
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data.toMutable()
-        val indices = inputs[1]!!.data as LongNDArray
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs[0]!!.data
+        val indices = inputs[1]!!.data
         val updates = inputs[2]!!.data
 
-        val kDim = indices.shape.last()
-        val blockSize = input.computeBlockSize(fromDim = kDim)
-        val srcUpdateOffsets = getActualIndices(input, indices, kDim)
-
-        for ((i, offset) in srcUpdateOffsets.withIndex()) {
-            val srcOff = i * blockSize
-            input.copyFrom(offset, updates, srcOff, srcOff + blockSize)
-        }
-
-        return listOf(input.asTensor("output"))
+        return listOf(input.tensorScatterUpdate(indices, updates).asTensor("output"))
     }
 }

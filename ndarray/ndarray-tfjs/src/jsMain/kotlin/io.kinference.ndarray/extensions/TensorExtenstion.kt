@@ -251,4 +251,6 @@ fun ArrayTFJS.atan() = atan(this)
 
 fun ArrayTFJS.atanh() = atanh(this)
 
+fun ArrayTFJS.tensorScatterUpdate(indices: ArrayTFJS, updates: ArrayTFJS) = tensorScatterUpdate(this, indices, updates)
+
 fun ArrayTFJS.ceil() = ceil(this)

@@ -82,6 +82,8 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             }
         }*/
 
+        private fun UByteArray.toIntTypedArray() = Array(this.size) { this[it].toInt() }
+
         private operator fun invoke(value: Any, type: DataType, dims: IntArray, name: String? = ""): TFJSTensor {
             val nameNotNull = name.orEmpty()
             val typedDims = dims.toTypedArray()
@@ -89,7 +91,7 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
                 in FLOAT_TENSOR_TYPES -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32"))
                 DataType.DOUBLE -> NumberNDArrayTFJS(tensor((value as DoubleArray).toTypedArray(), typedDims, "float32"))
                 DataType.INT32 -> NumberNDArrayTFJS(tensor(value as IntArray, typedDims, "int32"))
-                DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toTypedArray(), typedDims, "int32"))
+                DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toIntTypedArray(), typedDims, "int32"))
                 DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32"))
                 DataType.INT64 -> NumberNDArrayTFJS(tensor((value as LongArray).toIntArray(), typedDims, "int32"))
                 DataType.BOOL -> BooleanNDArrayTFJS(tensor((value as BooleanArray).toTypedArray(), typedDims, "bool"))

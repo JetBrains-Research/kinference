@@ -10,9 +10,15 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.utils.getFullIndices
 
-sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
+sealed class GatherElements(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
@@ -25,8 +31,12 @@ sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<St
 }
 
 
-class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    GatherElements(name, INFO, attributes, inputs, outputs) {
+class GatherElementsVer11(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : GatherElements(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -58,48 +68,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
         // replace negative indices
         val limitByAxis = input.shape[actualAxis]
         val output = tidyNDArray {
-            val indicesGreaterOrEqualZero = indices.greaterEqual(NDArrayTFJS.intScalar(0)) // Bool tensor
-            val actualIndices = indices.where(indicesGreaterOrEqualZero, indices + NDArrayTFJS.intScalar(limitByAxis))
-
-            // Zero pad indices to GatherND style
-            val reshapedIndices = actualIndices.reshape(intArrayOf(*actualIndices.shape, 1))
-            val padArray = Array(reshapedIndices.rank) {
-                if (it != reshapedIndices.rank - 1) {
-                    arrayOf(0, 0)
-                } else {
-                    arrayOf(actualAxis, input.rank - actualAxis - 1)
-                }
-            }
-            val paddedIndices = reshapedIndices.pad(padArray, 0) as NumberNDArrayTFJS
-
-            // Add relevant values to indices for GatherND
-            val baseRangeShape = Array(paddedIndices.rank) { 1 }
-            val baseRangePad = Array(paddedIndices.rank) { arrayOf(0, 0) }
-
-            val otherRelevantIndices = List(paddedIndices.rank - 1) { axis ->
-                if (axis == actualAxis) {
-                    // do nothing for operator axis
-                    null
-                } else {
-                    // Make range for axis
-                    val range = NDArrayTFJS.intRange(0, paddedIndices.shape[axis], 1)
-                    val rangeShape = baseRangeShape.copyOf().apply { set(axis, paddedIndices.shape[axis]) }
-                    //reshape to [1,...,paddedIndices.shape[axis],...,1]
-                    // reshapedRange.rank == paddedIndices.rank
-                    val reshapedRange = range.reshape(rangeShape.toIntArray())
-
-                    val rangePadding = baseRangePad.copyOf().apply { set(baseRangePad.lastIndex, arrayOf(axis, input.rank - axis - 1)) }
-                    // padding to [1,...,paddedIndices.shape[axis],...,input.rank]
-                    val paddedRange = reshapedRange.pad(rangePadding, 0)
-
-                    // broadcast to paddedIndices
-                    paddedRange.broadcastTo(paddedIndices.shapeArray)
-                }
-            }.filterNotNull().toTypedArray()
-
-            // Adding relevant indices for GatherND
-            val indicesForGatherNd = paddedIndices.add(otherRelevantIndices)
-
+            val indicesForGatherNd = indices.getFullIndices(actualAxis, limitByAxis, input.rank)
             return@tidyNDArray input.gatherNd(indicesForGatherNd)
         }
 
