@@ -6,6 +6,7 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.KIGraph
 import io.kinference.core.operators.activations.*
+import io.kinference.core.operators.bitwise.*
 import io.kinference.core.operators.flow.*
 import io.kinference.core.operators.layer.attention.Attention
 import io.kinference.core.operators.layer.attention.QAttention
@@ -48,8 +49,14 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Atan" -> Atan(name, version, attributes, inputs, outputs)
         "Atanh" -> Atanh(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
+        "BitShift" -> BitShift(name, version, attributes, inputs, outputs)
+        "BitwiseAnd" -> BitwiseAnd(name, version, attributes, inputs, outputs)
+        "BitwiseNot" -> BitwiseNot(name, version, attributes, inputs, outputs)
+        "BitwiseOr" -> BitwiseOr(name, version, attributes, inputs, outputs)
+        "BitwiseXor" -> BitwiseXor(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
+        "Ceil" -> Ceil(name, version, attributes, inputs, outputs)
         "Concat" -> Concat(name, version, attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)

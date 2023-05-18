@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.20" apply true
+    id("io.kinference.primitives") version "0.1.21" apply true
 }
 
 kotlin {

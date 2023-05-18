@@ -144,3 +144,5 @@ fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): Mome
 fun <T : NDArrayTFJS> T.tensorScatterUpdate(indices: NDArrayTFJS, updates: NDArrayTFJS): T {
     return tfjsArray.tensorScatterUpdate(indices.tfjsArray, updates.tfjsArray).toNDArray() as T
 }
+
+fun NumberNDArrayTFJS.ceil() = NumberNDArrayTFJS(tfjsArray.ceil())

@@ -138,3 +138,6 @@ internal external val topk: (x: ArrayTFJS, k: Int, sorted: Boolean) -> Pair<Arra
 internal external val sigmoid: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val tensorScatterUpdate: (tensor: ArrayTFJS, indices: ArrayTFJS, updates: ArrayTFJS) -> ArrayTFJS
+
+internal external val ceil: (x: ArrayTFJS) -> ArrayTFJS
+
