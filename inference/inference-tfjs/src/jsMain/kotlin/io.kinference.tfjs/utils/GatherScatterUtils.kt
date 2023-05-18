@@ -27,32 +27,30 @@ internal suspend fun NumberNDArrayTFJS.getFullIndices(axis: Int, axisLimit: Int,
         }
         val paddedIndices = reshapedIndices.pad(padArray, 0) as NumberNDArrayTFJS
 
-        // Add relevant values to indices for GatherND
+        // Add relevant values to indices
         val baseRangeShape = Array(paddedIndices.rank) { 1 }
         val baseRangePad = Array(paddedIndices.rank) { arrayOf(0, 0) }
 
         val otherRelevantIndices = List(paddedIndices.rank - 1) { currentAxis ->
-            if (currentAxis == axis) {
-                // do nothing for operator axis
-                null
-            } else {
-                // Make range for axis
-                val range = NDArrayTFJS.intRange(0, paddedIndices.shape[currentAxis], 1)
-                val rangeShape = baseRangeShape.copyOf().apply { set(currentAxis, paddedIndices.shape[currentAxis]) }
-                //reshape to [1,...,paddedIndices.shape[axis],...,1]
-                // reshapedRange.rank == paddedIndices.rank
-                val reshapedRange = range.reshape(rangeShape.toIntArray())
+            // do nothing for operator axis
+            if (currentAxis == axis) return@List null
 
-                val rangePadding = baseRangePad.copyOf().apply { set(baseRangePad.lastIndex, arrayOf(currentAxis, inputRank - currentAxis - 1)) }
-                // padding to [1,...,paddedIndices.shape[axis],...,input.rank]
-                val paddedRange = reshapedRange.pad(rangePadding, 0)
+            // Make range for axis
+            val range = NDArrayTFJS.intRange(0, paddedIndices.shape[currentAxis], 1)
+            val rangeShape = baseRangeShape.copyOf().apply { set(currentAxis, paddedIndices.shape[currentAxis]) }
+            //reshape to [1,...,paddedIndices.shape[axis],...,1]
+            // reshapedRange.rank == paddedIndices.rank
+            val reshapedRange = range.reshape(rangeShape.toIntArray())
 
-                // broadcast to paddedIndices
-                paddedRange.broadcastTo(paddedIndices.shapeArray)
-            }
+            val rangePadding = baseRangePad.copyOf().apply { set(baseRangePad.lastIndex, arrayOf(currentAxis, inputRank - currentAxis - 1)) }
+            // padding to [1,...,paddedIndices.shape[axis],...,input.rank]
+            val paddedRange = reshapedRange.pad(rangePadding, 0)
+
+            // broadcast to paddedIndices
+            paddedRange.broadcastTo(paddedIndices.shapeArray)
         }.filterNotNull().toTypedArray()
 
-        // Adding relevant indices for GatherND
+        // Adding relevant indices
         paddedIndices.add(otherRelevantIndices)
     }
 }
