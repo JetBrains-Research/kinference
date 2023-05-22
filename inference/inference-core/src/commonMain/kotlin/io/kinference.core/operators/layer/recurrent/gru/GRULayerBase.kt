@@ -1,14 +1,9 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.primitives.types.DataType
-
-enum class LayerDirection {
-    FORWARD,
-    REVERSE,
-    BIDIRECTIONAL
-}
 
 abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, val direction: LayerDirection) {
     abstract suspend fun apply(

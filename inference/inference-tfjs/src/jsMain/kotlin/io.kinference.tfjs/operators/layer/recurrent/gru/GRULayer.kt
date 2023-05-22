@@ -2,6 +2,7 @@ package io.kinference.tfjs.operators.layer.recurrent.gru
 
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirection): GRULayerBase(hiddenSize, activations, direction) {
     init {

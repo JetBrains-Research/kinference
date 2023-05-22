@@ -3,6 +3,7 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray

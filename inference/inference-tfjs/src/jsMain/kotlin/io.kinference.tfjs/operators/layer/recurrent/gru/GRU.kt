@@ -10,6 +10,7 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 sealed class GRU(
     name: String,

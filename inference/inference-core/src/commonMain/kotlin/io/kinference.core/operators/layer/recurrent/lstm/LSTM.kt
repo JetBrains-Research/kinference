@@ -3,6 +3,7 @@ package io.kinference.core.operators.layer.recurrent.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
@@ -63,13 +64,15 @@ class LSTMVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val activations: List<String> by attribute() { it: List<String> ->
-        if (direction == "forward" || direction == "reverse")
-            it.subList(0, 3)
-        else
-            it
+    private val activations: List<String> by attribute { it: List<String> ->
+        when(direction) {
+            LayerDirection.FORWARD, LayerDirection.REVERSE -> it.subList(0, 3)
+            LayerDirection.BIDIRECTIONAL -> it
+        }
     }
-    private val direction: String by attribute()
+
+    private val direction: LayerDirection by attribute { it: String -> LayerDirection.valueOf(it.uppercase()) }
+
     private val hiddenSize: Int by attribute("hidden_size") { it: Number -> it.toInt() }
     private val batchWise: Boolean by attribute("layout") { it: Number -> it.toInt() == 1 }
 

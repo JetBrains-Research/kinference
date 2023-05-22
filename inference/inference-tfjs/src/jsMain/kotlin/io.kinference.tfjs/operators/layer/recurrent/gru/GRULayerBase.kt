@@ -1,12 +1,7 @@
 package io.kinference.tfjs.operators.layer.recurrent.gru
 
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
-
-enum class LayerDirection {
-    FORWARD,
-    REVERSE,
-    BIDIRECTIONAL
-}
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, val direction: LayerDirection) {
     abstract suspend fun apply(

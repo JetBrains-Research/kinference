@@ -1,11 +1,12 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.primitives.types.DataType
 
 
-abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>, val direction: String) {
+abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>, val direction: LayerDirection) {
 
     abstract suspend fun apply(
         input: AbstractLSTMInput,
@@ -20,10 +21,10 @@ abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>,
     ): LSTMLayerOutput
 
     companion object {
-        fun create(hiddenSize: Int, activations: List<String>, direction: String) =
+        fun create(hiddenSize: Int, activations: List<String>, direction: LayerDirection) =
             when(direction) {
-                "forward", "reverse" -> LSTMLayer(hiddenSize, activations, direction)
-                "bidirectional" -> BiLSTMLayer(hiddenSize, activations)
+                LayerDirection.FORWARD, LayerDirection.REVERSE -> LSTMLayer(hiddenSize, activations, direction)
+                LayerDirection.BIDIRECTIONAL -> BiLSTMLayer(hiddenSize, activations)
                 else -> error("Bad direction attribute")
             }
 

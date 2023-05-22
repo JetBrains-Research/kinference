@@ -1,5 +1,6 @@
 package io.kinference.core.operators.layer.recurrent.gru
 
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType

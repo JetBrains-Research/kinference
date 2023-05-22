@@ -3,6 +3,7 @@ package io.kinference.core.operators.quantization.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.core.operators.layer.recurrent.lstm.LSTMLayerBase
 import io.kinference.data.ONNXData
@@ -68,16 +69,17 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
         private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
     }
 
-    private val activations: List<String> by attribute() { it: List<String> ->
-        if (direction == "forward" || direction == "reverse")
-            it.subList(0, 3)
-        else it
+    private val activations: List<String> by attribute { it: List<String> ->
+        when(direction) {
+            LayerDirection.FORWARD, LayerDirection.REVERSE -> it.subList(0, 3)
+            LayerDirection.BIDIRECTIONAL -> it
+        }
     }
 
-    private val direction: String by attribute()
+    private val direction: LayerDirection by attribute { it: String -> LayerDirection.valueOf(it.uppercase()) }
     private val hiddenSize: Int by attribute("hidden_size") { it: Number -> it.toInt() }
 
-    private val numDirections = if (direction == "forward" || direction == "reverse") 1 else 2
+    private val numDirections = direction.numDirections()
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
