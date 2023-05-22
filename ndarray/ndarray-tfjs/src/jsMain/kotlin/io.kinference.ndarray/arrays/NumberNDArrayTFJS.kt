@@ -240,4 +240,6 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
+
+    fun asMutable() = MutableNumberNDArrayTFJS(tfjsArray)
 }

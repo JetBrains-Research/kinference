@@ -4,13 +4,13 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
-class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hiddenSize, activations, "bidirectional") {
+class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hiddenSize, activations, LayerDirection.BIDIRECTIONAL) {
     init {
         require(activations.size == 4)
     }
 
-    private val forwardLayer = GRULayer(hiddenSize, activations.subList(0, 2), "forward")
-    private val reverseLayer = GRULayer(hiddenSize, activations.subList(2, 4), "reverse")
+    private val forwardLayer = GRULayer(hiddenSize, activations.subList(0, 2), LayerDirection.FORWARD)
+    private val reverseLayer = GRULayer(hiddenSize, activations.subList(2, 4), LayerDirection.REVERSE)
 
     override suspend fun apply(
         input: NumberNDArrayCore,

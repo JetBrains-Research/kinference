@@ -7,7 +7,7 @@ import io.kinference.primitives.types.DataType
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): GRULayerBase(hiddenSize, activations, direction) {
+class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirection): GRULayerBase(hiddenSize, activations, direction) {
     init {
         require(activations.size == 2)
     }
@@ -53,7 +53,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: String): G
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
         val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
-        val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
+        val seqRange = if (direction == LayerDirection.FORWARD) 0 until seqLength else (0 until seqLength).reversed()
 
         suspend fun wrapper(seqNum: Int, body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
             for (batchNum in 0 until batchSize) {

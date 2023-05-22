@@ -14,6 +14,7 @@ import io.kinference.tfjs.operators.flow.*
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
+import io.kinference.tfjs.operators.layer.recurrent.gru.GRU
 import io.kinference.tfjs.operators.logical.*
 import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
@@ -67,6 +68,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "GatherND" -> GatherND(name, version, attributes, inputs, outputs)
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
+        "GRU" -> GRU(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
         "If" -> If(name, version, attributes, inputs, outputs)
         "LayerNormalization" -> LayerNormalization(name, version, attributes, inputs, outputs)

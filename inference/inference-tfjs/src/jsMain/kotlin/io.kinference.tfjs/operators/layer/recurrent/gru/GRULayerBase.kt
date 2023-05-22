@@ -1,8 +1,6 @@
-package io.kinference.core.operators.layer.recurrent.gru
+package io.kinference.tfjs.operators.layer.recurrent.gru
 
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
-import io.kinference.primitives.types.DataType
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 
 enum class LayerDirection {
     FORWARD,
@@ -12,9 +10,9 @@ enum class LayerDirection {
 
 abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, val direction: LayerDirection) {
     abstract suspend fun apply(
-        input: NumberNDArrayCore, weights: NumberNDArrayCore, recurrentWeights: NumberNDArrayCore, bias: NumberNDArrayCore?,
-        sequenceLength: IntNDArray?, initialHiddenState: NumberNDArrayCore?, dataType: DataType, linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayCore, NumberNDArrayCore>
+        input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, recurrentWeights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS?,
+        sequenceLength: NumberNDArrayTFJS?, initialHiddenState: NumberNDArrayTFJS?, linearBeforeReset: Boolean
+    ): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS>
 
     companion object {
         fun create(hiddenSize: Int, activations: List<String>, direction: LayerDirection) =
