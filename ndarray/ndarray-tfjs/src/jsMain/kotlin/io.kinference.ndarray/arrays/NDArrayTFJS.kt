@@ -98,6 +98,49 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         return tfjsArray.split(split.toTypedArray(), axis).map { it.toNDArray() }
     }
 
+    private fun edgePad(pads: Array<Array<Int>>): NDArrayTFJS {
+        fun symmetricPadSingle(i: Int, input: ArrayTFJS): ArrayTFJS {
+            val padsAtI = Array(pads.size) { j -> Array(2) { if (i < pads[j][it]) 1 else 0 } }
+            return input.symmetricPad(padsAtI)
+        }
+
+        val maxPadNum = pads.flatten().max()
+
+        var padded: ArrayTFJS = tfjsArray
+        for (i in 0 until maxPadNum) {
+            padded = symmetricPadSingle(i, padded)
+        }
+
+        return padded.toNDArray()
+    }
+
+    suspend fun pad(pads: Array<Array<Int>>, mode: PadMode, constantValue: NDArray?): NDArrayTFJS {
+        require(constantValue == null || constantValue is NDArrayTFJS)
+
+        return tidyNDArray {
+            when (mode) {
+                PadMode.CONSTANT -> {
+                    val value = constantValue as? NDArrayTFJS ?: zero(dtype)
+                    tfjsArray.pad(pads, value.singleValue()).toNDArray()
+                }
+                PadMode.REFLECT -> {
+                    tfjsArray.reflectPad(pads).toNDArray()
+                }
+                PadMode.EDGE -> {
+                    edgePad(pads)
+                }
+            }
+        }
+    }
+
+    override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NDArrayTFJS {
+        val padsArray = Array(pads.size) {
+            val currentPad = pads[it]
+            arrayOf(currentPad.first, currentPad.second)
+        }
+        return pad(padsArray, mode, constantValue)
+    }
+
     override fun clone() = tfjsArray.clone().toNDArray()
 
     companion object {
