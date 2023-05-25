@@ -1,23 +1,25 @@
-package io.kinference.core.operators.layer.recurrent.lstm
+package io.kinference.tfjs.operators.layer.recurrent.lstm
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.graph.GraphContext
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 sealed class LSTM(
-    name: String,
-    info: OperatorInfo,
-    attributes: Map<String, Attribute<Any>>,
-    inputs: List<String>, outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+    name: String, 
+    info: OperatorInfo, 
+    attributes: Map<String, Attribute<Any>>, 
+    inputs: List<String>, 
+    outputs: List<String>
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -31,9 +33,9 @@ sealed class LSTM(
 }
 
 class LSTMVer7(
-    name: String,
-    attributes: Map<String, Attribute<Any>>,
-    inputs: List<String>,
+    name: String, 
+    attributes: Map<String, Attribute<Any>>, 
+    inputs: List<String>, 
     outputs: List<String>
 ) : LSTM(name, INFO, attributes, inputs, outputs) {
     companion object {
@@ -44,9 +46,11 @@ class LSTMVer7(
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("activation_alpha", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
-            AttributeInfo("activation_beta", setOf(AttributeProto.AttributeType.FLOATS), false, emptyList<Float>()),
-            AttributeInfo("activations", setOf(AttributeProto.AttributeType.STRINGS), false, listOf("Sigmoid", "Tanh", "Tanh", "Sigmoid", "Tanh", "Tanh")),
+            AttributeInfo("activation_alpha", setOf(AttributeProto.AttributeType.FLOATS), required = false, emptyList<Float>()),
+            AttributeInfo("activation_beta", setOf(AttributeProto.AttributeType.FLOATS), required = false, emptyList<Float>()),
+            AttributeInfo("activations", setOf(AttributeProto.AttributeType.STRINGS),
+                required = false, listOf("Sigmoid", "Tanh", "Tanh", "Sigmoid", "Tanh", "Tanh")
+            ),
             AttributeInfo("clip", setOf(AttributeProto.AttributeType.FLOAT), false, Float.MAX_VALUE),
             AttributeInfo("direction", setOf(AttributeProto.AttributeType.STRING), false, "forward"),
             AttributeInfo("hidden_size", setOf(AttributeProto.AttributeType.INT), true),
@@ -74,6 +78,26 @@ class LSTMVer7(
 
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+
+
+        private suspend fun prepareBias(tensor: TFJSTensor): TFJSTensor {
+            val shape = tensor.data.shape
+            val newShape = intArrayOf(shape[0], 8, shape[1] / 8)
+            return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
+        }
+
+        private suspend fun preparePeepholes(tensor: TFJSTensor): TFJSTensor {
+            val shape = tensor.data.shape
+            val newShape = intArrayOf(shape[0], 3, shape[1] / 3)
+            return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
+        }
+
+        private suspend fun prepareWeights(tensor: TFJSTensor): TFJSTensor {
+            val shape = tensor.data.shape
+            val newShape = intArrayOf(shape[0], 4, shape[1] / 4, shape[2])
+            val transposeShape = intArrayOf(0, 1, 3, 2)
+            return tensor.data.reshape(newShape).transpose(transposeShape).asTensor("prepared_${tensor.name}")
+        }
     }
 
     private val activations: List<String> by attribute { it: List<String> ->
@@ -89,45 +113,43 @@ class LSTMVer7(
     private val batchWise: Boolean by attribute("layout") { it: Number -> it.toInt() == 1 }
 
     init {
-        if (batchWise) error("BatchWise LSTM not supported")
+        if (batchWise) error("BatchWise LSTM is not supported")
     }
 
     private val lstmLayer = LSTMLayerBase.create(hiddenSize, activations, direction)
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!
-        val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArrayCore)
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val (output, lastState, lastCellState) = tidyNDArrays {
+            val input = inputs[0]!!.data as NumberNDArrayTFJS
 
-        val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as KITensor
-        val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArrayCore)
+            val weights = inputs[1]!!
+            val preparedWeights = prepareWeights(weights).data as NumberNDArrayTFJS
 
-        val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
-            ?: LSTMContext.prepareWeights(recurrentWeights)) as KITensor
-        val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArrayCore)
+            val recurrentWeights = inputs[2]!!
+            val preparedRecurrentWeights = prepareWeights(recurrentWeights).data as NumberNDArrayTFJS
 
-        val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as KITensor?
+            val bias = inputs.getOrNull(3)
+            val preparedBias = if (bias != null) prepareBias(bias) else null
 
-        val peepholes = inputs.getOrNull(7)
-        val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as KITensor?
+            val peepholes = inputs.getOrNull(7)
+            val preparedPeepholes = if (peepholes != null) preparePeepholes(peepholes) else null
 
-        val sequenceLens = inputs.getOrNull(4)
-        val initialState = inputs.getOrNull(5)
-        val initialCellState = inputs.getOrNull(6)
+            val sequenceLens = inputs.getOrNull(4)
+            val initialState = inputs.getOrNull(5)
+            val initialCellState = inputs.getOrNull(6)
 
-        val (output, lastState, lastCellState) = lstmLayer.apply(
-            inputAsLSTMInput,
-            weightsAsLSTMWeights,
-            recurrentWeightsAsLSTMWeights,
-            preparedBias?.data as NumberNDArrayCore?,
-            sequenceLens?.data as IntNDArray?,
-            initialState?.data as NumberNDArrayCore?,
-            initialCellState?.data as NumberNDArrayCore?,
-            preparedPeepholes?.data as NumberNDArrayCore?,
-            input.data.type
-        )
+            val (output, lastState, lastCellState) = lstmLayer.apply(
+                input,
+                preparedWeights,
+                preparedRecurrentWeights,
+                preparedBias?.data as NumberNDArrayTFJS?,
+                sequenceLens?.data as NumberNDArrayTFJS?,
+                initialState?.data as NumberNDArrayTFJS?,
+                initialCellState?.data as NumberNDArrayTFJS?,
+                preparedPeepholes?.data as NumberNDArrayTFJS?,
+            )
+            arrayOf(output, lastState, lastCellState)
+        }
         
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"), lastCellState.asTensor("Y_c"))
     }
