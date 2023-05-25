@@ -21,4 +21,9 @@ class GRULayerTest {
     fun test_GRU_seq_length() = TestRunner.runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_gru_seq_length"))
     }
+
+    @Test
+    fun test_GRU_bidirectional() = TestRunner.runTest {
+        TFJSAccuracyRunner.runFromResources(getTargetPath("test_gru_bidirectional"))
+    }
 }
