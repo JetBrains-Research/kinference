@@ -57,7 +57,8 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         val seqLens = sequenceLens?.dataInt() ?: IntArray(batchSize) { seqLength }
         val seqRange = if (direction == LayerDirection.FORWARD) 0 until seqLength else (0 until seqLength).reversed()
 
-        val outputs = ArrayList<NumberNDArrayTFJS>()
+        val outputShape = intArrayOf(seqLength, 1, batchSize, hiddenSize)
+        val outputs = Array(seqLength) { Array<NumberNDArrayTFJS?>(batchSize) { null } }
         for (seqNum in seqRange) {
             for (batchNum in 0 until batchSize) {
                 if (seqNum >= seqLens[batchNum]) continue
@@ -66,10 +67,10 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
                 gruGates.reset.compute(localInput, hiddenState, f, numDirection, batchNum)
                 gruGates.hidden.compute(localInput, hiddenState, gruGates, g, numDirection, batchNum)
                 hiddenState.compute(gruGates, numDirection, batchNum)
-                val outputVector = hiddenState.getVector(numDirection, batchNum)
-                outputs.add(outputVector)
+                outputs[seqNum][batchNum] = hiddenState.getVector(numDirection, batchNum)
             }
         }
-        return outputs.stack().reshape(intArrayOf(seqLength, 1, batchSize, hiddenSize))
+
+        return outputs.map { it.filterNotNull().stack() }.stack().reshape(outputShape)
     }
 }

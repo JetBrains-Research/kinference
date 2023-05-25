@@ -2,14 +2,11 @@ package io.kinference.tfjs.operators.layer.recurrent.gru
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.unstackAs3DTypedArray
+import io.kinference.ndarray.update
 import io.kinference.tfjs.operators.activations.activate
 import io.kinference.utils.Closeable
 import io.kinference.utils.closeArrays
-
-private fun Array<MutableNumberNDArrayTFJS>.update(i: Int, element: MutableNumberNDArrayTFJS) {
-    this[i].close()
-    this[i] = element
-}
 
 class GRUDefaultGate internal constructor(
     private val weights: NumberNDArrayTFJS,
@@ -200,11 +197,7 @@ class GRUHiddenState internal constructor(
         stateData = if (initHiddenState == null) {
             Array(numDirection) { Array(batchSize) { NDArrayTFJS.floatZeros(arrayOf(hiddenSize)).asMutable() } }
         } else {
-            val byDirection = initHiddenState.unstack()
-            Array(numDirection) {
-                val array = byDirection[it].tfjsArray.unstack()
-                Array(batchSize) { MutableNumberNDArrayTFJS(array[it]) }
-            }
+            initHiddenState.unstackAs3DTypedArray()
         }
     }
 

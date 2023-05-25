@@ -48,7 +48,7 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
 
             forwardGRUGates.close(); reverseGRUGates.close()
 
-            val output = forwardOutput.concat(listOf(reverseOutput), axis = 0) as NumberNDArrayTFJS
+            val output = forwardOutput.concat(listOf(reverseOutput), axis = 1) as NumberNDArrayTFJS
             val lastHiddenState = gruHiddenState.data.map { it.stack() }.stack()
 
             arrayOf(output, lastHiddenState)
