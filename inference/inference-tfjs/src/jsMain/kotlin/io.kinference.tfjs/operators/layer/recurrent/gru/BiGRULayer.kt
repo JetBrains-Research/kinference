@@ -28,7 +28,7 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         val (output, lastHiddenState) = tidyNDArrays {
             val (fWeights, rWeights) = weights.unstack()
             val (fRecWeights, rRecWeights) = recurrentWeights.unstack()
-            val (fBias, rBias) = bias?.unstack() ?: arrayOfNulls<NumberNDArrayTFJS>(2)
+            val (fBias, rBias) = bias?.unstack() ?: arrayOfNulls<NumberNDArrayTFJS?>(2)
             val forwardGRUGates = GRUGates.create(
                 fWeights,
                 fRecWeights,
