@@ -73,6 +73,8 @@ abstract class TensorDecoder {
             TensorProto.DataType.BOOL -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readByte() != 0.toByte() })
             TensorProto.DataType.BFLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().parseAsBFloat() })
             TensorProto.DataType.FLOAT16 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readShortLe().parseAsFloat16() })
+            TensorProto.DataType.UINT32 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readIntLe().toUInt() })
+            TensorProto.DataType.UINT64 -> proto._arrayData!!.setData(makeArray(proto.dataType!!, shape) { buffer.readLongLe().toULong() })
             TensorProto.DataType.STRING -> error("String data must not be present in rawData field")
             else -> error("Unsupported data type ${proto.dataType}")
         }

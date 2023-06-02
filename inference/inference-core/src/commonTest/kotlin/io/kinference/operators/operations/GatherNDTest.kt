@@ -22,4 +22,9 @@ class GatherNDTest {
     fun test_gather_nd_int32_batch_dim_1()  = TestRunner.runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_gathernd_example_int32_batch_dim1"))
     }
+
+    @Test
+    fun test_gather_nd_batch_dim_2() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_gathernd_batch_dim2"))
+    }
 }

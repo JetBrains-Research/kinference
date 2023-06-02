@@ -6,22 +6,36 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.stack
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class ScatterElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class ScatterElements(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11, untilVersion = 16)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ScatterElementsVer11.VERSION.asRange() -> ScatterElementsVer11(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): ScatterElements {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ScatterElementsVer11.VERSION.asRange() -> ScatterElementsVer11(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ScatterElements operator: $version")
+            }
         }
     }
 }
 
-class ScatterElementsVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ScatterElements(name, INFO, attributes, inputs, outputs) {
+class ScatterElementsVer11(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : ScatterElements(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("axis", setOf(AttributeProto.AttributeType.INT), false, 0L)

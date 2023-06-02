@@ -47,6 +47,18 @@ object KIAssertions {
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
+            TensorProto.DataType.INT16 -> {
+                val expectedArray = (expected.data as ShortNDArray).array
+                val actualArray = (actual.data as ShortNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+            TensorProto.DataType.INT8 -> {
+                val expectedArray = (expected.data as ByteNDArray).array
+                val actualArray = (actual.data as ByteNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
             TensorProto.DataType.BOOL -> {
                 val expectedArray = (expected.data as BooleanNDArray).array.toArray().toTypedArray()
                 val actualArray = (actual.data as BooleanNDArray).array.toArray().toTypedArray()
@@ -59,6 +71,28 @@ object KIAssertions {
 
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
+
+            TensorProto.DataType.UINT16 -> {
+                val expectedArray = (expected.data as UShortNDArray).array
+                val actualArray = (actual.data as UShortNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
+            TensorProto.DataType.UINT32 -> {
+                val expectedArray = (expected.data as UIntNDArray).array
+                val actualArray = (actual.data as UIntNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
+            TensorProto.DataType.UINT64 -> {
+                val expectedArray = (expected.data as ULongNDArray).array
+                val actualArray = (actual.data as ULongNDArray).array
+
+                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+            }
+
             else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
         }
     }
