@@ -226,7 +226,7 @@ fun ArrayTFJS.and(other: ArrayTFJS): ArrayTFJS {
 
 fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
-fun ArrayTFJS.mirrorPad(paddings: Array<Array<Int>>, mode: String) = pad(this, paddings, mode)
+internal fun ArrayTFJS.mirrorPad(paddings: Array<Array<Int>>, mode: String) = pad(this, paddings, mode)
 
 fun ArrayTFJS.reflectPad(paddings: Array<Array<Int>>) = mirrorPad(this, paddings, "reflect")
 
