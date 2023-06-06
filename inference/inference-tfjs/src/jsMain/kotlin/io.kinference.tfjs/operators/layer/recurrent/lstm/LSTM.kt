@@ -3,7 +3,6 @@ package io.kinference.tfjs.operators.layer.recurrent.lstm
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.graph.GraphContext
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
@@ -78,26 +77,6 @@ class LSTMVer7(
 
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("LSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-
-        private suspend fun prepareBias(tensor: TFJSTensor): TFJSTensor {
-            val shape = tensor.data.shape
-            val newShape = intArrayOf(shape[0], 8, shape[1] / 8)
-            return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
-        }
-
-        private suspend fun preparePeepholes(tensor: TFJSTensor): TFJSTensor {
-            val shape = tensor.data.shape
-            val newShape = intArrayOf(shape[0], 3, shape[1] / 3)
-            return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
-        }
-
-        private suspend fun prepareWeights(tensor: TFJSTensor): TFJSTensor {
-            val shape = tensor.data.shape
-            val newShape = intArrayOf(shape[0], 4, shape[1] / 4, shape[2])
-            val transposeShape = intArrayOf(0, 1, 3, 2)
-            return tensor.data.reshape(newShape).transpose(transposeShape).asTensor("prepared_${tensor.name}")
-        }
     }
 
     private val activations: List<String> by attribute { it: List<String> ->
@@ -123,16 +102,17 @@ class LSTMVer7(
             val input = inputs[0]!!.data as NumberNDArrayTFJS
 
             val weights = inputs[1]!!
-            val preparedWeights = prepareWeights(weights).data as NumberNDArrayTFJS
+            val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as TFJSTensor
 
             val recurrentWeights = inputs[2]!!
-            val preparedRecurrentWeights = prepareWeights(recurrentWeights).data as NumberNDArrayTFJS
+            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
+                ?: LSTMContext.prepareWeights(recurrentWeights)) as TFJSTensor
 
             val bias = inputs.getOrNull(3)
-            val preparedBias = if (bias != null) prepareBias(bias) else null
+            val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as TFJSTensor?
 
             val peepholes = inputs.getOrNull(7)
-            val preparedPeepholes = if (peepholes != null) preparePeepholes(peepholes) else null
+            val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as TFJSTensor?
 
             val sequenceLens = inputs.getOrNull(4)
             val initialState = inputs.getOrNull(5)
@@ -140,8 +120,8 @@ class LSTMVer7(
 
             val (output, lastState, lastCellState) = lstmLayer.apply(
                 input,
-                preparedWeights,
-                preparedRecurrentWeights,
+                preparedWeights.data as NumberNDArrayTFJS,
+                preparedRecurrentWeights.data as NumberNDArrayTFJS,
                 preparedBias?.data as NumberNDArrayTFJS?,
                 sequenceLens?.data as NumberNDArrayTFJS?,
                 initialState?.data as NumberNDArrayTFJS?,
