@@ -50,13 +50,7 @@ open class BooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     }
 
     override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): BooleanNDArrayTFJS {
-        require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
-        require(constantValue == null || constantValue is NDArrayTFJS)
-        val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }
-        return tidyNDArray {
-            val value = constantValue as? NDArrayTFJS ?: zero(dtype)
-            return@tidyNDArray BooleanNDArrayTFJS(tfjsArray.pad(padsArray, value.singleValue()))
-        }
+        return super.pad(pads, mode, constantValue) as BooleanNDArrayTFJS
     }
 
     override fun view(vararg axes: Int): BooleanNDArrayTFJS {
