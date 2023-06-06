@@ -25,7 +25,6 @@ abstract class LSTMLayerBase(val hiddenSize: Int, val activations: List<String>,
             when(direction) {
                 LayerDirection.FORWARD, LayerDirection.REVERSE -> LSTMLayer(hiddenSize, activations, direction)
                 LayerDirection.BIDIRECTIONAL -> BiLSTMLayer(hiddenSize, activations)
-                else -> error("Bad direction attribute")
             }
 
     }

@@ -15,6 +15,7 @@ import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
 import io.kinference.tfjs.operators.layer.normalization.*
 import io.kinference.tfjs.operators.layer.recurrent.gru.GRU
+import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTM
 import io.kinference.tfjs.operators.logical.*
 import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
@@ -77,6 +78,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Log" -> Log(name, version, attributes, inputs, outputs)
         "LogSoftmax" -> LogSoftmax(name, version, attributes, inputs, outputs)
         "Loop" -> Loop(name, version, attributes, inputs, outputs)
+        "LSTM" -> LSTM(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
