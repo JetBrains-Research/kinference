@@ -29,6 +29,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
             val forwardH = activations[2]
             val reverseH = activations[5]
 
+            val stateShape = intArrayOf(2, batchSize, hiddenSize)
+
             val forwardLSTMGates = LSTMGates.create(
                 weights.unstack()[0],
                 recurrentWeights.unstack()[0],
@@ -45,7 +47,7 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
                 batchSize, hiddenSize
             )
 
-            val initHiddenState = initialHiddenState ?: NDArrayTFJS.floatZeros(arrayOf(2, batchSize, hiddenSize))
+            val initHiddenState = initialHiddenState ?: NDArrayTFJS.floatZeros(stateShape.toTypedArray())
             val initHiddenStateAsLSTMInput = initHiddenState.unstack()
 
             val lstmStates = LSTMStates(
@@ -60,8 +62,8 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
 
             arrayOf(
                 outputArray,
-                lstmStates.hiddenState.data.map { it.stack() }.stack(),
-                lstmStates.cellState.data.map { it.stack() }.stack()
+                lstmStates.hiddenState.data.flatten().stack().reshape(stateShape),
+                lstmStates.cellState.data.flatten().stack().reshape(stateShape)
             )
         }
 

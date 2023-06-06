@@ -25,7 +25,9 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: LayerDire
             val seqLength = input.shape[0]
             val batchSize = input.shape[1]
 
-            val initHiddenState = initialHiddenState ?: NDArrayTFJS.floatZeros(arrayOf(1, batchSize, hiddenSize))
+            val stateShape = intArrayOf(1, batchSize, hiddenSize)
+
+            val initHiddenState = initialHiddenState ?: NDArrayTFJS.floatZeros(stateShape.toTypedArray())
             val initHiddenStateAsLSTMInput = arrayOf(initHiddenState.unstack()[0])
 
             val lstmStates = LSTMStates(
@@ -42,10 +44,11 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: LayerDire
             )
 
             val outputArray = apply(input, lstmStates, lstmGates, sequenceLens, numDirection = 0, seqLength, batchSize)
+
             arrayOf(
                 outputArray,
-                lstmStates.hiddenState.data.map { it.stack() }.stack(),
-                lstmStates.cellState.data.map { it.stack() }.stack()
+                lstmStates.hiddenState.data.flatten().stack().reshape(stateShape),
+                lstmStates.cellState.data.flatten().stack().reshape(stateShape)
             )
         }
 
@@ -85,6 +88,6 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: LayerDire
             }
             lstmStates.hiddenState.update(numDirection)
         }
-        return outputs.map { it.filterNotNull().stack() }.stack().reshape(outputShape)
+        return outputs.map { it.filterNotNull() }.flatten().stack().reshape(outputShape)
     }
 }
