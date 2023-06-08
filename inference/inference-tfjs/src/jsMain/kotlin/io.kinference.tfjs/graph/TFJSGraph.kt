@@ -8,6 +8,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.TFJSOperatorFactory
+import io.kinference.tfjs.operators.layer.recurrent.gru.GRUContext
 import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTMContext
 
 class TFJSGraph(
@@ -42,6 +43,7 @@ class TFJSGraph(
             for (operator in graph.operators) {
                 when(operator.info.type) {
                     "LSTM" -> LSTMContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<TFJSTensor>, operator)
+                    "GRU" -> GRUContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<TFJSTensor>, operator)
                 }
             }
             return graph

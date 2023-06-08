@@ -67,18 +67,6 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
 
         internal val VERSION = VersionInfo(sinceVersion = 7)
         private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-
-        private suspend fun prepareWeights(tensor: TFJSTensor): TFJSTensor {
-            val shape = tensor.data.shape
-            val newShape = intArrayOf(shape[0], 3, shape[1] / 3, shape[2])
-            return tensor.data.reshape(newShape).transpose(intArrayOf(0, 1, 3, 2)).asTensor("prepared_${tensor.name}")
-        }
-
-        private suspend fun prepareBias(tensor: TFJSTensor): TFJSTensor {
-            val shape = tensor.data.shape
-            val newShape = intArrayOf(shape[0], 6, shape[1] / 6)
-            return tensor.data.reshape(newShape).asTensor("prepared_${tensor.name}")
-        }
     }
 
     private val activations: List<String> by attribute { it: List<String> ->
@@ -102,17 +90,25 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val (output, lastState) = tidyNDArrays {
             val input = inputs[0]!!.data
-            val weights = prepareWeights(inputs[1]!!).data
-            val recurrentWeights = prepareWeights(inputs[2]!!).data
-            val b = inputs.getOrNull(3)
-            val bias = if (b == null) null else prepareBias(b).data
+
+            val weights = inputs[1]!!
+            val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
+
+            val recurrentWeights = inputs[2]!!
+            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
+                ?: GRUContext.prepareWeights(recurrentWeights))
+
+            val bias = inputs.getOrNull(3)
+            val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
+
             val sequenceLens = inputs.getOrNull(4)?.data
             val initialHiddenState = inputs.getOrNull(5)?.data
+
             val (output, lastState) = gruLayer.apply(
                 input as NumberNDArrayTFJS,
-                weights as NumberNDArrayTFJS,
-                recurrentWeights as NumberNDArrayTFJS,
-                bias as NumberNDArrayTFJS?,
+                preparedWeights.data as NumberNDArrayTFJS,
+                preparedRecurrentWeights.data as NumberNDArrayTFJS,
+                preparedBias?.data as NumberNDArrayTFJS?,
                 sequenceLens as NumberNDArrayTFJS?,
                 initialHiddenState as NumberNDArrayTFJS?,
                 linearBeforeReset
