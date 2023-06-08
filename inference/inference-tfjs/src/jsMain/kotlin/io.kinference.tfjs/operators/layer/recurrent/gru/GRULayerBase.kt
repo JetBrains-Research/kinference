@@ -7,7 +7,7 @@ abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, 
     abstract suspend fun apply(
         input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, recurrentWeights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS?,
         sequenceLength: NumberNDArrayTFJS?, initialHiddenState: NumberNDArrayTFJS?, linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS>
+    ): GRULayerOutput
 
     companion object {
         fun create(hiddenSize: Int, activations: List<String>, direction: LayerDirection) =

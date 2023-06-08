@@ -17,7 +17,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         sequenceLength: NumberNDArrayTFJS?,
         initialHiddenState: NumberNDArrayTFJS?,
         linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
+    ): GRULayerOutput {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
 
@@ -42,7 +42,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
             arrayOf(outputArray, lastState)
         }
 
-        return outputArray to lastState
+        return GRULayerOutput(outputArray, lastState)
     }
 
     internal suspend fun apply(

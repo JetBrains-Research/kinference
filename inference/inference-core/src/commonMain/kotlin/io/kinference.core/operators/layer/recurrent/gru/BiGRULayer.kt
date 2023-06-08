@@ -22,7 +22,7 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         initialHiddenState: NumberNDArrayCore?,
         dataType: DataType,
         linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayCore, NumberNDArrayCore> {
+    ): GRULayerOutput {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
 
@@ -47,6 +47,6 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLength, 0, seqLength, batchSize, dataType)
         reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLength, 1, seqLength, batchSize, dataType)
 
-        return outputArray to gruHiddenState.data
+        return GRULayerOutput(outputArray, gruHiddenState.data)
     }
 }

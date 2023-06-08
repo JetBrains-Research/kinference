@@ -20,7 +20,7 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         sequenceLength: NumberNDArrayTFJS?,
         initialHiddenState: NumberNDArrayTFJS?,
         linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
+    ): GRULayerOutput {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
 
@@ -59,6 +59,6 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
 
         gruHiddenState.close()
 
-        return output to lastHiddenState
+        return GRULayerOutput(output, lastHiddenState)
     }
 }

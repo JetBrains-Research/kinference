@@ -22,7 +22,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         initialHiddenState: NumberNDArrayCore?,
         dataType: DataType,
         linearBeforeReset: Boolean
-    ): Pair<NumberNDArrayCore, NumberNDArrayCore> {
+    ): GRULayerOutput {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
         val outputArray = allocateNDArray(dataType, intArrayOf(seqLength, 1, batchSize, hiddenSize)) as MutableNumberNDArrayCore
@@ -37,7 +37,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         )
 
         apply(input, outputArray, gruState, gruGates, sequenceLength, 0, seqLength, batchSize, dataType)
-        return outputArray to gruState.data
+        return GRULayerOutput(outputArray, gruState.data)
     }
 
     suspend fun apply(
