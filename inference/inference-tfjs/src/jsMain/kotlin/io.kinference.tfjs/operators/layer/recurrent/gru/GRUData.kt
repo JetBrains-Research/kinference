@@ -191,14 +191,10 @@ class GRUHiddenState internal constructor(
     initHiddenState: NumberNDArrayTFJS?,
     numDirection: Int, batchSize: Int, hiddenSize: Int
 ) : Closeable {
-    private val stateData: Array<Array<MutableNumberNDArrayTFJS>>
-
-    init {
-        stateData = if (initHiddenState == null) {
-            Array(numDirection) { Array(batchSize) { NDArrayTFJS.floatZeros(arrayOf(hiddenSize)).asMutable() } }
-        } else {
-            initHiddenState.unstackAs3DTypedArray()
-        }
+    private val stateData = if (initHiddenState == null) {
+        Array(numDirection) { Array(batchSize) { NDArrayTFJS.floatZeros(arrayOf(hiddenSize)).asMutable() } }
+    } else {
+        initHiddenState.unstackAs3DTypedArray()
     }
 
     val data: Array<Array<MutableNumberNDArrayTFJS>>

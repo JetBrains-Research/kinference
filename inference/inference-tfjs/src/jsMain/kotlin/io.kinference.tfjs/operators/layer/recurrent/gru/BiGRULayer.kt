@@ -23,6 +23,9 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
     ): Pair<NumberNDArrayTFJS, NumberNDArrayTFJS> {
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
+
+        val stateShape = intArrayOf(2, batchSize, hiddenSize)
+
         val gruHiddenState = GRUHiddenState(initialHiddenState, numDirection = 2, batchSize, hiddenSize)
 
         val (output, lastHiddenState) = tidyNDArrays {
@@ -43,13 +46,13 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
                 batchSize, hiddenSize, linearBeforeReset
             )
 
-            val forwardOutput = forwardLayer.apply(input, gruHiddenState, forwardGRUGates, sequenceLength, 0, seqLength, batchSize)
-            val reverseOutput = reverseLayer.apply(input, gruHiddenState, reverseGRUGates, sequenceLength, 1, seqLength, batchSize)
+            val forwardOutput = forwardLayer.apply(input, gruHiddenState, forwardGRUGates, sequenceLength, numDirection = 0, seqLength, batchSize)
+            val reverseOutput = reverseLayer.apply(input, gruHiddenState, reverseGRUGates, sequenceLength, numDirection = 1, seqLength, batchSize)
 
             forwardGRUGates.close(); reverseGRUGates.close()
 
             val output = forwardOutput.concat(listOf(reverseOutput), axis = 1) as NumberNDArrayTFJS
-            val lastHiddenState = gruHiddenState.data.map { it.stack() }.stack()
+            val lastHiddenState = gruHiddenState.data.flatten().stack().reshape(stateShape)
 
             arrayOf(output, lastHiddenState)
         }

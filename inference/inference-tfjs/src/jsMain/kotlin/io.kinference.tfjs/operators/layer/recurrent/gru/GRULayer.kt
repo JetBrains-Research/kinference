@@ -21,6 +21,8 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         val seqLength = input.shape[0]
         val batchSize = input.shape[1]
 
+        val stateShape = intArrayOf(1, batchSize, hiddenSize)
+
         val (outputArray, lastState) = tidyNDArrays {
             val gruState = GRUHiddenState(initialHiddenState, numDirection = 1, batchSize, hiddenSize)
 
@@ -32,7 +34,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
             )
 
             val outputArray = apply(input, gruState, gruGates, sequenceLength, 0, seqLength, batchSize)
-            val lastState = gruState.data.map { it.stack() }.stack()
+            val lastState = gruState.data.flatten().stack().reshape(stateShape)
 
             gruGates.close()
             gruState.close()
@@ -71,6 +73,6 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
             }
         }
 
-        return outputs.map { it.filterNotNull().stack() }.stack().reshape(outputShape)
+        return outputs.flatten().filterNotNull().stack().reshape(outputShape)
     }
 }
