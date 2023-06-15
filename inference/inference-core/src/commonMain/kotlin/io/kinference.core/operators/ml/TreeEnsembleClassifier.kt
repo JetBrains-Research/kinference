@@ -117,14 +117,15 @@ class TreeEnsembleClassifierVer1(
         targetIds = getAttribute("class_ids"),
         targetNodeIds = getAttribute("class_nodeids"),
         targetNodeTreeIds = getAttribute("class_treeids"),
-        targetWeights = getAttribute("class_weights")
+        targetWeights = getAttribute("class_weights"),
+        numTargets = labels.size
     )
 
     private val ensemble = ensembleInfo.buildEnsemble()
 
     private suspend fun labeledTopClasses(array: FloatNDArray): NDArray {
         val shape = intArrayOf(array.shape[0])
-        val labelsIndices = array.argmax(axis = 1).array.pointer()
+        val labelsIndices = array.argmax(axis = -1).array.pointer()
         return writeLabels(labels.labelsDataType, shape) {
             labels.labels[labelsIndices.getAndIncrement()]!!
         }

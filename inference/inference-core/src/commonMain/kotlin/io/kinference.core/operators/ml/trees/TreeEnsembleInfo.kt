@@ -18,11 +18,11 @@ class TreeEnsembleInfo(
     val targetIds: LongArray,
     val targetNodeIds: LongArray,
     val targetNodeTreeIds: LongArray,
-    val targetWeights: FloatArray
+    val targetWeights: FloatArray,
+    val numTargets: Int = 1
 ) {
     private val postTransform = PostTransformType.valueOf(postTransform ?: DEFAULT_POST_TRANSFORM)
     private val aggregator = AggregatorType.valueOf(aggregator ?: DEFAULT_AGGREGATOR)
-    private val numTargets = baseValues?.size ?: 1
 
     fun buildEnsemble(): TreeEnsemble {
         require(numTargets > 0) { "Number of targets should be > 0, got $numTargets" }

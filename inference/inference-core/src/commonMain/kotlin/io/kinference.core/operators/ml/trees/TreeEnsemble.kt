@@ -19,11 +19,8 @@ open class TreeEnsemble(
     private val nonLeafValuesCount: IntArray,
     private val leafValues: FloatArray,
     private val biases: FloatArray,
-    val numTargets: Int,
+    val numTargets: Int
 ) {
-    init {
-        require(numTargets == 1) { "Only single-target ensembles are supported, but numTargets=$numTargets found" }
-    }
     private fun FloatArray.computeSplitGT(splitIdx: Int): Int {
         return if (this[featureIds[splitIdx]] > nodeFloatSplits[splitIdx]) 1 else 0
     }
