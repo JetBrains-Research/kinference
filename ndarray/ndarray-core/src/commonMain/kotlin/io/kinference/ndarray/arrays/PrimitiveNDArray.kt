@@ -1302,6 +1302,11 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
             return PrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
 
+        fun matrixLike(shape: IntArray, init: (Int) -> PrimitiveType): PrimitiveNDArray {
+            val blocks = PrimitiveTiledArray.matrixLike(shape, init)
+            return PrimitiveNDArray(blocks, Strides(shape))
+        }
+
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
             val iterator = NDIndexer(strides)
             return PrimitiveNDArray(strides) { init(iterator.next()) }
