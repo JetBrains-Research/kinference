@@ -143,7 +143,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
 
         @Suppress("UNCHECKED_CAST")
         internal suspend fun initQueryKeyValue(

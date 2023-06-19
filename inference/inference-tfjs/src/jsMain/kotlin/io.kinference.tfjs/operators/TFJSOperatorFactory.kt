@@ -18,6 +18,7 @@ import io.kinference.tfjs.operators.layer.recurrent.gru.GRU
 import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTM
 import io.kinference.tfjs.operators.logical.*
 import io.kinference.tfjs.operators.math.*
+import io.kinference.tfjs.operators.ml.ZipMap
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
 import io.kinference.tfjs.operators.seq.ConcatFromSequence
@@ -108,6 +109,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
+        "ZipMap" -> ZipMap(name, version, attributes, inputs, outputs)
         else -> error("Unsupported operator: $opType")
     } as Operator<TFJSData<*>, TFJSData<*>>
 }

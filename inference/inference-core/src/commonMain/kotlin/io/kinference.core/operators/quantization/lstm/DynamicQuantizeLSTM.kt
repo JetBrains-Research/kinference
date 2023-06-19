@@ -66,7 +66,7 @@ class DynamicQuantizeLSTMVer1(name: String, attributes: Map<String, Attribute<An
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("DynamicQuantizeLSTM", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     private val activations: List<String> by attribute { it: List<String> ->

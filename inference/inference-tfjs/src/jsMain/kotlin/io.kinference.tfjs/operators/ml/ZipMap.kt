@@ -1,18 +1,19 @@
-package io.kinference.core.operators.ml
+package io.kinference.tfjs.operators.ml
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.KIONNXData
-import io.kinference.core.data.map.KIONNXMap
-import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.pointers.FloatPointer
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.dataFloat
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.TFJSData
+import io.kinference.tfjs.data.map.TFJSMap
+import io.kinference.tfjs.data.seq.TFJSSequence
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
 
@@ -22,7 +23,7 @@ sealed class ZipMap(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KIONNXSequence>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSSequence>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
@@ -61,20 +62,21 @@ class ZipMapVer1(
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
+        private fun <T : Any> NumberNDArrayTFJS.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): TFJSSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
             val columns = shape.last()
 
-            val inputPointer = FloatPointer(array)
-            return KIONNXSequence("Z", seqInfo, rows) {
-                val map = HashMap<T, KIONNXData<*>>(columns)
-                repeat(columns) {
-                    val value = inputPointer.getAndIncrement()
-                    val tensor = FloatNDArray.scalar(value).asTensor()
+            val inputArray = this.dataFloat()
+            return TFJSSequence("Z", seqInfo, rows) {
+                val map = HashMap<T, TFJSData<*>>(columns)
+                val offset = it * columns
+                repeat(columns) { col ->
+                    val value = inputArray[offset + col]
+                    val tensor = NDArrayTFJS.floatScalar(value).asTensor()
                     map[labels[it]] = tensor
                 }
-                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
+                TFJSMap(null, map as Map<Any, TFJSData<*>>, mapInfo)
             }
         }
     }
@@ -101,11 +103,11 @@ class ZipMapVer1(
             return ValueTypeInfo.MapTypeInfo(mapKeyType, mapValueInfo)
         }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KIONNXSequence?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSSequence?> {
         val labels = classLabelsLong ?: classLabelsString
         requireNotNull(labels) { "Class labels should be specified" }
 
-        val input = inputs[0]!!.data as FloatNDArray
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
         require(input.rank == 2) { "Expected input rank=2. Actual input rank=${input.rank}" }
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))
