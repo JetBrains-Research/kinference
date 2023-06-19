@@ -226,6 +226,12 @@ fun ArrayTFJS.and(other: ArrayTFJS): ArrayTFJS {
 
 fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
+internal fun ArrayTFJS.mirrorPad(paddings: Array<Array<Int>>, mode: String) = mirrorPad(this, paddings, mode)
+
+fun ArrayTFJS.reflectPad(paddings: Array<Array<Int>>) = mirrorPad(this, paddings, "reflect")
+
+fun ArrayTFJS.symmetricPad(paddings: Array<Array<Int>>) = mirrorPad(this, paddings, "symmetric")
+
 fun ArrayTFJS.gatherNd(indices: ArrayTFJS) = gatherND(this, indices)
 
 fun ArrayTFJS.leakyRelu(alpha: Number) = leakyRelu(this, alpha)

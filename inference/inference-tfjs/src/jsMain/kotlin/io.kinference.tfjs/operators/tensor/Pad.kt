@@ -1,14 +1,15 @@
-package io.kinference.core.operators.tensor
+package io.kinference.tfjs.operators.tensor
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.PadMode
+import io.kinference.ndarray.extensions.dataInt
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class Pad(
     name: String,
@@ -16,7 +17,7 @@ sealed class Pad(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 9, untilVersion = 18)
 
@@ -57,15 +58,15 @@ class PadVer9(
 
     private val mode: PadMode by attribute { mode: String -> PadMode.valueOf(mode.uppercase()) }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
-        val pads = inputs[1]!!.data as LongNDArray
-        val padsData = pads.array.toArray()
+        val pads = inputs[1]!!.data
+        val padsData = pads.dataInt()
         val constantValue = inputs.getOrNull(2)?.data
 
-        val padsNormalized = Array(input.rank) { padsData[it].toInt() to padsData[it + input.rank].toInt() }
+        val padsNormalized = Array(input.rank) { arrayOf(padsData[it], padsData[it + input.rank]) }
 
-        val output = input.pad(padsNormalized, mode, constantValue) as NDArrayCore
+        val output = input.pad(padsNormalized, mode, constantValue)
         return listOf(output.asTensor("output"))
     }
 }
