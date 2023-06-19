@@ -1,14 +1,12 @@
-package io.kinference.core.operators.layer.recurrent.gru
+package io.kinference.tfjs.operators.layer.recurrent.gru
 
-import io.kinference.core.operators.layer.recurrent.LayerDirection
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
-import io.kinference.primitives.types.DataType
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 abstract class GRULayerBase(val hiddenSize: Int, val activations: List<String>, val direction: LayerDirection) {
     abstract suspend fun apply(
-        input: NumberNDArrayCore, weights: NumberNDArrayCore, recurrentWeights: NumberNDArrayCore, bias: NumberNDArrayCore?,
-        sequenceLength: IntNDArray?, initialHiddenState: NumberNDArrayCore?, dataType: DataType, linearBeforeReset: Boolean
+        input: NumberNDArrayTFJS, weights: NumberNDArrayTFJS, recurrentWeights: NumberNDArrayTFJS, bias: NumberNDArrayTFJS?,
+        sequenceLength: NumberNDArrayTFJS?, initialHiddenState: NumberNDArrayTFJS?, linearBeforeReset: Boolean
     ): GRULayerOutput
 
     companion object {

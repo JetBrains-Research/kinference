@@ -1,17 +1,18 @@
 package io.kinference.graph
 
 import io.kinference.data.ONNXData
+import io.kinference.utils.Closeable
 
-class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null) {
+class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null) : Closeable {
     private val values = HashMap<String, T>()
     private val shapes = HashMap<String, Int>()
 
     fun hasValue(name: String): Boolean {
-        return values.contains(name) && (base?.hasValue(name) ?: true)
+        return values.contains(name) || (base?.hasValue(name) ?: false)
     }
 
     fun hasShape(name: String): Boolean {
-        return shapes.contains(name) && (base?.hasShape(name) ?: true)
+        return shapes.contains(name) || (base?.hasShape(name) ?: false)
     }
 
     fun putValue(name: String, value: T) {
@@ -43,8 +44,18 @@ class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null
     }
 
     fun clear() {
+        for (value in values) {
+            value.value.close()
+        }
+
         values.clear()
         shapes.clear()
+    }
+
+    override fun close() {
+        for (value in values) {
+            value.value.close()
+        }
     }
 
     fun mergeContext(context: GraphContext<T>) {

@@ -1,16 +1,16 @@
-package io.kinference.core.operators.layer.recurrent.gru
+package io.kinference.tfjs.operators.layer.recurrent.gru
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.IntNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
 
 sealed class GRU(
     name: String,
@@ -18,7 +18,7 @@ sealed class GRU(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -31,12 +31,7 @@ sealed class GRU(
     }
 }
 
-class GRUVer7(
-    name: String,
-    attributes: Map<String, Attribute<Any>>,
-    inputs: List<String>,
-    outputs: List<String>
-) : GRU(name, INFO, attributes, inputs, outputs) {
+class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GRU(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -82,7 +77,6 @@ class GRUVer7(
     }
 
     private val direction: LayerDirection by attribute { it: String -> LayerDirection.valueOf(it.uppercase()) }
-
     private val hiddenSize: Int by attribute("hidden_size") { it: Number -> it.toInt() }
     private val batchWise: Boolean by attribute("layout") { it: Number -> it.toInt() == 1 }
     private val linearBeforeReset: Boolean by attribute("linear_before_reset") { it: Number -> it.toInt() == 1 }
@@ -93,32 +87,34 @@ class GRUVer7(
 
     private val gruLayer = GRULayerBase.create(hiddenSize, activations, direction)
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val (output, lastState) = tidyNDArrays {
+            val input = inputs[0]!!.data
 
-        val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
+            val weights = inputs[1]!!
+            val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
 
-        val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
-            ?: GRUContext.prepareWeights(recurrentWeights)) as KITensor
+            val recurrentWeights = inputs[2]!!
+            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
+                ?: GRUContext.prepareWeights(recurrentWeights))
 
-        val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
+            val bias = inputs.getOrNull(3)
+            val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
 
-        val sequenceLens = inputs.getOrNull(4)
-        val initialHiddenState = inputs.getOrNull(5)
+            val sequenceLens = inputs.getOrNull(4)?.data
+            val initialHiddenState = inputs.getOrNull(5)?.data
 
-        val (output, lastState) = gruLayer.apply(
-            input.data as NumberNDArrayCore,
-            preparedWeights.data as NumberNDArrayCore,
-            preparedRecurrentWeights.data as NumberNDArrayCore,
-            preparedBias?.data as NumberNDArrayCore?,
-            sequenceLens?.data as IntNDArray?,
-            initialHiddenState?.data as NumberNDArrayCore?,
-            input.data.type,
-            linearBeforeReset
-        )
+            val (output, lastState) = gruLayer.apply(
+                input as NumberNDArrayTFJS,
+                preparedWeights.data as NumberNDArrayTFJS,
+                preparedRecurrentWeights.data as NumberNDArrayTFJS,
+                preparedBias?.data as NumberNDArrayTFJS?,
+                sequenceLens as NumberNDArrayTFJS?,
+                initialHiddenState as NumberNDArrayTFJS?,
+                linearBeforeReset
+            )
+            arrayOf(output, lastState)
+        }
 
         return listOf(output.asTensor("Y"), lastState.asTensor("Y_h"))
     }
