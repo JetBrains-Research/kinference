@@ -40,7 +40,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("BiasGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     private val SQRT2 = NDArrayTFJS.floatScalar(sqrt(2.0f))

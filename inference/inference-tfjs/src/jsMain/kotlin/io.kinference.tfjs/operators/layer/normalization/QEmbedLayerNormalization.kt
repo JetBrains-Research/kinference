@@ -65,7 +65,7 @@ class QEmbedLayerNormalizationVer1(name: String, attributes: Map<String, Attribu
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("QEmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, "com.microsoft")
+        private val INFO = OperatorInfo("QEmbedLayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.ORT_DOMAIN)
     }
 
     private val epsilon: Float by attribute()

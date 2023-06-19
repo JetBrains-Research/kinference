@@ -60,7 +60,7 @@ class ZipMapVer1(
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
+        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
         private fun <T : Any> NumberNDArrayTFJS.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): TFJSSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
@@ -68,15 +68,14 @@ class ZipMapVer1(
             val columns = shape.last()
 
             val inputArray = this.dataFloat()
-            var offset = 0
             return TFJSSequence("Z", seqInfo, rows) {
                 val map = HashMap<T, TFJSData<*>>(columns)
+                val offset = it * columns
                 repeat(columns) { col ->
                     val value = inputArray[offset + col]
                     val tensor = NDArrayTFJS.floatScalar(value).asTensor()
                     map[labels[it]] = tensor
                 }
-                offset += columns
                 TFJSMap(null, map as Map<Any, TFJSData<*>>, mapInfo)
             }
         }
