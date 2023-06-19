@@ -16,6 +16,8 @@ import io.kinference.core.operators.layer.recurrent.lstm.LSTM
 import io.kinference.core.operators.logical.*
 import io.kinference.core.operators.math.*
 import io.kinference.core.operators.ml.*
+import io.kinference.core.operators.convolution.*
+import io.kinference.core.operators.pool.*
 import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
 import io.kinference.core.operators.seq.ConcatFromSequence
@@ -61,9 +63,11 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
+        "Conv" -> Conv(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "Div" -> Div(name, version, attributes, inputs, outputs)
+        "Dropout" -> Dropout(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLSTM" -> DynamicQuantizeLSTM(name, version, attributes, inputs, outputs)
         "DynamicQuantizeMatMul" -> DynamicQuantizeMatMul(name, version, attributes, inputs, outputs)
@@ -88,11 +92,13 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Less" -> Less(name, version, attributes, inputs, outputs)
         "Log" -> Log(name, version, attributes, inputs, outputs)
         "LogSoftmax" -> LogSoftmax(name, version, attributes, inputs, outputs)
+        "LRN" -> LRN(name, version, attributes, inputs, outputs)
         "Loop" -> Loop(name, version, attributes, inputs, outputs)
         "LSTM" -> LSTM(name, version, attributes, inputs, outputs)
         "MatMul" -> MatMul(name, version, attributes, inputs, outputs)
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "MatMulIntegerToFloat" -> MatMulIntegerToFloat(name, version, attributes, inputs, outputs)
+        "MaxPool" -> MaxPool(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)

@@ -3,6 +3,7 @@ package io.kinference.core.operators.layer.recurrent.gru
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
@@ -11,18 +12,31 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class GRU(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class GRU(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in GRUVer7.VERSION.asRange() -> GRUVer7(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of GRU operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): GRU {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in GRUVer7.VERSION.asRange() -> GRUVer7(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of GRU operator: $version")
+            }
         }
     }
 }
 
-class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : GRU(name, INFO, attributes, inputs, outputs) {
+class GRUVer7(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : GRU(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.FLOAT16,
@@ -60,13 +74,15 @@ class GRUVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
         private val INFO = OperatorInfo("GRU", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val activations: List<String> by attribute() { it: List<String> ->
-        if (direction == "forward" || direction == "reverse")
-            it.subList(0, 2)
-        else
-            it
+    private val activations: List<String> by attribute { it: List<String> ->
+        when(direction) {
+            LayerDirection.FORWARD, LayerDirection.REVERSE -> it.subList(0, 2)
+            LayerDirection.BIDIRECTIONAL -> it
+        }
     }
-    private val direction: String by attribute()
+
+    private val direction: LayerDirection by attribute { it: String -> LayerDirection.valueOf(it.uppercase()) }
+
     private val hiddenSize: Int by attribute("hidden_size") { it: Number -> it.toInt() }
     private val batchWise: Boolean by attribute("layout") { it: Number -> it.toInt() == 1 }
     private val linearBeforeReset: Boolean by attribute("linear_before_reset") { it: Number -> it.toInt() == 1 }

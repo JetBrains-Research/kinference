@@ -1,17 +1,18 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.core.operators.activations.Activation
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
-class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hiddenSize, activations, "bidirectional") {
+class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hiddenSize, activations, LayerDirection.BIDIRECTIONAL) {
     init {
         require(activations.size == 6)
     }
 
-    private val forwardLayer = LSTMLayer(hiddenSize, activations.subList(0, 3), "forward")
-    private val reverseLayer = LSTMLayer(hiddenSize, activations.subList(3, 6), "reverse")
+    private val forwardLayer = LSTMLayer(hiddenSize, activations.subList(0, 3), LayerDirection.FORWARD)
+    private val reverseLayer = LSTMLayer(hiddenSize, activations.subList(3, 6), LayerDirection.REVERSE)
 
     override suspend fun apply(
         input: AbstractLSTMInput,

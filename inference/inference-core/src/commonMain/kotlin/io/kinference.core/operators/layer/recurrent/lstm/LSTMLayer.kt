@@ -1,11 +1,12 @@
 package io.kinference.core.operators.layer.recurrent.lstm
 
 import io.kinference.core.operators.activations.Activation
+import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
-class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) : LSTMLayerBase(hiddenSize, activations, direction) {
+class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: LayerDirection) : LSTMLayerBase(hiddenSize, activations, direction) {
     init {
         require(activations.size == 3)
     }
@@ -62,7 +63,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: String) :
         val (f, g) = activations.map { Activation.create(it, dataType) }
 
         val seqLens = sequenceLens?.array?.toArray() ?: IntArray(batchSize) { seqLength }
-        val seqRange = if (direction == "forward") 0 until seqLength else (0 until seqLength).reversed()
+        val seqRange = if (direction == LayerDirection.FORWARD) 0 until seqLength else (0 until seqLength).reversed()
 
         suspend fun wrapper(seqNum: Int, body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
             for (batchNum in 0 until batchSize) {

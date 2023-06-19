@@ -3,7 +3,25 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.versionCpu
 import io.kinference.ndarray.core.versionWebgl
+import io.kinference.ndarray.extensions.unstack
 import io.kinference.primitives.types.DataType
+
+fun <T : NDArrayTFJS> Array<T>.update(i: Int, element: T) {
+    this[i].close()
+    this[i] = element
+}
+
+fun Array<NumberNDArrayTFJS>.unstackAs3DTypedArray(): Array<Array<MutableNumberNDArrayTFJS>> {
+    return Array(this.size) { i ->
+        val elementToArray = this[i].unstack()
+        Array(elementToArray.size) { elementToArray[it].asMutable() }
+    }
+}
+
+fun NumberNDArrayTFJS.unstackAs3DTypedArray(): Array<Array<MutableNumberNDArrayTFJS>> {
+    val arrays = this.unstack()
+    return arrays.unstackAs3DTypedArray()
+}
 
 fun String.resolveTFJSDataType(): DataType {
     return when (this) {
