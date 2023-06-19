@@ -205,13 +205,7 @@ open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), Num
     }
 
     override suspend fun pad(pads: Array<Pair<Int, Int>>, mode: PadMode, constantValue: NDArray?): NumberNDArrayTFJS {
-        require(mode == PadMode.CONSTANT) { "Only CONSTANT pad mode is supported for TFJS backend" }
-        require(constantValue == null || constantValue is NDArrayTFJS)
-        val padsArray = Array(pads.size) { arrayOf(pads[it].first, pads[it].second) }
-        return tidyNDArray {
-            val value = constantValue as? NDArrayTFJS ?: zero(dtype)
-            return@tidyNDArray NumberNDArrayTFJS(tfjsArray.pad(padsArray, value.singleValue()))
-        }
+        return super.pad(pads, mode, constantValue) as NumberNDArrayTFJS
     }
 
     override suspend fun matmul(other: NumberNDArray): MutableNumberNDArrayTFJS {

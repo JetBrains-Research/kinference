@@ -1,0 +1,21 @@
+:Ã
+v
+XYIndices"MaxPool*
+auto_pad"
+SAME_UPPER *
+kernel_shape@@@ *
+storage_order *
+strides@@@ test_MaxPoolZ
+X
+
+
+
+
+
+
+b	
+Y
+b
+Indices
+B
+ai.onnx

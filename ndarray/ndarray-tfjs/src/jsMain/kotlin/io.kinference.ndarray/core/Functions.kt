@@ -125,6 +125,8 @@ internal external val logicalAnd: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val pad: (x: ArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> ArrayTFJS
 
+internal external val mirrorPad: (x: ArrayTFJS, paddings: Array<Array<Int>>, mode: String) -> ArrayTFJS
+
 internal external val gatherND: (x: ArrayTFJS, indices: ArrayTFJS) -> ArrayTFJS
 
 internal external val leakyRelu: (x: ArrayTFJS, alpha: Number) -> ArrayTFJS
