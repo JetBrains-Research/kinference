@@ -124,7 +124,7 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
         if (block.size <= offset + end) {
             this.blockIncrement()
         } else {
-            this.indexInBlock += offset + end
+            this.indexInBlock += end
         }
 
         for (index in offset until min(block.size, offset + end)) {
@@ -154,6 +154,41 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
         end -= block.size - offset
     }
 }
+
+@BindPrimitives(type1 = [DataType.ALL])
+inline fun PrimitivePointer.forEachWith(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value1: PrimitiveType, value2: @BindPrimitives.Type1 PrimitiveType) -> Unit) {
+    require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
+
+    var end = count
+    if (this.isCompatibleWith(other)) {
+        while (end > 0) {
+            val fstBlock = this.currentBlock
+            val offset = this.indexInBlock
+
+            val sndBlock = other.currentBlock
+
+            if (fstBlock.size <= offset + end) {
+                this.blockIncrement()
+                other.blockIncrement()
+            } else {
+                this.indexInBlock += end
+                other.indexInBlock += end
+            }
+
+            for (index in offset until min(fstBlock.size, offset + end)) {
+                 action(fstBlock[index], sndBlock[index])
+            }
+
+            end -= fstBlock.size - offset
+        }
+    } else {
+        while (end > 0) {
+            action(this.getAndIncrement(), other.getAndIncrement())
+            end--
+        }
+    }
+}
+
 
 inline fun PrimitivePointer.forEachIndexed(count: Int, startIndex: Int = 0, action: (index: Int, value: PrimitiveType) -> Unit) {
     var end = count

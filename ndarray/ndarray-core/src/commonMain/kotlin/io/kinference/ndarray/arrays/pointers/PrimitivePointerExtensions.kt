@@ -11,3 +11,5 @@ inline fun PrimitivePointer.isCompatibleWith(other: IntPointer): Boolean = throw
 inline fun PrimitivePointer.isCompatibleWith(other: LongPointer): Boolean = throw UnsupportedOperationException()
 
 inline fun FloatPointer.accept(src: PrimitivePointer, count: Int, action: (dst: Int, src: PrimitiveType) -> Float) = Unit
+
+inline fun PrimitivePointer.forEachWith(other: LongPointer, count: Int, action: (value1: PrimitiveType, value2: Long) -> Unit) = Unit
