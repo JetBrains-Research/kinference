@@ -4,7 +4,7 @@ import io.kinference.ndarray.toIntArray
 import kotlin.math.ceil
 import kotlin.math.log2
 
-class TreeEnsembleInfo(
+internal class TreeEnsembleInfo(
     val baseValues: FloatArray?,
     val featureIds: LongArray,
     val nodeModes: List<String>,

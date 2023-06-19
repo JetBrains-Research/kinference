@@ -98,7 +98,7 @@ class TreeEnsembleClassifierVer1(
         val attr = getAttribute<LongArray>("classlabels_int64s")
         LabelsInfo.LongLabelsInfo(attr.toList())
     } else {
-        require(hasAttributeSet("classlabels_strings"))
+        require(hasAttributeSet("classlabels_strings")) { "Either classlabels_int64s or classlabels_strings attribute should be specified" }
         val attr = getAttribute<List<String>>("classlabels_strings")
         LabelsInfo.StringLabelsInfo(attr)
     }
