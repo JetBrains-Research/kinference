@@ -12,36 +12,39 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 
-sealed class TreeEnsembleClassifier(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class TreeEnsembleClassifier(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in TreeEnsembleClassifierVer1.VERSION.asRange() -> TreeEnsembleClassifierVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): TreeEnsembleClassifier {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in TreeEnsembleClassifierVer1.VERSION.asRange() -> TreeEnsembleClassifierVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
+            }
         }
     }
 
-    internal class ClassifierInfo(op: Operator<KIONNXData<*>, KIONNXData<*>>) : BaseEnsembleInfo(op) {
-        val classIds: LongArray = op.getAttribute("class_ids")
-        val classNodeIds: LongArray = op.getAttribute("class_nodeids")
-        val classTreeIds: LongArray = op.getAttribute("class_treeids")
-        val classWeights: FloatArray = op.getAttribute("class_weights")
-        val classLabels: TreeEnsemble.LabelsInfo<*>
+    sealed class LabelsInfo<T>(val labels: List<T>, val labelsDataType: TensorProto.DataType) {
+        val size: Int = labels.size
 
-        init {
-            val longLabels = op.getAttributeOrNull<LongArray>("classlabels_int64s")
-            classLabels = if (longLabels != null) {
-                TreeEnsemble.LabelsInfo.LongLabelsInfo(longLabels.toList())
-            } else {
-                TreeEnsemble.LabelsInfo.StringLabelsInfo(op.getAttribute("classlabels_strings"))
-            }
-        }
+        class LongLabelsInfo(labels: List<Long>) : LabelsInfo<Long>(labels, TensorProto.DataType.INT64)
+        class StringLabelsInfo(labels: List<String>) : LabelsInfo<String>(labels, TensorProto.DataType.STRING)
     }
 }
 
 
-class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : TreeEnsembleClassifier(name, INFO, attributes, inputs, outputs) {
+class TreeEnsembleClassifierVer1(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : TreeEnsembleClassifier(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             //TensorProto.DataType.INT32,
@@ -82,24 +85,6 @@ class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        fun FloatNDArray.maxIdx(): Int {
-            var max = Float.MIN_VALUE
-            var maxIndex = 0
-            var offset = 0
-            for (block in array.blocks) {
-                for (idx in block.indices) {
-                    val tmp = block[idx]
-                    if (tmp > max) {
-                        max = tmp
-                        maxIndex = idx + offset
-                    }
-                }
-                offset += block.size
-            }
-
-            return maxIndex
-        }
-
         private fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
             return when (dataType) {
                 TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it) as Long }
@@ -109,21 +94,46 @@ class TreeEnsembleClassifierVer1(name: String, attributes: Map<String, Attribute
         }
     }
 
-    private val ensembleInfo: ClassifierInfo
-        get() = ClassifierInfo(this as Operator<KIONNXData<*>, KIONNXData<*>>)
+    private val labels: LabelsInfo<*> = if (hasAttributeSet("classlabels_int64s")) {
+        val attr = getAttribute<LongArray>("classlabels_int64s")
+        LabelsInfo.LongLabelsInfo(attr.toList())
+    } else {
+        require(hasAttributeSet("classlabels_strings")) { "Either classlabels_int64s or classlabels_strings attribute should be specified" }
+        val attr = getAttribute<List<String>>("classlabels_strings")
+        LabelsInfo.StringLabelsInfo(attr)
+    }
 
-    private val ensemble = TreeEnsembleBuilder.fromInfo(ensembleInfo)
+    private val ensembleInfo = TreeEnsembleInfo(
+        baseValues = getAttributeOrNull("base_values"),
+        featureIds = getAttribute("nodes_featureids"),
+        nodeModes = getAttribute("nodes_modes"),
+        nodeIds = getAttribute("nodes_nodeids"),
+        treeIds = getAttribute("nodes_treeids"),
+        falseNodeIds = getAttribute("nodes_falsenodeids"),
+        trueNodeIds = getAttribute("nodes_truenodeids"),
+        nodeValues = getAttribute("nodes_values"),
+        postTransform = getAttributeOrNull("post_transform"),
+        aggregator = null,
+        targetIds = getAttribute("class_ids"),
+        targetNodeIds = getAttribute("class_nodeids"),
+        targetNodeTreeIds = getAttribute("class_treeids"),
+        targetWeights = getAttribute("class_weights"),
+        numTargets = labels.size
+    )
 
-    private fun labeledTopClasses(array: FloatNDArray): NDArray {
+    private val ensemble = ensembleInfo.buildEnsemble()
+
+    private suspend fun labeledTopClasses(array: FloatNDArray): NDArray {
         val shape = intArrayOf(array.shape[0])
-        return writeLabels(ensemble.labelsInfo!!.labelsDataType, shape) {
-            ensemble.labelsInfo.labels[(array.view(it)).maxIdx()]!!
+        val labelsIndices = array.argmax(axis = -1).array.pointer()
+        return writeLabels(labels.labelsDataType, shape) {
+            labels.labels[labelsIndices.getAndIncrement()]!!
         }
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val inputData = inputs[0]!!.data.toFloatNDArray()
-        val classScores = ensemble.execute(inputData) as FloatNDArray
+        val inputData = inputs[0]!!.data as NumberNDArray
+        val classScores = ensemble.execute(inputData)
         val classLabels = labeledTopClasses(classScores)
         return listOf(classLabels.asTensor("Y"), classScores.asTensor("Z"))
     }
