@@ -53,7 +53,7 @@ class LayerNormalizationVer1(name: String, attributes: Map<String, Attribute<Any
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("LayerNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     private val axis: Int by attribute { it: Number -> it.toInt() }

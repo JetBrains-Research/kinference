@@ -74,7 +74,7 @@ class TreeEnsembleRegressorVer1(
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("TreeEnsembleRegressor", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
+        private val INFO = OperatorInfo("TreeEnsembleRegressor", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
     }
 
     private val ensembleInfo = TreeEnsembleInfo(

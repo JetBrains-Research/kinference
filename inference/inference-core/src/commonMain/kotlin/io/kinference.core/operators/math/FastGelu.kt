@@ -35,7 +35,7 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("FastGelu", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {

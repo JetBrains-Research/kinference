@@ -45,7 +45,7 @@ class MatMulIntegerToFloatVer1(name: String, attributes: Map<String, Attribute<A
         private val OUTPUTS_INFO = listOf(IOInfo(0, OUT_TYPE_CONSTRAINTS, "Y", optional = false))
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("MatMulIntegerToFloat", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("MatMulIntegerToFloat", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {

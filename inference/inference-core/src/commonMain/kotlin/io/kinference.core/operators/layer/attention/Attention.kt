@@ -224,7 +224,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        val INFO = OperatorInfo("Attention", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
 
         internal suspend fun initQueryKeyValue(
             input: NDArrayCore, weights: NDArrayCore, bias: NDArrayCore,

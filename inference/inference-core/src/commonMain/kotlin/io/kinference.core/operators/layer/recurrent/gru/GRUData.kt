@@ -214,3 +214,8 @@ class GRUHiddenState internal constructor(
 
     fun getVector(numDirection: Int, batchNum: Int) = stateData.view(numDirection, batchNum)
 }
+
+data class GRULayerOutput(
+    val output: NumberNDArrayCore,
+    val hiddenState: NumberNDArrayCore
+)

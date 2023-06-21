@@ -68,6 +68,8 @@ data class OperatorInfo(
 
     companion object {
         const val DEFAULT_DOMAIN = "ai.onnx"
+        const val ML_DOMAIN = "ai.onnx.ml"
+        const val ORT_DOMAIN = "com.microsoft"
     }
 }
 

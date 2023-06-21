@@ -43,7 +43,7 @@ class DynamicQuantizeMatMulVer11(name: String, attributes: Map<String, Attribute
         private val OUTPUTS_INFO = listOf(IOInfo(0, FLOAT_TYPE, "Y", optional = false))
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "com.microsoft")
+        private val INFO = OperatorInfo("DynamicQuantizeMatMul", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ORT_DOMAIN)
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {

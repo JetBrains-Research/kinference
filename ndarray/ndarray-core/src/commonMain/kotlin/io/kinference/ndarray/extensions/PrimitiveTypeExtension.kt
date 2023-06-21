@@ -10,6 +10,7 @@ internal val PrimitiveType.absoluteValue: PrimitiveType
     get() = throw UnsupportedOperationException()
 
 internal fun PrimitiveType.pow(n: Int): PrimitiveType = throw UnsupportedOperationException()
+internal fun PrimitiveType.pow(n: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun PrimitiveType.withSign(sign: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
 internal val PrimitiveType.sign: PrimitiveType

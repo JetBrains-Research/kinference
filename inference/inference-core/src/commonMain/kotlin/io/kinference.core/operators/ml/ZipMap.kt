@@ -26,15 +26,22 @@ sealed class ZipMap(
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ZipMapVer1.VERSION.asRange() -> ZipMapVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of ZipMap operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): ZipMap {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ZipMapVer1.VERSION.asRange() -> ZipMapVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ZipMap operator: $version")
+            }
         }
     }
 }
 
 
-class ZipMapVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ZipMap(name, INFO, attributes, inputs, outputs) {
+class ZipMapVer1(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : ZipMap(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val OUT_TYPE_CONSTRAINTS = setOf(TensorProto.DataType.INT64, TensorProto.DataType.STRING, TensorProto.DataType.FLOAT)
 
@@ -52,7 +59,7 @@ class ZipMapVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
-        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = "ai.onnx.ml")
+        private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
         private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
@@ -84,8 +91,8 @@ class ZipMapVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         }
     }
 
-    private val classLabelsLong: Labels.LongLabels? by attributeOrNull("classlabels_int64s") { labels: LongArray? -> Labels.LongLabels(labels!!) }
-    private val classLabelsString: Labels.StringLabels? by attributeOrNull("classlabels_strings") { labels: List<String>? -> Labels.StringLabels(labels!!) }
+    private val classLabelsLong: Labels.LongLabels? by attributeOrNull("classlabels_int64s") { labels: LongArray? -> labels?.let { Labels.LongLabels(labels) } }
+    private val classLabelsString: Labels.StringLabels? by attributeOrNull("classlabels_strings") { labels: List<String>? -> labels?.let { Labels.StringLabels(labels) } }
 
     private val outputMapInfo: ValueTypeInfo.MapTypeInfo
         get() {
@@ -99,7 +106,7 @@ class ZipMapVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         requireNotNull(labels) { "Class labels should be specified" }
 
         val input = inputs[0]!!.data as FloatNDArray
-        require(input.rank == 2)
+        require(input.rank == 2) { "Expected input rank=2. Actual input rank=${input.rank}" }
 
         return listOf(input.asSeqWithLabels(labels, outputMapInfo))
     }
