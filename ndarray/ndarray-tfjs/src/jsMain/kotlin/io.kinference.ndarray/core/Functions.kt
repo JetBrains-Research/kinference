@@ -143,3 +143,10 @@ internal external val tensorScatterUpdate: (tensor: ArrayTFJS, indices: ArrayTFJ
 
 internal external val ceil: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val exp: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val expm1: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val elu: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val prelu: (x: ArrayTFJS, alpha: ArrayTFJS) -> ArrayTFJS

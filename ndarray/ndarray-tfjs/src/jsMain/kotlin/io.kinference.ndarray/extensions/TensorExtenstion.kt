@@ -254,3 +254,11 @@ fun ArrayTFJS.atanh() = atanh(this)
 fun ArrayTFJS.tensorScatterUpdate(indices: ArrayTFJS, updates: ArrayTFJS) = tensorScatterUpdate(this, indices, updates)
 
 fun ArrayTFJS.ceil() = ceil(this)
+
+fun ArrayTFJS.exp() = exp(this)
+
+fun ArrayTFJS.expm1() = expm1(this)
+
+fun ArrayTFJS.elu() = elu(this)
+
+fun ArrayTFJS.prelu(alpha: ArrayTFJS) = prelu(this, alpha)

@@ -139,3 +139,11 @@ fun <T : NDArrayTFJS> T.tensorScatterUpdate(indices: NDArrayTFJS, updates: NDArr
 }
 
 fun NumberNDArrayTFJS.ceil() = NumberNDArrayTFJS(tfjsArray.ceil())
+
+fun NumberNDArrayTFJS.exp() = NumberNDArrayTFJS(tfjsArray.exp())
+
+fun NumberNDArrayTFJS.expm1() = NumberNDArrayTFJS(tfjsArray.expm1())
+
+fun NumberNDArrayTFJS.elu() = NumberNDArrayTFJS(tfjsArray.elu())
+
+fun NumberNDArrayTFJS.prelu(alpha: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.prelu(alpha.tfjsArray))

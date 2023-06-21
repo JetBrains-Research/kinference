@@ -3,14 +3,14 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asNamedOutputs
+import io.kinference.tfjs.data.tensors.*
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -38,35 +38,40 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
         internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
-    }
 
-    private val toType: Int by attribute("to") { it: Long -> it.toInt() }
+        internal fun castTo(input: NDArrayTFJS, toType: TensorProto.DataType): NDArrayTFJS {
+            val tfjsType = when(toType) {
+                TensorProto.DataType.INT64, TensorProto.DataType.UINT64,
+                TensorProto.DataType.INT32, TensorProto.DataType.UINT32,
+                TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
+                TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> DataType.INT
 
-    private val tfjsType = when(val type = TensorProto.DataType.fromValue(toType)) {
-        TensorProto.DataType.INT64, TensorProto.DataType.UINT64,
-        TensorProto.DataType.INT32, TensorProto.DataType.UINT32,
-        TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
-        TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> DataType.INT
+                in FLOAT_TENSOR_TYPES -> DataType.FLOAT
 
-        in FLOAT_TENSOR_TYPES -> DataType.FLOAT
+                TensorProto.DataType.BOOL -> DataType.BOOLEAN
 
-        TensorProto.DataType.BOOL -> DataType.BOOLEAN
+                else -> error("Unsupported type: $toType")
+            }
 
-        else -> error("Unsupported type: $type")
-    }
-
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidyNDArrays {
-            val input = inputs[0]!!.data
             val casted = when (tfjsType) {
                 DataType.INT -> input.castToInt()
                 DataType.FLOAT -> input.castToFloat()
                 DataType.BOOLEAN -> input.castToBool()
                 else -> error("Unsupported type $tfjsType")
             }
-            val castedCopy = if (input === casted) casted.clone() else casted
-            return@tidyNDArrays arrayOf(castedCopy)
+
+            return casted
         }
-        return outputs.asNamedOutputs(this.outputs)
+    }
+
+    private val toTypeInt: Int by attribute("to") { it: Number -> it.toInt() }
+
+    private val toType = TensorProto.DataType.fromValue(toTypeInt) ?: error("Incorrect attribute 'to' in ${this.name} operator")
+
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs[0]!!.data
+        val output = castTo(input, toType)
+
+        return listOf(output.asTensor("output"))
     }
 }
