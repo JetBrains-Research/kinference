@@ -36,14 +36,13 @@ class TFJSGraph(
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<TFJSData<*>>(valueOrderInfo)
             val operators = ArrayList<Operator<TFJSData<*>, TFJSData<*>>>(nodes.size).apply {
-                for (node in nodes) {
-                    try {
+                try {
+                    for (node in nodes) {
                         add(TFJSOperatorFactory.create(node.proto, opSetRegistry))
-                    } catch (e: Exception) {
-                        // Dispose all operators before throwing exception
-                        closeAll(this)
-                        throw e
                     }
+                } catch (e: Exception) {
+                    closeAll(this)
+                    throw e
                 }
             }
 
