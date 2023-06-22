@@ -2,8 +2,8 @@
 @file:JsNonModule
 package io.kinference.ndarray.core
 
+import io.kinference.ndarray.MomentsOutputTFJS
 import io.kinference.ndarray.arrays.ArrayTFJS
-import kotlin.js.Json
 import kotlin.js.Promise
 
 internal external val abs: (x: ArrayTFJS) -> ArrayTFJS
@@ -30,7 +30,7 @@ internal external val reshape: (x: ArrayTFJS, shape: Array<Int>) -> ArrayTFJS
 
 internal external val gather: (x: ArrayTFJS, indices: ArrayTFJS, axis: Int, batchDims: Int) -> ArrayTFJS
 
-internal external val moments: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> Json
+internal external val moments: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> MomentsOutputTFJS
 
 internal external val sum: (x: ArrayTFJS, axis: Array<Int>?, keepDims: Boolean) -> ArrayTFJS
 
@@ -143,3 +143,10 @@ internal external val tensorScatterUpdate: (tensor: ArrayTFJS, indices: ArrayTFJ
 
 internal external val ceil: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val exp: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val expm1: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val elu: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val prelu: (x: ArrayTFJS, alpha: ArrayTFJS) -> ArrayTFJS

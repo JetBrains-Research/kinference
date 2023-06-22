@@ -10,6 +10,7 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.TFJSOperatorFactory
 import io.kinference.tfjs.operators.layer.recurrent.gru.GRUContext
 import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTMContext
+import io.kinference.utils.closeAll
 
 class TFJSGraph(
     proto: GraphProto,
@@ -17,6 +18,7 @@ class TFJSGraph(
     valueOrderInfo: GraphValueOrderInfo,
     private val preparedTensorsContext: GraphContext<TFJSData<*>> = GraphContext()
 ) : Graph<TFJSData<*>>(proto, operators, valueOrderInfo) {
+
     override fun close() {
         preparedTensorsContext.close()
         super.close()
@@ -34,8 +36,13 @@ class TFJSGraph(
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<TFJSData<*>>(valueOrderInfo)
             val operators = ArrayList<Operator<TFJSData<*>, TFJSData<*>>>(nodes.size).apply {
-                for (node in nodes) {
-                    add(TFJSOperatorFactory.create(node.proto, opSetRegistry))
+                try {
+                    for (node in nodes) {
+                        add(TFJSOperatorFactory.create(node.proto, opSetRegistry))
+                    }
+                } catch (e: Exception) {
+                    closeAll(this)
+                    throw e
                 }
             }
 

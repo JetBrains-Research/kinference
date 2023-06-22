@@ -77,15 +77,9 @@ fun ArrayTFJS.reshape(shape: IntArray) = reshape(this, shape.toTypedArray())
 
 fun ArrayTFJS.gather(indices: ArrayTFJS, axis: Int = 0, batchDims: Int = 0) = gather(this, indices, axis, batchDims)
 
-fun ArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
-    val out = moments(this, arrayOf(axis), keepDims)
-    return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
-}
+fun ArrayTFJS.moments(axis: Int, keepDims: Boolean = false) = moments(this, arrayOf(axis), keepDims)
 
-fun ArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): MomentsOutput {
-    val out = moments(this, axes, keepDims)
-    return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
-}
+fun ArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false) = moments(this, axes, keepDims)
 
 fun ArrayTFJS.sum(axis: Int, keepDims: Boolean = false) = sum(this, arrayOf(axis), keepDims)
 
@@ -260,3 +254,11 @@ fun ArrayTFJS.atanh() = atanh(this)
 fun ArrayTFJS.tensorScatterUpdate(indices: ArrayTFJS, updates: ArrayTFJS) = tensorScatterUpdate(this, indices, updates)
 
 fun ArrayTFJS.ceil() = ceil(this)
+
+fun ArrayTFJS.exp() = exp(this)
+
+fun ArrayTFJS.expm1() = expm1(this)
+
+fun ArrayTFJS.elu() = elu(this)
+
+fun ArrayTFJS.prelu(alpha: ArrayTFJS) = prelu(this, alpha)

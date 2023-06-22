@@ -2,10 +2,9 @@
 
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.MomentsOutput
+import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
-import io.kinference.ndarray.makeNDArray
 import io.kinference.primitives.types.DataType
 
 val NDArrayTFJS.dtype: String
@@ -131,18 +130,20 @@ fun NumberNDArrayTFJS.atan() = NumberNDArrayTFJS(tfjsArray.atan())
 
 fun NumberNDArrayTFJS.atanh() = NumberNDArrayTFJS(tfjsArray.atanh())
 
-fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false): MomentsOutput {
-    val out = moments(this.tfjsArray, arrayOf(axis), keepDims)
-    return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
-}
+fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false) = tfjsArray.moments(axis, keepDims).toNDArray()
 
-fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false): MomentsOutput {
-    val out = moments(this.tfjsArray, axes, keepDims)
-    return MomentsOutput(out["mean"] as ArrayTFJS, out["variance"] as ArrayTFJS)
-}
+fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false) = tfjsArray.moments(axes, keepDims).toNDArray()
 
 fun <T : NDArrayTFJS> T.tensorScatterUpdate(indices: NDArrayTFJS, updates: NDArrayTFJS): T {
     return tfjsArray.tensorScatterUpdate(indices.tfjsArray, updates.tfjsArray).toNDArray() as T
 }
 
 fun NumberNDArrayTFJS.ceil() = NumberNDArrayTFJS(tfjsArray.ceil())
+
+fun NumberNDArrayTFJS.exp() = NumberNDArrayTFJS(tfjsArray.exp())
+
+fun NumberNDArrayTFJS.expm1() = NumberNDArrayTFJS(tfjsArray.expm1())
+
+fun NumberNDArrayTFJS.elu() = NumberNDArrayTFJS(tfjsArray.elu())
+
+fun NumberNDArrayTFJS.prelu(alpha: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.prelu(alpha.tfjsArray))
