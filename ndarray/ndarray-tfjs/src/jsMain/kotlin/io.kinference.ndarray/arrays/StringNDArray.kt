@@ -64,12 +64,12 @@ class MutableStringNDArrayTFJS(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArr
         return MutableStringNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {
-        require(value is String)
+        require(value is String) { "Cannot cast given value to String" }
         tfjsArray.bufferSync().set(value, *index)
     }
 
     override fun setLinear(index: Int, value: Any) {
-        require(value is String)
+        require(value is String) { "Cannot cast given value to String" }
         tfjsArray.bufferSync().set(value, *strides.index(index))
     }
 
@@ -85,7 +85,7 @@ class MutableStringNDArrayTFJS(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArr
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
-        require(value is String)
+        require(value is String) { "Cannot cast given value to String" }
         val offsetFrom = strides.index(from)
         val offsetTo = strides.index(to)
         val buffer = tfjsArray.bufferSync()
