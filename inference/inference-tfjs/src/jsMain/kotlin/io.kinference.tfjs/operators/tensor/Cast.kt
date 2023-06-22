@@ -7,7 +7,6 @@ import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
-import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.*
@@ -41,12 +40,9 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
         internal fun castTo(input: NDArrayTFJS, toType: TensorProto.DataType): NDArrayTFJS {
             val tfjsType = when(toType) {
-                TensorProto.DataType.INT64, TensorProto.DataType.UINT64,
-                TensorProto.DataType.INT32, TensorProto.DataType.UINT32,
-                TensorProto.DataType.INT16, TensorProto.DataType.UINT16,
-                TensorProto.DataType.INT8, TensorProto.DataType.UINT8 -> DataType.INT
+                in (INT_DATA_TYPES + UINT_DATA_TYPES) -> DataType.INT
 
-                in FLOAT_TENSOR_TYPES -> DataType.FLOAT
+                in FLOAT_DATA_TYPES -> DataType.FLOAT
 
                 TensorProto.DataType.BOOL -> DataType.BOOLEAN
 
