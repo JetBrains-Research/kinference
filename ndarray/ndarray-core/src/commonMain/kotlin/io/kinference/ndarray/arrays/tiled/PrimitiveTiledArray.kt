@@ -44,6 +44,20 @@ class PrimitiveTiledArray {
 
             return PrimitiveTiledArray(blocksArray)
         }
+
+        fun matrixLike(shape: IntArray, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+            require(shape.size == 2) { "NDArray should be of rank == 2. Got rank=${shape.size}" }
+
+            var count = 0
+            val (blocksNum, blockSize) = shape
+            val blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
+            for (block in blocks) {
+                for (idx in 0 until blockSize) {
+                    block[idx] = init(count++)
+                }
+            }
+            return PrimitiveTiledArray(blocks)
+        }
     }
 
     constructor(size: Int, blockSize: Int) {

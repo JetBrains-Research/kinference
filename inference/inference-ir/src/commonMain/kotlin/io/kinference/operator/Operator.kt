@@ -194,6 +194,13 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         return attributes[key]?.value as T? ?: if (!info.required) info.default as T? else null
     }
 
+    fun hasAttributeSet(key: String): Boolean {
+        val info = info.attributes[key]
+        requireNotNull(info) { "Attribute '$key' not specified in the '${this.info.type}' operator" }
+
+        return attributes[key]?.value != null
+    }
+
     abstract suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<T?>): List<U?>
     open suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, vararg inputs: T?): Collection<U?> = apply(contexts, inputs.toList())
 
