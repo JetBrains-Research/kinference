@@ -11,7 +11,8 @@ import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.operators.ml.trees.TreeEnsembleInfo
+import io.kinference.tfjs.operators.ml.trees.TFJSTreeEnsemble
+import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleClassifier(
     name: String,
@@ -122,7 +123,7 @@ class TreeEnsembleClassifierVer1(
         numTargets = labels.size
     )
 
-    private val ensemble = ensembleInfo.buildEnsemble()
+    private val ensemble = TFJSTreeEnsemble.fromInfo(ensembleInfo)
 
     private suspend fun labeledTopClasses(array: NumberNDArrayTFJS): NDArrayTFJS {
         val shape = arrayOf(array.shape[0])

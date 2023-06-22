@@ -7,9 +7,11 @@ import io.kinference.core.operators.ml.trees.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleRegressor(
     name: String,
@@ -94,10 +96,10 @@ class TreeEnsembleRegressorVer1(
         targetWeights = getAttribute("target_weights")
     )
 
-    private val treeEnsemble = ensembleInfo.buildEnsemble()
+    private val treeEnsemble = KICoreTreeEnsemble.fromInfo(ensembleInfo)
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val inputData = inputs[0]!!.data as NumberNDArray
+        val inputData = inputs[0]!!.data as NumberNDArrayCore
         return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
     }
 }

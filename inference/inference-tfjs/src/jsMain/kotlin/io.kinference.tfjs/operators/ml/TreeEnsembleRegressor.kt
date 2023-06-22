@@ -10,7 +10,8 @@ import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.tfjs.operators.ml.trees.TreeEnsembleInfo
+import io.kinference.tfjs.operators.ml.trees.TFJSTreeEnsemble
+import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleRegressor(
     name: String,
@@ -94,7 +95,7 @@ class TreeEnsembleRegressorVer1(
         targetWeights = getAttribute("target_weights")
     )
 
-    private val treeEnsemble = ensembleInfo.buildEnsemble()
+    private val treeEnsemble = TFJSTreeEnsemble.fromInfo(ensembleInfo)
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val inputData = inputs[0]!!.data as NumberNDArrayTFJS

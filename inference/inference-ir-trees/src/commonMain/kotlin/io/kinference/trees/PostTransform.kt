@@ -1,7 +1,7 @@
-package io.kinference.core.operators.ml.trees
+package io.kinference.trees
 
-import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.MutableFloatNDArray
+import io.kinference.ndarray.arrays.MutableNumberNDArray
+import io.kinference.ndarray.arrays.NumberNDArray
 
 //TODO: SOFTMAX_ZERO, LOGISTIC, PROBIT
 enum class PostTransformType {
@@ -13,14 +13,14 @@ enum class PostTransformType {
 }
 
 sealed class PostTransform {
-    abstract suspend fun apply(array: MutableFloatNDArray): FloatNDArray
+    abstract suspend fun apply(array: MutableNumberNDArray): NumberNDArray
 
     object None : PostTransform() {
-        override suspend fun apply(array: MutableFloatNDArray) = array
+        override suspend fun apply(array: MutableNumberNDArray) = array
     }
 
     object SoftmaxTransform : PostTransform() {
-        override suspend fun apply(array: MutableFloatNDArray): FloatNDArray {
+        override suspend fun apply(array: MutableNumberNDArray): NumberNDArray {
             return array.softmax(axis = -1)
         }
     }

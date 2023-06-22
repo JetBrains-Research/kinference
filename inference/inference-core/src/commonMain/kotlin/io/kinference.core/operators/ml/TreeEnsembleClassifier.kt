@@ -1,7 +1,6 @@
 package io.kinference.core.operators.ml
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.ml.trees.*
@@ -11,6 +10,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleClassifier(
     name: String,
@@ -121,7 +121,7 @@ class TreeEnsembleClassifierVer1(
         numTargets = labels.size
     )
 
-    private val ensemble = ensembleInfo.buildEnsemble()
+    private val treeEnsemble = KICoreTreeEnsemble.fromInfo(ensembleInfo)
 
     private suspend fun labeledTopClasses(array: FloatNDArray): NDArray {
         val shape = intArrayOf(array.shape[0])
@@ -132,8 +132,8 @@ class TreeEnsembleClassifierVer1(
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val inputData = inputs[0]!!.data as NumberNDArray
-        val classScores = ensemble.execute(inputData)
+        val inputData = inputs[0]!!.data as NumberNDArrayCore
+        val classScores = treeEnsemble.execute(inputData)
         val classLabels = labeledTopClasses(classScores)
         return listOf(classLabels.asTensor("Y"), classScores.asTensor("Z"))
     }
