@@ -186,7 +186,7 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
             return BooleanNDArrayTFJS(tensor(array, shape))
         }
 
-        fun boolean(shape: Array<Int>, init: (IntArray) -> String): StringNDArrayTFJS {
+        fun string(shape: Array<Int>, init: (IntArray) -> String): StringNDArrayTFJS {
             val ndIterator = NDIndexer(shape.toIntArray())
             val array = Array(shape.times()) { init(ndIterator.next()) }
             return StringNDArrayTFJS(tensor(array, shape))

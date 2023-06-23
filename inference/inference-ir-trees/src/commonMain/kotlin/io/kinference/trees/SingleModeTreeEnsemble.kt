@@ -18,12 +18,11 @@ abstract class SingleModeTreeEnsemble<T : NumberNDArray>(
     private val treeSplitter = TreeSplitter.get(splitMode, featureIds, nodeFloatSplits)
 
     protected fun applyEntry(array: FloatArray, output: FloatArray, srcIdx: Int = 0, dstIdx: Int = 0) {
-        var index: Int
         var score = FloatArray(numTargets)
         var treeOffset = 0
         var off = 0
         for ((i, depth) in treeDepths.withIndex()) {
-            index = 0
+            var index = 0
             for (j in 1 until depth) {
                 index = 2 * index + 1 + treeSplitter.split(array, srcIdx, index + treeOffset)
             }
