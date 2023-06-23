@@ -262,3 +262,7 @@ fun ArrayTFJS.expm1() = expm1(this)
 fun ArrayTFJS.elu() = elu(this)
 
 fun ArrayTFJS.prelu(alpha: ArrayTFJS) = prelu(this, alpha)
+
+fun ArrayTFJS.cos() = cos(this)
+
+fun ArrayTFJS.cosh() = cosh(this)

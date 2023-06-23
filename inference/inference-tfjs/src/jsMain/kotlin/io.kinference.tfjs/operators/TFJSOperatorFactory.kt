@@ -56,6 +56,8 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
+        "Cos" -> Cos(name, version, attributes, inputs, outputs)
+        "Cosh" -> Cosh(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "Div" -> Div(name, version, attributes, inputs, outputs)
