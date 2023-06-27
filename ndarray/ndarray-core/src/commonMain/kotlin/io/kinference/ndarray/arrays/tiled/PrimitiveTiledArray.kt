@@ -46,10 +46,11 @@ class PrimitiveTiledArray {
         }
 
         fun matrixLike(shape: IntArray, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
-            require(shape.size == 2) { "NDArray should be of rank == 2. Got rank=${shape.size}" }
+            require(shape.size == 1 || shape.size == 2) { "NDArray should be of rank <= 2. Got rank=${shape.size}" }
 
             var count = 0
-            val (blocksNum, blockSize) = shape
+            val blockSize = shape.last()
+            val blocksNum = if (shape.size == 1) 1 else shape[0]
             val blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
             for (block in blocks) {
                 for (idx in 0 until blockSize) {

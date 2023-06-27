@@ -3,47 +3,30 @@ package io.kinference.core.operators.ml.trees
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.primitives.types.DataType
+import io.kinference.trees.*
 import io.kinference.utils.LoggerFactory
 import io.kinference.utils.PlatformUtils
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.*
 
-open class TreeEnsemble(
-    private val aggregator: Aggregator,
-    private val transform: PostTransform,
-    private val treeDepths: IntArray,
-    private val treeSizes: IntArray,
-    private val featureIds: IntArray,
-    private val nodeFloatSplits: FloatArray,
-    private val nonLeafValuesCount: IntArray,
-    private val leafValues: FloatArray,
-    private val biases: FloatArray,
-    val numTargets: Int
+class KICoreTreeEnsemble(
+    aggregator: Aggregator,
+    transform: PostTransform,
+    treeDepths: IntArray,
+    treeSizes: IntArray,
+    featureIds: IntArray,
+    nodeFloatSplits: FloatArray,
+    nonLeafValuesCount: IntArray,
+    leafValues: FloatArray,
+    biases: FloatArray,
+    numTargets: Int,
+    splitMode: TreeSplitType
+) : SingleModeTreeEnsemble<NumberNDArrayCore>(
+    aggregator, transform, treeDepths, treeSizes, featureIds, nodeFloatSplits,
+    nonLeafValuesCount, leafValues, biases, numTargets, splitMode
 ) {
-    private fun FloatArray.computeSplitGT(splitIdx: Int): Int {
-        return if (this[featureIds[splitIdx]] > nodeFloatSplits[splitIdx]) 1 else 0
-    }
-
-    private fun applyEntry(array: FloatArray, output: FloatArray) {
-        var index: Int
-        var score = FloatArray(numTargets)
-        var treeOffset = 0
-        var off = 0
-        for ((i, depth) in treeDepths.withIndex()) {
-            index = 0
-            for (j in 1 until depth) {
-                index = 2 * index + 1 + array.computeSplitGT(index + treeOffset)
-            }
-            off += nonLeafValuesCount[i]
-            val treeIndex = (treeOffset + index - off) * numTargets
-            score = aggregator.accept(score, leafValues, treeIndex)
-            treeOffset += treeSizes[i]
-        }
-        aggregator.finalize(biases, output, score, numTargets)
-    }
-
-    suspend fun execute(input: NumberNDArray): FloatNDArray {
+    override suspend fun execute(input: NumberNDArrayCore): FloatNDArray {
         val actualInput = reformatInput(input)
         val n = if (input.rank == 1) 1 else input.shape[0]
         val outputShape = if (numTargets == 1) intArrayOf(n) else intArrayOf(n, numTargets)
@@ -67,7 +50,7 @@ open class TreeEnsemble(
             }
         }
         val output = MutableFloatNDArray(FloatTiledArray(outputBlocks), Strides(outputShape))
-        return transform.apply(output)
+        return transform.apply(output) as FloatNDArray
     }
 
     companion object {
@@ -98,6 +81,22 @@ open class TreeEnsemble(
                 logger.warning { "Inner block size is not equal to input row size. Use FloatNDArray.matrixLike(...) array constructor to adjust block size." }
                 input.resizeBlock()
             }
+        }
+
+        fun fromInfo(info: TreeEnsembleInfo): KICoreTreeEnsemble {
+            return KICoreTreeEnsemble(
+                aggregator = info.aggregator,
+                transform = info.transform,
+                treeDepths = info.treeDepths,
+                treeSizes = info.treeSizes,
+                featureIds = info.featureIds,
+                nodeFloatSplits = info.nodeFloatSplits,
+                nonLeafValuesCount = info.nonLeafValuesCount,
+                leafValues = info.leafValues,
+                biases = info.biases,
+                numTargets = info.numTargets,
+                splitMode = info.splitMode
+            )
         }
     }
 }

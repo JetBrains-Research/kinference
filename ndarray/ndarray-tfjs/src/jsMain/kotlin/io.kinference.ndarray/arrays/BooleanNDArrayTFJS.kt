@@ -76,12 +76,12 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
         return MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {
-        require(value is Boolean)
+        require(value is Boolean) { "Cannot cast given value to Boolean" }
         tfjsArray.bufferSync().set(value, *index)
     }
 
     override fun setLinear(index: Int, value: Any) {
-        require(value is Boolean)
+        require(value is Boolean) { "Cannot cast given value to Boolean" }
         tfjsArray.bufferSync().set(value, *strides.index(index))
     }
 
@@ -97,6 +97,7 @@ class MutableBooleanNDArrayTFJS(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsA
     }
 
     override fun fill(value: Any, from: Int, to: Int) {
+        require(value is Boolean) { "Cannot cast given value to Boolean" }
         val offsetFrom = strides.index(from)
         val offsetTo = strides.index(to)
         val buffer = tfjsArray.bufferSync()

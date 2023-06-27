@@ -46,11 +46,14 @@ external fun tensor(values: Array<Double>, shape: Array<Int>, dtype: String): Ar
 external fun tensor(values: Array<Byte>, shape: Array<Int>, dtype: String): ArrayTFJS
 external fun tensor(values: Array<UByte>, shape: Array<Int>, dtype: String): ArrayTFJS
 external fun tensor(values: Array<Boolean>, shape: Array<Int>, dtype: String): ArrayTFJS
+external fun tensor(values: Array<String>, shape: Array<Int>, dtype: String): ArrayTFJS
 
 external fun range(start: Number, stop: Number, step: Number?, dtype: String?): ArrayTFJS
 
 external fun fill(shape: Array<Int>, value: Number, dtype: String): ArrayTFJS
+internal external fun fill(shape: Array<Int>, value: String, dtype: String): ArrayTFJS
 
 external fun scalar(value: Number, dtype: String): ArrayTFJS
 internal external fun scalar(value: Boolean, dtype: String): ArrayTFJS
+internal external fun scalar(value: String, dtype: String): ArrayTFJS
 external fun zeros(shape: Array<Int>, dtype: String): ArrayTFJS

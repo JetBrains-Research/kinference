@@ -1,16 +1,16 @@
-package io.kinference.core.operators.ml
+package io.kinference.tfjs.operators.ml
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.ml.trees.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.operators.ml.trees.TFJSTreeEnsemble
 import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleRegressor(
@@ -19,7 +19,7 @@ sealed class TreeEnsembleRegressor(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
@@ -31,7 +31,6 @@ sealed class TreeEnsembleRegressor(
         }
     }
 }
-
 
 class TreeEnsembleRegressorVer1(
     name: String,
@@ -96,10 +95,13 @@ class TreeEnsembleRegressorVer1(
         targetWeights = getAttribute("target_weights")
     )
 
-    private val treeEnsemble = KICoreTreeEnsemble.fromInfo(ensembleInfo)
+    private val treeEnsemble = TFJSTreeEnsemble.fromInfo(ensembleInfo)
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val inputData = inputs[0]!!.data as NumberNDArrayCore
-        return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val inputData = inputs[0]!!.data as NumberNDArrayTFJS
+        val output = tidyNDArray {
+            treeEnsemble.execute(inputData)
+        }
+        return listOf(output.asTensor("Y"))
     }
 }
