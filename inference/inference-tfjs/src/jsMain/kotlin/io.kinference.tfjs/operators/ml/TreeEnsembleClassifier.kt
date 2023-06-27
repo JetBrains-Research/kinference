@@ -1,15 +1,17 @@
-package io.kinference.core.operators.ml
+package io.kinference.tfjs.operators.ml
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.ml.trees.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.dataInt
+import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.operators.ml.trees.TFJSTreeEnsemble
 import io.kinference.trees.TreeEnsembleInfo
 
 sealed class TreeEnsembleClassifier(
@@ -18,7 +20,7 @@ sealed class TreeEnsembleClassifier(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
@@ -30,11 +32,11 @@ sealed class TreeEnsembleClassifier(
         }
     }
 
-    sealed class LabelsInfo<T>(val labels: List<T>, val labelsDataType: TensorProto.DataType) {
+    sealed class LabelsInfo<T>(val labels: Array<T>, val labelsDataType: TensorProto.DataType) {
         val size: Int = labels.size
 
-        class LongLabelsInfo(labels: List<Long>) : LabelsInfo<Long>(labels, TensorProto.DataType.INT64)
-        class StringLabelsInfo(labels: List<String>) : LabelsInfo<String>(labels, TensorProto.DataType.STRING)
+        class LongLabelsInfo(labels: Array<Long>) : LabelsInfo<Long>(labels, TensorProto.DataType.INT64)
+        class StringLabelsInfo(labels: Array<String>) : LabelsInfo<String>(labels, TensorProto.DataType.STRING)
     }
 }
 
@@ -85,10 +87,10 @@ class TreeEnsembleClassifierVer1(
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        private fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
+        private fun writeLabels(dataType: TensorProto.DataType, shape: Array<Int>, write: (Int) -> Any): NDArrayTFJS {
             return when (dataType) {
-                TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it) as Long }
-                TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
+                TensorProto.DataType.INT64 -> NDArrayTFJS.int(shape) { it: Int -> (write(it) as Long).toInt() }
+                TensorProto.DataType.STRING -> NDArrayTFJS.string(shape) { it: Int -> (write(it) as String) }
                 else -> error("Unsupported data type: $dataType")
             }
         }
@@ -96,11 +98,11 @@ class TreeEnsembleClassifierVer1(
 
     private val labels: LabelsInfo<*> = if (hasAttributeSet("classlabels_int64s")) {
         val attr = getAttribute<LongArray>("classlabels_int64s")
-        LabelsInfo.LongLabelsInfo(attr.toList())
+        LabelsInfo.LongLabelsInfo(attr.toTypedArray())
     } else {
         require(hasAttributeSet("classlabels_strings")) { "Either classlabels_int64s or classlabels_strings attribute should be specified" }
         val attr = getAttribute<List<String>>("classlabels_strings")
-        LabelsInfo.StringLabelsInfo(attr)
+        LabelsInfo.StringLabelsInfo(attr.toTypedArray())
     }
 
     private val ensembleInfo = TreeEnsembleInfo(
@@ -121,20 +123,23 @@ class TreeEnsembleClassifierVer1(
         numTargets = labels.size
     )
 
-    private val treeEnsemble = KICoreTreeEnsemble.fromInfo(ensembleInfo)
+    private val ensemble = TFJSTreeEnsemble.fromInfo(ensembleInfo)
 
-    private suspend fun labeledTopClasses(array: FloatNDArray): NDArray {
-        val shape = intArrayOf(array.shape[0])
-        val labelsIndices = array.argmax(axis = -1).array.pointer()
+    private suspend fun labeledTopClasses(array: NumberNDArrayTFJS): NDArrayTFJS {
+        val shape = arrayOf(array.shape[0])
+        val labelsIndices = array.argmax(axis = -1).tfjsArray.dataInt()
         return writeLabels(labels.labelsDataType, shape) {
-            labels.labels[labelsIndices.getAndIncrement()]!!
+            labels.labels[labelsIndices[it]]!!
         }
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val inputData = inputs[0]!!.data as NumberNDArrayCore
-        val classScores = treeEnsemble.execute(inputData)
-        val classLabels = labeledTopClasses(classScores)
-        return listOf(classLabels.asTensor("Y"), classScores.asTensor("Z"))
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val (labels, scores) = tidyNDArrays {
+            val inputData = inputs[0]!!.data as NumberNDArrayTFJS
+            val classScores = ensemble.execute(inputData)
+            val classLabels = labeledTopClasses(classScores)
+            arrayOf(classLabels, classScores)
+        }
+        return listOf(labels.asTensor("Y"), scores.asTensor("Z"))
     }
 }

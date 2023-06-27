@@ -9,6 +9,7 @@ include(":serialization:serializer-tiled")
 
 include(":inference:inference-api")
 include(":inference:inference-ir")
+include(":inference:inference-ir-trees")
 include(":inference:inference-core")
 include(":inference:inference-ort")
 include(":inference:inference-ort-gpu")

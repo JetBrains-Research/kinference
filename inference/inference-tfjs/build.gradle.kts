@@ -25,6 +25,7 @@ kotlin {
 
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-ir"))
+                api(project(":inference:inference-ir-trees"))
 
                 api(project(":utils:utils-logger"))
                 api(project(":utils:utils-profiling"))

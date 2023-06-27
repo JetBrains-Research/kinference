@@ -18,7 +18,7 @@ import io.kinference.tfjs.operators.layer.recurrent.gru.GRU
 import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTM
 import io.kinference.tfjs.operators.logical.*
 import io.kinference.tfjs.operators.math.*
-import io.kinference.tfjs.operators.ml.ZipMap
+import io.kinference.tfjs.operators.ml.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
 import io.kinference.tfjs.operators.seq.ConcatFromSequence
@@ -113,6 +113,8 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Tanh" -> Tanh(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
+        "TreeEnsembleClassifier" -> TreeEnsembleClassifier(name, version, attributes, inputs, outputs)
+        "TreeEnsembleRegressor" -> TreeEnsembleRegressor(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
         "ZipMap" -> ZipMap(name, version, attributes, inputs, outputs)

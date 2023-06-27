@@ -161,10 +161,12 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         fun float(values: FloatArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float32"))
         fun int(values: IntArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "int32"))
         fun boolean(values: Array<Boolean>, shape: Array<Int>) = BooleanNDArrayTFJS(tensor(values, shape))
+        fun string(values: Array<String>, shape: Array<Int>) = StringNDArrayTFJS(tensor(values, shape))
 
         fun float(shape: Array<Int>, init: (Int) -> Float) = NumberNDArrayTFJS(tensor(FloatArray(shape.times(), init), shape, "float32"))
         fun int(shape: Array<Int>, init: (Int) -> Int) = NumberNDArrayTFJS(tensor(IntArray(shape.times(), init), shape, "int32"))
         fun boolean(shape: Array<Int>, init: (Int) -> Boolean) = BooleanNDArrayTFJS(tensor(Array(shape.times()) { init(it) }, shape))
+        fun string(shape: Array<Int>, init: (Int) -> String) = StringNDArrayTFJS(tensor(Array(shape.times()) { init(it) }, shape))
 
         fun float(shape: Array<Int>, init: (IntArray) -> Float): NumberNDArrayTFJS {
             val ndIterator = NDIndexer(shape.toIntArray())
@@ -184,9 +186,16 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
             return BooleanNDArrayTFJS(tensor(array, shape))
         }
 
+        fun string(shape: Array<Int>, init: (IntArray) -> String): StringNDArrayTFJS {
+            val ndIterator = NDIndexer(shape.toIntArray())
+            val array = Array(shape.times()) { init(ndIterator.next()) }
+            return StringNDArrayTFJS(tensor(array, shape))
+        }
+
         fun floatScalar(value: Float) = NumberNDArrayTFJS(scalar(value, "float32"))
         fun intScalar(value: Int) = NumberNDArrayTFJS(scalar(value, "int32"))
         fun booleanScalar(value: Boolean) = BooleanNDArrayTFJS(scalar(value))
+        fun stringScalar(value: String) = StringNDArrayTFJS(scalar(value))
 
         fun floatZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(FloatArray(shape.times()), shape, "float32"))
         fun intZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(IntArray(shape.times()), shape, "int32"))
@@ -201,5 +210,6 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
 
         fun floatFill(shape: Array<Int>, value: Float) = NumberNDArrayTFJS(fill(shape, value, "float32"))
         fun intFill(shape: Array<Int>, value: Int) = NumberNDArrayTFJS(fill(shape, value, "int32"))
+        fun stringFill(shape: Array<Int>, value: String) = StringNDArrayTFJS(fill(shape, value, "string"))
     }
 }

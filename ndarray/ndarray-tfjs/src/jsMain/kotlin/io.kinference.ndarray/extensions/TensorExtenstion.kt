@@ -48,17 +48,25 @@ fun tensor(values: UByteArray, shape: Array<Int>, dtype: String): ArrayTFJS = te
 
 fun tensor(values: Array<Boolean>, shape: Array<Int>) = tensor(values, shape, "bool")
 
+fun tensor(values: Array<String>, shape: Array<Int>) = tensor(values, shape, "string")
+
 fun scalar(value: Boolean) = scalar(value, "bool")
 
 fun scalar(value: Float) = scalar(value, "float32")
 
 fun scalar(value: Int) = scalar(value, "int32")
 
+fun scalar(value: String) = scalar(value, "string")
+
+fun fill(shape: Array<Int>, value: String) = fill(shape, value, "string")
+
 fun ArrayTFJS.dataInt() = dataSync().unsafeCast<Int32Array>().unsafeCast<IntArray>()
 
 fun ArrayTFJS.dataFloat() = dataSync().unsafeCast<Float32Array>().unsafeCast<FloatArray>()
 
 fun ArrayTFJS.dataBool() = dataSync().unsafeCast<Array<Boolean>>()
+
+fun ArrayTFJS.dataString() = dataSync().unsafeCast<Array<String>>()
 
 operator fun ArrayTFJS.plus(other: ArrayTFJS) = io.kinference.ndarray.core.add(this, other)
 
