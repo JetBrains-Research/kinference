@@ -39,7 +39,7 @@ class CoshVer7(
         private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
         internal val VERSION = VersionInfo(sinceVersion = 7)
-        private val INFO = OperatorInfo("Cos", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("Cosh", emptySet(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override suspend fun activate(input: NDArrayCore, contexts: Contexts<KIONNXData<*>>): NDArrayCore {
