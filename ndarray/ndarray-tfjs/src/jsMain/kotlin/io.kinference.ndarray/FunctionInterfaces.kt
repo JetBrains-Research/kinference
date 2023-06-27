@@ -21,3 +21,20 @@ data class MomentsOutput(
 }
 
 fun MomentsOutputTFJS.toNDArray() = MomentsOutput(NumberNDArrayTFJS(mean), NumberNDArrayTFJS(variance))
+
+data class QrDecompositionResultTFJS(
+    val q: ArrayTFJS,
+    val r: ArrayTFJS
+)
+
+data class QrDecompositionResult(
+    val q: NumberNDArrayTFJS,
+    val r: NumberNDArrayTFJS
+): Closeable {
+    override fun close() {
+        q.close()
+        r.close()
+    }
+}
+
+fun QrDecompositionResultTFJS.toNDArray() =QrDecompositionResult(NumberNDArrayTFJS(q), NumberNDArrayTFJS(r))

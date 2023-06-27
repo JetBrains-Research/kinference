@@ -1,6 +1,7 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.MomentsOutput
+import io.kinference.ndarray.QrDecompositionResultTFJS
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.ndarray.core.broadcastTo
@@ -262,3 +263,12 @@ fun ArrayTFJS.expm1() = expm1(this)
 fun ArrayTFJS.elu() = elu(this)
 
 fun ArrayTFJS.prelu(alpha: ArrayTFJS) = prelu(this, alpha)
+
+fun ArrayTFJS.qrDecomposition(fullMatrices: Boolean = false): QrDecompositionResultTFJS {
+    val result = linalg.qr(this, fullMatrices)
+    return QrDecompositionResultTFJS(result[0], result[1])
+}
+
+fun ArrayTFJS.prod(axis: Int, keepDims: Boolean = false) = prod(this, arrayOf(axis), keepDims)
+
+fun ArrayTFJS.prod(axes: Array<Int>, keepDims: Boolean = false) = prod(this, axes, keepDims)

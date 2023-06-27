@@ -150,3 +150,7 @@ internal external val expm1: (x: ArrayTFJS) -> ArrayTFJS
 internal external val elu: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val prelu: (x: ArrayTFJS, alpha: ArrayTFJS) -> ArrayTFJS
+
+internal external val prod: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> ArrayTFJS
+
+internal external val linalg: Linalg

@@ -58,6 +58,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
+        "Det" -> Det(name, version, attributes, inputs, outputs)
         "Div" -> Div(name, version, attributes, inputs, outputs)
         "DynamicQuantizeLinear" -> DynamicQuantizeLinear(name, version, attributes, inputs, outputs)
         "EmbedLayerNormalization" -> EmbedLayerNormalization(name, version, attributes, inputs, outputs)

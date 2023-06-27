@@ -147,3 +147,27 @@ fun NumberNDArrayTFJS.expm1() = NumberNDArrayTFJS(tfjsArray.expm1())
 fun NumberNDArrayTFJS.elu() = NumberNDArrayTFJS(tfjsArray.elu())
 
 fun NumberNDArrayTFJS.prelu(alpha: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.prelu(alpha.tfjsArray))
+
+fun NumberNDArrayTFJS.qrDecomposition(fullMatrices: Boolean = false) = tfjsArray.qrDecomposition(fullMatrices).toNDArray()
+
+fun NumberNDArrayTFJS.prod(axis: Int, keepDims: Boolean = false) = NumberNDArrayTFJS(tfjsArray.prod(axis, keepDims))
+
+fun NumberNDArrayTFJS.prod(axes: Array<Int>, keepDims: Boolean = false) = NumberNDArrayTFJS(tfjsArray.prod(axes, keepDims))
+
+suspend fun NumberNDArrayTFJS.det(): NumberNDArrayTFJS {
+    val result = tidyNDArray {
+        val n = shape.last()
+        val qrResult = qrDecomposition()
+
+        val newShapeForR = intArrayOf(*shape.sliceArray(0 until shape.size - 2), n * n)
+        val reshapedR = qrResult.r.reshape(newShapeForR)
+
+        val indicesForGather = NDArrayTFJS.intRange(0, n * n, n + 1)
+        val diagonalOfR = reshapedR.gather(indicesForGather, axis = -1) as NumberNDArrayTFJS
+
+        return@tidyNDArray diagonalOfR.prod(axis = -1)
+    }
+
+    return result
+}
+
