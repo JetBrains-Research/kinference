@@ -147,3 +147,7 @@ fun NumberNDArrayTFJS.expm1() = NumberNDArrayTFJS(tfjsArray.expm1())
 fun NumberNDArrayTFJS.elu() = NumberNDArrayTFJS(tfjsArray.elu())
 
 fun NumberNDArrayTFJS.prelu(alpha: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.prelu(alpha.tfjsArray))
+
+fun NumberNDArrayTFJS.cos() = NumberNDArrayTFJS(tfjsArray.cos())
+
+fun NumberNDArrayTFJS.cosh() = NumberNDArrayTFJS(tfjsArray.cosh())
