@@ -30,11 +30,11 @@ data class QrDecompositionResultTFJS(
 data class QrDecompositionResult(
     val q: NumberNDArrayTFJS,
     val r: NumberNDArrayTFJS
-): Closeable {
+) : Closeable {
     override fun close() {
         q.close()
         r.close()
     }
 }
 
-fun QrDecompositionResultTFJS.toNDArray() =QrDecompositionResult(NumberNDArrayTFJS(q), NumberNDArrayTFJS(r))
+fun QrDecompositionResultTFJS.toNDArray() = QrDecompositionResult(NumberNDArrayTFJS(q), NumberNDArrayTFJS(r))

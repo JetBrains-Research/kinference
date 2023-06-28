@@ -14,6 +14,11 @@ private val MINUS_ONE = (-1).toPrimitive()
 
 //TODO: Research coroutines there
 suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
+    require(rank >= 2)
+        { "Determinant may be calculated only tensors with rank >= 2, current rank = $rank" }
+    require(shape[shape.lastIndex] == shape[shape.lastIndex - 1])
+        { "Determinant may be calculated only for square matrices, current shape = ${shape.joinToString()}" }
+
     val batchSize = this.computeBlockSize(0, shape.size - 2)
 
     val n = shape.last()
