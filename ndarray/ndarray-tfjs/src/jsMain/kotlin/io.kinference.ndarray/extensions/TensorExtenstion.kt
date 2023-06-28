@@ -272,6 +272,10 @@ fun ArrayTFJS.elu() = elu(this)
 
 fun ArrayTFJS.prelu(alpha: ArrayTFJS) = prelu(this, alpha)
 
+fun ArrayTFJS.cos() = cos(this)
+
+fun ArrayTFJS.cosh() = cosh(this)
+
 fun ArrayTFJS.qrDecomposition(fullMatrices: Boolean = false): QrDecompositionResultTFJS {
     val result = linalg.qr(this, fullMatrices)
     return QrDecompositionResultTFJS(result[0], result[1])

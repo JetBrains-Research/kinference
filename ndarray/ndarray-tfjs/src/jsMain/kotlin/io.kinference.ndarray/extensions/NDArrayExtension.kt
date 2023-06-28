@@ -148,6 +148,10 @@ fun NumberNDArrayTFJS.elu() = NumberNDArrayTFJS(tfjsArray.elu())
 
 fun NumberNDArrayTFJS.prelu(alpha: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.prelu(alpha.tfjsArray))
 
+fun NumberNDArrayTFJS.cos() = NumberNDArrayTFJS(tfjsArray.cos())
+
+fun NumberNDArrayTFJS.cosh() = NumberNDArrayTFJS(tfjsArray.cosh())
+
 fun NumberNDArrayTFJS.qrDecomposition(fullMatrices: Boolean = false) = tfjsArray.qrDecomposition(fullMatrices).toNDArray()
 
 fun NumberNDArrayTFJS.prod(axis: Int, keepDims: Boolean = false) = NumberNDArrayTFJS(tfjsArray.prod(axis, keepDims))

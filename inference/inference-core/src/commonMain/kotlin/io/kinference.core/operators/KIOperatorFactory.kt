@@ -66,6 +66,8 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
         "Conv" -> Conv(name, version, attributes, inputs, outputs)
+        "Cos" -> Cos(name, version, attributes, inputs, outputs)
+        "Cosh" -> Cosh(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
         "DequantizeLinear" -> DequantizeLinear(name, version, attributes, inputs, outputs)
         "Det" -> Det(name, version, attributes, inputs, outputs)
