@@ -175,3 +175,4 @@ suspend fun NumberNDArrayTFJS.det(): NumberNDArrayTFJS {
     return result
 }
 
+fun NumberNDArrayTFJS.floor() = NumberNDArrayTFJS(tfjsArray.floor())
