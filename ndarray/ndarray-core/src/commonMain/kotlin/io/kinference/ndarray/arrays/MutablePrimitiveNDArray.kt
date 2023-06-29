@@ -211,7 +211,7 @@ open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides 
     }
 
     companion object {
-        fun scalar(value: PrimitiveType): PrimitiveNDArray {
+        fun scalar(value: PrimitiveType): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
 

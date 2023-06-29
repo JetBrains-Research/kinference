@@ -154,3 +154,7 @@ internal external val prelu: (x: ArrayTFJS, alpha: ArrayTFJS) -> ArrayTFJS
 internal external val cos: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val cosh: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val prod: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> ArrayTFJS
+
+internal external val linalg: Linalg
