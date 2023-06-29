@@ -17,7 +17,7 @@ jobs:
       #          cache: 'gradle'
       #          check-latest: true
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.5.0
 
       - name: JVM Tests
         run: ./gradlew jvmTest --parallel --console=plain --no-daemon -Pci
