@@ -18,7 +18,7 @@ jobs:
       #          check-latest: true
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.5.0
 
       - name: Build With Gradle
         run: ./gradlew assemble --parallel --console=plain --no-daemon
