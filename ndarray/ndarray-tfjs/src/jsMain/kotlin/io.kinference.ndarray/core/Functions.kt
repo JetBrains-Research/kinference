@@ -158,3 +158,5 @@ internal external val cosh: (x: ArrayTFJS) -> ArrayTFJS
 internal external val prod: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> ArrayTFJS
 
 internal external val linalg: Linalg
+
+internal external val floor: (x: ArrayTFJS) -> ArrayTFJS

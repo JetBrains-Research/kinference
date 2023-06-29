@@ -284,3 +284,5 @@ fun ArrayTFJS.qrDecomposition(fullMatrices: Boolean = false): QrDecompositionRes
 fun ArrayTFJS.prod(axis: Int, keepDims: Boolean = false) = prod(this, arrayOf(axis), keepDims)
 
 fun ArrayTFJS.prod(axes: Array<Int>, keepDims: Boolean = false) = prod(this, axes, keepDims)
+
+fun ArrayTFJS.floor() = floor(this)
