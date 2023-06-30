@@ -176,3 +176,24 @@ suspend fun NumberNDArrayTFJS.det(): NumberNDArrayTFJS {
 }
 
 fun NumberNDArrayTFJS.floor() = NumberNDArrayTFJS(tfjsArray.floor())
+
+suspend fun NumberNDArrayTFJS.hardmax(axis: Int = 1): NumberNDArrayTFJS {
+    val actualAxis = indexAxis(axis)
+    val rows = computeBlockSize(toDim = actualAxis)
+    val columns = computeBlockSize(fromDim = actualAxis)
+
+    return tidyNDArray {
+        val reshapedInput = this.reshape(intArrayOf(rows, columns))
+        val argMaxOfInput = reshapedInput.argmax(axis = 1, keepDims = false)
+
+        val output = oneHot(
+            indices = argMaxOfInput.tfjsArray,
+            depth = columns,
+            onValue = 1,
+            offValue = 0,
+            dtype = this.tfjsArray.dtype
+        ).toNDArray() as NumberNDArrayTFJS
+
+        return@tidyNDArray output.reshape(this.strides)
+    }
+}

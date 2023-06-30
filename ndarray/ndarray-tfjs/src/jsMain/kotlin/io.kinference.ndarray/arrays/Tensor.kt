@@ -56,4 +56,11 @@ internal external fun fill(shape: Array<Int>, value: String, dtype: String): Arr
 external fun scalar(value: Number, dtype: String): ArrayTFJS
 internal external fun scalar(value: Boolean, dtype: String): ArrayTFJS
 internal external fun scalar(value: String, dtype: String): ArrayTFJS
+
 external fun zeros(shape: Array<Int>, dtype: String): ArrayTFJS
+external fun zerosLike(x: ArrayTFJS): ArrayTFJS
+
+external fun ones(shape: Array<Int>, dtype: String): ArrayTFJS
+external fun onesLike(x: ArrayTFJS): ArrayTFJS
+
+external fun oneHot(indices: ArrayTFJS, depth: Int, onValue: Number?, offValue: Number?, dtype: String?): ArrayTFJS
