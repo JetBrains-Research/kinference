@@ -1,0 +1,2 @@
+*.pb binary linguist-detectable=false
+*.onnx binary linguist-detectable=false
