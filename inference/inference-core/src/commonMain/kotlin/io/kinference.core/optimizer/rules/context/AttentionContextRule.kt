@@ -31,7 +31,7 @@ object AttentionContextRule : PrepareContextRule(operatorName = "Attention") {
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph, numHeads: Int) {
         if (tensor == null) {
-            logger.warning { "Make the weights part of the model, otherwise the Attention will be slow" }
+            logger.warning { "Add weights to the model's initializers, otherwise the Attention operator inference will be slower than expected" }
         } else {
             val preparedWeights = prepareWeights(tensor, numHeads)
             graph.addTensorToContext(preparedWeights)
@@ -40,7 +40,7 @@ object AttentionContextRule : PrepareContextRule(operatorName = "Attention") {
 
     private suspend fun appendBias(tensor: KITensor?, graph: KIGraph, numHeads: Int) {
         if (tensor == null) {
-            logger.warning { "Make the bias part of the model, otherwise the Attention will be slow\n" }
+            logger.warning { "Add bias to the model's initializers, otherwise the Attention operator inference will be slower than expected" }
         } else {
             val preparedBias = prepareBias(tensor, numHeads)
             graph.addTensorToContext(preparedBias)

@@ -30,11 +30,15 @@ object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
         if (tensor != null && scale != null) {
             val preparedWeights = prepareWeights(tensor, scale, zeroPoint,numHeads)
             graph.addTensorToContext(preparedWeights)
+        } else {
+            logger.warning { "Add weights to the model's initializers, otherwise the QAttention operator inference will be slower than expected" }
         }
     }
 
     private suspend fun appendBias(tensor: KITensor?, graph: KIGraph, numHeads: Int) {
-        if (tensor != null) {
+        if (tensor == null) {
+            logger.warning { "Add bias to the model's initializers, otherwise the QAttention operator inference will be slower than expected" }
+        } else {
             val preparedBias = AttentionContextRule.prepareBias(tensor, numHeads)
             graph.addTensorToContext(preparedBias)
         }

@@ -26,7 +26,7 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make the weights part of the model, otherwise the GRU will be slow" }
+            logger.warning { "Add weights to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             graph.addTensorToContext(preparedWeights)
@@ -35,7 +35,7 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
 
     private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make the bias part of the model, otherwise the GRU will be slow" }
+            logger.warning { "Add bias to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
             val preparedBias = prepareBias(tensor)
             graph.addTensorToContext(preparedBias)

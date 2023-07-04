@@ -33,7 +33,7 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make the weights part of the model, otherwise the LSTM will be slow" }
+            logger.warning { "Add weights to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             graph.addTensorToContext(preparedWeights)
@@ -42,7 +42,7 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
 
     private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make bias part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Add bias to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
             val preparedBias = prepareBias(tensor)
             graph.addTensorToContext(preparedBias)
@@ -51,7 +51,7 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
 
     private suspend fun appendPeepholes(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make peepholes part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Add peepholes to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
             val preparedPeepholes = preparePeepholes(tensor)
             graph.addTensorToContext(preparedPeepholes)

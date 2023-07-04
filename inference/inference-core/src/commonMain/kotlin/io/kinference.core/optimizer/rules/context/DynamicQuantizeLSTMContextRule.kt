@@ -22,7 +22,7 @@ object DynamicQuantizeLSTMContextRule : PrepareContextRule(operatorName = "Dynam
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make the weights part of the model, otherwise the LSTM will be slow" }
+            logger.warning { "Add weights to the model's initializers, otherwise the DynamicQuantizeLSTM operator inference will be slower than expected" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             graph.addTensorToContext(preparedWeights)
@@ -31,7 +31,7 @@ object DynamicQuantizeLSTMContextRule : PrepareContextRule(operatorName = "Dynam
 
     private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make bias part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Add bias to the model's initializers, otherwise the DynamicQuantizeLSTM operator inference will be slower than expected" }
         } else {
             val preparedBias = LSTMContextRule.prepareBias(tensor)
             graph.addTensorToContext(preparedBias)
@@ -40,7 +40,7 @@ object DynamicQuantizeLSTMContextRule : PrepareContextRule(operatorName = "Dynam
 
     private suspend fun appendPeepholes(tensor: KITensor?, graph: KIGraph) {
         if (tensor == null) {
-            logger.warning { "Make peepholes part of the model, otherwise LSTM will be slow" }
+            logger.warning { "Add peepholes to the model's initializers, otherwise the DynamicQuantizeLSTM operator inference will be slower than expected" }
         } else {
             val preparedPeepholes = LSTMContextRule.preparePeepholes(tensor)
             graph.addTensorToContext(preparedPeepholes)
