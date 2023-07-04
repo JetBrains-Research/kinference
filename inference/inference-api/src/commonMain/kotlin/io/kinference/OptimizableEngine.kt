@@ -15,17 +15,17 @@ interface OptimizableEngine<T : ONNXData<*, *>> : InferenceEngine<T> {
      * Model should be previously loaded as [ByteArray].
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
-    suspend fun loadModel(bytes: ByteArray, optimize: Boolean = false): Model<T>
+    suspend fun loadModel(bytes: ByteArray, optimize: Boolean = true): Model<T>
 
     /**
      * Reads model from the specified path.
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
-    suspend fun loadModel(path: Path, optimize: Boolean = false): Model<T>
+    suspend fun loadModel(path: Path, optimize: Boolean = true): Model<T>
 
     /**
      * Reads model from the specified string path.
      * If [optimize] flag is true, runs available optimizations on the given model.
      */
-    suspend fun loadModel(path: String, optimize: Boolean = false): Model<T>
+    suspend fun loadModel(path: String, optimize: Boolean = true): Model<T>
 }

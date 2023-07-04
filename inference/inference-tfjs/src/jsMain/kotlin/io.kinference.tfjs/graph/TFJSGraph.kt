@@ -49,8 +49,8 @@ class TFJSGraph(
             val graph = TFJSGraph(proto, operators, valueOrderInfo)
             for (operator in graph.operators) {
                 when(operator.info.type) {
-                    "LSTM" -> LSTMContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<TFJSTensor>, operator)
-                    "GRU" -> GRUContext.appendContext(graph.preparedTensorsContext, graph.initializers as List<TFJSTensor>, operator)
+                    "LSTM" -> LSTMContext.appendContext(graph.preparedTensorsContext, graph._initializers as List<TFJSTensor>, operator)
+                    "GRU" -> GRUContext.appendContext(graph.preparedTensorsContext, graph._initializers as List<TFJSTensor>, operator)
                 }
             }
             return graph

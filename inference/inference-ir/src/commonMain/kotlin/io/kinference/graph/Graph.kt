@@ -80,10 +80,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
 
-    protected val initializers = ArrayList<T>(proto.initializer.size).apply {
+    protected val _initializers = ArrayList<T>(proto.initializer.size).apply {
         for (i in proto.initializer)
             this.add(prepareInput(i))
     }
+
+    val initializers: List<T>
+        get() = _initializers
 
     val initNames = proto.initializer.map { it.name }
 
@@ -123,13 +126,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     abstract fun prepareInput(proto: TensorProto): T
 
     fun addInitializer(initializer: T) {
-        require(!initializers.any { it.name == initializer.name }) { "Initializer with name ${initializer.name} already exists" }
-        initializers.add(initializer)
+        require(!_initializers.any { it.name == initializer.name }) { "Initializer with name ${initializer.name} already exists" }
+        _initializers.add(initializer)
         valueOrderInfo.putOrder(initializer.name!!, Int.MAX_VALUE)
     }
 
     fun findInitializer(name: String): T? {
-        return initializers.find { it.name == name }
+        return _initializers.find { it.name == name }
     }
 
     fun mergeOperators(names: List<String>, to: Operator<T, T>) {
@@ -182,7 +185,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
     override fun close() {
-        closeAll(initializers)
+        closeAll(_initializers)
         closeAll(operators)
     }
 
@@ -191,7 +194,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
-        for (tensor in initializers) {
+        for (tensor in _initializers) {
             contexts.graph!!.putValue(tensor.name!!, tensor)
         }
 

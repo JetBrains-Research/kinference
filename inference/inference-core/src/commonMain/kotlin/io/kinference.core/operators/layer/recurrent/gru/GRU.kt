@@ -4,11 +4,13 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.layer.recurrent.LayerDirection
+import io.kinference.core.optimizer.rules.context.GRUContextRule
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
+import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -97,14 +99,14 @@ class GRUVer7(
         val input = inputs[0]!!
 
         val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: GRUContext.prepareWeights(weights))
+        val preparedWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${weights.name}") ?: GRUContextRule.prepareWeights(weights))
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
-            ?: GRUContext.prepareWeights(recurrentWeights)) as KITensor
+        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${recurrentWeights.name}")
+            ?: GRUContextRule.prepareWeights(recurrentWeights)) as KITensor
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: GRUContext.prepareBias(it) }
+        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${it.name}") ?: GRUContextRule.prepareBias(it) }
 
         val sequenceLens = inputs.getOrNull(4)
         val initialHiddenState = inputs.getOrNull(5)

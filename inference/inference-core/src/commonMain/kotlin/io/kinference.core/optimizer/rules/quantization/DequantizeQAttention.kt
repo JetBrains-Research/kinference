@@ -1,4 +1,4 @@
-package io.kinference.core.optimizer.rules
+package io.kinference.core.optimizer.rules.quantization
 
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.asTensor
@@ -12,7 +12,7 @@ import io.kinference.operator.Operator
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.optimizer.findPath
 
-object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttention", type = RuleType.MERGE) {
+/*object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttention", type = RuleType.MERGE) {
     override fun shouldApply(graph: Graph<KIONNXData<*>>, name: String): Boolean {
         val op = graph.operators.indexOfFirst { it.name == name }
         return op != -1 && graph.findPath(listOf("DynamicQuantizeLinear", "QAttention"), op) != null
@@ -48,4 +48,4 @@ object DequantizeQAttention : OptimizerRule<KIONNXData<*>>("Dequantize QAttentio
 
         graph.mergeOperators(listOf(quantize.name, qAttention.name), attention as Operator<KIONNXData<*>, KIONNXData<*>>)
     }
-}
+}*/

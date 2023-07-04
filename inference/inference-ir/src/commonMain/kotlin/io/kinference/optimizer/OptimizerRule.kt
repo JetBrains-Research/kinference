@@ -2,49 +2,35 @@ package io.kinference.optimizer
 
 import io.kinference.data.ONNXData
 import io.kinference.graph.Graph
+import io.kinference.operator.Operator
 import io.kinference.protobuf.message.AttributeProto
 
-abstract class OptimizerRule<T : ONNXData<*, *>>(val name: String, val type: RuleType) {
-    enum class RuleType {
-        MODIFY,
-        REMOVE,
-        MERGE
-    }
-
+abstract class OptimizerRule<T : ONNXData<*, *>>(val name: String) {
     companion object {
         const val PREFIX = "KI_Opt"
     }
 
-    abstract fun shouldApply(graph: Graph<T>, name: String): Boolean
-    abstract suspend fun transform(graph: Graph<T>, name: String)
+    abstract fun shouldApply(graph: Graph<T>, operator: Operator<T, T>): Boolean
+    abstract suspend fun transform(graph: Graph<T>, operator: Operator<T, T>)
 
-    private suspend fun checkAttributes(graph: Graph<T>, name: String, report: GraphOptimizer.OptimizationReport) {
-        val operator = graph.operators.singleOrNull { it.name == name } ?: return
+    private suspend fun checkAttributes(operator: Operator<T, T>, report: GraphOptimizer.OptimizationReport) {
         for (attribute in operator.attributes) {
             if (attribute.value.type == AttributeProto.AttributeType.GRAPH)
-                apply(attribute as Graph<T>, report)
+                apply(attribute.value.value as Graph<T>, report)
             if (attribute.value.type == AttributeProto.AttributeType.GRAPHS)
-                for (g in attribute.value as List<Graph<T>>) apply(g, report)
+                for (g in attribute.value.value as List<Graph<T>>) apply(g, report)
         }
     }
 
     suspend fun apply(graph: Graph<T>, report: GraphOptimizer.OptimizationReport): Graph<T> {
-        var pos = 0
-        while (pos < graph.operators.size) {
-            val operator = graph.operators[pos]
-            checkAttributes(graph, operator.name, report)
+        for (i in graph.operators.indices) {
+            val operator = graph.operators[i]
+            checkAttributes(operator, report)
 
-            if (operator.name.isEmpty()) {
-                pos++
-                continue
-            }
-
-            if (shouldApply(graph, operator.name)) {
-                transform(graph, operator.name)
+            if (shouldApply(graph, operator)) {
+                transform(graph, operator)
                 report.append(this)
-                if (type != RuleType.MODIFY) continue
             }
-            pos++
         }
         return graph
     }
