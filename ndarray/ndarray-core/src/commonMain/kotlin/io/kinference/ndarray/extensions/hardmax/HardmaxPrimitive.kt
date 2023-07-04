@@ -6,10 +6,9 @@
 package io.kinference.ndarray.extensions.hardmax
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
-
-private val ONE = (1).toPrimitive()
 
 fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
@@ -43,7 +42,7 @@ fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
             }
         }
 
-        outputBlocks[maxBlockIdx][maxIndex] = ONE
+        outputBlocks[maxBlockIdx][maxIndex] = PrimitiveConstants.ONE
     }
 
     return output

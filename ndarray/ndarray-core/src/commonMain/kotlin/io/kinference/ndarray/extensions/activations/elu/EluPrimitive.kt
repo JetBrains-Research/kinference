@@ -7,15 +7,13 @@ package io.kinference.ndarray.extensions.activations.elu
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
-
-private val ZERO = (0).toPrimitive()
-private val ONE = (1).toPrimitive()
 
 suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
     val actualAlpha = alpha.toPrimitive()
@@ -34,10 +32,10 @@ suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
 
             for (idx in outputBlock.indices) {
                 val x = inputBlock[idx]
-                if (x >= ZERO) {
+                if (x >= PrimitiveConstants.ZERO) {
                     outputBlock[idx] = x
                 } else {
-                    outputBlock[idx] = (FastMath.exp(x) - ONE) * actualAlpha
+                    outputBlock[idx] = (FastMath.exp(x) - PrimitiveConstants.ONE) * actualAlpha
                 }
             }
         }
