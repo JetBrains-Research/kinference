@@ -1,8 +1,8 @@
 package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.*
 import io.kinference.ndarray.activateDefaultBackend
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.resolveTFJSDataType
 import io.kinference.primitives.types.DataType
 import kotlinx.coroutines.await
 
@@ -197,13 +197,13 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         fun booleanScalar(value: Boolean) = BooleanNDArrayTFJS(scalar(value))
         fun stringScalar(value: String) = StringNDArrayTFJS(scalar(value))
 
-        fun floatZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(FloatArray(shape.times()), shape, "float32"))
-        fun intZeros(shape: Array<Int>) = NumberNDArrayTFJS(tensor(IntArray(shape.times()), shape, "int32"))
-        fun booleanZeros(shape: Array<Int>) = BooleanNDArrayTFJS(tensor(Array(shape.times()) { false }, shape))
+        fun floatZeros(shape: Array<Int>) = NumberNDArrayTFJS(zeros(shape, "float32"))
+        fun intZeros(shape: Array<Int>) = NumberNDArrayTFJS(zeros(shape, "int32"))
+        fun booleanZeros(shape: Array<Int>) = BooleanNDArrayTFJS(zeros(shape, "bool"))
 
-        fun floatOnes(shape: Array<Int>) = NumberNDArrayTFJS(tensor(FloatArray(shape.times()) { 1f }, shape, "float32"))
-        fun intOnes(shape: Array<Int>) = NumberNDArrayTFJS(tensor(IntArray(shape.times()) { 1 }, shape, "int32"))
-        fun booleanOnes(shape: Array<Int>) = BooleanNDArrayTFJS(tensor(Array(shape.times()) { true }, shape))
+        fun floatOnes(shape: Array<Int>) = NumberNDArrayTFJS(ones(shape, "float32"))
+        fun intOnes(shape: Array<Int>) = NumberNDArrayTFJS(ones(shape, "int32"))
+        fun booleanOnes(shape: Array<Int>) = BooleanNDArrayTFJS(ones(shape, "bool"))
 
         fun floatRange(start: Float, stop: Float, step: Float) = NumberNDArrayTFJS(range(start, stop, step, "float32"))
         fun intRange(start: Int, stop: Int, step: Int) = NumberNDArrayTFJS(range(start, stop, step, "int32"))
@@ -211,5 +211,17 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
         fun floatFill(shape: Array<Int>, value: Float) = NumberNDArrayTFJS(fill(shape, value, "float32"))
         fun intFill(shape: Array<Int>, value: Int) = NumberNDArrayTFJS(fill(shape, value, "int32"))
         fun stringFill(shape: Array<Int>, value: String) = StringNDArrayTFJS(fill(shape, value, "string"))
+
+        fun onesLike(tensor: NumberNDArrayTFJS) = NumberNDArrayTFJS(onesLike(tensor.tfjsArray))
+        fun zerosLike(tensor: NumberNDArrayTFJS) = NumberNDArrayTFJS(zerosLike(tensor.tfjsArray))
+
+        fun oneHotFloat(indices: NumberNDArrayTFJS, depth: Int, onValue: Float = 1f, offValue: Float = 0f) =
+            NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue, offValue, "float32"))
+
+        fun oneHotInt(indices: NumberNDArrayTFJS, depth: Int, onValue: Int = 1, offValue: Int = 0) =
+            NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue, offValue, "int32"))
+
+        fun oneHotBool(indices: NumberNDArrayTFJS, depth: Int, onValue: Boolean = true, offValue: Boolean = false) =
+            NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue.toInt(), offValue.toInt(), "bool"))
     }
 }
