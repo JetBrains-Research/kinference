@@ -1,6 +1,5 @@
 package io.kinference.ndarray.extensions
 
-import io.kinference.ndarray.MomentsOutput
 import io.kinference.ndarray.QrDecompositionResultTFJS
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
@@ -286,3 +285,5 @@ fun ArrayTFJS.prod(axis: Int, keepDims: Boolean = false) = prod(this, arrayOf(ax
 fun ArrayTFJS.prod(axes: Array<Int>, keepDims: Boolean = false) = prod(this, axes, keepDims)
 
 fun ArrayTFJS.floor() = floor(this)
+
+fun ArrayTFJS.isInf() = isInf(this)

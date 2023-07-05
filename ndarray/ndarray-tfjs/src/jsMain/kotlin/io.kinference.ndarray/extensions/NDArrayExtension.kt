@@ -197,3 +197,25 @@ suspend fun NumberNDArrayTFJS.hardmax(axis: Int = 1): NumberNDArrayTFJS {
         return@tidyNDArray output.reshape(this.strides)
     }
 }
+
+suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArrayTFJS = tidyNDArray {
+    val infPositions = BooleanNDArrayTFJS(tfjsArray.isInf())
+
+    return@tidyNDArray when {
+        detectNegative && detectPositive -> infPositions
+
+        detectNegative -> {
+            val negativePositions = this.less(NDArrayTFJS.floatScalar(0f))
+
+            infPositions.and(negativePositions)
+        }
+
+        detectPositive -> {
+            val positivePositions = this.greater(NDArrayTFJS.floatScalar(0f))
+
+            infPositions.and(positivePositions)
+        }
+
+        else -> error("At least one of detectNegative or detectPositive must be true")
+    }
+}
