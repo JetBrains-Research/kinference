@@ -1,38 +1,41 @@
-package io.kinference.core.optimizer.rules.context
+package io.kinference.tfjs.optimizer.rules.context
 
-import io.kinference.core.KIONNXData
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIGraph
-import io.kinference.core.operators.layer.recurrent.lstm.LSTM
 import io.kinference.graph.Graph
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.Operator
 import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.tfjs.TFJSData
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTM
 import io.kinference.utils.LoggerFactory
 
 object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
-    private val logger = LoggerFactory.create("io.kinference.core.optimizer.rules.context.LSTMContextRule")
+    private val logger = LoggerFactory.create("io.kinference.tfjs.optimizer.rules.context.LSTMContextRule")
 
-    internal suspend fun prepareWeights(tensor: KITensor): KITensor {
+    internal suspend fun prepareWeights(tensor: TFJSTensor): TFJSTensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 4, shape[1] / 4, shape[2])
         val transposeShape = intArrayOf(0, 1, 3, 2)
-        return tensor.data.reshape(newShape).transpose(transposeShape).asTensor(optName(tensor.name))
+        return tidyNDArray {
+            tensor.data.reshape(newShape).transpose(transposeShape)
+        }.asTensor(optName(tensor.name!!))
     }
 
-    internal suspend fun prepareBias(tensor: KITensor): KITensor {
+    internal suspend fun prepareBias(tensor: TFJSTensor): TFJSTensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 8, shape[1] / 8)
-        return tensor.data.reshape(newShape).asTensor(optName(tensor.name))
+        return tensor.data.reshape(newShape).asTensor(optName(tensor.name!!))
     }
 
-    internal suspend fun preparePeepholes(tensor: KITensor): KITensor {
+    internal suspend fun preparePeepholes(tensor: TFJSTensor): TFJSTensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 3, shape[1] / 3)
-        return tensor.data.reshape(newShape).asTensor(optName(tensor.name))
+        return tensor.data.reshape(newShape).asTensor(optName(tensor.name!!))
     }
 
-    private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendWeights(tensor: TFJSTensor?, graph: TFJSGraph) {
         if (tensor == null) {
             logger.warning { "Add weights to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
@@ -41,7 +44,7 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
         }
     }
 
-    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendBias(tensor: TFJSTensor?, graph: TFJSGraph) {
         if (tensor == null) {
             logger.warning { "Add bias to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
@@ -50,7 +53,7 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
         }
     }
 
-    private suspend fun appendPeepholes(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendPeepholes(tensor: TFJSTensor?, graph: TFJSGraph) {
         if (tensor == null) {
             logger.warning { "Add peepholes to the model's initializers, otherwise the LSTM operator inference will be slower than expected" }
         } else {
@@ -59,13 +62,13 @@ object LSTMContextRule : PrepareContextRule(operatorName = "LSTM") {
         }
     }
 
-    override fun shouldApply(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>): Boolean {
+    override fun shouldApply(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>): Boolean {
         return operator is LSTM
     }
 
-    override suspend fun transform(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
-        graph as KIGraph
-        val initializers = graph.initializers as List<KITensor>
+    override suspend fun transform(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>) {
+        graph as TFJSGraph
+        val initializers = graph.initializers as List<TFJSTensor>
 
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)

@@ -11,6 +11,7 @@ import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.ndarray.extensions.tryZeroPoint
 import io.kinference.operator.Operator
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 
 object MatMulIntegerContextRule : PrepareContextRule(operatorName = "MatMulInteger") {
     private fun NumberNDArray.toIntNDArray(): IntNDArray {
@@ -34,7 +35,7 @@ object MatMulIntegerContextRule : PrepareContextRule(operatorName = "MatMulInteg
         else
             (tensor.data as NumberNDArrayCore).tryZeroPoint(zeroPoint.data as NumberNDArrayCore)
 
-        return preparedTensor.asTensor("${PREFIX}_${tensor.name}")
+        return preparedTensor.asTensor(optName(tensor.name))
     }
 
     private suspend fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, graph: KIGraph) {

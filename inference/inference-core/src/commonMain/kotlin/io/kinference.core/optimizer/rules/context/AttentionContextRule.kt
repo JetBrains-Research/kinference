@@ -7,6 +7,7 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.core.operators.layer.attention.Attention
 import io.kinference.graph.Graph
 import io.kinference.operator.Operator
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.utils.LoggerFactory
 
 object AttentionContextRule : PrepareContextRule(operatorName = "Attention") {
@@ -19,14 +20,14 @@ object AttentionContextRule : PrepareContextRule(operatorName = "Attention") {
 
         val prepared = tensor.data.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3))
 
-        return prepared.asTensor("${PREFIX}_${tensor.name}")
+        return prepared.asTensor(optName(tensor.name))
     }
 
     internal suspend fun prepareBias(tensor: KITensor, numHeads: Int): KITensor {
         val shape = tensor.data.shape
         val headSize = shape[0] / 3 / numHeads
         val newShape = intArrayOf(3, numHeads, headSize)
-        return tensor.data.reshape(newShape).asTensor("${PREFIX}_${tensor.name}")
+        return tensor.data.reshape(newShape).asTensor(optName(tensor.name))
     }
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph, numHeads: Int) {

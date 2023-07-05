@@ -10,6 +10,7 @@ import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.utils.LoggerFactory
 
 object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
@@ -23,7 +24,7 @@ object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
         val dequantData = (tensor.data as NumberNDArrayCore)
             .tryDequantize(zeroPoint?.data as NumberNDArrayCore?, scale.data as FloatNDArray)
 
-        return dequantData.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor("${PREFIX}_${tensor.name}")
+        return dequantData.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor(optName(tensor.name))
     }
 
     private suspend fun appendWeights(tensor: KITensor?, scale: KITensor?, zeroPoint: KITensor?, numHeads: Int, graph: KIGraph) {

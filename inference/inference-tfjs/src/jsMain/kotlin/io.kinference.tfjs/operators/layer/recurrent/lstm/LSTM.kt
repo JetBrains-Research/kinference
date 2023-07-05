@@ -6,11 +6,13 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.tfjs.operators.layer.recurrent.LayerDirection
+import io.kinference.tfjs.optimizer.rules.context.LSTMContextRule
 
 sealed class LSTM(
     name: String, 
@@ -102,17 +104,22 @@ class LSTMVer7(
             val input = inputs[0]!!.data as NumberNDArrayTFJS
 
             val weights = inputs[1]!!
-            val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}") ?: LSTMContext.prepareWeights(weights)) as TFJSTensor
+            val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
+                ?: LSTMContextRule.prepareWeights(weights)) as TFJSTensor
 
             val recurrentWeights = inputs[2]!!
-            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("prepared_${recurrentWeights.name}")
-                ?: LSTMContext.prepareWeights(recurrentWeights)) as TFJSTensor
+            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue(optName(recurrentWeights.name))
+                ?: LSTMContextRule.prepareWeights(recurrentWeights)) as TFJSTensor
 
             val bias = inputs.getOrNull(3)
-            val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.prepareBias(it) } as TFJSTensor?
+            val preparedBias = bias?.let {
+                contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.prepareBias(it)
+            } as TFJSTensor?
 
             val peepholes = inputs.getOrNull(7)
-            val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("prepared_${it.name}") ?: LSTMContext.preparePeepholes(it) } as TFJSTensor?
+            val preparedPeepholes = peepholes?.let {
+                contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.preparePeepholes(it)
+            } as TFJSTensor?
 
             val sequenceLens = inputs.getOrNull(4)
             val initialState = inputs.getOrNull(5)

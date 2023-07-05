@@ -8,8 +8,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.TFJSOperatorFactory
-import io.kinference.tfjs.operators.layer.recurrent.gru.GRUContext
-import io.kinference.tfjs.operators.layer.recurrent.lstm.LSTMContext
 import io.kinference.utils.closeAll
 
 class TFJSGraph(
@@ -25,6 +23,11 @@ class TFJSGraph(
     }
 
     override fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+
+    fun addTensorToContext(tensor: TFJSTensor) {
+        preparedTensorsContext.putValue(tensor.name!!, tensor)
+    }
+
     override fun makeContext(root: GraphContext<TFJSData<*>>?): GraphContext<TFJSData<*>> {
         val context = GraphContext(root)
         context.mergeContext(preparedTensorsContext)
@@ -46,14 +49,7 @@ class TFJSGraph(
                 }
             }
 
-            val graph = TFJSGraph(proto, operators, valueOrderInfo)
-            for (operator in graph.operators) {
-                when(operator.info.type) {
-                    "LSTM" -> LSTMContext.appendContext(graph.preparedTensorsContext, graph._initializers as List<TFJSTensor>, operator)
-                    "GRU" -> GRUContext.appendContext(graph.preparedTensorsContext, graph._initializers as List<TFJSTensor>, operator)
-                }
-            }
-            return graph
+            return TFJSGraph(proto, operators, valueOrderInfo)
         }
     }
 }

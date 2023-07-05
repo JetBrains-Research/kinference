@@ -7,6 +7,7 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
 import io.kinference.graph.Graph
 import io.kinference.operator.Operator
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.utils.LoggerFactory
 
 object DynamicQuantizeLSTMContextRule : PrepareContextRule(operatorName = "DynamicQuantizeLSTM") {
@@ -17,7 +18,7 @@ object DynamicQuantizeLSTMContextRule : PrepareContextRule(operatorName = "Dynam
         val newShape = intArrayOf(shape[0], shape[1], 4, shape[2] / 4)
         return tensor.data
             .reshape(newShape)
-            .transpose(intArrayOf(0, 2, 1, 3)).asTensor("${PREFIX}_${tensor.name}")
+            .transpose(intArrayOf(0, 2, 1, 3)).asTensor(optName(tensor.name))
     }
 
     private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {

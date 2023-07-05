@@ -13,7 +13,7 @@ import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.dotTransposedWithAlpha
 import io.kinference.operator.*
-import io.kinference.optimizer.OptimizerRule
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import kotlinx.coroutines.coroutineScope
@@ -265,11 +265,11 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
         val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${weights.name}")
+        val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
             ?: AttentionContextRule.prepareWeights(weights, numHeads)) as KITensor
 
         val bias = inputs[2]!!
-        val preparedBias = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${bias.name}")
+        val preparedBias = (contexts.graph!!.getOrNullValue(optName(bias.name))
             ?: AttentionContextRule.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.elementAtOrNull(3)?.data as IntNDArray?

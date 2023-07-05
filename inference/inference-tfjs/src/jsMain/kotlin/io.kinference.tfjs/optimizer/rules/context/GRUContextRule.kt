@@ -1,31 +1,34 @@
-package io.kinference.core.optimizer.rules.context
+package io.kinference.tfjs.optimizer.rules.context
 
-import io.kinference.core.KIONNXData
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.graph.KIGraph
-import io.kinference.core.operators.layer.recurrent.gru.GRU
 import io.kinference.graph.Graph
+import io.kinference.ndarray.extensions.tidyNDArray
 import io.kinference.operator.Operator
 import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.tfjs.TFJSData
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.graph.TFJSGraph
+import io.kinference.tfjs.operators.layer.recurrent.gru.GRU
 import io.kinference.utils.LoggerFactory
 
 object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
-    private val logger = LoggerFactory.create("io.kinference.core.optimizer.rules.context.GRUContextRule")
+    private val logger = LoggerFactory.create("io.kinference.tfjs.optimizer.rules.context.GRUContextRule")
 
-    internal suspend fun prepareWeights(tensor: KITensor): KITensor {
+    internal suspend fun prepareWeights(tensor: TFJSTensor): TFJSTensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 3, shape[1] / 3, shape[2])
-        return tensor.data.reshape(newShape).transpose(intArrayOf(0, 1, 3, 2)).asTensor(optName(tensor.name))
+        return tidyNDArray {
+            tensor.data.reshape(newShape).transpose(intArrayOf(0, 1, 3, 2))
+        }.asTensor(optName(tensor.name))
     }
 
-    internal suspend fun prepareBias(tensor: KITensor): KITensor {
+    internal suspend fun prepareBias(tensor: TFJSTensor): TFJSTensor {
         val shape = tensor.data.shape
         val newShape = intArrayOf(shape[0], 6, shape[1] / 6)
         return tensor.data.reshape(newShape).asTensor(optName(tensor.name))
     }
 
-    private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendWeights(tensor: TFJSTensor?, graph: TFJSGraph) {
         if (tensor == null) {
             logger.warning { "Add weights to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
@@ -34,7 +37,7 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
         }
     }
 
-    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendBias(tensor: TFJSTensor?, graph: TFJSGraph) {
         if (tensor == null) {
             logger.warning { "Add bias to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
@@ -43,13 +46,13 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
         }
     }
 
-    override fun shouldApply(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>): Boolean {
+    override fun shouldApply(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>): Boolean {
         return operator is GRU
     }
 
-    override suspend fun transform(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
-        graph as KIGraph
-        val initializers = graph.initializers as List<KITensor>
+    override suspend fun transform(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>) {
+        graph as TFJSGraph
+        val initializers = graph.initializers as List<TFJSTensor>
 
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)

@@ -10,7 +10,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
-import io.kinference.optimizer.OptimizerRule
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -107,12 +107,12 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val weightsScale = inputs[4]!!
         val weightsZeroPoint = inputs.getOrNull(7)
 
-        val preparedWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${weights.name}")
+        val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
             ?: QAttentionContextRule.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
 
         val bias = inputs[2]!!
 
-        val preparedBias = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${bias.name}")
+        val preparedBias = (contexts.graph!!.getOrNullValue(optName(bias.name))
             ?: AttentionContextRule.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?

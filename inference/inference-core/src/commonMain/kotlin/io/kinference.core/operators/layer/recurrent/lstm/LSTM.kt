@@ -10,7 +10,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
-import io.kinference.optimizer.OptimizerRule
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -101,22 +101,24 @@ class LSTMVer7(
         val inputAsLSTMInput = DefaultLSTMInput(input.data as NumberNDArrayCore)
 
         val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${weights.name}")
+        val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
             ?: LSTMContextRule.prepareWeights(weights)) as KITensor
         val weightsAsLSTMWeights = DefaultLSTMWeights(preparedWeights.data as NumberNDArrayCore)
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${recurrentWeights.name}")
+        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue(optName(recurrentWeights.name))
             ?: LSTMContextRule.prepareWeights(recurrentWeights)) as KITensor
         val recurrentWeightsAsLSTMWeights = DefaultLSTMWeights(preparedRecurrentWeights.data as NumberNDArrayCore)
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${it.name}")
-            ?: LSTMContextRule.prepareBias(it) } as KITensor?
+        val preparedBias = bias?.let {
+            contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.prepareBias(it)
+        } as KITensor?
 
         val peepholes = inputs.getOrNull(7)
-        val preparedPeepholes = peepholes?.let { contexts.graph!!.getOrNullValue("${OptimizerRule.PREFIX}_${it.name}")
-            ?: LSTMContextRule.preparePeepholes(it) } as KITensor?
+        val preparedPeepholes = peepholes?.let {
+            contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.preparePeepholes(it)
+        } as KITensor?
 
         val sequenceLens = inputs.getOrNull(4)
         val initialState = inputs.getOrNull(5)

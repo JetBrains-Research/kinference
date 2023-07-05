@@ -92,5 +92,7 @@ class GraphOptimizer<T : ONNXData<*, *>>(val graph: Graph<T>) {
 
     companion object {
         private val logger = LoggerFactory.create("io.kinference.optimizer.GraphOptimizer")
+
+        fun optName(name: String?) = "${OptimizerRule.PREFIX}_${name!!}"
     }
 }
