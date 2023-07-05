@@ -14,6 +14,11 @@ class GraphValueOrderInfo {
         }
     }
 
+    fun removeOrder(name: String) {
+        if (orders.containsKey(name))
+            orders.remove(name)
+    }
+
     fun getOrder(name: String): Int {
         return orders.getOrElse(name) { Int.MAX_VALUE }
     }

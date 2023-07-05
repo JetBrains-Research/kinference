@@ -80,15 +80,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
 
-    protected val _initializers = ArrayList<T>(proto.initializer.size).apply {
+    private val _initializers = ArrayList<T>(proto.initializer.size).apply {
         for (i in proto.initializer)
             this.add(prepareInput(i))
     }
 
     val initializers: List<T>
         get() = _initializers
-
-    val initNames = proto.initializer.map { it.name }
 
     data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -135,6 +133,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         val toRemove = findInitializer(name)
         requireNotNull(toRemove) { "Initializer with the name $name was not found" }
 
+        valueOrderInfo.removeOrder(name)
         _initializers.remove(toRemove)
         toRemove.close()
     }
