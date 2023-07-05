@@ -160,3 +160,5 @@ internal external val prod: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) 
 internal external val linalg: Linalg
 
 internal external val floor: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val isInf: (x: ArrayTFJS) -> ArrayTFJS
