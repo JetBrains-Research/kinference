@@ -11,9 +11,10 @@ import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.Operator
 import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.rules.context.PrepareContextRule
 import io.kinference.utils.LoggerFactory
 
-object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
+object QAttentionContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "QAttention") {
     private val logger = LoggerFactory.create("io.kinference.core.optimizer.rules.context.QAttentionContextRule")
 
     internal suspend fun prepareWeights(tensor: KITensor, scale: KITensor, zeroPoint: KITensor?, numHeads: Int): KITensor {
@@ -27,21 +28,30 @@ object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
         return dequantData.reshape(newShape).transpose(intArrayOf(1, 2, 0, 3)).asTensor(optName(tensor.name))
     }
 
-    private suspend fun appendWeights(tensor: KITensor?, scale: KITensor?, zeroPoint: KITensor?, numHeads: Int, graph: KIGraph) {
+    private suspend fun appendWeights(
+        tensor: KITensor?, scale: KITensor?, zeroPoint: KITensor?, numHeads: Int,
+        graph: KIGraph, operator: Operator<KIONNXData<*>, KIONNXData<*>>
+    ) {
         if (tensor != null && scale != null) {
             val preparedWeights = prepareWeights(tensor, scale, zeroPoint,numHeads)
             graph.addTensorToContext(preparedWeights)
+
+            operator.renameInput(tensor.name!!, preparedWeights.name!!)
+            tryRemoveDefaultInitializer(graph, tensor.name!!)
         } else {
-            logger.warning { "Add weights to the model's initializers, otherwise the QAttention operator inference will be slower than expected" }
+            logger.warning { "Add weights and/or scale to the model's initializers, otherwise the QAttention operator inference will be slower than expected" }
         }
     }
 
-    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph, numHeads: Int) {
+    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph, operator: Operator<KIONNXData<*>, KIONNXData<*>>, numHeads: Int) {
         if (tensor == null) {
             logger.warning { "Add bias to the model's initializers, otherwise the QAttention operator inference will be slower than expected" }
         } else {
             val preparedBias = AttentionContextRule.prepareBias(tensor, numHeads)
             graph.addTensorToContext(preparedBias)
+
+            operator.renameInput(tensor.name!!, preparedBias.name!!)
+            tryRemoveDefaultInitializer(graph, tensor.name!!)
         }
     }
 
@@ -59,7 +69,7 @@ object QAttentionContextRule : PrepareContextRule(operatorName = "QAttention") {
         val weightZeroPoint = initTensorByDefaultName("weight_zero_point", operator, initializers)
         val numHeads = operator.getAttribute<Long>("num_heads").toInt()
 
-        appendWeights(weightsTensor, weightScale, weightZeroPoint, numHeads, graph)
-        appendBias(biasTensor, graph, numHeads)
+        appendWeights(weightsTensor, weightScale, weightZeroPoint, numHeads, graph, operator)
+        appendBias(biasTensor, graph, operator, numHeads)
     }
 }

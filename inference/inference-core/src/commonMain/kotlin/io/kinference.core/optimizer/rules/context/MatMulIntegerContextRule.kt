@@ -12,8 +12,9 @@ import io.kinference.ndarray.arrays.tiled.IntTiledArray
 import io.kinference.ndarray.extensions.tryZeroPoint
 import io.kinference.operator.Operator
 import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.rules.context.PrepareContextRule
 
-object MatMulIntegerContextRule : PrepareContextRule(operatorName = "MatMulInteger") {
+object MatMulIntegerContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "MatMulInteger") {
     private fun NumberNDArray.toIntNDArray(): IntNDArray {
         val result = IntNDArray(IntTiledArray(this.strides), strides)
         when (this) {
@@ -38,10 +39,13 @@ object MatMulIntegerContextRule : PrepareContextRule(operatorName = "MatMulInteg
         return preparedTensor.asTensor(optName(tensor.name))
     }
 
-    private suspend fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, graph: KIGraph) {
+    private suspend fun appendTensor(tensor: KITensor?, zeroPoint: KITensor?, graph: KIGraph, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         if (tensor != null) {
             val preparedTensor = prepareTensor(tensor, zeroPoint)
             graph.addTensorToContext(preparedTensor)
+
+            operator.renameInput(tensor.name!!, preparedTensor.name!!)
+            tryRemoveDefaultInitializer(graph, tensor.name!!)
         }
     }
 
@@ -58,7 +62,7 @@ object MatMulIntegerContextRule : PrepareContextRule(operatorName = "MatMulInteg
         val leftZeroPoint = initTensorByDefaultName("a_zero_point", operator, initializers)
         val rightZeroPoint = initTensorByDefaultName("b_zero_point", operator, initializers)
 
-        appendTensor(leftTensor, leftZeroPoint, graph)
-        appendTensor(rightTensor, rightZeroPoint, graph)
+        appendTensor(leftTensor, leftZeroPoint, graph, operator)
+        appendTensor(rightTensor, rightZeroPoint, graph, operator)
     }
 }

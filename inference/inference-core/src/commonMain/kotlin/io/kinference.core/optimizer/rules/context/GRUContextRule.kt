@@ -8,9 +8,10 @@ import io.kinference.core.operators.layer.recurrent.gru.GRU
 import io.kinference.graph.Graph
 import io.kinference.operator.Operator
 import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.rules.context.PrepareContextRule
 import io.kinference.utils.LoggerFactory
 
-object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
+object GRUContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "GRU") {
     private val logger = LoggerFactory.create("io.kinference.core.optimizer.rules.context.GRUContextRule")
 
     internal suspend fun prepareWeights(tensor: KITensor): KITensor {
@@ -25,21 +26,27 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
         return tensor.data.reshape(newShape).asTensor(optName(tensor.name))
     }
 
-    private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendWeights(tensor: KITensor?, graph: KIGraph, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Add weights to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
             val preparedWeights = prepareWeights(tensor)
             graph.addTensorToContext(preparedWeights)
+
+            operator.renameInput(tensor.name!!, preparedWeights.name!!)
+            tryRemoveDefaultInitializer(graph, tensor.name!!)
         }
     }
 
-    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph) {
+    private suspend fun appendBias(tensor: KITensor?, graph: KIGraph, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         if (tensor == null) {
             logger.warning { "Add bias to the model's initializers, otherwise the GRU operator inference will be slower than expected" }
         } else {
             val preparedBias = prepareBias(tensor)
             graph.addTensorToContext(preparedBias)
+
+            operator.renameInput(tensor.name!!, preparedBias.name!!)
+            tryRemoveDefaultInitializer(graph, tensor.name!!)
         }
     }
 
@@ -55,8 +62,8 @@ object GRUContextRule : PrepareContextRule(operatorName = "GRU") {
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)
         val biasInit = initTensorByDefaultName("B", operator, initializers)
 
-        appendWeights(weightsInit, graph)
-        appendWeights(recurrentWeightsInit, graph)
-        appendBias(biasInit, graph)
+        appendWeights(weightsInit, graph, operator)
+        appendWeights(recurrentWeightsInit, graph, operator)
+        appendBias(biasInit, graph, operator)
     }
 }
