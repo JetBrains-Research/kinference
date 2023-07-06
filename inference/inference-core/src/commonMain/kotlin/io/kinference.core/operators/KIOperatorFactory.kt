@@ -92,6 +92,8 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Gelu" -> Gelu(name, version, attributes, inputs, outputs)
         "Gemm" -> Gemm(name, version, attributes, inputs, outputs)
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
+        "Hardmax" -> Hardmax(name, version, attributes, inputs, outputs)
+        "IsInf" -> IsInf(name, version, attributes, inputs, outputs)
         "GRU" -> GRU(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
         "If" -> If(name, version, attributes, inputs, outputs)

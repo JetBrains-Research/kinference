@@ -23,6 +23,8 @@ fun NumberNDArrayTFJS.unstackAs3DTypedArray(): Array<Array<MutableNumberNDArrayT
     return arrays.unstackAs3DTypedArray()
 }
 
+fun Boolean.toInt() = if (this) 1 else 0
+
 fun String.resolveTFJSDataType(): DataType {
     return when (this) {
         "float32" -> DataType.FLOAT

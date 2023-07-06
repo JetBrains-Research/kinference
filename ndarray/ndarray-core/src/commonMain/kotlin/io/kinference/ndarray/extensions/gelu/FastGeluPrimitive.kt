@@ -8,17 +8,12 @@ import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import kotlin.math.*
-
-private val HALF = (0.5).toPrimitive()
-private val ONE = (1.0).toPrimitive()
-private val TWO = (2.0).toPrimitive()
-private val FGELU_COEF_1 = (0.035677408136300125).toPrimitive()
-private val FGELU_COEF_2 = (0.7978845608028654).toPrimitive()
 
 @GenerateNameFromPrimitives
 internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray?): MutablePrimitiveNDArray {
@@ -52,7 +47,7 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
 
             for (j in temporaryBlockExp.indices) {
                 val temp = outputBlock[j]
-                temporaryBlockExp[j] = FastMath.exp(TWO * temp * (FGELU_COEF_1 * temp * temp + FGELU_COEF_2))
+                temporaryBlockExp[j] = FastMath.exp(PrimitiveConstants.TWO * temp * (PrimitiveConstants.FGELU_COEF_1 * temp * temp + PrimitiveConstants.FGELU_COEF_2))
             }
 
             for (j in temporaryBlockExp.indices) {
@@ -60,7 +55,7 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
             }
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = outputBlock[j] * (HALF + HALF * (temporaryBlockExp[j] - ONE) / (temporaryBlockExp[j] + ONE))
+                outputBlock[j] = outputBlock[j] * (PrimitiveConstants.HALF + PrimitiveConstants.HALF * (temporaryBlockExp[j] - PrimitiveConstants.ONE) / (temporaryBlockExp[j] + PrimitiveConstants.ONE))
             }
         }
     }

@@ -2,15 +2,11 @@
 package io.kinference.ndarray.extensions.det
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.extensions.pow
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.pow
-
-private val ZERO = (0).toPrimitive()
-private val ONE = (1).toPrimitive()
-private val MINUS_ONE = (-1).toPrimitive()
-
 
 //TODO: Research coroutines there
 suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
@@ -25,13 +21,13 @@ suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
     val reshapedInput = this.reshape(intArrayOf(batchSize, n, n)) as PrimitiveNDArray
 
     val outputShape = this.shape.sliceArray(0 until shape.size - 2)
-    val outputArray = if (outputShape.isEmpty()) MutablePrimitiveNDArray.scalar(ZERO) else MutablePrimitiveNDArray(outputShape)
+    val outputArray = if (outputShape.isEmpty()) MutablePrimitiveNDArray.scalar(PrimitiveConstants.ZERO) else MutablePrimitiveNDArray(outputShape)
 
     val blocksInRow = reshapedInput.blocksInRow
 
     fun findNonZeroRow(i: Int, matrix: PrimitiveNDArray): Int {
         for (idx in i until n) {
-            if (matrix[idx, i] != ZERO) return idx
+            if (matrix[idx, i] != PrimitiveConstants.ZERO) return idx
         }
 
         return n
@@ -41,14 +37,14 @@ suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
         val inputMatrix = reshapedInput.view(batchIdx).clone()
         val inputBlocks = inputMatrix.array.blocks
 
-        var result = ONE
+        var result = PrimitiveConstants.ONE
         var swapsCount = 0
 
         for (i in 0 until n) {
             val rowForI = findNonZeroRow(i, inputMatrix)
 
             if (rowForI == n) {
-                result = ZERO
+                result = PrimitiveConstants.ZERO
                 break
             }
 
@@ -87,7 +83,7 @@ suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
             }
         }
 
-        outputArray.setLinear(batchIdx, result * MINUS_ONE.pow(swapsCount % 2))
+        outputArray.setLinear(batchIdx, result * PrimitiveConstants.MINUS_ONE.pow(swapsCount % 2))
     }
 
     return outputArray

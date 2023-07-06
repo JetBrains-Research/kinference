@@ -176,3 +176,46 @@ suspend fun NumberNDArrayTFJS.det(): NumberNDArrayTFJS {
 }
 
 fun NumberNDArrayTFJS.floor() = NumberNDArrayTFJS(tfjsArray.floor())
+
+suspend fun NumberNDArrayTFJS.hardmax(axis: Int = 1): NumberNDArrayTFJS {
+    val actualAxis = indexAxis(axis)
+    val rows = computeBlockSize(toDim = actualAxis)
+    val columns = computeBlockSize(fromDim = actualAxis)
+
+    return tidyNDArray {
+        val reshapedInput = this.reshape(intArrayOf(rows, columns))
+        val argMaxOfInput = reshapedInput.argmax(axis = 1, keepDims = false)
+
+        val output = oneHot(
+            indices = argMaxOfInput.tfjsArray,
+            depth = columns,
+            onValue = 1,
+            offValue = 0,
+            dtype = this.tfjsArray.dtype
+        ).toNDArray() as NumberNDArrayTFJS
+
+        return@tidyNDArray output.reshape(this.strides)
+    }
+}
+
+suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArrayTFJS = tidyNDArray {
+    val infPositions = BooleanNDArrayTFJS(tfjsArray.isInf())
+
+    return@tidyNDArray when {
+        detectNegative && detectPositive -> infPositions
+
+        detectNegative -> {
+            val negativePositions = this.less(NDArrayTFJS.floatScalar(0f))
+
+            infPositions.and(negativePositions)
+        }
+
+        detectPositive -> {
+            val positivePositions = this.greater(NDArrayTFJS.floatScalar(0f))
+
+            infPositions.and(positivePositions)
+        }
+
+        else -> error("At least one of detectNegative or detectPositive must be true")
+    }
+}
