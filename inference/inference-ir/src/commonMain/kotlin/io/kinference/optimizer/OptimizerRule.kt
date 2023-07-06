@@ -23,8 +23,7 @@ abstract class OptimizerRule<T : ONNXData<*, *>>(val name: String) {
     }
 
     suspend fun apply(graph: Graph<T>, report: GraphOptimizer.OptimizationReport): Graph<T> {
-        for (i in graph.operators.indices) {
-            val operator = graph.operators[i]
+        for (operator in graph.operators) {
             checkAttributes(operator, report)
 
             if (shouldApply(graph, operator)) {
