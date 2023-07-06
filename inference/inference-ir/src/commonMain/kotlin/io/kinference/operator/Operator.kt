@@ -261,5 +261,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
             TensorProto.DataType.INT32,
             TensorProto.DataType.INT64,
         )
+
+        val NUMBER_DATA_TYPES = INT_DATA_TYPES + UINT_DATA_TYPES + FLOAT_DATA_TYPES
     }
 }

@@ -126,6 +126,9 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
         DataType.BOOLEAN -> MutableBooleanNDArray(BooleanTiledArray(strides), strides)
         DataType.BYTE -> MutableByteNDArray(ByteTiledArray(strides), strides)
         DataType.UBYTE -> MutableUByteNDArray(UByteTiledArray(strides), strides)
+        DataType.USHORT -> MutableUShortNDArray(UShortTiledArray(strides), strides)
+        DataType.UINT -> MutableUIntNDArray(UIntTiledArray(strides), strides)
+        DataType.ULONG -> MutableULongNDArray(ULongTiledArray(strides), strides)
         else -> error("Unsupported data type $type")
     }
 }
