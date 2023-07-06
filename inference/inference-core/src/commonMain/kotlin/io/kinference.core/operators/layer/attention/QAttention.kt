@@ -3,11 +3,14 @@ package io.kinference.core.operators.layer.attention
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.optimizer.rules.context.AttentionContextRule
+import io.kinference.core.optimizer.rules.context.QAttentionContextRule
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.tryDequantize
 import io.kinference.operator.*
+import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -104,13 +107,13 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
         val weightsScale = inputs[4]!!
         val weightsZeroPoint = inputs.getOrNull(7)
 
-        val preparedWeights = (contexts.graph!!.getOrNullValue("prepared_${weights.name}")
-            ?: QAttentionContext.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
+        val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
+            ?: QAttentionContextRule.prepareWeights(weights, weightsScale, weightsZeroPoint, numHeads)) as KITensor
 
         val bias = inputs[2]!!
 
-        val preparedBias = (contexts.graph!!.getOrNullValue("prepared_${bias.name}")
-            ?: AttentionContext.prepareBias(bias, numHeads)) as KITensor
+        val preparedBias = (contexts.graph!!.getOrNullValue(optName(bias.name))
+            ?: AttentionContextRule.prepareBias(bias, numHeads)) as KITensor
 
         val maskIndices = inputs.getOrNull(5)?.data as IntNDArray?
         val past = inputs.getOrNull(8)?.data as NumberNDArrayCore?

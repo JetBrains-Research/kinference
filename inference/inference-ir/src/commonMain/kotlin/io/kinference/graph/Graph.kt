@@ -80,12 +80,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
 
-    protected val initializers = ArrayList<T>(proto.initializer.size).apply {
+    private val _initializers = ArrayList<T>(proto.initializer.size).apply {
         for (i in proto.initializer)
             this.add(prepareInput(i))
     }
 
-    val initNames = proto.initializer.map { it.name }
+    val initializers: List<T>
+        get() = _initializers
 
     data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -123,16 +124,29 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     abstract fun prepareInput(proto: TensorProto): T
 
     fun addInitializer(initializer: T) {
-        require(!initializers.any { it.name == initializer.name }) { "Initializer with name ${initializer.name} already exists" }
-        initializers.add(initializer)
+        require(!_initializers.any { it.name == initializer.name }) { "Initializer with the name ${initializer.name} already exists" }
+        _initializers.add(initializer)
         valueOrderInfo.putOrder(initializer.name!!, Int.MAX_VALUE)
     }
 
-    fun findInitializer(name: String): T? {
-        return initializers.find { it.name == name }
+    fun removeInitializer(name: String) {
+        val toRemove = findInitializer(name)
+        requireNotNull(toRemove) { "Initializer with the name $name was not found" }
+
+        valueOrderInfo.removeOrder(name)
+        _initializers.remove(toRemove)
+        toRemove.close()
     }
 
-    fun mergeOperators(names: List<String>, to: Operator<T, T>) {
+    fun findInitializer(name: String): T? {
+        return _initializers.find { it.name == name }
+    }
+
+    fun countNumberOfInputUsages(name: String): Int {
+        return _operators.count { it.inputs.contains(name) }
+    }
+
+    /*fun mergeOperators(names: List<String>, to: Operator<T, T>) {
         fun MutableList<Operator<T, T>>.removeOperator(i: Int) {
             this.removeAt(i)
             valueOrderInfo.decOrderFrom(i)
@@ -171,7 +185,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             val order = valueOrderInfo.getOrder(name)
             if (order <= targetOrder) valueOrderInfo.putOrder(name, order + 1)
         }
-    }
+    }*/
 
     val availableInputs: List<String> = inputs.map { it.name }
 
@@ -182,7 +196,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
     override fun close() {
-        closeAll(initializers)
+        closeAll(_initializers)
         closeAll(operators)
     }
 
@@ -191,7 +205,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
-        for (tensor in initializers) {
+        for (tensor in _initializers) {
             contexts.graph!!.putValue(tensor.name!!, tensor)
         }
 

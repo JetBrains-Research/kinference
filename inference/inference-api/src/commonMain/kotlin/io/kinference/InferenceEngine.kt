@@ -8,7 +8,7 @@ import okio.Path
 abstract class BackendInfo(val name: String)
 
 /**
- * This interface defines inference engine.
+ * This interface defines an inference engine.
  * Inference engine manages how models and ONNX data should be loaded and processed for further usage.
  * The engine is unique for every supported KInference backend.
  */

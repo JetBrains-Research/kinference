@@ -1,4 +1,4 @@
-package io.kinference.core.optimizer.rules
+package io.kinference.core.optimizer.rules.quantization
 
 import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.asTensor
@@ -11,7 +11,7 @@ import io.kinference.operator.Operator
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.optimizer.findPath
 
-fun IntNDArray.toFloatNDArray(): FloatNDArray {
+/*fun IntNDArray.toFloatNDArray(): FloatNDArray {
     val intPointer = this.array.pointer()
     return FloatNDArray(this.shape) { intPointer.getAndIncrement().toFloat() }
 }
@@ -56,4 +56,4 @@ object DequantizeMatMulInteger : OptimizerRule<KIONNXData<*>>(name = "Dequantize
         val names = firstPath.map { it.name }.drop(1) + secondPath.dropLast(1).map { it.name }
         graph.mergeOperators(names, operator as Operator<KIONNXData<*>, KIONNXData<*>>)
     }
-}
+}*/

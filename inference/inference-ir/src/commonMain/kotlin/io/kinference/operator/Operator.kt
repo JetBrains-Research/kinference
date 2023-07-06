@@ -79,9 +79,18 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     val name: String,
     val info: OperatorInfo,
     val attributes: Map<String, Attribute<Any>> = emptyMap(),
-    val inputs: List<String>,
-    val outputs: List<String>
+    inputs: List<String>,
+    outputs: List<String>
 ) : Closeable {
+    private val _inputs: ArrayList<String> = ArrayList(inputs)
+    private val _outputs: ArrayList<String> = ArrayList(outputs)
+
+    val inputs: List<String>
+        get() = _inputs.toList()
+
+    val outputs: List<String>
+        get() = _outputs.toList()
+
     val type: String
         get() = info.type
 
@@ -101,6 +110,13 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
                 println("Unknown attribute '${attribute.name}' in ${info.type} operator")
             }
         }
+    }
+
+    fun renameInput(name: String, newName: String) {
+        val idx = _inputs.indexOf(name)
+        require(idx != -1) { "Input $name was not found in ${this.name} operator inputs list" }
+
+        _inputs[idx] = newName
     }
 
     private fun check(constraints: List<IOInfo>, values: List<ONNXData<*, *>?>, what: String) {
