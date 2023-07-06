@@ -287,3 +287,5 @@ fun ArrayTFJS.prod(axes: Array<Int>, keepDims: Boolean = false) = prod(this, axe
 fun ArrayTFJS.floor() = floor(this)
 
 fun ArrayTFJS.isInf() = isInf(this)
+
+fun ArrayTFJS.isNaN() = isNaN(this)
