@@ -219,3 +219,5 @@ suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositi
         else -> error("At least one of detectNegative or detectPositive must be true")
     }
 }
+
+fun NumberNDArrayTFJS.isNaN() = BooleanNDArrayTFJS(tfjsArray.isNaN())

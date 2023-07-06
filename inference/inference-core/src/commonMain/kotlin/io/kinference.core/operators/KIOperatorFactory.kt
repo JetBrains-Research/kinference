@@ -94,6 +94,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Greater" -> Greater(name, version, attributes, inputs, outputs)
         "Hardmax" -> Hardmax(name, version, attributes, inputs, outputs)
         "IsInf" -> IsInf(name, version, attributes, inputs, outputs)
+        "IsNaN" -> IsNaN(name, version, attributes, inputs, outputs)
         "GRU" -> GRU(name, version, attributes, inputs, outputs)
         "Identity" -> Identity(name, version, attributes, inputs, outputs)
         "If" -> If(name, version, attributes, inputs, outputs)
