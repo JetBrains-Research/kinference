@@ -10,7 +10,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.operator.*
-import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -99,14 +99,16 @@ class GRUVer7(
         val input = inputs[0]!!
 
         val weights = inputs[1]!!
-        val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name)) ?: GRUContextRule.prepareWeights(weights))
+        val preparedWeights = weights.takeIf { isOpt(it.name) } ?: GRUContextRule.prepareWeights(weights)
 
         val recurrentWeights = inputs[2]!!
-        val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue(optName(recurrentWeights.name))
-            ?: GRUContextRule.prepareWeights(recurrentWeights)) as KITensor
+        val preparedRecurrentWeights = recurrentWeights.takeIf { isOpt(it.name) }
+            ?: GRUContextRule.prepareWeights(recurrentWeights)
 
         val bias = inputs.getOrNull(3)
-        val preparedBias = bias?.let { contexts.graph!!.getOrNullValue(optName(it.name)) ?: GRUContextRule.prepareBias(it) }
+        val preparedBias = bias?.let { tensor ->
+            tensor.takeIf { isOpt(it.name) } ?: GRUContextRule.prepareBias(tensor)
+        }
 
         val sequenceLens = inputs.getOrNull(4)
         val initialHiddenState = inputs.getOrNull(5)

@@ -8,7 +8,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
-import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.TensorProto
 
 sealed class MatMulInteger(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -52,10 +52,10 @@ class MatMulIntegerVer10(name: String, attributes: Map<String, Attribute<Any>>, 
         val firstZero = inputs.getOrNull(2)
         val secondZero = inputs.getOrNull(3)
 
-        val firstPrepared = (contexts.graph!!.getOrNullValue(optName(first.name))
-            ?: MatMulIntegerContextRule.prepareTensor(first, firstZero)) as KITensor
-        val secondPrepared = (contexts.graph!!.getOrNullValue(optName(second.name))
-            ?: MatMulIntegerContextRule.prepareTensor(second, secondZero)) as KITensor
+        val firstPrepared = first.takeIf { isOpt(it.name) }
+            ?: MatMulIntegerContextRule.prepareTensor(first, firstZero)
+        val secondPrepared = second.takeIf { isOpt(it.name) }
+            ?: MatMulIntegerContextRule.prepareTensor(second, secondZero)
 
         val output = (firstPrepared.data as NumberNDArrayCore)
             .matmul(secondPrepared.data as NumberNDArrayCore)
