@@ -226,6 +226,11 @@ fun ArrayTFJS.and(other: ArrayTFJS): ArrayTFJS {
     return logicalAnd(this, other)
 }
 
+fun ArrayTFJS.xor(other: ArrayTFJS): ArrayTFJS {
+    require(this.dtype == "bool" && other.dtype == "bool") { "Only boolean arrays are accepted" }
+    return logicalXor(this, other)
+}
+
 fun ArrayTFJS.pad(paddings: Array<Array<Int>>, constantValue: Any) = pad(this, paddings, constantValue)
 
 internal fun ArrayTFJS.mirrorPad(paddings: Array<Array<Int>>, mode: String) = mirrorPad(this, paddings, mode)
