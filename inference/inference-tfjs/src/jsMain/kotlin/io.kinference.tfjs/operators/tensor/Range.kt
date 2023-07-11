@@ -3,12 +3,14 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.range
+import io.kinference.ndarray.arrays.NDArrayTFJS
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
-import io.kinference.protobuf.message.TensorProto.DataType
+import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.primitives.types.DataType
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
@@ -26,7 +28,13 @@ sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Att
 class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Range(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = setOf(DataType.FLOAT, DataType.DOUBLE, DataType.INT16, DataType.INT32, DataType.INT64)
+        private val TYPE_CONSTRAINTS = setOf(
+            TensorProto.DataType.FLOAT,
+            TensorProto.DataType.DOUBLE,
+            TensorProto.DataType.INT16,
+            TensorProto.DataType.INT32,
+            TensorProto.DataType.INT64
+        )
 
         private val ATTRIBUTES_INFO = emptyList<AttributeInfo>()
 
@@ -43,21 +51,26 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val outputs = tidy {
-            val start = inputs[0]!!.data
-            val limit = inputs[1]!!.data
-            val delta = inputs[2]!!.data
+        val outputs = tidyNDArray {
+            val start = inputs[0]!!.data as NumberNDArrayTFJS
+            val limit = inputs[1]!!.data as NumberNDArrayTFJS
+            val delta = inputs[2]!!.data as NumberNDArrayTFJS
 
-            require(start.dtype == limit.dtype && limit.dtype == delta.dtype)
-            { "Input tensors must have equal dtype, present: start: ${start.dtype}, limit: ${limit.dtype}, delta: ${delta.dtype}" }
+            require(start.type == limit.type && limit.type == delta.type)
+            { "Input tensors must have equal dtype, present: start: ${start.type}, limit: ${limit.type}, delta: ${delta.type}" }
 
-            val startNumber = if (start.dtype == "float32") start.dataFloat().first() else start.dataInt().first()
-            val limitNumber = if (limit.dtype == "float32") limit.dataFloat().first() else limit.dataInt().first()
-            val deltaNumber = if (delta.dtype == "float32") delta.dataFloat().first() else delta.dataInt().first()
 
-            return@tidy arrayOf(range(startNumber, limitNumber, deltaNumber, start.dtype))
+            val startNumber = start.singleValue()
+            val limitNumber = limit.singleValue()
+            val deltaNumber = delta.singleValue()
+
+            return@tidyNDArray when (start.type) {
+                DataType.FLOAT -> NDArrayTFJS.floatRange(startNumber, limitNumber, deltaNumber)
+                DataType.INT -> NDArrayTFJS.intRange(startNumber, limitNumber, deltaNumber)
+                else -> error("Unsupported data type")
+            }
         }
 
-        return listOf(outputs[0].asTensor("output"))
+        return listOf(outputs.asTensor("output"))
     }
 }

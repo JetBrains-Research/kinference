@@ -2,11 +2,9 @@ package io.kinference.tfjs.data.tensors
 
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.tensor
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
-import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
@@ -24,44 +22,6 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         data.close()
     }
 
-    /*fun toNDArray(): NDArray {
-        val shapeIntArray = data.shape.toIntArray()
-        val strides = Strides(shapeIntArray)
-        val blockSize = blockSizeByStrides(strides)
-        val blocksCount = strides.linearSize / blockSize
-
-
-        return when(data.dtype) {
-            "float32" -> {
-                val array = data.dataFloat().unsafeCast<Float32Array>()
-                val arrayBuffer = array.buffer
-                val blocks = Array(blocksCount) { blockNum ->
-                    Float32Array(arrayBuffer, blockNum * blockSize * 4, blockSize).unsafeCast<FloatArray>()
-                }
-                val tiledArray = FloatTiledArray(blocks)
-                FloatNDArray(tiledArray, Strides(shapeIntArray))
-            }
-
-            "int32" -> {
-                val array = data.dataFloat().unsafeCast<Int32Array>()
-                val arrayBuffer = array.buffer
-                val blocks = Array(blocksCount) { blockNum ->
-                    Int32Array(arrayBuffer, blockNum * blockSize * 4, blockSize).unsafeCast<IntArray>()
-                }
-                val tiledArray = IntTiledArray(blocks)
-                IntNDArray(tiledArray, strides)
-            }
-
-            "bool" -> {
-                val array = data.dataBool()
-                val tiledArray = BooleanTiledArray(shapeIntArray) { array[it] }
-                BooleanNDArray(tiledArray, strides)
-            }
-
-            else -> error("Unsupported type")
-        }
-    }*/
-
     companion object {
         //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): TFJSTensor {
@@ -71,30 +31,21 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             return TFJSTensor(array, type, proto.dims, proto.name)
         }
 
-        /*operator fun invoke(value: NDArray, name: String? = ""): TFJSTensor {
-            return when (val resolvedType = value.type.resolveProtoDataType()) {
-                DataType.FLOAT -> invoke((value as FloatNDArray).array.toArray(), resolvedType, value.shape, name)
-                DataType.INT32 -> invoke((value as IntNDArray).array.toArray(), resolvedType, value.shape, name)
-                DataType.UINT8 -> invoke((value as UByteNDArray).array.toArray(), resolvedType, value.shape, name)
-                DataType.INT64 -> invoke((value as LongNDArray).array.toArray(), resolvedType, value.shape, name)
-                DataType.BOOL  -> invoke((value as BooleanNDArray).array.toArray(), resolvedType, value.shape, name)
-                else -> error("Unsupported type")
-            }
-        }*/
-
-        private fun UByteArray.toIntTypedArray() = Array(this.size) { this[it].toInt() }
-
         private operator fun invoke(value: Any, type: DataType, dims: IntArray, name: String? = ""): TFJSTensor {
             val nameNotNull = name.orEmpty()
             val typedDims = dims.toTypedArray()
             return when (type) {
-                in FLOAT_TENSOR_TYPES -> NumberNDArrayTFJS(tensor(value as FloatArray, typedDims, "float32"))
-                DataType.DOUBLE -> NumberNDArrayTFJS(tensor((value as DoubleArray).toTypedArray(), typedDims, "float32"))
-                DataType.INT32 -> NumberNDArrayTFJS(tensor(value as IntArray, typedDims, "int32"))
-                DataType.UINT8 -> NumberNDArrayTFJS(tensor((value as UByteArray).toIntTypedArray(), typedDims, "int32"))
-                DataType.INT8  -> NumberNDArrayTFJS(tensor((value as ByteArray).toTypedArray(), typedDims, "int32"))
-                DataType.INT64 -> NumberNDArrayTFJS(tensor((value as LongArray).toIntArray(), typedDims, "int32"))
-                DataType.BOOL -> BooleanNDArrayTFJS(tensor((value as BooleanArray).toTypedArray(), typedDims, "bool"))
+                in FLOAT_TENSOR_TYPES -> NDArrayTFJS.float(value as FloatArray, typedDims)
+                DataType.DOUBLE -> NDArrayTFJS.float(value as DoubleArray, typedDims)
+                DataType.INT8 -> NDArrayTFJS.int(value as ByteArray, typedDims)
+                DataType.INT16 -> NDArrayTFJS.int(value as ShortArray, typedDims)
+                DataType.INT32 -> NDArrayTFJS.int(value as IntArray, typedDims)
+                DataType.INT64 -> NDArrayTFJS.int(value as LongArray, typedDims)
+                DataType.UINT8 -> NDArrayTFJS.int(value as UByteArray, typedDims)
+                DataType.UINT16 -> NDArrayTFJS.int(value as UShortArray, typedDims)
+                DataType.UINT32 -> NDArrayTFJS.int(value as UIntArray, typedDims)
+                DataType.UINT64 -> NDArrayTFJS.int(value as ULongArray, typedDims)
+                DataType.BOOL -> NDArrayTFJS.boolean(value as BooleanArray, typedDims)
                 else -> error("Unsupported type: $type")
             }.asTensor(nameNotNull)
         }
