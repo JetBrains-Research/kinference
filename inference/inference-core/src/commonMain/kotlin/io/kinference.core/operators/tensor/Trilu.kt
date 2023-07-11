@@ -53,7 +53,7 @@ class TriluVer14(
             AttributeInfo("upper", setOf(AttributeProto.AttributeType.INT), required = false, default = 1L)
         )
 
-        internal val VERSION = VersionInfo(sinceVersion = 6)
+        internal val VERSION = VersionInfo(sinceVersion = 14)
         private val INFO = OperatorInfo("Trilu", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
@@ -63,7 +63,8 @@ class TriluVer14(
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val kTensor = inputs.getOrNull(1)?.data as? LongNDArray
-        val output = input.trilu(kTensor?.singleValue()?.toInt() ?: 0, upper)
+        val k = kTensor?.singleValue()?.toInt() ?: 0
+        val output = input.trilu(k, upper)
         return listOf(output.asTensor("output"))
     }
 }
