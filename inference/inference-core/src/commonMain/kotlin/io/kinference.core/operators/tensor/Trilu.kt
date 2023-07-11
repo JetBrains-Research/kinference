@@ -59,7 +59,6 @@ class TriluVer14(
 
     private val upper: Boolean by attribute { it: Number -> it != 0L }
 
-    @Suppress("UNCHECKED_CAST")
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val kTensor = inputs.getOrNull(1)?.data as? LongNDArray
