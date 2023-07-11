@@ -138,6 +138,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(name, version, attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(name, version, attributes, inputs, outputs)
+        "Trilu" -> Trilu(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
         "ZipMap" -> ZipMap(name, version, attributes, inputs, outputs)
