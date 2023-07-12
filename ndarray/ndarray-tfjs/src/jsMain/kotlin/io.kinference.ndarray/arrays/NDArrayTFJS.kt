@@ -158,6 +158,16 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
             return zero
         }
 
+        internal fun createZeros(shape: Array<Int>, dtype: String): NDArrayTFJS {
+            return when (dtype) {
+                "int32" -> intZeros(shape)
+                "float32" -> floatZeros(shape)
+                "bool" -> booleanZeros(shape)
+                "string" -> stringFill(shape, "")
+                else -> error("Unsupported data type: $dtype")
+            }
+        }
+
         fun float(values: FloatArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float32"))
         fun int(values: IntArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "int32"))
         fun boolean(values: Array<Boolean>, shape: Array<Int>) = BooleanNDArrayTFJS(tensor(values, shape))

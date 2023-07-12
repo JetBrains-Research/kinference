@@ -289,3 +289,5 @@ fun ArrayTFJS.floor() = floor(this)
 fun ArrayTFJS.isInf() = isInf(this)
 
 fun ArrayTFJS.isNaN() = isNaN(this)
+
+fun ArrayTFJS.bandPart(numLower: Int = 0, numUpper: Int = 0) = linalg.bandPart(this, numLower, numUpper)
