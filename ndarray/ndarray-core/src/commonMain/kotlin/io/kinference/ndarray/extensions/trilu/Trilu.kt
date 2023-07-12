@@ -2,21 +2,35 @@ package io.kinference.ndarray.extensions.trilu
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
-import kotlin.math.min
-import kotlin.math.max
+import io.kinference.utils.PlatformUtils
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.math.*
 
-fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
+suspend fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
     val output = allocateNDArray(this.type, this.strides)
     val (height, width) = this.shape.takeLast(2)
-    val batchSize = height * width
-    val batchCount = this.computeBlockSize(toDim = this.rank - 2)
+    val matrixSize = height * width
+    val matrixCount = this.computeBlockSize(toDim = this.rank - 2)
+    val batchSize = ceil(matrixCount.toFloat() / PlatformUtils.threads).toInt()
+
     if (upper) {
-        for (batch in 0 until batchCount) {
-            this.upperTrilu(batch * batchSize, k, height, width, output)
+        coroutineScope {
+            for (i in 0 until matrixCount step batchSize) {
+                launch {
+                    for (j in i until min(matrixCount, i + batchSize))
+                        upperTrilu(j * matrixSize, k, height, width, output)
+                }
+            }
         }
     } else {
-        for (batch in 0 until batchCount) {
-            this.lowerTrilu(batch * batchSize, k, height, width, output)
+        coroutineScope {
+            for (i in 0 until matrixCount step batchSize) {
+                launch {
+                    for (j in i until min(matrixCount, i + batchSize))
+                        lowerTrilu(j * matrixSize, k, height, width, output)
+                }
+            }
         }
     }
 
