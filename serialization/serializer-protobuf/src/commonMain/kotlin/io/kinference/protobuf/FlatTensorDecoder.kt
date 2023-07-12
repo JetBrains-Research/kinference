@@ -31,15 +31,17 @@ object FlatTensorDecoder : TensorDecoder() {
         return when (type) {
             TensorProto.DataType.DOUBLE -> DoubleArray(size) { init(it) as Double }
             TensorProto.DataType.FLOAT -> FloatArray(size) { init(it) as Float }
-            TensorProto.DataType.INT64 -> LongArray(size) { init(it) as Long }
-            TensorProto.DataType.INT32 -> IntArray(size) { init(it) as Int }
-            TensorProto.DataType.INT16 -> ShortArray(size) { init(it) as Short }
-            TensorProto.DataType.UINT16 -> UShortArray(size) { init(it) as UShort }
-            TensorProto.DataType.BOOL -> BooleanArray(size) { init(it) as Boolean }
-            TensorProto.DataType.INT8 -> ByteArray(size) { init(it) as Byte }
-            TensorProto.DataType.UINT8 -> UByteArray(size) { init(it) as UByte }
-            TensorProto.DataType.BFLOAT16 -> FloatArray(size) { init(it) as Float }
             TensorProto.DataType.FLOAT16 -> FloatArray(size) { init(it) as Float }
+            TensorProto.DataType.BFLOAT16 -> FloatArray(size) { init(it) as Float }
+            TensorProto.DataType.INT8 -> ByteArray(size) { init(it) as Byte }
+            TensorProto.DataType.INT16 -> ShortArray(size) { init(it) as Short }
+            TensorProto.DataType.INT32 -> IntArray(size) { init(it) as Int }
+            TensorProto.DataType.INT64 -> LongArray(size) { init(it) as Long }
+            TensorProto.DataType.UINT8 -> UByteArray(size) { init(it) as UByte }
+            TensorProto.DataType.UINT16 -> UShortArray(size) { init(it) as UShort }
+            TensorProto.DataType.UINT32 -> UIntArray(size) { init(it) as UInt }
+            TensorProto.DataType.UINT64 -> ULongArray(size) { init(it) as ULong }
+            TensorProto.DataType.BOOL -> BooleanArray(size) { init(it) as Boolean }
             else -> error("Unsupported data type: $type")
         }
     }

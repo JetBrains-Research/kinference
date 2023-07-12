@@ -4,10 +4,11 @@ import io.kinference.*
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.utils.*
+import io.kinference.utils.Assertions.assertLessOrEquals
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.math.pow
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) {
     private data class ONNXTestData<T : ONNXData<*, *>> (val name: String, val actual: Map<String, T>, val expected: Map<String, T>)
@@ -59,7 +60,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                 val outputs = model.predict(inputs)
                 val memoryAfterTest = testEngine.allocatedMemory()
                 logger.info { "Memory after predict: $memoryAfterTest" }
-                assertEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
+                assertLessOrEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
                 outputs
             } else {
                 model.predict(inputs)

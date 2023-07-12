@@ -217,3 +217,14 @@ suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositi
 }
 
 fun NumberNDArrayTFJS.isNaN() = BooleanNDArrayTFJS(tfjsArray.isNaN())
+
+suspend fun List<NumberNDArrayTFJS>.max(): NumberNDArrayTFJS {
+    if (isEmpty()) error("Array for max operation must have at least one element")
+    if (size == 1) return single()
+
+    return tidyNDArray { reduce { acc, next -> max(acc, next) } }
+}
+
+suspend fun Array<out NumberNDArrayTFJS>.max() = toList().max()
+
+suspend fun maxOf(vararg inputs: NumberNDArrayTFJS) = inputs.max()
