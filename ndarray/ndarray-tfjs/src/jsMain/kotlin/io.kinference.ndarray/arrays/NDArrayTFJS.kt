@@ -158,7 +158,7 @@ abstract class NDArrayTFJS(tfjsArray: ArrayTFJS) : NDArray {
             return zero
         }
 
-        internal fun createZeros(shape: Array<Int>, dtype: String): NDArrayTFJS {
+        internal fun zerosOfType(shape: Array<Int>, dtype: String): NDArrayTFJS {
             return when (dtype) {
                 "int32" -> intZeros(shape)
                 "float32" -> floatZeros(shape)

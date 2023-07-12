@@ -235,7 +235,7 @@ private fun NDArrayTFJS.triluUpper(k: Int): NDArrayTFJS {
     val (height, width) = shape.takeLast(2)
 
     if (k == 0) return tfjsArray.bandPart(numUpper = -1).toNDArray()
-    if (k > 0 && k - 1 > width) return NDArrayTFJS.createZeros(shapeArray, dtype)
+    if (k > 0 && k - 1 > width) return NDArrayTFJS.zerosOfType(shapeArray, dtype)
     if (k < 0 && -k > height) return this.clone()
 
     return if (k > 0) {
@@ -249,7 +249,7 @@ private fun NDArrayTFJS.triluLower(k: Int): NDArrayTFJS {
     val (height, width) = shape.takeLast(2)
 
     if (k == 0) return tfjsArray.bandPart(numLower = -1).toNDArray()
-    if (k < 0 && -k - 1 > height) return NDArrayTFJS.createZeros(shapeArray, dtype)
+    if (k < 0 && -k - 1 > height) return NDArrayTFJS.zerosOfType(shapeArray, dtype)
     if (k > 0 && k > width) return this.clone()
 
     return if (k > 0) {
