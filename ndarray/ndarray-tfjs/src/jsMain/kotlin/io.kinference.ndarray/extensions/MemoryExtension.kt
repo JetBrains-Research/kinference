@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.ArrayTFJS
 import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.core.*
 
-suspend fun tidy(fn: suspend () -> Array<ArrayTFJS>): Array<ArrayTFJS> {
+internal suspend fun tidy(fn: suspend () -> Array<ArrayTFJS>): Array<ArrayTFJS> {
     val engine = engine()
     lateinit var result: Array<ArrayTFJS>
     return scopedRun(
@@ -35,14 +35,14 @@ suspend fun <T : NDArrayTFJS> tidyNDArray(fn: suspend () -> T): T {
     return rawOutput.toNDArray() as T
 }
 
-suspend fun scopedRun(start: () -> Unit, end: () -> Unit, fn: suspend () -> Array<ArrayTFJS>): Array<ArrayTFJS> {
+internal suspend fun scopedRun(start: () -> Unit, end: () -> Unit, fn: suspend () -> Array<ArrayTFJS>): Array<ArrayTFJS> {
     start()
     try {
         val res = fn()
-        end();
-        return res;
+        end()
+        return res
     } catch (e: Exception) {
         end()
-        throw e;
+        throw e
     }
 }

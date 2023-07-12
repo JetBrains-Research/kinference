@@ -2,7 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 
-open class NumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
+open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {
         return tfjsArray.bufferSync().get(*index) as Number
     }

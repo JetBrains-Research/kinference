@@ -6,7 +6,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.tidyNDArrays
 import io.kinference.operator.*
-import io.kinference.optimizer.GraphOptimizer.Companion.optName
+import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
@@ -104,22 +104,21 @@ class LSTMVer7(
             val input = inputs[0]!!.data as NumberNDArrayTFJS
 
             val weights = inputs[1]!!
-            val preparedWeights = (contexts.graph!!.getOrNullValue(optName(weights.name))
-                ?: LSTMContextRule.prepareWeights(weights)) as TFJSTensor
+            val preparedWeights = weights.takeIf { isOpt(it.name) } ?: LSTMContextRule.prepareWeights(weights)
 
             val recurrentWeights = inputs[2]!!
-            val preparedRecurrentWeights = (contexts.graph!!.getOrNullValue(optName(recurrentWeights.name))
-                ?: LSTMContextRule.prepareWeights(recurrentWeights)) as TFJSTensor
+            val preparedRecurrentWeights = recurrentWeights.takeIf { isOpt(it.name) }
+                ?: LSTMContextRule.prepareWeights(recurrentWeights)
 
             val bias = inputs.getOrNull(3)
-            val preparedBias = bias?.let {
-                contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.prepareBias(it)
-            } as TFJSTensor?
+            val preparedBias = bias?.let { tensor ->
+                tensor.takeIf { isOpt(it.name) } ?: LSTMContextRule.prepareBias(tensor)
+            }
 
             val peepholes = inputs.getOrNull(7)
-            val preparedPeepholes = peepholes?.let {
-                contexts.graph!!.getOrNullValue(optName(it.name)) ?: LSTMContextRule.preparePeepholes(it)
-            } as TFJSTensor?
+            val preparedPeepholes = peepholes?.let { tensor ->
+                tensor.takeIf { isOpt(it.name) } ?: LSTMContextRule.preparePeepholes(tensor)
+            }
 
             val sequenceLens = inputs.getOrNull(4)
             val initialState = inputs.getOrNull(5)

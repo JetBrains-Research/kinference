@@ -36,8 +36,8 @@ class GemmVer11(
     outputs: List<String>
 ) : Gemm(name, INFO, attributes, inputs, outputs) {
 
-    private val alpha: Double by attribute { it: Number -> it.toDouble() }
-    private val beta: Double by attribute { it: Number -> it.toDouble() }
+    private val alpha: Float by attribute { it: Number -> it.toFloat() }
+    private val beta: Float by attribute { it: Number -> it.toFloat() }
 
     private val transA: Boolean by attribute { it: Number -> it.toInt() != 0 }
     private val transB: Boolean by attribute { it: Number -> it.toInt() != 0 }
@@ -79,13 +79,13 @@ class GemmVer11(
         val c = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
 
         val result = tidyNDArray {
-            val alphaScalar = NumberNDArrayTFJS(tensor(arrayOf(alpha), emptyArray(), a.dtype))
+            val alphaScalar = NDArrayTFJS.floatScalar(alpha)
             val matMulResult = alphaScalar * a.matmul(b, transposeLeft = transA, transposeRight = transB)
 
-            if (c == null) {
+            return@tidyNDArray if (c == null) {
                 matMulResult
             } else {
-                val betaScalar = NumberNDArrayTFJS(tensor(arrayOf(beta), emptyArray(), c.dtype))
+                val betaScalar = NDArrayTFJS.floatScalar(beta)
                 matMulResult + betaScalar * c
             }
         }

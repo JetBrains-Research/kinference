@@ -30,6 +30,7 @@ fun String.resolveTFJSDataType(): DataType {
         "float32" -> DataType.FLOAT
         "int32" -> DataType.INT
         "bool" -> DataType.BOOLEAN
+        "string" -> DataType.ALL
         else -> error("Unsupported type: $this")
     }
 }
@@ -38,7 +39,7 @@ inline fun <T> T.applyIf(predicate: Boolean, func: (T) -> (T)): T {
     return if (predicate) func(this) else this
 }
 
-fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
+internal fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
     return when (type) {
         DataType.FLOAT, DataType.INT -> MutableNumberNDArrayTFJS(tfjsArray)
         DataType.BOOLEAN -> MutableBooleanNDArrayTFJS(tfjsArray)
@@ -46,7 +47,7 @@ fun makeNDArray(tfjsArray: ArrayTFJS, type: DataType): NDArrayTFJS {
     }
 }
 
-fun makeNDArray(tfjsArray: ArrayTFJS, type: String) = makeNDArray(tfjsArray, type.resolveTFJSDataType())
+internal fun makeNDArray(tfjsArray: ArrayTFJS, type: String) = makeNDArray(tfjsArray, type.resolveTFJSDataType())
 
 internal fun activateCpuBackend() {
     versionCpu.length
