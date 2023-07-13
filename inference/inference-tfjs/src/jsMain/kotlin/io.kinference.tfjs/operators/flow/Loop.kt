@@ -89,7 +89,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
             val modified = inputs.drop(2).requireNoNulls().map {
-                (it.data.clone() as NDArrayTFJS).asTensor(it.name)
+                it.data.clone().asTensor(it.name)
             }.toMutableList()
 
             val modifiedCount = modified.size

@@ -13,6 +13,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api(project(":utils:utils-common"))
                 api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
                 api("com.squareup.wire:wire-runtime:${Versions.wire}")
             }

@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
@@ -59,7 +60,7 @@ class GatherVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
                 val value = indicesData[idx]
                 if (value < 0) indicesData[idx] = value + dim
             }
-            val preparedIndices = tensor(indicesData, indices.shapeArray, indices.dtype).toNDArray()
+            val preparedIndices = NDArrayTFJS.int(indicesData, indices.shapeArray)
 
             return@tidyNDArray data.gather(preparedIndices, actualAxis)
         }

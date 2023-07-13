@@ -5,8 +5,8 @@ import io.kinference.data.*
 import io.kinference.ort.data.map.ORTMap
 import io.kinference.ort.data.seq.ORTSequence
 import io.kinference.ort.data.tensor.ORTTensor
-import io.kinference.protobuf.toIntArray
-import io.kinference.protobuf.toLongArray
+import io.kinference.utils.toIntArray
+import io.kinference.utils.toLongArray
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import java.nio.*
 

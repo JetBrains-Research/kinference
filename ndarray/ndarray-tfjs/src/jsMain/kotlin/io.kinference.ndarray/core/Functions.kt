@@ -123,6 +123,8 @@ internal external val logicalOr: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
 internal external val logicalAnd: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
 
+internal external val logicalXor: (a: ArrayTFJS, b: ArrayTFJS) -> ArrayTFJS
+
 internal external val pad: (x: ArrayTFJS, paddings: Array<Array<Int>>, constantValue: dynamic) -> ArrayTFJS
 
 internal external val mirrorPad: (x: ArrayTFJS, paddings: Array<Array<Int>>, mode: String) -> ArrayTFJS

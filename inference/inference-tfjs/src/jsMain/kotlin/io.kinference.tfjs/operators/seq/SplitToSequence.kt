@@ -80,7 +80,7 @@ class SplitToSequenceVer11(
                     segments.map { it.reshape(newShape) }
                 }
             } else {
-                val partsArray = parts.tfjsArray.dataInt()
+                val partsArray = parts.dataInt()
                 if (parts.isScalar()) input.split(partsArray[0], axis) else input.split(partsArray, axis)
             }.toTypedArray()
         }.map { it.asTensor() }

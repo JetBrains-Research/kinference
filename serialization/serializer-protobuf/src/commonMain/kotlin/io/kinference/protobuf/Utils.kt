@@ -4,9 +4,6 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.arrays.*
 import io.kinference.protobuf.message.TensorProto
 
-fun LongArray.toIntArray() = IntArray(size) { this[it].toInt() }
-fun IntArray.toLongArray() = LongArray(size) { this[it].toLong() }
-
 fun ProtobufReader.readFloatArray(tag: Int) = FloatArraySerializer.decode(this, tag)
 fun ProtobufReader.readDoubleArray(tag: Int) = DoubleArraySerializer.decode(this, tag)
 fun ProtobufReader.readIntArray(tag: Int) = IntArraySerializer.decode(this, tag)

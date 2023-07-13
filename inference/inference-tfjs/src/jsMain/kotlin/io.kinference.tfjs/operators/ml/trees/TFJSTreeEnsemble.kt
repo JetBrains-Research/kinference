@@ -4,7 +4,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.dataFloat
 import io.kinference.primitives.types.DataType
 import io.kinference.trees.*
-import io.kinference.utils.LoggerFactory
 
 class TFJSTreeEnsemble(
     aggregator: Aggregator,
@@ -25,7 +24,7 @@ class TFJSTreeEnsemble(
     override suspend fun execute(input: NumberNDArrayTFJS): NumberNDArrayTFJS {
         require(input.type == DataType.DOUBLE || input.type == DataType.FLOAT) { "Integer inputs are not supported yet" }
 
-        val inputArray = input.tfjsArray.dataFloat()
+        val inputArray = input.dataFloat()
         val n = if (input.rank == 1) 1 else input.shape[0]
         val outputShape = if (numTargets == 1) arrayOf(n) else arrayOf(n, numTargets)
         val outputArray = FloatArray(n * numTargets)

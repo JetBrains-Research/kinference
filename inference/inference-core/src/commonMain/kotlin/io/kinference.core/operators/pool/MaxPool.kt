@@ -12,7 +12,7 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.protobuf.toIntArray
+import io.kinference.utils.toIntArray
 
 sealed class MaxPool(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {

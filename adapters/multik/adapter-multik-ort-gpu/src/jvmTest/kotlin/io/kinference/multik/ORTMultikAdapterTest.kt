@@ -1,9 +1,9 @@
 package io.kinference.multik
 
 import ai.onnxruntime.*
-import io.kinference.ndarray.toLongArray
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
+import io.kinference.utils.toLongArray
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.junit.jupiter.api.Test
 import java.nio.IntBuffer
