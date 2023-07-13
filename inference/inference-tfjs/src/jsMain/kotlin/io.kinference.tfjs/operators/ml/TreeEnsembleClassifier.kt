@@ -127,7 +127,7 @@ class TreeEnsembleClassifierVer1(
 
     private suspend fun labeledTopClasses(array: NumberNDArrayTFJS): NDArrayTFJS {
         val shape = arrayOf(array.shape[0])
-        val labelsIndices = array.argmax(axis = -1).tfjsArray.dataInt()
+        val labelsIndices = array.argmax(axis = -1).dataInt()
         return writeLabels(labels.labelsDataType, shape) {
             labels.labels[labelsIndices[it]]!!
         }

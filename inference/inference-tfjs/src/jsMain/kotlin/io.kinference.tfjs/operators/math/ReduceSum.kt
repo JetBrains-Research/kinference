@@ -7,9 +7,9 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.toIntArray
 
 sealed class ReduceSum(
     name: String,

@@ -3,48 +3,16 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.Strides
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.max
 import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
-
-fun Collection<Number>.toIntArray(): IntArray {
-    val array = IntArray(this.size)
-    for ((i, element) in this.withIndex()) {
-        array[i] = element.toInt()
-    }
-    return array
-}
-
-fun LongArray.toIntArray() = IntArray(this.size) { this[it].toInt() }
-fun IntArray.toByteArray() = ByteArray(this.size) { this[it].toByte() }
-fun IntArray.toUByteArray() = UByteArray(this.size) { this[it].toUByte() }
-fun IntArray.toBooleanArray() = BooleanArray(this.size) { this[it] != 0 }
-fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
-
-fun Collection<Number>.toFloatArray(): FloatArray {
-    val array = FloatArray(this.size)
-    for ((i, element) in this.withIndex()) {
-        array[i] = element.toFloat()
-    }
-    return array
-}
 
 fun IntRange.reversed(): IntArray {
     val size = this.last - this.first + 1
     val array = IntArray(size)
     for ((i, element) in this.withIndex()) {
         array[size - i - 1] = element
-    }
-    return array
-}
-
-fun IntRange.toIntArray(): IntArray {
-    val size = this.last - this.first + 1
-    val array = IntArray(size)
-    for ((i, element) in this.withIndex()) {
-        array[i] = element
     }
     return array
 }

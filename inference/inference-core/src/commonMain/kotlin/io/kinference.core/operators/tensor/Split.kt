@@ -6,9 +6,9 @@ import io.kinference.core.data.tensor.split
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.indexAxis
-import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.utils.toIntArray
 
 sealed class Split(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -42,7 +42,6 @@ class SplitVer2(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val split: LongArray? by attributeOrNull()
 
-    @Suppress("UNCHECKED_CAST")
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!
         val actualAxis = input.data.indexAxis(axis)

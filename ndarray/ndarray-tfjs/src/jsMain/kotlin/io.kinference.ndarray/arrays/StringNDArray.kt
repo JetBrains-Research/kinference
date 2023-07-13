@@ -3,7 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 
-open class StringNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
+open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.ALL
 
     override fun get(index: IntArray): String {
@@ -59,7 +59,7 @@ open class StringNDArrayTFJS(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     }
 }
 
-class MutableStringNDArrayTFJS(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArray), MutableNDArray {
+class MutableStringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArray), MutableNDArray {
     override fun clone(): MutableStringNDArrayTFJS {
         return MutableStringNDArrayTFJS(tfjsArray.clone())
     }

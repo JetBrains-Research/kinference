@@ -2,7 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 
-class MutableNumberNDArrayTFJS(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArray), MutableNumberNDArray {
+class MutableNumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NumberNDArrayTFJS(tfjsArray), MutableNumberNDArray {
     override fun set(index: IntArray, value: Any) {
         require(value is Number)
         tfjsArray.bufferSync().set(value, *index)

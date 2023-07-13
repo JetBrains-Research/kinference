@@ -1,9 +1,9 @@
 package io.kinference.kmath
 
 import ai.onnxruntime.*
-import io.kinference.ndarray.toLongArray
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.ArrayAssertions
+import io.kinference.utils.toLongArray
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import java.nio.ByteBuffer

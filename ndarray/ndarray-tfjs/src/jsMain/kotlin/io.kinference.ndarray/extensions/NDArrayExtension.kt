@@ -7,18 +7,18 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.primitives.types.DataType
 
-val NDArrayTFJS.dtype: String
+internal val NDArrayTFJS.dtype: String
     get() = tfjsArray.dtype
 
 val NDArrayTFJS.shapeArray: Array<Int>
     get() = tfjsArray.shape
 
-fun ArrayTFJS.toNDArray() = makeNDArray(this, dtype)
+internal fun ArrayTFJS.toNDArray() = makeNDArray(this, dtype)
 
-fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
-fun List<NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
+internal fun Array<out NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
+internal fun List<NDArrayTFJS>.getArrays() = Array(this.size) { this[it].tfjsArray }
 
-fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].toNDArray() }
+internal fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].toNDArray() }
 
 fun <T : NDArrayTFJS> T.dataInt() = tfjsArray.dataInt()
 fun <T : NDArrayTFJS> T.dataFloat() = tfjsArray.dataFloat()
@@ -77,10 +77,6 @@ fun NumberNDArrayTFJS.add(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(add(tfjs
 fun NumberNDArrayTFJS.add(tensors: Array<NumberNDArrayTFJS>) = NumberNDArrayTFJS(addN(arrayOf(tfjsArray, *tensors.getArrays())))
 
 fun NumberNDArrayTFJS.add(vararg tensors: NumberNDArrayTFJS) = add(tensors as Array<NumberNDArrayTFJS>)
-
-fun NumberNDArrayTFJS.dot(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(dot(tfjsArray, other.tfjsArray))
-
-fun NumberNDArrayTFJS.softmax(axis: Int = -1) = NumberNDArrayTFJS(softmax(tfjsArray, axis))
 
 fun NumberNDArrayTFJS.min(axes: Array<Int>, keepDims: Boolean = false) = NumberNDArrayTFJS(min(tfjsArray, axes, keepDims))
 

@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.ArrayTFJS
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.utils.Closeable
 
-external interface MomentsOutputTFJS {
+internal external interface MomentsOutputTFJS {
     val mean: ArrayTFJS
     val variance: ArrayTFJS
 }
@@ -20,9 +20,9 @@ data class MomentsOutput(
     }
 }
 
-fun MomentsOutputTFJS.toNDArray() = MomentsOutput(NumberNDArrayTFJS(mean), NumberNDArrayTFJS(variance))
+internal fun MomentsOutputTFJS.toNDArray() = MomentsOutput(NumberNDArrayTFJS(mean), NumberNDArrayTFJS(variance))
 
-data class QrDecompositionResultTFJS(
+internal data class QrDecompositionResultTFJS(
     val q: ArrayTFJS,
     val r: ArrayTFJS
 )
@@ -37,4 +37,4 @@ data class QrDecompositionResult(
     }
 }
 
-fun QrDecompositionResultTFJS.toNDArray() = QrDecompositionResult(NumberNDArrayTFJS(q), NumberNDArrayTFJS(r))
+internal fun QrDecompositionResultTFJS.toNDArray() = QrDecompositionResult(NumberNDArrayTFJS(q), NumberNDArrayTFJS(r))
