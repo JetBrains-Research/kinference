@@ -16,6 +16,8 @@ internal external val atan: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val atanh: (x: ArrayTFJS) -> ArrayTFJS
 
+internal external val tan: (x: ArrayTFJS) -> ArrayTFJS
+
 internal external val acos: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val acosh: (x: ArrayTFJS) -> ArrayTFJS
