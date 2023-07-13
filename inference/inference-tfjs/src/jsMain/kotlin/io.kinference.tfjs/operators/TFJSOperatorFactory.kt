@@ -121,6 +121,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Transpose" -> Transpose(name, version, attributes, inputs, outputs)
         "TreeEnsembleClassifier" -> TreeEnsembleClassifier(name, version, attributes, inputs, outputs)
         "TreeEnsembleRegressor" -> TreeEnsembleRegressor(name, version, attributes, inputs, outputs)
+        "Trilu" -> Trilu(name, version, attributes, inputs, outputs)
         "Unsqueeze" -> Unsqueeze(name, version, attributes, inputs, outputs)
         "Where" -> Where(name, version, attributes, inputs, outputs)
         "Xor" -> Xor(name, version, attributes, inputs, outputs)
