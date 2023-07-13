@@ -15,6 +15,11 @@ suspend fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
     val batchSize = ceil(matrixCount.toFloat() / PlatformUtils.threads).toInt()
 
     if (upper) {
+        if (k > width) return output
+        if (-k > width) {
+            output.copyFrom(offset = 0, this)
+            return output
+        }
         coroutineScope {
             for (i in 0 until matrixCount step batchSize) {
                 launch {
@@ -24,6 +29,11 @@ suspend fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
             }
         }
     } else {
+        if (-k > width) return output
+        if (k > width) {
+            output.copyFrom(offset = 0, this)
+            return output
+        }
         coroutineScope {
             for (i in 0 until matrixCount step batchSize) {
                 launch {
@@ -38,12 +48,6 @@ suspend fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
 }
 
 private fun NDArray.upperTrilu(startOffset: Int, k: Int, height: Int, width: Int, dest: MutableNDArrayCore): NDArrayCore {
-    if (k > width) return dest
-    if (-k > width) {
-        dest.copyFrom(offset = 0, this)
-        return dest
-    }
-
     val countNonZeroRows = min(height, width - k)
     for (rowIdx in 0 until countNonZeroRows) {
         val startCopyRange = startOffset + max(0, rowIdx * width + rowIdx + k)
@@ -54,12 +58,6 @@ private fun NDArray.upperTrilu(startOffset: Int, k: Int, height: Int, width: Int
 }
 
 private fun NDArray.lowerTrilu(startOffset: Int, k: Int, height: Int, width: Int, dest: MutableNDArrayCore): NDArrayCore {
-    if (-k > width) return dest
-    if (k > width) {
-        dest.copyFrom(offset = 0, this)
-        return dest
-    }
-
     val countNonZeroRows = min(height, width + k)
     for (rowIdx in height - countNonZeroRows  until height) {
         val startCopyRange = startOffset + width * rowIdx
