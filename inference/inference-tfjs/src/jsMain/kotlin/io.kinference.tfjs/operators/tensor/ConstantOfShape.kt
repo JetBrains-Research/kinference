@@ -48,9 +48,9 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
 
         private fun empty(type: DataType, shape: Array<Int>): NDArrayTFJS {
             return when (type) {
-                DataType.FLOAT -> NDArrayTFJS.float(floatArrayOf(), shape)
-                DataType.INT -> NDArrayTFJS.int(intArrayOf(), shape)
-                DataType.BOOLEAN -> NDArrayTFJS.boolean(booleanArrayOf(), shape)
+                DataType.FLOAT -> NDArrayTFJS.float(FloatArray(0), shape)
+                DataType.INT -> NDArrayTFJS.int(IntArray(0), shape)
+                DataType.BOOLEAN -> NDArrayTFJS.boolean(BooleanArray(0), shape)
                 DataType.ALL -> NDArrayTFJS.string(emptyArray(), shape)
                 else -> error("")
             }

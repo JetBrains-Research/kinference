@@ -6,9 +6,9 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.transpose
-import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.utils.toIntArray
 
 sealed class Transpose(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {

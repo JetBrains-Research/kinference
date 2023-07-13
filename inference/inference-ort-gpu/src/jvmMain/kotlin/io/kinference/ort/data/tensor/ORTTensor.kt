@@ -5,6 +5,7 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.ONNXTensor
 import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.toLongArray
 import java.nio.*
 
 class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxTensor, ORTBackend>(name, data) {
@@ -76,8 +77,6 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
 
             return ORTTensor(array, type, proto.dims.toLongArray(), proto.name)
         }
-
-        private fun IntArray.toLongArray() = LongArray(this.size) { this[it].toLong() }
 
         operator fun invoke(array: DoubleArray, dims: LongArray, name: String? = null): ORTTensor {
             val buffer = DoubleBuffer.wrap(array)

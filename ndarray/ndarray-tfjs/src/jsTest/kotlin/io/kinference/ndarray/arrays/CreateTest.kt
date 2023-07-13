@@ -1,4 +1,5 @@
-import io.kinference.ndarray.arrays.NDArrayTFJS
+package io.kinference.ndarray.arrays
+
 import kotlin.test.Test
 
 class CreateTest {

@@ -6,9 +6,9 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArrayCore
-import io.kinference.ndarray.toIntArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.toIntArray
 
 sealed class Tile(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -39,7 +39,6 @@ class TileVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INFO = OperatorInfo("Tile", emptySet(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    @Suppress("UNCHECKED_CAST")
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!.data
         val repeats = inputs[1]!!.data as LongNDArray

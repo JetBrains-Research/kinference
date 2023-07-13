@@ -4,6 +4,8 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.activateDefaultBackend
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.toFloatArray
+import io.kinference.utils.toIntArray
 import kotlinx.coroutines.await
 
 abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJS) : NDArray {
@@ -155,27 +157,7 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
             return zero
         }
 
-        private fun LongArray.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun UByteArray.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun UShortArray.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun UIntArray.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun ULongArray.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun Array<Long>.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun Array<UByte>.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun Array<UShort>.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun Array<UInt>.toFloatArray() = FloatArray(size) { this[it].toFloat() }
-        private fun Array<ULong>.toFloatArray() = FloatArray(size) { this[it].toFloat() }
 
-        private fun LongArray.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun UByteArray.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun UShortArray.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun UIntArray.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun ULongArray.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun Array<Long>.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun Array<UByte>.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun Array<UShort>.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun Array<UInt>.toIntArray() = IntArray(size) { this[it].toInt() }
-        private fun Array<ULong>.toIntArray() = IntArray(size) { this[it].toInt() }
 
         fun float(values: FloatArray, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float32"))
         fun float(values: Array<Float>, shape: Array<Int>) = NumberNDArrayTFJS(tensor(values, shape, "float32"))
