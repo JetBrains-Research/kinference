@@ -217,3 +217,42 @@ suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositi
 }
 
 fun NumberNDArrayTFJS.isNaN() = BooleanNDArrayTFJS(tfjsArray.isNaN())
+
+
+suspend fun <T : NDArrayTFJS> T.trilu(k: Int = 0, upper: Boolean = true): T {
+    require(rank >= 2) { "Input tensor has to be at least of rank=2, but tensor of rank=${rank} was found" }
+
+    if (this.linearSize == 0) return this.clone() as T
+
+    return tidyNDArray {
+        if (upper) this.triluUpper(k) else this.triluLower(k)
+    } as T
+}
+
+private fun NDArrayTFJS.triluUpper(k: Int): NDArrayTFJS {
+    val (height, width) = shape.takeLast(2)
+
+    if (k == 0) return tfjsArray.bandPart(numUpper = -1).toNDArray()
+    if (k > 0 && k - 1 > width) return NDArrayTFJS.zerosOfType(shapeArray, dtype)
+    if (k < 0 && -k > height) return this.clone()
+
+    return if (k > 0) {
+        tfjsArray - tfjsArray.bandPart(numLower = -1, numUpper = k - 1)
+    } else {
+        tfjsArray.bandPart(numLower = -k, numUpper = -1)
+    }.toNDArray()
+}
+
+private fun NDArrayTFJS.triluLower(k: Int): NDArrayTFJS {
+    val (height, width) = shape.takeLast(2)
+
+    if (k == 0) return tfjsArray.bandPart(numLower = -1).toNDArray()
+    if (k < 0 && -k - 1 > height) return NDArrayTFJS.zerosOfType(shapeArray, dtype)
+    if (k > 0 && k > width) return this.clone()
+
+    return if (k > 0) {
+        tfjsArray.bandPart(numLower = -1, numUpper = k)
+    } else {
+        tfjsArray - tfjsArray.bandPart(numLower = -k - 1, numUpper = -1)
+    }.toNDArray()
+}
