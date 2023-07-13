@@ -7,7 +7,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.*
 
-suspend fun NDArray.trilu(k: Int, upper: Boolean): MutableNDArrayCore {
+suspend fun NDArray.trilu(k: Int = 0, upper: Boolean = true): MutableNDArrayCore {
+    require(rank >= 2) { "Input tensor has be at least of rank=2, but tensor of rank=${rank} was found" }
+
     val output = allocateNDArray(this.type, this.strides)
     val (height, width) = this.shape.takeLast(2)
     val matrixSize = height * width

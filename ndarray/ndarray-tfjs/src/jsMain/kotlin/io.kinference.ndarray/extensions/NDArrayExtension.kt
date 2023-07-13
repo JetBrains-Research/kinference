@@ -219,7 +219,9 @@ suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositi
 fun NumberNDArrayTFJS.isNaN() = BooleanNDArrayTFJS(tfjsArray.isNaN())
 
 
-suspend fun <T : NDArrayTFJS> T.trilu(k: Int, upper: Boolean): T {
+suspend fun <T : NDArrayTFJS> T.trilu(k: Int = 0, upper: Boolean = true): T {
+    require(rank >= 2) { "Input tensor has to be at least of rank=2, but tensor of rank=${rank} was found" }
+
     if (this.linearSize == 0) return this.clone() as T
 
     return tidyNDArray {
