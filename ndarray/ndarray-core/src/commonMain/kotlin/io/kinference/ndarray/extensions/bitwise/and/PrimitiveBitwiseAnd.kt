@@ -13,6 +13,7 @@ package io.kinference.ndarray.extensions.bitwise.and
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
+import io.kinference.ndarray.stubs.and
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType

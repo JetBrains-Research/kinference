@@ -5,6 +5,7 @@ package io.kinference.ndarray.extensions.pool
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.ndarray.arrays.pointers.forEachWith
+import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
