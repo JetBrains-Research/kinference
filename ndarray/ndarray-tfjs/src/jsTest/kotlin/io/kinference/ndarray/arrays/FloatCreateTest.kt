@@ -1,4 +1,5 @@
-import io.kinference.ndarray.arrays.NDArrayTFJS
+package io.kinference.ndarray.arrays
+
 import io.kinference.ndarray.extensions.dataFloat
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -9,7 +10,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(floatArrayOf(1f, 2f, 3f, 4f), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from float array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from float array")
 
         tensor.close()
     }
@@ -19,7 +20,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf(1f, 2f, 3f, 4f), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from float array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from float array")
 
         tensor.close()
     }
@@ -29,7 +30,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(doubleArrayOf(1.0, 2.0, 3.0, 4.0), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from double array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from double array")
 
         tensor.close()
     }
@@ -39,7 +40,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf(1.0, 2.0, 3.0, 4.0), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from double array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from double array")
 
         tensor.close()
     }
@@ -49,7 +50,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(intArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from int array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from int array")
 
         tensor.close()
     }
@@ -59,7 +60,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<Int>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from int array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from int array")
 
         tensor.close()
     }
@@ -69,7 +70,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(byteArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from byte array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from byte array")
 
         tensor.close()
     }
@@ -79,7 +80,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<Byte>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from byte array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from byte array")
 
         tensor.close()
     }
@@ -89,7 +90,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(shortArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from short array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from short array")
 
         tensor.close()
     }
@@ -99,7 +100,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<Short>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from short array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from short array")
 
         tensor.close()
     }
@@ -109,7 +110,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(longArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from long array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from long array")
 
         tensor.close()
     }
@@ -119,7 +120,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<Long>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from long array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from long array")
 
         tensor.close()
     }
@@ -129,7 +130,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(ubyteArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ubyte array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ubyte array")
 
         tensor.close()
     }
@@ -139,7 +140,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<UByte>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ubyte array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ubyte array")
 
         tensor.close()
     }
@@ -149,7 +150,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(ushortArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ushort array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ushort array")
 
         tensor.close()
     }
@@ -159,7 +160,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<UShort>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ushort array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ushort array")
 
         tensor.close()
     }
@@ -169,7 +170,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(uintArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from uint array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from uint array")
 
         tensor.close()
     }
@@ -179,7 +180,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<UInt>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from uint array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from uint array")
 
         tensor.close()
     }
@@ -189,7 +190,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(ulongArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ulong array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ulong array")
 
         tensor.close()
     }
@@ -199,7 +200,7 @@ class FloatCreateTest {
         val tensor = NDArrayTFJS.float(arrayOf<ULong>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataFloat()
-        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Problem with creating float tensor from ulong array")
+        assertContentEquals(floatArrayOf(1f, 2f, 3f, 4f), data, "Failed to create float tensor from ulong array")
 
         tensor.close()
     }

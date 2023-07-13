@@ -1,12 +1,6 @@
 package io.kinference.ndarray.arrays
 
-fun IntProgression.toIntArray(): IntArray {
-    val array = IntArray(this.count())
-    for ((i, element) in this.withIndex()) {
-        array[i] = element
-    }
-    return array
-}
+import io.kinference.utils.toIntArray
 
 fun IntArray?.isNullOrEmpty() = this == null || this.isEmpty()
 fun LongArray?.isNullOrEmpty() = this == null || this.isEmpty()

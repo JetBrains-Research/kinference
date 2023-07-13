@@ -1,4 +1,5 @@
-import io.kinference.ndarray.arrays.NDArrayTFJS
+package io.kinference.ndarray.arrays
+
 import io.kinference.ndarray.extensions.dataInt
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -9,7 +10,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(intArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from int array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from int array")
 
         tensor.close()
     }
@@ -19,7 +20,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<Int>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from int array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from int array")
 
         tensor.close()
     }
@@ -29,7 +30,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(byteArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from byte array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from byte array")
 
         tensor.close()
     }
@@ -39,7 +40,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<Byte>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from byte array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from byte array")
 
         tensor.close()
     }
@@ -49,7 +50,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(shortArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from short array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from short array")
 
         tensor.close()
     }
@@ -59,7 +60,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<Short>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from short array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from short array")
 
         tensor.close()
     }
@@ -69,7 +70,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(longArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from long array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from long array")
 
         tensor.close()
     }
@@ -79,7 +80,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<Long>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from long array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from long array")
 
         tensor.close()
     }
@@ -89,7 +90,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(uintArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from uint array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from uint array")
 
         tensor.close()
     }
@@ -99,7 +100,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<UInt>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from uint array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from uint array")
 
         tensor.close()
     }
@@ -109,7 +110,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(ubyteArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ubyte array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ubyte array")
 
         tensor.close()
     }
@@ -119,7 +120,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<UByte>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ubyte array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ubyte array")
 
         tensor.close()
     }
@@ -129,7 +130,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(ushortArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ushort array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ushort array")
 
         tensor.close()
     }
@@ -139,7 +140,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<UShort>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ushort array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ushort array")
 
         tensor.close()
     }
@@ -149,7 +150,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(ulongArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ulong array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ulong array")
 
         tensor.close()
     }
@@ -159,7 +160,7 @@ class IntCreateTest {
         val tensor = NDArrayTFJS.int(arrayOf<ULong>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
-        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Problem with creating int tensor from ulong array")
+        assertContentEquals(intArrayOf(1, 2, 3, 4), data, "Failed to create int tensor from ulong array")
 
         tensor.close()
     }

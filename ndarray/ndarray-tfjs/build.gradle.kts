@@ -17,6 +17,7 @@ kotlin {
                 implementation(npm("@tensorflow/tfjs-backend-webgl", Versions.tfjs))
 
                 api(project(":ndarray:ndarray-api"))
+                api(project(":utils:utils-common"))
                 api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
             }

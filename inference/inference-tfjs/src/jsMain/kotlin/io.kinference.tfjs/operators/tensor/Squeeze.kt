@@ -5,9 +5,9 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.toIntArray
 
 sealed class Squeeze(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>)
     : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {

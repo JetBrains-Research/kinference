@@ -6,9 +6,9 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
-import io.kinference.protobuf.toIntArray
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.toIntArray
 
 sealed class Split(
     name: String,
@@ -55,7 +55,6 @@ class SplitVer2(
     private val axis: Int by attribute { it: Number -> it.toInt() }
     private val split: LongArray? by attributeOrNull()
 
-    @Suppress("UNCHECKED_CAST")
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data
         val actualAxis = input.indexAxis(axis)
