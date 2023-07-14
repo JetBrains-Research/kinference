@@ -6,6 +6,7 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
+import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*

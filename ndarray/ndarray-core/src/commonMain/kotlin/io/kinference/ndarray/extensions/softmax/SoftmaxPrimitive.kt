@@ -5,10 +5,10 @@ package io.kinference.ndarray.extensions.softmax
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
+import io.kinference.ndarray.stubs.max
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
-import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import kotlin.math.*

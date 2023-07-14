@@ -7,6 +7,7 @@ package io.kinference.ndarray.extensions.activations.asin
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.stubs.asin
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import kotlin.math.asin

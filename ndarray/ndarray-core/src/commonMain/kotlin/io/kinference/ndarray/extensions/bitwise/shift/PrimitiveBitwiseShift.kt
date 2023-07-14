@@ -8,6 +8,8 @@ package io.kinference.ndarray.extensions.bitwise.shift
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
+import io.kinference.ndarray.stubs.shl
+import io.kinference.ndarray.stubs.shr
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType

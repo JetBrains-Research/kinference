@@ -264,6 +264,8 @@ internal fun ArrayTFJS.atan() = atan(this)
 
 internal fun ArrayTFJS.atanh() = atanh(this)
 
+internal fun ArrayTFJS.tan() = tan(this)
+
 internal fun ArrayTFJS.tensorScatterUpdate(indices: ArrayTFJS, updates: ArrayTFJS) = tensorScatterUpdate(this, indices, updates)
 
 internal fun ArrayTFJS.ceil() = ceil(this)

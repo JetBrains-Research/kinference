@@ -3,6 +3,7 @@
 package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.stubs.pow
 import io.kinference.ndarray.extensions.utils.calculateInnerShapeSize
 import io.kinference.ndarray.extensions.utils.divCeil
 import io.kinference.primitives.annotations.GeneratePrimitives

@@ -7,9 +7,11 @@ package io.kinference.ndarray.extensions.isInf
 
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.stubs.*
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
+import kotlin.isInfinite
 
 
 private val ONLY_NEGATIVE = { x: PrimitiveType -> x == PrimitiveType.NEGATIVE_INFINITY }
