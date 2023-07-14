@@ -1,13 +1,13 @@
-package io.kinference.core.operators.tensor
+package io.kinference.tfjs.operators.tensor
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class Size(
     name: String,
@@ -15,7 +15,7 @@ sealed class Size(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
@@ -50,9 +50,9 @@ class SizeVer1(
         private val INFO = OperatorInfo("Size", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val inputSize = inputs[0]!!.data.linearSize
-        val dataSize = LongNDArray.scalar(inputSize.toLong())
+        val dataSize = NDArrayTFJS.intScalar(inputSize.toLong())
         return listOf(dataSize.asTensor("size"))
     }
 }
