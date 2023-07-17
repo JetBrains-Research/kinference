@@ -36,7 +36,6 @@ class MeanVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             IOInfo(0, NUMBER_DATA_TYPES, "mean", optional = false)
         )
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Mean", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
