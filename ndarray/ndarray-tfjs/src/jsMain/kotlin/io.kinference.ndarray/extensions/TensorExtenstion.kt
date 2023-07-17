@@ -298,3 +298,5 @@ internal fun ArrayTFJS.isInf() = isInf(this)
 internal fun ArrayTFJS.isNaN() = isNaN(this)
 
 internal fun ArrayTFJS.bandPart(numLower: Int = 0, numUpper: Int = 0) = linalg.bandPart(this, numLower, numUpper)
+
+internal fun ArrayTFJS.sign() = sign(this)

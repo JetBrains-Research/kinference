@@ -127,6 +127,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
+        "Sign" -> Sign(name, version, attributes, inputs, outputs)
         "Size" -> Size(name, version, attributes, inputs, outputs)
         "SkipLayerNormalization" -> SkipLayerNormalization(name, version, attributes, inputs, outputs)
         "Slice" -> Slice(name, version, attributes, inputs, outputs)

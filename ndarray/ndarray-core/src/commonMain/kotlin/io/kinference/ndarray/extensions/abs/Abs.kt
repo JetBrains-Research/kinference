@@ -12,6 +12,6 @@ fun abs(x: NumberNDArrayCore): NumberNDArrayCore {
         is LongNDArray -> absLong(x)
         is ShortNDArray -> absShort(x)
         is ByteNDArray -> absByte(x)
-        else -> error("Abs isn't support NDArray with type ${x.type}")
+        else -> error("Unsupported data type for abs operation: ${x.type}")
     }
 }
