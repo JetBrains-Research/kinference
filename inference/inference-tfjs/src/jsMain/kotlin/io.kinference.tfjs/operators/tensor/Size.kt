@@ -52,7 +52,7 @@ class SizeVer1(
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val inputSize = inputs[0]!!.data.linearSize
-        val dataSize = NDArrayTFJS.intScalar(inputSize.toLong())
+        val dataSize = NDArrayTFJS.intScalar(inputSize)
         return listOf(dataSize.asTensor("size"))
     }
 }
