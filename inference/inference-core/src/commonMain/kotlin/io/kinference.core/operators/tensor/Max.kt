@@ -40,7 +40,6 @@ class MaxVer6(
             IOInfo(0, NUMBER_DATA_TYPES, "max", optional = false)
         )
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Max", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }

@@ -5,9 +5,10 @@ package io.kinference.ndarray.extensions.max
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.stubs.maxOf
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
-import kotlin.comparisons.maxOf
+import kotlin.math.max
 
 suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
     if (isEmpty()) error("Array for max operation must have at least one element")

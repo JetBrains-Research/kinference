@@ -15,6 +15,7 @@ import io.kinference.ndarray.extensions.argMinMax.ArgMinMaxMode
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.softmax.softmax
+import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*

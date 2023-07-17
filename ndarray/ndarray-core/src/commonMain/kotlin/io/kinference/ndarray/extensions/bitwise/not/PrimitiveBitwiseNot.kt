@@ -13,6 +13,7 @@ package io.kinference.ndarray.extensions.bitwise.not
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.stubs.inv
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import kotlin.experimental.inv

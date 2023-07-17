@@ -6,8 +6,8 @@ package io.kinference.ndarray.extensions.gelu
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.parallelizeByBlocks
+import io.kinference.ndarray.stubs.min
 import io.kinference.primitives.types.*
-import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
@@ -51,7 +51,8 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
             }
 
             for (j in temporaryBlockExp.indices) {
-                temporaryBlockExp[j] = min(temporaryBlockExp[j], PrimitiveType.MAX_VALUE)
+                temporaryBlockExp[j] =
+                    min(temporaryBlockExp[j], PrimitiveType.MAX_VALUE)
             }
 
             for (j in outputBlock.indices) {
