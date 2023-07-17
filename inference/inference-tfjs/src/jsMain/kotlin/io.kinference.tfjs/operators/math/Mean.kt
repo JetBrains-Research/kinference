@@ -42,6 +42,6 @@ class MeanVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val cleanInputs = inputs.filterNotNull().map { it.data as NumberNDArrayTFJS }
-        return listOf(cleanInputs.mean().asTensor("Y"))
+        return listOf(cleanInputs.mean().asTensor("mean"))
     }
 }
