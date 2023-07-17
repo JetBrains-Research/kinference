@@ -46,7 +46,6 @@ class FloorVer6(
             IOInfo(0, PRIMITIVE_DATA_TYPES, "Y", optional = false)
         )
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Floor", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }

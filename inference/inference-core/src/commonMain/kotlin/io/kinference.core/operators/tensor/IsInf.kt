@@ -52,7 +52,6 @@ class IsInfVer10(
             IOInfo(0, setOf(TensorProto.DataType.BOOL), "Y", optional = false)
         )
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 10)
         private val INFO = OperatorInfo("IsInf", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }

@@ -41,7 +41,6 @@ class IsNaNVer9(
             IOInfo(0, PRIMITIVE_DATA_TYPES, "Y", differentiable = true, optional = false)
         )
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 9)
         private val INFO = OperatorInfo("IsNaN", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }

@@ -40,7 +40,6 @@ class ArgMinVer12(name: String, attributes: Map<String, Attribute<Any>>, inputs:
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "reduced", optional = false))
 
-        //Realized the latest version, but there is backward compatibility between operators
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("ArgMin", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
