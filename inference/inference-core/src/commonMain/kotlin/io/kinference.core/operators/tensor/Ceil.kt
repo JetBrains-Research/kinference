@@ -6,7 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.ceil.ceil
+import io.kinference.ndarray.extensions.ceil
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 

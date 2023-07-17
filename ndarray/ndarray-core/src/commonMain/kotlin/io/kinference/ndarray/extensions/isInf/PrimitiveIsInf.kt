@@ -7,6 +7,7 @@ package io.kinference.ndarray.extensions.isInf
 
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.extensions.predicateElementWise
 import io.kinference.ndarray.stubs.*
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
@@ -26,11 +27,6 @@ private val ONLY_POSITIVE = { x: PrimitiveType -> x == PrimitiveType.POSITIVE_IN
  *         indicates whether the corresponding element in the current NDArray is infinite or not.
  */
 fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArray {
-    val output = BooleanNDArray(strides)
-
-    val inputBlocksIterator = this.array.blocks.iterator()
-    val outputBlocksIterator = output.array.blocks.iterator()
-
     val detector = when {
         detectNegative && detectPositive -> PrimitiveType::isInfinite
         detectNegative -> ONLY_NEGATIVE
@@ -38,14 +34,5 @@ fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boole
         else -> error("At least one of detectNegative or detectPositive must be true")
     }
 
-    for (blockNum in 0 until this.array.blocksNum) {
-        val inputBlock = inputBlocksIterator.next()
-        val outputBlock = outputBlocksIterator.next()
-
-        for (idx in outputBlock.indices) {
-            outputBlock[idx] = detector(inputBlock[idx])
-        }
-    }
-
-    return output
+    return predicateElementWise(detector)
 }
