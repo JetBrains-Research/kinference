@@ -11,6 +11,7 @@ internal fun cosh(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationE
 
 internal fun asin(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun asinh(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+internal fun sinh(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
 internal fun atan(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun atanh(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
