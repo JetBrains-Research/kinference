@@ -131,6 +131,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Softmax" -> Softmax(name, version, attributes, inputs, outputs)
         "Split" -> Split(name, version, attributes, inputs, outputs)
         "SplitToSequence" -> SplitToSequence(name, version, attributes, inputs, outputs)
+        "Sqrt" -> Sqrt(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Sub" -> Sub(name, version, attributes, inputs, outputs)
         "Tan" -> Tan(name, version, attributes, inputs, outputs)
