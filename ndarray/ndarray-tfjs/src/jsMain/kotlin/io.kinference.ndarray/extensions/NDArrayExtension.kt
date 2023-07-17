@@ -269,3 +269,14 @@ private fun NDArrayTFJS.triluLower(k: Int): NDArrayTFJS {
         tfjsArray - tfjsArray.bandPart(numLower = -k - 1, numUpper = -1)
     }.toNDArray()
 }
+
+fun List<NumberNDArrayTFJS>.sum(): NumberNDArrayTFJS {
+    if (isEmpty()) error("Array for sum operation must have at least one element")
+    if (size == 1) return single()
+
+    return getArrays().sum().toNDArray() as NumberNDArrayTFJS
+}
+
+fun Array<out NumberNDArrayTFJS>.sum() = this.toList().sum()
+
+fun sumOf(vararg inputs: NumberNDArrayTFJS) = inputs.sum()

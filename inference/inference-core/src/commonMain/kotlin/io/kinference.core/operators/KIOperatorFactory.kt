@@ -134,6 +134,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Sqrt" -> Sqrt(name, version, attributes, inputs, outputs)
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Sub" -> Sub(name, version, attributes, inputs, outputs)
+        "Sum" -> Sum(name, version, attributes, inputs, outputs)
         "Tan" -> Tan(name, version, attributes, inputs, outputs)
         "Tanh" -> Tanh(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)
