@@ -3,9 +3,9 @@ package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.extensions.pow
+import io.kinference.ndarray.stubs.absoluteValue
+import io.kinference.ndarray.stubs.pow
 import io.kinference.ndarray.math.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives

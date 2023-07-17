@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.det
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.extensions.pow
+import io.kinference.ndarray.stubs.pow
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.pow

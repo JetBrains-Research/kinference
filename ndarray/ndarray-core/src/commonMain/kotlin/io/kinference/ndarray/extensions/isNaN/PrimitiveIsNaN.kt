@@ -7,6 +7,7 @@ package io.kinference.ndarray.extensions.isNaN
 
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.stubs.isNaN
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 
