@@ -280,3 +280,14 @@ fun List<NumberNDArrayTFJS>.sum(): NumberNDArrayTFJS {
 fun Array<out NumberNDArrayTFJS>.sum() = this.toList().sum()
 
 fun sumOf(vararg inputs: NumberNDArrayTFJS) = inputs.sum()
+
+suspend fun List<NumberNDArrayTFJS>.mean(): NumberNDArrayTFJS {
+    if (isEmpty()) error("Array for mean operation must have at least one element")
+    if (size == 1) return single()
+
+    return tidyNDArray { this.sum() / NDArrayTFJS.intScalar(size) }
+}
+
+suspend fun Array<out NumberNDArrayTFJS>.mean() = toList().mean()
+
+suspend fun meanOf(vararg inputs: NumberNDArrayTFJS) = inputs.mean()
