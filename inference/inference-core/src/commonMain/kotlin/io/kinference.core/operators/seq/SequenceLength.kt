@@ -31,7 +31,7 @@ sealed class SequenceLength(
 }
 
 
-class SequenceLengthVer11(
+class SequenceLengthVer11 internal constructor(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
