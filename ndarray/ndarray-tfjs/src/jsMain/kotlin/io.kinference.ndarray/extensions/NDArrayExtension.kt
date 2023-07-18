@@ -295,3 +295,5 @@ suspend fun List<NumberNDArrayTFJS>.mean(): NumberNDArrayTFJS {
 suspend fun Array<out NumberNDArrayTFJS>.mean() = toList().mean()
 
 suspend fun meanOf(vararg inputs: NumberNDArrayTFJS) = inputs.mean()
+
+fun NumberNDArrayTFJS.sign() = NumberNDArrayTFJS(tfjsArray.sign())
