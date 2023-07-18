@@ -168,3 +168,5 @@ internal external val floor: (x: ArrayTFJS) -> ArrayTFJS
 internal external val isInf: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val isNaN: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val sin: (x: ArrayTFJS) -> ArrayTFJS

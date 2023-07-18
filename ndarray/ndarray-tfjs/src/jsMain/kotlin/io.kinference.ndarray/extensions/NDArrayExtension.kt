@@ -128,6 +128,8 @@ fun NumberNDArrayTFJS.atanh() = NumberNDArrayTFJS(tfjsArray.atanh())
 
 fun NumberNDArrayTFJS.tan() = NumberNDArrayTFJS(tfjsArray.tan())
 
+fun NumberNDArrayTFJS.sin() = NumberNDArrayTFJS(tfjsArray.sin())
+
 fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false) = tfjsArray.moments(axis, keepDims).toNDArray()
 
 fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false) = tfjsArray.moments(axes, keepDims).toNDArray()
