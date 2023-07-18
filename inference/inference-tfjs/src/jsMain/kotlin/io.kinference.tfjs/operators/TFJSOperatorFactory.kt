@@ -21,8 +21,7 @@ import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.ml.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
-import io.kinference.tfjs.operators.seq.ConcatFromSequence
-import io.kinference.tfjs.operators.seq.SplitToSequence
+import io.kinference.tfjs.operators.seq.*
 import io.kinference.tfjs.operators.tensor.*
 
 object TFJSAttributeFactory : AttributeFactory<TFJSData<*>> {
@@ -108,6 +107,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
+        "SequenceLength" -> SequenceLength(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
         "Sign" -> Sign(name, version, attributes, inputs, outputs)

@@ -20,8 +20,7 @@ import io.kinference.core.operators.convolution.*
 import io.kinference.core.operators.pool.*
 import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
-import io.kinference.core.operators.seq.ConcatFromSequence
-import io.kinference.core.operators.seq.SplitToSequence
+import io.kinference.core.operators.seq.*
 import io.kinference.core.operators.tensor.*
 import io.kinference.graph.Graph
 import io.kinference.operator.*
@@ -125,6 +124,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
+        "SequenceLength" -> SequenceLength(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
         "Sign" -> Sign(name, version, attributes, inputs, outputs)
