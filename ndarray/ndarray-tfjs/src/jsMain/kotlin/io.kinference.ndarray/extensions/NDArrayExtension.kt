@@ -122,6 +122,8 @@ fun NumberNDArrayTFJS.asin() = NumberNDArrayTFJS(tfjsArray.asin())
 
 fun NumberNDArrayTFJS.asinh() = NumberNDArrayTFJS(tfjsArray.asinh())
 
+fun NumberNDArrayTFJS.sinh() = NumberNDArrayTFJS(tfjsArray.sinh())
+
 fun NumberNDArrayTFJS.atan() = NumberNDArrayTFJS(tfjsArray.atan())
 
 fun NumberNDArrayTFJS.atanh() = NumberNDArrayTFJS(tfjsArray.atanh())

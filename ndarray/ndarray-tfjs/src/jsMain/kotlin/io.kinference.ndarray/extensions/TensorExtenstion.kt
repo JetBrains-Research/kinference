@@ -260,6 +260,8 @@ internal fun ArrayTFJS.asin() = asin(this)
 
 internal fun ArrayTFJS.asinh() = asinh(this)
 
+internal fun ArrayTFJS.sinh() = sinh(this)
+
 internal fun ArrayTFJS.atan() = atan(this)
 
 internal fun ArrayTFJS.atanh() = atanh(this)
