@@ -20,6 +20,7 @@ fun PrimitiveNDArray.cosh(): PrimitiveNDArray = applyElementWise { cosh(it) }
 fun PrimitiveNDArray.asin(): PrimitiveNDArray = applyElementWise { asin(it) }
 fun PrimitiveNDArray.asinh(): PrimitiveNDArray = applyElementWise { asinh(it) }
 fun PrimitiveNDArray.sinh(): PrimitiveNDArray = applyElementWise { sinh(it) }
+fun PrimitiveNDArray.sin(): PrimitiveNDArray = applyElementWise { sin(it) }
 
 fun PrimitiveNDArray.atan(): PrimitiveNDArray = applyElementWise { atan(it) }
 fun PrimitiveNDArray.atanh(): PrimitiveNDArray = applyElementWise { atanh(it) }

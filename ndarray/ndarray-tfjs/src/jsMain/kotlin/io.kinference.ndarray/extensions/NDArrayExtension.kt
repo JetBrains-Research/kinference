@@ -130,6 +130,8 @@ fun NumberNDArrayTFJS.atanh() = NumberNDArrayTFJS(tfjsArray.atanh())
 
 fun NumberNDArrayTFJS.tan() = NumberNDArrayTFJS(tfjsArray.tan())
 
+fun NumberNDArrayTFJS.sin() = NumberNDArrayTFJS(tfjsArray.sin())
+
 fun NumberNDArrayTFJS.moments(axis: Int, keepDims: Boolean = false) = tfjsArray.moments(axis, keepDims).toNDArray()
 
 fun NumberNDArrayTFJS.moments(axes: Array<Int>, keepDims: Boolean = false) = tfjsArray.moments(axes, keepDims).toNDArray()
@@ -282,3 +284,14 @@ fun List<NumberNDArrayTFJS>.sum(): NumberNDArrayTFJS {
 fun Array<out NumberNDArrayTFJS>.sum() = this.toList().sum()
 
 fun sumOf(vararg inputs: NumberNDArrayTFJS) = inputs.sum()
+
+suspend fun List<NumberNDArrayTFJS>.mean(): NumberNDArrayTFJS {
+    if (isEmpty()) error("Array for mean operation must have at least one element")
+    if (size == 1) return single()
+
+    return tidyNDArray { this.sum() / NDArrayTFJS.intScalar(size) }
+}
+
+suspend fun Array<out NumberNDArrayTFJS>.mean() = toList().mean()
+
+suspend fun meanOf(vararg inputs: NumberNDArrayTFJS) = inputs.mean()
