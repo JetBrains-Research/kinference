@@ -62,7 +62,7 @@ class SequenceInsertVer11 internal constructor(
         val positionTensor = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
 
         val position = positionTensor?.singleValue()?.toInt() ?: seq.size
-        val actualPosition = if (position >= 0) position else seq.size - position
+        val actualPosition = if (position >= 0) position else seq.size + position
 
         require(actualPosition >= 0 && actualPosition <= seq.size) { "Index $position is out of range [-${seq.size}, ${seq.size}]" }
 
