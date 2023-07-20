@@ -1,14 +1,15 @@
-package io.kinference.core.operators.seq
+package io.kinference.tfjs.operators.seq
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.KIONNXData
-import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensor.*
-import io.kinference.data.*
+import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.TFJSData
+import io.kinference.tfjs.data.seq.TFJSSequence
+import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
 
@@ -18,7 +19,7 @@ sealed class SequenceInsert(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KIONNXData<*>, KIONNXSequence>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSData<*>, TFJSSequence>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
 
@@ -55,18 +56,18 @@ class SequenceInsertVer11 internal constructor(
         private val INFO = OperatorInfo("SequenceInsert", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KIONNXData<*>?>): List<KIONNXSequence?> {
-        val seq = ArrayList(inputs[0]!!.data as List<KITensor>)
-        val tensor = inputs[1]!! as KITensor
-        val positionTensor = inputs.getOrNull(2)?.data as? NumberNDArrayCore
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSData<*>?>): List<TFJSSequence?> {
+        val seq = ArrayList(inputs[0]!!.data as List<TFJSTensor>)
+        val tensor = inputs[1]!! as TFJSTensor
+        val positionTensor = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
 
-        val position = (positionTensor?.singleValue() as? Number)?.toInt() ?: seq.size
+        val position = positionTensor?.singleValue()?.toInt() ?: seq.size
         val actualPosition = if (position >= 0) position else seq.size - position
 
         require(actualPosition >= 0 && actualPosition <= seq.size) { "Index $position is out of range [-${seq.size}, ${seq.size}]" }
 
         seq.add(actualPosition, tensor)
-        val outputSeq = KIONNXSequence(
+        val outputSeq = TFJSSequence(
             name = "output_sequence",
             data = seq,
             info = ValueTypeInfo.SequenceTypeInfo(
