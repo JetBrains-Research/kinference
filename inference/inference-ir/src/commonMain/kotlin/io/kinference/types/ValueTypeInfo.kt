@@ -5,11 +5,11 @@ import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.protobuf.message.TensorShapeProto
 import io.kinference.protobuf.message.TypeProto
 
-class TensorShape(private val dims: List<Dimension>) {
+class TensorShape internal constructor(private val dims: List<Dimension>? = null) {
     constructor(shape: IntArray) : this(shape.map { StaticDimension(it) })
 
     val size: Int
-        get() = dims.size
+        get() = dims?.size ?: -1
 
     open class Dimension
     class StaticDimension(val value: Int) : Dimension()
@@ -17,8 +17,8 @@ class TensorShape(private val dims: List<Dimension>) {
     object UnknownDimension : Dimension()
 
     fun getDimensions(context: GraphContext<*>? = null): IntArray {
-        if (context == null) require(dims.all { it is StaticDimension })
-        return dims.map {
+        if (context == null) require(dims!!.all { it is StaticDimension })
+        return dims!!.map {
             when (it) {
                 is StaticDimension -> it.value
                 is DynamicDimension -> context!!.getShape(it.value)
@@ -30,6 +30,7 @@ class TensorShape(private val dims: List<Dimension>) {
 
     companion object {
         fun empty() = TensorShape(emptyList())
+        fun unknown() = TensorShape(null)
 
         operator fun invoke(proto: TensorShapeProto): TensorShape {
             return TensorShape(proto.dim.map {
