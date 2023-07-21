@@ -124,6 +124,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
+        "SequenceErase" -> SequenceErase(name, version, attributes, inputs, outputs)
         "SequenceLength" -> SequenceLength(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
