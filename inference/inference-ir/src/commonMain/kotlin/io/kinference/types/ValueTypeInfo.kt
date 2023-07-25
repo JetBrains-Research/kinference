@@ -30,6 +30,7 @@ class TensorShape internal constructor(private val dims: List<Dimension>? = null
 
     companion object {
         fun empty() = TensorShape(emptyList())
+        fun unknown() = TensorShape(null)
 
         operator fun invoke(proto: TensorShapeProto): TensorShape {
             return TensorShape(proto.dim.map {
