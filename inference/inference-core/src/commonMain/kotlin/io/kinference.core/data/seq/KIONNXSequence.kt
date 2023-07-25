@@ -24,7 +24,7 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     companion object {
         fun create(proto: SequenceProto): KIONNXSequence {
-            val elementTypeInfo = proto.extractTypeInfo() as ValueTypeInfo.SequenceTypeInfo
+            val elementTypeInfo = proto.extractTypeInfo()
             val name = proto.name!!
             val data = when (proto.elementType) {
                 SequenceProto.DataType.TENSOR -> proto.tensorValues.map { KITensor.create(it) }
@@ -32,19 +32,25 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
                 SequenceProto.DataType.MAP -> proto.mapValues.map { KIONNXMap.create(it) }
                 else -> error("Unsupported sequence element type: ${proto.elementType}")
             }
-            return KIONNXSequence(name, data, elementTypeInfo)
+            return KIONNXSequence(name, data, ValueTypeInfo.SequenceTypeInfo(elementTypeInfo))
         }
 
         internal fun SequenceProto.extractTypeInfo(): ValueTypeInfo = when (this.elementType) {
             SequenceProto.DataType.TENSOR -> {
-                val first = this.tensorValues[0]
-                ValueTypeInfo.TensorTypeInfo(TensorShape(first.dims), first.dataType!!)
+                this.tensorValues.getOrNull(0)?.let {
+                    ValueTypeInfo.TensorTypeInfo(TensorShape(it.dims), it.dataType!!)
+                } ?: ValueTypeInfo.TensorTypeInfo()
             }
-            SequenceProto.DataType.SEQUENCE -> ValueTypeInfo.SequenceTypeInfo(this.sequenceValues[0].extractTypeInfo())
+            SequenceProto.DataType.SEQUENCE -> {
+                this.sequenceValues.getOrNull(0)?.let {
+                    ValueTypeInfo.SequenceTypeInfo(it.extractTypeInfo())
+                } ?: ValueTypeInfo.SequenceTypeInfo()
+            }
             SequenceProto.DataType.MAP -> {
-                val first = this.mapValues[0]
-                val valueType = first.values!!.extractTypeInfo()
-                ValueTypeInfo.MapTypeInfo(keyType = first.keyType, valueType = valueType)
+                this.mapValues.getOrNull(0)?.let {
+                    val valueType = it.values!!.extractTypeInfo()
+                    ValueTypeInfo.MapTypeInfo(keyType = it.keyType, valueType = valueType)
+                } ?: ValueTypeInfo.MapTypeInfo()
             }
             else -> error("Unsupported sequence element type: ${this.elementType}")
         }

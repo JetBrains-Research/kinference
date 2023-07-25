@@ -30,7 +30,6 @@ class TensorShape internal constructor(private val dims: List<Dimension>? = null
 
     companion object {
         fun empty() = TensorShape(emptyList())
-        fun unknown() = TensorShape(null)
 
         operator fun invoke(proto: TensorShapeProto): TensorShape {
             return TensorShape(proto.dim.map {
@@ -54,15 +53,22 @@ sealed class ValueTypeInfo {
         }
     }
 
-    class TensorTypeInfo(val shape: TensorShape, val type: DataType) : ValueTypeInfo() {
+    class TensorTypeInfo(shape: TensorShape? = null, type: DataType? = null) : ValueTypeInfo() {
         constructor(proto: TypeProto.Tensor) : this(proto.shape?.let { TensorShape(it) } ?: TensorShape.empty(), proto.elem_type!!)
+
+        val type = type ?: DataType.UNDEFINED
+        val shape = shape ?: TensorShape.empty()
     }
 
-    class SequenceTypeInfo(val elementType: ValueTypeInfo) : ValueTypeInfo() {
+    class SequenceTypeInfo(elementType: ValueTypeInfo? = null) : ValueTypeInfo() {
         constructor(proto: TypeProto.Sequence) : this(create(proto.elem_type!!))
+
+        val elementType = elementType ?: DataType.UNDEFINED
     }
 
-    class MapTypeInfo(val keyType: DataType, val valueType: ValueTypeInfo) : ValueTypeInfo() {
+    class MapTypeInfo(keyType: DataType? = null, val valueType: ValueTypeInfo? = null) : ValueTypeInfo() {
         constructor(proto: TypeProto.Map) : this(DataType.fromValue(proto.key_type!!)!!, create(proto.value_type!!))
+
+        val keyType = keyType ?: DataType.UNDEFINED
     }
 }

@@ -55,7 +55,7 @@ class SequenceEmptyVer11(
     }
 
     private val dtype by attributeOrNull { it: Number? ->
-        TensorProto.DataType.fromValue(it?.toInt() ?: TensorProto.DataType.FLOAT.value)
+        if (it != null) TensorProto.DataType.fromValue(it.toInt()) else TensorProto.DataType.FLOAT
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSData<*>?>): List<TFJSSequence> {
@@ -64,7 +64,7 @@ class SequenceEmptyVer11(
             data = emptyList<TFJSTensor>(),
             info = ValueTypeInfo.SequenceTypeInfo(
                 elementType = ValueTypeInfo.TensorTypeInfo(
-                    shape = TensorShape.unknown(),
+                    shape = TensorShape.empty(),
                     type = dtype!!
                 )
             )

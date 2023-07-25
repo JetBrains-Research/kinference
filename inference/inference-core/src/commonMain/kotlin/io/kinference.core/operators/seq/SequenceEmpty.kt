@@ -64,7 +64,7 @@ class SequenceEmptyVer11(
             data = emptyList<KITensor>(),
             info = ValueTypeInfo.SequenceTypeInfo(
                 elementType = ValueTypeInfo.TensorTypeInfo(
-                    shape = TensorShape.unknown(),
+                    shape = TensorShape.empty(),
                     type = dtype!!
                 )
             )
