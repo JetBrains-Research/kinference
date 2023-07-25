@@ -18,7 +18,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     val keyType: TensorProto.DataType
         get() = info.keyType
 
-    val valueType: ValueTypeInfo
+    val valueType: ValueTypeInfo?
         get() = info.valueType
 
     override fun close() {

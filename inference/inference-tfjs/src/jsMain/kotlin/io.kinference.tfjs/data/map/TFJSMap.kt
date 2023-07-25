@@ -18,7 +18,7 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
     val keyType: TensorProto.DataType
         get() = info.keyType
 
-    val valueType: ValueTypeInfo
+    val valueType: ValueTypeInfo?
         get() = info.valueType
 
     override fun rename(name: String) = TFJSMap(name, data, info)
