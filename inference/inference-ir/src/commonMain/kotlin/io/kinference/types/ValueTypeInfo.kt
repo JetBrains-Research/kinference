@@ -61,10 +61,8 @@ sealed class ValueTypeInfo {
         val shape = shape ?: TensorShape.empty()
     }
 
-    class SequenceTypeInfo(elementType: ValueTypeInfo? = null) : ValueTypeInfo() {
+    class SequenceTypeInfo(val elementType: ValueTypeInfo? = null) : ValueTypeInfo() {
         constructor(proto: TypeProto.Sequence) : this(create(proto.elem_type!!))
-
-        val elementType = elementType ?: DataType.UNDEFINED
     }
 
     class MapTypeInfo(keyType: DataType? = null, val valueType: ValueTypeInfo? = null) : ValueTypeInfo() {
