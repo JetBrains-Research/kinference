@@ -26,6 +26,8 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
         }
     }
 
+    private fun List<T>.getInMemorySize() = sumOf { testEngine.getInMemorySize(it) }
+
     suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
         val toFolder = name.replace(":", "/").toPath()
         runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta)
@@ -60,7 +62,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                 val outputs = model.predict(inputs)
                 val memoryAfterTest = testEngine.allocatedMemory()
                 logger.info { "Memory after predict: $memoryAfterTest" }
-                assertLessOrEquals(expectedOutputs.size, memoryAfterTest - memoryBeforeTest, "Memory leak found")
+                assertLessOrEquals(expectedOutputs.getInMemorySize(), memoryAfterTest - memoryBeforeTest, "Memory leak found")
                 outputs
             } else {
                 model.predict(inputs)

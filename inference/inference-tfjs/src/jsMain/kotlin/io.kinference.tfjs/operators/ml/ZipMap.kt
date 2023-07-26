@@ -74,7 +74,7 @@ class ZipMapVer1(
                 repeat(columns) { col ->
                     val value = inputArray[offset + col]
                     val tensor = NDArrayTFJS.floatScalar(value).asTensor()
-                    map[labels[it]] = tensor
+                    map[labels[col]] = tensor
                 }
                 TFJSMap(null, map as Map<Any, TFJSData<*>>, mapInfo)
             }

@@ -54,7 +54,7 @@ class KICoreTreeEnsemble(
     }
 
     companion object {
-        private val logger = LoggerFactory.create("io.kinference.core.operators.ml.trees.TreeEnsemble")
+        private val logger = LoggerFactory.create("io.kinference.core.operators.ml.trees.KICoreTreeEnsemble")
 
         private fun DoubleNDArray.toFloatNDArray(): FloatNDArray {
             val pointer = this.array.pointer()
