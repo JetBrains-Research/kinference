@@ -4,7 +4,7 @@ import io.kinference.KITestEngine
 import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
-class TestSequenceInsert {
+class SequenceInsertTest {
     private fun getTargetPath(dirName: String) = "sequence_insert/$dirName/"
 
     @Test
