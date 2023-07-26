@@ -16,5 +16,6 @@ fun PrimitiveNDArray.isNaN(): BooleanNDArray = predicateElementWise { it.isNaN()
 
 fun PrimitiveNDArray.ceil(): PrimitiveNDArray = applyElementWise { ceil(it) }
 fun PrimitiveNDArray.floor(): PrimitiveNDArray = applyElementWise { floor(it) }
+fun PrimitiveNDArray.round(): PrimitiveNDArray = applyElementWise { round(it) }
 
 fun PrimitiveNDArray.sqrt(): PrimitiveNDArray = applyElementWise { sqrt(it) }

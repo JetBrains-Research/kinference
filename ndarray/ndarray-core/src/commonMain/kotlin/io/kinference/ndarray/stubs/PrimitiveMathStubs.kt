@@ -29,6 +29,7 @@ internal inline fun exp(x: PrimitiveType): PrimitiveType = throw UnsupportedOper
 
 internal fun ceil(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun floor(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+internal fun round(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
 internal fun sqrt(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
