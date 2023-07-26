@@ -3,6 +3,7 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.extensions.*
 
 interface NDArrayCore : NDArray {
+    override fun clone(): NDArrayCore
     override fun close() = Unit
 
     suspend fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore
