@@ -7,9 +7,11 @@ import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 
-suspend fun PrimitiveNDArray.conv(
+@MakePublic
+internal suspend fun PrimitiveNDArray.conv(
     w: PrimitiveNDArray,
     b: PrimitiveNDArray?,
     inputInfo: InputInfo

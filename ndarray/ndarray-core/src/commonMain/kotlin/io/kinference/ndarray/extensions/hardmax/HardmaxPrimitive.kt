@@ -8,9 +8,11 @@ package io.kinference.ndarray.extensions.hardmax
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
 
-fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
 
     val actualAxis = indexAxis(axis)

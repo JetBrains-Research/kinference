@@ -12,10 +12,12 @@ import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
 
-suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
     val actualAlpha = alpha.toPrimitive()
     val output = MutablePrimitiveNDArray(strides)
 

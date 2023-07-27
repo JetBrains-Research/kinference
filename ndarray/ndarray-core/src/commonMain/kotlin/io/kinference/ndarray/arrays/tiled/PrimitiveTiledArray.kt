@@ -12,7 +12,8 @@ import io.kinference.primitives.types.*
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
-class PrimitiveTiledArray {
+@MakePublic
+internal class PrimitiveTiledArray {
     val size: Int
     val blockSize: Int
     val blocksNum: Int

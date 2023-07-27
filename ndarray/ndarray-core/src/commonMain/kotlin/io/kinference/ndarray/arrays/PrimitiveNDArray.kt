@@ -16,14 +16,14 @@ import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.softmax.softmax
 import io.kinference.ndarray.stubs.isCompatibleWith
-import io.kinference.primitives.annotations.GenerateNameFromPrimitives
-import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
-open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore {
+@MakePublic
+internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore {
     constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
 
@@ -1334,6 +1334,7 @@ open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : Numb
 }
 
 @GenerateNameFromPrimitives
-interface PrimitiveMap : PrimitiveToPrimitiveFunction {
+@MakePublic
+internal interface PrimitiveMap : PrimitiveToPrimitiveFunction {
     fun apply(value: PrimitiveType): PrimitiveType
 }

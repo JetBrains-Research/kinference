@@ -9,7 +9,8 @@ import io.kinference.primitives.types.*
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
-class PrimitivePointer {
+@MakePublic
+internal class PrimitivePointer {
     val array: PrimitiveTiledArray
 
     var blockNum: Int
@@ -106,16 +107,19 @@ class PrimitivePointer {
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-fun PrimitivePointer.isCompatibleWith(other: @BindPrimitives.Type1 PrimitivePointer): Boolean {
+@MakePublic
+internal fun PrimitivePointer.isCompatibleWith(other: @BindPrimitives.Type1 PrimitivePointer): Boolean {
     return this.indexInBlock == other.indexInBlock && this.array.blockSize == other.array.blockSize
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-fun PrimitivePointer.isCompatibleBySize(other: @BindPrimitives.Type1 PrimitivePointer, requestedSize: Int): Boolean {
+@MakePublic
+internal fun PrimitivePointer.isCompatibleBySize(other: @BindPrimitives.Type1 PrimitivePointer, requestedSize: Int): Boolean {
     return this.array.size - this.linearIndex >= requestedSize && other.array.size - other.linearIndex >= requestedSize
 }
 
-inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> PrimitiveType) {
+@MakePublic
+internal inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> PrimitiveType) {
     var end = count
     while (end > 0) {
         val block = this.currentBlock
@@ -135,7 +139,8 @@ inline fun PrimitivePointer.map(count: Int, action: (value: PrimitiveType) -> Pr
     }
 }
 
-inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -> Unit) {
+@MakePublic
+internal inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -> Unit) {
     var end = count
     while (end > 0) {
         val block = this.currentBlock
@@ -156,7 +161,8 @@ inline fun PrimitivePointer.forEach(count: Int, action: (value: PrimitiveType) -
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.forEachWith(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value1: PrimitiveType, value2: @BindPrimitives.Type1 PrimitiveType) -> Unit) {
+@MakePublic
+internal inline fun PrimitivePointer.forEachWith(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value1: PrimitiveType, value2: @BindPrimitives.Type1 PrimitiveType) -> Unit) {
     require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -189,8 +195,8 @@ inline fun PrimitivePointer.forEachWith(other: @BindPrimitives.Type1 PrimitivePo
     }
 }
 
-
-inline fun PrimitivePointer.forEachIndexed(count: Int, startIndex: Int = 0, action: (index: Int, value: PrimitiveType) -> Unit) {
+@MakePublic
+internal inline fun PrimitivePointer.forEachIndexed(count: Int, startIndex: Int = 0, action: (index: Int, value: PrimitiveType) -> Unit) {
     var end = count
     var idx = startIndex
     while (end > 0) {
@@ -212,7 +218,8 @@ inline fun PrimitivePointer.forEachIndexed(count: Int, startIndex: Int = 0, acti
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.mapTo(container: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @BindPrimitives.Type1 PrimitiveType) {
+@MakePublic
+internal inline fun PrimitivePointer.mapTo(container: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (value: PrimitiveType) -> @BindPrimitives.Type1 PrimitiveType) {
     require(this.isCompatibleBySize(container, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -247,7 +254,8 @@ inline fun PrimitivePointer.mapTo(container: @BindPrimitives.Type1 PrimitivePoin
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.accept(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
+@MakePublic
+internal inline fun PrimitivePointer.accept(other: @BindPrimitives.Type1 PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
 
     var end = count
@@ -282,7 +290,8 @@ inline fun PrimitivePointer.accept(other: @BindPrimitives.Type1 PrimitivePointer
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.acceptWithRecursive(src: @BindPrimitives.Type1 PrimitivePointer, rec: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+@MakePublic
+internal inline fun PrimitivePointer.acceptWithRecursive(src: @BindPrimitives.Type1 PrimitivePointer, rec: @BindPrimitives.Type1 PrimitivePointer, count: Int,
                                                 action: (dst: PrimitiveType, src: @BindPrimitives.Type1 PrimitiveType, rec: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(src, count)) { "Pointers not compatible by available elements" }
 
@@ -326,7 +335,8 @@ inline fun PrimitivePointer.acceptWithRecursive(src: @BindPrimitives.Type1 Primi
     }
 }
 
-inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
+@MakePublic
+internal inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, action: (dst: PrimitiveType, src: PrimitiveType) -> PrimitiveType) {
     var end = count
     val buf = src.linearIndex
     if (this.isCompatibleWith(src)) {
@@ -364,7 +374,8 @@ inline fun PrimitivePointer.acceptRecursive(src: PrimitivePointer, count: Int, a
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.acceptDouble(first: @BindPrimitives.Type1 PrimitivePointer, second: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+@MakePublic
+internal inline fun PrimitivePointer.acceptDouble(first: @BindPrimitives.Type1 PrimitivePointer, second: @BindPrimitives.Type1 PrimitivePointer, count: Int,
                                          action: (dst: PrimitiveType, fst: @BindPrimitives.Type1 PrimitiveType, snd: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType) {
     require(this.isCompatibleBySize(first, count)) { "Pointers not compatible by available elements" }
     require(this.isCompatibleBySize(second, count)) { "Pointers not compatible by available elements" }
@@ -405,7 +416,8 @@ inline fun PrimitivePointer.acceptDouble(first: @BindPrimitives.Type1 PrimitiveP
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.acceptTriple(
+@MakePublic
+internal inline fun PrimitivePointer.acceptTriple(
     first: PrimitivePointer, second: PrimitivePointer, third: @BindPrimitives.Type1 PrimitivePointer, count: Int,
     action: (dst: PrimitiveType, fst: PrimitiveType, snd: PrimitiveType, trd: @BindPrimitives.Type1 PrimitiveType) -> PrimitiveType
 ) {
@@ -453,7 +465,8 @@ inline fun PrimitivePointer.acceptTriple(
 }
 
 @BindPrimitives(type1 = [DataType.ALL])
-inline fun PrimitivePointer.combine(other: @BindPrimitives.Type1 PrimitivePointer, count: Int,
+@MakePublic
+internal inline fun PrimitivePointer.combine(other: @BindPrimitives.Type1 PrimitivePointer, count: Int,
                                     action: (fst: PrimitiveType, snd: @BindPrimitives.Type1 PrimitiveType) -> Unit) {
     require(this.isCompatibleBySize(other, count)) { "Pointers not compatible by available elements" }
 

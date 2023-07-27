@@ -5,10 +5,12 @@ package io.kinference.ndarray.extensions.mean
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.sum.sum
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
 
-suspend fun List<PrimitiveNDArray>.mean(): PrimitiveNDArray {
+@MakePublic
+internal suspend fun List<PrimitiveNDArray>.mean(): PrimitiveNDArray {
     if (isEmpty()) error("Array for mean operation must have at least one element")
     if (size == 1) return single()
 
@@ -20,6 +22,8 @@ suspend fun List<PrimitiveNDArray>.mean(): PrimitiveNDArray {
     return sumOfTensors
 }
 
-suspend fun Array<out PrimitiveNDArray>.mean() = toList().mean()
+@MakePublic
+internal suspend fun Array<out PrimitiveNDArray>.mean() = toList().mean()
 
-suspend fun meanOf(vararg inputs: PrimitiveNDArray) = inputs.mean()
+@MakePublic
+internal suspend fun meanOf(vararg inputs: PrimitiveNDArray) = inputs.mean()

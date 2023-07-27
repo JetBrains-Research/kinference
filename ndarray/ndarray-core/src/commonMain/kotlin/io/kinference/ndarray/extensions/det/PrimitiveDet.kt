@@ -5,11 +5,13 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.stubs.pow
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
 import kotlin.math.pow
 
 //TODO: Research coroutines there
-suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
     require(rank >= 2)
         { "Determinant may be calculated only tensors with rank >= 2, current rank = $rank" }
     require(shape[shape.lastIndex] == shape[shape.lastIndex - 1])

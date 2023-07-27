@@ -4,10 +4,12 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
-fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): MutablePrimitiveNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): MutablePrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
 
     val inputBlockIter = array.blocks.iterator()
@@ -26,7 +28,8 @@ fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): M
     return output
 }
 
-fun PrimitiveNDArray.predicateElementWise(predicate: (PrimitiveType) -> Boolean): BooleanNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.predicateElementWise(predicate: (PrimitiveType) -> Boolean): BooleanNDArray {
     val output = MutableBooleanNDArray(strides)
 
     val inputBlockIter = array.blocks.iterator()

@@ -10,7 +10,8 @@ import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 
-suspend fun PrimitiveNDArray.maxPool(
+@MakePublic
+internal suspend fun PrimitiveNDArray.maxPool(
     inputInfo: InputInfo,
     storageOrder: Int,
     minValue: PrimitiveType = PrimitiveType.MIN_VALUE

@@ -5,9 +5,11 @@ package io.kinference.ndarray.extensions.utils
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
 
-fun primitiveIm2Col(
+@MakePublic
+internal fun primitiveIm2Col(
     im: PrimitiveNDArray,
     inputInfo: InputInfo,
     channelsTotal: Int,
@@ -65,7 +67,8 @@ fun primitiveIm2Col(
     }
 }
 
-fun primitiveIm2ColRank2(
+@MakePublic
+internal fun primitiveIm2ColRank2(
     im: PrimitiveNDArray,
     inputInfo: InputInfo,
     channelsCol: Int,

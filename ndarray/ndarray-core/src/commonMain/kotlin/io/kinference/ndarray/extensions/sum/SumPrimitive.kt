@@ -6,9 +6,11 @@ import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 
-suspend fun List<PrimitiveNDArray>.sum(): PrimitiveNDArray {
+@MakePublic
+internal suspend fun List<PrimitiveNDArray>.sum(): PrimitiveNDArray {
     if (isEmpty()) error("Array for sum operation must have at least one element")
     if (size == 1) return single()
 
@@ -32,6 +34,8 @@ suspend fun List<PrimitiveNDArray>.sum(): PrimitiveNDArray {
     } as PrimitiveNDArray
 }
 
-suspend fun Array<out PrimitiveNDArray>.sum() = toList().sum()
+@MakePublic
+internal suspend fun Array<out PrimitiveNDArray>.sum() = toList().sum()
 
-suspend fun sumOf(vararg inputs: PrimitiveNDArray) = inputs.sum()
+@MakePublic
+internal suspend fun sumOf(vararg inputs: PrimitiveNDArray) = inputs.sum()

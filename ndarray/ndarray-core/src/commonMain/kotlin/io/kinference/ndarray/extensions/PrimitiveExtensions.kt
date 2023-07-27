@@ -29,7 +29,8 @@ fun erf(value: PrimitiveType): PrimitiveType {
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
 @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
-suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
     val M = this.shape[0]
 
     suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
@@ -69,7 +70,8 @@ suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveN
 
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE, DataType.INT])
-suspend fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
     return if (zeroPoint.linearSize == 1) {
         val zero = zeroPoint.array.blocks[0][0].toInt()
         val arr = IntTiledArray(this.strides)
@@ -83,7 +85,8 @@ suspend fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDAr
 }
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
-suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
     val zeros = zeroPoint?.array
     val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
 
@@ -118,7 +121,8 @@ suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: Flo
 }
 
 @SpecifyPrimitives(include = [DataType.FLOAT, DataType.DOUBLE])
-suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
     other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
 
     val alpha = alpha.toPrimitive()
