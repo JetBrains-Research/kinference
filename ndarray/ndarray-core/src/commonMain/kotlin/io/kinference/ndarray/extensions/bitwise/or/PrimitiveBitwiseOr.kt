@@ -15,14 +15,17 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
 import io.kinference.ndarray.stubs.or
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import kotlin.experimental.or
 
-suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray): MutablePrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray): MutablePrimitiveNDArray {
     val destShape = broadcastShape(listOf(this.shape, other.shape))
     return bitOr(other, MutablePrimitiveNDArray(destShape))
 }
 
-suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
+@MakePublic
+internal suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
     broadcastTwoTensorsPrimitive(this, other, dest) { left: PrimitiveType, right: PrimitiveType -> left or right }

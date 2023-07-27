@@ -9,7 +9,8 @@ import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
-open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
+@MakePublic
+internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
     constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
     constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
 

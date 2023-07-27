@@ -7,10 +7,12 @@ import io.kinference.ndarray.stubs.pow
 import io.kinference.ndarray.extensions.utils.calculateInnerShapeSize
 import io.kinference.ndarray.extensions.utils.divCeil
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
 import kotlin.math.pow
 
-suspend fun PrimitiveNDArray.lrn(alpha: Float, beta: Float, bias: Float, size: Int) : PrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.lrn(alpha: Float, beta: Float, bias: Float, size: Int) : PrimitiveNDArray {
     val result = PrimitiveNDArray(shape)
 
     val inputSize = calculateInnerShapeSize(shape)

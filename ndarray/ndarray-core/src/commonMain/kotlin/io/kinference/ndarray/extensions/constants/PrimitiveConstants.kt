@@ -3,13 +3,13 @@ package io.kinference.ndarray.extensions.constants
 
 import io.kinference.ndarray.toUByte
 import io.kinference.ndarray.toUShort
-import io.kinference.primitives.annotations.GenerateNameFromPrimitives
-import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
 
 @GenerateNameFromPrimitives
-object PrimitiveConstants {
+@MakePublic
+internal object PrimitiveConstants {
     val ONE = (1).toPrimitive()
     val ZERO = (0).toPrimitive()
     val MINUS_ONE = (-1).toPrimitive()

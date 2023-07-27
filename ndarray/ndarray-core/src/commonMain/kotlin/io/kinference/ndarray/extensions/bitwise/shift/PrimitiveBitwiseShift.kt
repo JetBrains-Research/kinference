@@ -11,15 +11,18 @@ import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitiv
 import io.kinference.ndarray.stubs.shl
 import io.kinference.ndarray.stubs.shr
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
-suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, direction: BitShiftDirection): MutablePrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, direction: BitShiftDirection): MutablePrimitiveNDArray {
     val destShape = broadcastShape(listOf(this.shape, amountsOfShift.shape))
     return bitShift(amountsOfShift, direction, MutablePrimitiveNDArray(destShape))
 }
 
-suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, direction: BitShiftDirection, destination: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray, direction: BitShiftDirection, destination: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
     val shiftFunction: PrimitiveType.(Int) -> PrimitiveType
         = when(direction) {
             BitShiftDirection.LEFT -> PrimitiveType::shl

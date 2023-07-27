@@ -10,9 +10,11 @@ import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 
-suspend fun PrimitiveNDArray.exp(): PrimitiveNDArray {
+@MakePublic
+internal suspend fun PrimitiveNDArray.exp(): PrimitiveNDArray {
     val output = PrimitiveNDArray(strides)
 
     val inputBlocks = this.array.blocks

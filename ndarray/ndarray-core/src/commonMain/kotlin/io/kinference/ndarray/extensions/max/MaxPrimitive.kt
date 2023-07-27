@@ -7,10 +7,12 @@ import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.stubs.maxOf
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import kotlin.math.max
 
-suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
+@MakePublic
+internal suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
     if (isEmpty()) error("Array for max operation must have at least one element")
     if (size == 1) return single()
 
@@ -34,6 +36,8 @@ suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
     } as PrimitiveNDArray
 }
 
-suspend fun Array<out PrimitiveNDArray>.max() = this.toList().max()
+@MakePublic
+internal suspend fun Array<out PrimitiveNDArray>.max() = this.toList().max()
 
-suspend fun maxOf(vararg inputs: PrimitiveNDArray) = inputs.max()
+@MakePublic
+internal suspend fun maxOf(vararg inputs: PrimitiveNDArray) = inputs.max()

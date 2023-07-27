@@ -10,6 +10,7 @@ import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.extensions.predicateElementWise
 import io.kinference.ndarray.stubs.*
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import kotlin.isInfinite
@@ -26,7 +27,8 @@ private val ONLY_POSITIVE = { x: PrimitiveType -> x == PrimitiveType.POSITIVE_IN
  * @return A BooleanNDArray with the same shape as the current NDArray where each element
  *         indicates whether the corresponding element in the current NDArray is infinite or not.
  */
-fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArray {
+@MakePublic
+internal fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArray {
     val detector = when {
         detectNegative && detectPositive -> PrimitiveType::isInfinite
         detectNegative -> ONLY_NEGATIVE
