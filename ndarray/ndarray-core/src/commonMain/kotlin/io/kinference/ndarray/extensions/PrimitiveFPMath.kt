@@ -20,6 +20,8 @@ internal fun PrimitiveNDArray.isNaN(): BooleanNDArray = predicateElementWise { i
 internal fun PrimitiveNDArray.ceil(): PrimitiveNDArray = applyElementWise { ceil(it) }
 @MakePublic
 internal fun PrimitiveNDArray.floor(): PrimitiveNDArray = applyElementWise { floor(it) }
+@MakePublic
+internal fun PrimitiveNDArray.round(): PrimitiveNDArray = applyElementWise { round(it) }
 
 @MakePublic
 internal fun PrimitiveNDArray.sqrt(): PrimitiveNDArray = applyElementWise { sqrt(it) }
