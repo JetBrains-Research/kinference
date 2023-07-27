@@ -16,7 +16,8 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.*
 
-fun erf(value: PrimitiveType): PrimitiveType {
+@MakePublic
+internal fun erf(value: PrimitiveType): PrimitiveType {
     val sign = value.toDouble().sign
     val doubleValue = abs(value.toDouble())
     val t = 1 / (1 + ERF_P_VALUE * doubleValue)
