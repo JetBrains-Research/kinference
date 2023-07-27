@@ -107,6 +107,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
+        "SequenceConstruct" -> SequenceConstruct(name, version, attributes, inputs, outputs)
         "SequenceEmpty" -> SequenceEmpty(name, version, attributes, inputs, outputs)
         "SequenceErase" -> SequenceErase(name, version, attributes, inputs, outputs)
         "SequenceInsert" -> SequenceInsert(name, version, attributes, inputs, outputs)
