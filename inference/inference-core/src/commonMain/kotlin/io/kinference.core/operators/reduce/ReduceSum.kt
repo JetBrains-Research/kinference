@@ -1,4 +1,4 @@
-package io.kinference.core.operators.math
+package io.kinference.core.operators.reduce
 
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor

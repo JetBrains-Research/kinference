@@ -1,4 +1,4 @@
-package io.kinference.operators.math
+package io.kinference.operators.reduce
 
 import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.utils.TestRunner
