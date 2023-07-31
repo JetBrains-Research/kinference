@@ -11,6 +11,7 @@ import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
+import io.kinference.ndarray.extensions.*
 
 @MakePublic
 internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {

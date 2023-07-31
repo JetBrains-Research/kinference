@@ -13,6 +13,8 @@ import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import kotlin.math.*
+import io.kinference.ndarray.extensions.*
+
 
 @GenerateNameFromPrimitives
 internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {

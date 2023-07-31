@@ -10,6 +10,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
 import kotlin.comparisons.maxOf
+import io.kinference.ndarray.extensions.*
 
 @MakePublic
 internal fun PrimitiveNDArray.reduceMax(axes: IntArray, keepDims: Boolean) =
