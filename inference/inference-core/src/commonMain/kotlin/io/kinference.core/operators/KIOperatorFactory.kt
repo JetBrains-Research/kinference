@@ -20,6 +20,8 @@ import io.kinference.core.operators.convolution.*
 import io.kinference.core.operators.pool.*
 import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
+import io.kinference.core.operators.reduce.ReduceMax
+import io.kinference.core.operators.reduce.ReduceSum
 import io.kinference.core.operators.seq.*
 import io.kinference.core.operators.tensor.*
 import io.kinference.graph.Graph
@@ -119,6 +121,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
+        "ReduceMax" -> ReduceMax(name, version, attributes, inputs, outputs)
         "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)

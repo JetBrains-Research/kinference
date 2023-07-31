@@ -21,3 +21,9 @@ internal fun PrimitiveType.withSign(sign: PrimitiveType): PrimitiveType = throw 
 
 internal fun PrimitiveType.pow(n: Int): PrimitiveType = throw UnsupportedOperationException()
 internal fun PrimitiveType.pow(n: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+
+internal val PrimitiveType.Companion.MIN_VALUE_FOR_MAX: PrimitiveType
+    get() = throw UnsupportedOperationException()
+
+internal val PrimitiveType.Companion.MAX_VALUE_FOR_MIN: PrimitiveType
+    get() = throw UnsupportedOperationException()

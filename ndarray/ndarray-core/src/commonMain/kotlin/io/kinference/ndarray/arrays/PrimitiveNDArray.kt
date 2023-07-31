@@ -5,6 +5,8 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.arrays.pointers.isCompatibleWith
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.countCoroutinesByData
@@ -14,7 +16,10 @@ import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitiv
 import io.kinference.ndarray.extensions.argMinMax.ArgMinMaxMode
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
+import io.kinference.ndarray.extensions.reduce.primitive.reduceOperationPrimitive
 import io.kinference.ndarray.extensions.softmax.softmax
+import io.kinference.ndarray.stubs.*
+import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
@@ -180,7 +185,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun min(): PrimitiveType {
-        var min = PrimitiveType.MAX_VALUE
+        var min = PrimitiveType.MAX_VALUE_FOR_MIN
         for (block in array.blocks) {
             for (idx in block.indices) {
                 val tmp = block[idx]
@@ -195,7 +200,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun max(): PrimitiveType {
-        var max = PrimitiveType.MIN_VALUE
+        var max = PrimitiveType.MIN_VALUE_FOR_MAX
         for (block in array.blocks) {
             for (idx in block.indices) {
                 val tmp = block[idx]
@@ -534,53 +539,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return findComparable(axis, keepDims) { first, second -> first > second }
     }
 
-    override suspend fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
-        val axesToReduce = axes.map { indexAxis(it) }.toSet()
-        require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-$rank, ${rank - 1}]" }
-
-        val outputShapeWithKeepDims = shape.copyOf().apply { axesToReduce.forEach { set(it, 1) } }
-        val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
-
-        val outputShape = if (keepDims) outputShapeWithKeepDims else shape.sliceArray(shape.indices.minus(axesToReduce))
-        val outputArray = PrimitiveNDArray(Strides(outputShape))
-
-        val axisToStop = axesToReduce.maxOrNull()!! + 1
-        val blockToApply = computeBlockSize(fromDim = axisToStop)
-
-
-        fun reduceSumRecurrent(axis: Int, inputOffset: Int, outputOffset: Int) {
-            when(axis) {
-                axisToStop -> {
-                    val inputPointer = this.array.pointer(inputOffset)
-                    val outputPointer = outputArray.array.pointer(outputOffset)
-
-                    outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> (dst + src).toPrimitive() }
-                }
-                shape.lastIndex -> {
-                    val dim = this.shape[axis]
-                    val inputPointer = this.array.pointer(inputOffset)
-                    val outputPointer = outputArray.array.pointer(outputOffset)
-
-                    var accumulator = outputPointer.get()
-                    inputPointer.forEach(dim) { accumulator = (accumulator + it).toPrimitive() }
-                    outputPointer.set(accumulator)
-                }
-                else -> {
-                    val dim = this.shape[axis]
-                    repeat(dim) {
-                        val inputAdditionalOffset = this.strides.strides[axis] * it
-                        val outputAdditionalOffset = if (axis in axesToReduce) 0 else stridesWithKeepDims.strides[axis] * it
-
-                        reduceSumRecurrent(axis + 1, inputOffset + inputAdditionalOffset, outputOffset + outputAdditionalOffset)
-                    }
-                }
-            }
-        }
-
-        reduceSumRecurrent(0, 0, 0)
-
-        return outputArray
-    }
+    override suspend fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray =
+        reduceOperationPrimitive(axes, keepDims) { output: PrimitiveType, input: PrimitiveType -> (output + input).toPrimitive() }
 
     override suspend fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
         val actualAxis = indexAxis(axis)

@@ -7,9 +7,11 @@ package io.kinference.ndarray.extensions.hardmax
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
+import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
+import io.kinference.ndarray.extensions.*
 
 @MakePublic
 internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
@@ -26,7 +28,7 @@ internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
     val outputBlocks = output.array.blocks
 
     repeat(rows) { row ->
-        var maxValue = PrimitiveType.MIN_VALUE
+        var maxValue = PrimitiveType.MIN_VALUE_FOR_MAX
         var maxBlockIdx = 0
         var maxIndex = 0
 

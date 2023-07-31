@@ -1,29 +1,41 @@
-package io.kinference.core.operators.math
+package io.kinference.tfjs.operators.reduce
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArray
+import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.utils.toIntArray
 
-sealed class ReduceSum(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class ReduceSum(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>, outputs: List<String>
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in ReduceSumVer1.VERSION.asRange() -> ReduceSumVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of ReduceSum operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): ReduceSum {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in ReduceSumVer1.VERSION.asRange() -> ReduceSumVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ReduceSum operator: $version")
+            }
         }
     }
 }
 
 
-class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : ReduceSum(name, INFO, attributes, inputs, outputs) {
+class ReduceSumVer1(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : ReduceSum(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -53,12 +65,12 @@ class ReduceSumVer1(name: String, attributes: Map<String, Attribute<Any>>, input
         private val INFO = OperatorInfo("ReduceSum", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axes: LongArray by attribute()
+    private val axes: IntArray by attribute { it: LongArray -> it.toIntArray() }
     private val keepDims: Boolean by attribute("keepdims") { it: Long -> it == 1L }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs.first()!!.data as NumberNDArray
-        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes
         return listOf(input.reduceSum(actualAxes, keepDims).asTensor("reduced"))
     }
 }

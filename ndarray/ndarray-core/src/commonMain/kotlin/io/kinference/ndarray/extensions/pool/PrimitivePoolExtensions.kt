@@ -9,12 +9,14 @@ import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.ndarray.extensions.*
+
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.maxPool(
     inputInfo: InputInfo,
     storageOrder: Int,
-    minValue: PrimitiveType = PrimitiveType.MIN_VALUE
+    minValue: PrimitiveType = PrimitiveType.MIN_VALUE_FOR_MAX
 ): List<NumberNDArrayCore> {
     val resultShape = IntArray(rank) {
         when (it) {
