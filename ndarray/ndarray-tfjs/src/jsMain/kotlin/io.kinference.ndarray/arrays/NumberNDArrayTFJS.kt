@@ -51,6 +51,11 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return NumberNDArrayTFJS(max)
     }
 
+    fun max(axes: Array<Int>, keepDims: Boolean): NumberNDArrayTFJS {
+        val max = tfjsArray.max(axes, keepDims)
+        return NumberNDArrayTFJS(max)
+    }
+
     override suspend fun sum(): Number {
         return tfjsArray.sum().dataSync()[0] as Number
     }

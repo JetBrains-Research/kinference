@@ -1,19 +1,18 @@
-package io.kinference.core.operators.reduce
+package io.kinference.tfjs.operators.reduce
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.reduce.max.reduceMax
+import io.kinference.ndarray.extensions.dataInt
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.toIntArray
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class ReduceMax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
-    Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+    Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 18)
 
@@ -25,7 +24,6 @@ sealed class ReduceMax(name: String, info: OperatorInfo, attributes: Map<String,
             }
     }
 }
-
 
 class ReduceMaxVer1(
     name: String,
@@ -55,10 +53,10 @@ class ReduceMaxVer1(
     private val axes: LongArray by attribute()
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs.first()!!.data as NumberNDArrayCore
-        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
-        return listOf(input.reduceMax(actualAxes, keepDims).asTensor("reduced"))
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs.first()!!.data as NumberNDArrayTFJS
+        val actualAxes = if (axes.isEmpty()) Array(input.shape.size) { it } else Array(axes.size) { axes[it].toInt() }
+        return listOf(input.max(actualAxes, keepDims).asTensor("reduced"))
     }
 }
 
@@ -91,18 +89,18 @@ class ReduceMaxVer18(
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
     private val noopWithEmptyAxes: Boolean by attribute("noop_with_empty_axes") { it: Number -> it.toInt() == 1 }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs.first()!!.data as NumberNDArrayCore
-        val axes = (inputs.getOrNull(1)?.data as LongNDArray?)?.array?.toArray()
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs.first()!!.data as NumberNDArrayTFJS
+        val axes = (inputs.getOrNull(1)?.data as NumberNDArrayTFJS?)?.dataInt()
 
         if (noopWithEmptyAxes && axes.isNullOrEmpty()) return listOf(input.asTensor("reduced"))
 
         val actualAxes = if (axes.isNullOrEmpty()) {
-            input.shape.indices.toIntArray()
+            Array(input.shape.size) { it }
         } else {
-            axes!!.toIntArray()
+            axes!!.toTypedArray()
         }
 
-        return listOf(input.reduceMax(actualAxes, keepDims).asTensor("reduced"))
+        return listOf(input.max(actualAxes, keepDims).asTensor("reduced"))
     }
 }

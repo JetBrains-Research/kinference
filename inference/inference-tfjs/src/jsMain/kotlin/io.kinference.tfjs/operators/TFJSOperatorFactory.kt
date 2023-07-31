@@ -21,6 +21,8 @@ import io.kinference.tfjs.operators.math.*
 import io.kinference.tfjs.operators.ml.*
 import io.kinference.tfjs.operators.quantization.DequantizeLinear
 import io.kinference.tfjs.operators.quantization.DynamicQuantizeLinear
+import io.kinference.tfjs.operators.reduce.ReduceMax
+import io.kinference.tfjs.operators.reduce.ReduceSum
 import io.kinference.tfjs.operators.seq.*
 import io.kinference.tfjs.operators.tensor.*
 
@@ -102,6 +104,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
+        "ReduceMax" -> ReduceMax(name, version, attributes, inputs, outputs)
         "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)

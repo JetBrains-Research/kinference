@@ -1,4 +1,4 @@
-package io.kinference.tfjs.operators.math
+package io.kinference.tfjs.operators.reduce
 
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 import io.kinference.utils.TestRunner

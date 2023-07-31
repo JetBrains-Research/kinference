@@ -1,4 +1,4 @@
-package io.kinference.tfjs.operators.math
+package io.kinference.tfjs.operators.reduce
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
