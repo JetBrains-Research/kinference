@@ -5,6 +5,8 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.pointers.*
+import io.kinference.ndarray.arrays.pointers.accept
+import io.kinference.ndarray.arrays.pointers.isCompatibleWith
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.countCoroutinesByData
@@ -16,6 +18,8 @@ import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.reduce.primitive.reduceOperationPrimitive
 import io.kinference.ndarray.extensions.softmax.softmax
+import io.kinference.ndarray.stubs.*
+import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
@@ -181,7 +185,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun min(): PrimitiveType {
-        var min = PrimitiveType.MAX_VALUE
+        var min = PrimitiveType.MAX_VALUE_FOR_MIN
         for (block in array.blocks) {
             for (idx in block.indices) {
                 val tmp = block[idx]
@@ -196,7 +200,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun max(): PrimitiveType {
-        var max = PrimitiveType.MIN_VALUE
+        var max = PrimitiveType.MIN_VALUE_FOR_MAX
         for (block in array.blocks) {
             for (idx in block.indices) {
                 val tmp = block[idx]

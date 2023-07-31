@@ -54,3 +54,37 @@ internal val Float.Companion.MIN_VALUE_FOR_MAX: Float
 
 internal val Double.Companion.MIN_VALUE_FOR_MAX: Double
     get() = NEGATIVE_INFINITY
+
+
+internal val PrimitiveType.Companion.MAX_VALUE_FOR_MIN: PrimitiveType
+    get() = throw UnsupportedOperationException()
+
+internal val Byte.Companion.MAX_VALUE_FOR_MIN: Byte
+    get() = MAX_VALUE
+
+internal val Short.Companion.MAX_VALUE_FOR_MIN: Short
+    get() = MAX_VALUE
+
+internal val Int.Companion.MAX_VALUE_FOR_MIN: Int
+    get() = MAX_VALUE
+
+internal val Long.Companion.MAX_VALUE_FOR_MIN: Long
+    get() = MAX_VALUE
+
+internal val UByte.Companion.MAX_VALUE_FOR_MIN: UByte
+    get() = MAX_VALUE
+
+internal val UShort.Companion.MAX_VALUE_FOR_MIN: UShort
+    get() = MAX_VALUE
+
+internal val UInt.Companion.MAX_VALUE_FOR_MIN: UInt
+    get() = MAX_VALUE
+
+internal val ULong.Companion.MAX_VALUE_FOR_MIN: ULong
+    get() = MAX_VALUE
+
+internal val Float.Companion.MAX_VALUE_FOR_MIN: Float
+    get() = POSITIVE_INFINITY
+
+internal val Double.Companion.MAX_VALUE_FOR_MIN: Double
+    get() = POSITIVE_INFINITY

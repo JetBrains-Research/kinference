@@ -11,6 +11,7 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
+import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -40,7 +41,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, column
     parallelizeByRows(columns, rows, 1048576) { rowStart, rowEnd ->
         for (rowNum in rowStart until rowEnd) {
             val rowBlockStart = rowNum * blocksInRow
-            var localMax = PrimitiveType.MIN_VALUE
+            var localMax = PrimitiveType.MIN_VALUE_FOR_MAX
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
                 localMax = max(localMax, maxesArray[rowBlockIdx])
             }
