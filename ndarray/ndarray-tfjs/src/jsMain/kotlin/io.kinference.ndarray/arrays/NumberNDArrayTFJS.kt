@@ -42,6 +42,11 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return NumberNDArrayTFJS(mins)
     }
 
+    fun min(axes: Array<Int>, keepDims: Boolean): NumberNDArrayTFJS {
+        val mins = tfjsArray.min(axes, keepDims)
+        return NumberNDArrayTFJS(mins)
+    }
+
     override suspend fun max(): Number {
         return tfjsArray.max().dataSync()[0] as Number
     }

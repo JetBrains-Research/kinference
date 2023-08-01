@@ -78,9 +78,7 @@ fun NumberNDArrayTFJS.add(tensors: Array<NumberNDArrayTFJS>) = NumberNDArrayTFJS
 
 fun NumberNDArrayTFJS.add(vararg tensors: NumberNDArrayTFJS) = add(tensors as Array<NumberNDArrayTFJS>)
 
-fun NumberNDArrayTFJS.min(axes: Array<Int>, keepDims: Boolean = false) = NumberNDArrayTFJS(min(tfjsArray, axes, keepDims))
-
-fun NumberNDArrayTFJS.min(keepDims: Boolean = false) = NumberNDArrayTFJS(min(tfjsArray, null, keepDims))
+fun NumberNDArrayTFJS.min(keepDims: Boolean = false) = NumberNDArrayTFJS(tfjsArray.min(keepDims))
 
 fun NumberNDArrayTFJS.max(keepDims: Boolean = false) = NumberNDArrayTFJS(max(tfjsArray, null, keepDims))
 
