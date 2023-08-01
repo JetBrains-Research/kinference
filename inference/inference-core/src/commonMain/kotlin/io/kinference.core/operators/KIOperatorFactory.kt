@@ -121,6 +121,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
         "ReduceMax" -> ReduceMax(name, version, attributes, inputs, outputs)
+        "ReduceMean" -> ReduceMean(name, version, attributes, inputs, outputs)
         "ReduceMin" -> ReduceMin(name, version, attributes, inputs, outputs)
         "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
