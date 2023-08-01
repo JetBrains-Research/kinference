@@ -57,12 +57,12 @@ class ReduceMeanVer1(
         private val INFO = OperatorInfo("ReduceMean", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axes: LongArray by attribute()
+    private val axes: IntArray by attribute() { it: LongArray -> it.toIntArray() }
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs.first()!!.data as NumberNDArrayCore
-        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes.toIntArray()
+        val actualAxes = if (axes.isEmpty()) input.shape.indices.toIntArray() else axes
         return listOf(input.reduceMean(actualAxes, keepDims).asTensor("reduced"))
     }
 }

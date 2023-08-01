@@ -11,6 +11,8 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.utils.toIntArray
+import io.kinference.utils.toTypedIntArray
 
 sealed class ReduceMean(
     name: String,
@@ -63,12 +65,12 @@ class ReduceMeanVer1(
         private val INFO = OperatorInfo("ReduceMean", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val axes: LongArray by attribute()
+    private val axes: Array<Int> by attribute() { array: LongArray -> Array(array.size) { array[it].toInt() } }
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
-        val actualAxes = if (axes.isEmpty()) Array(input.shape.size) { it } else Array(axes.size) { axes[it].toInt() }
+        val actualAxes = if (axes.isEmpty()) input.shape.indices.toTypedIntArray() else axes
         return listOf(input.reduceMean(actualAxes, keepDims).asTensor("reduced"))
     }
 }
@@ -114,7 +116,7 @@ class ReduceMeanVer18(
         if (noopWithEmptyAxes && axes.isNullOrEmpty()) return listOf(input.asTensor("reduced"))
 
         val actualAxes = if (axes.isNullOrEmpty()) {
-            Array(input.shape.size) { it }
+            input.shape.indices.toTypedIntArray()
         } else {
             axes!!.toTypedArray()
         }

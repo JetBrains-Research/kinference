@@ -32,19 +32,14 @@ fun Collection<Number>.toIntArray(): IntArray {
     return array
 }
 
-fun IntRange.toIntArray(): IntArray {
-    val size = this.last - this.first + 1
-    val array = IntArray(size)
-    for ((i, element) in this.withIndex()) {
-        array[i] = element
-    }
-    return array
+fun IntProgression.toIntArray(): IntArray {
+    val iter = iterator()
+
+    return IntArray(count()) { iter.next() }
 }
 
-fun IntProgression.toIntArray(): IntArray {
-    val array = IntArray(this.count())
-    for ((i, element) in this.withIndex()) {
-        array[i] = element
-    }
-    return array
+fun IntProgression.toTypedIntArray(): Array<Int> {
+    val iter = iterator()
+
+    return Array(count()) { iter.next() }
 }
