@@ -174,3 +174,5 @@ internal external val sign: (x: ArrayTFJS) -> ArrayTFJS
 internal external val sinh: (x: ArrayTFJS) -> ArrayTFJS
 
 internal external val sin: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val mean: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> ArrayTFJS

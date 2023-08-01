@@ -304,3 +304,7 @@ internal fun ArrayTFJS.bandPart(numLower: Int = 0, numUpper: Int = 0) = linalg.b
 internal fun ArrayTFJS.sign() = sign(this)
 
 internal fun ArrayTFJS.sin() = sin(this)
+
+internal fun ArrayTFJS.mean(axis: Int, keepDims: Boolean) = mean(this, arrayOf(axis), keepDims)
+
+internal fun ArrayTFJS.mean(axes: Array<Int>, keepDims: Boolean) = mean(this, axes, keepDims)
