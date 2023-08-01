@@ -297,3 +297,13 @@ suspend fun Array<out NumberNDArrayTFJS>.mean() = toList().mean()
 suspend fun meanOf(vararg inputs: NumberNDArrayTFJS) = inputs.mean()
 
 fun NumberNDArrayTFJS.sign() = NumberNDArrayTFJS(tfjsArray.sign())
+
+fun NumberNDArrayTFJS.reduceMean(axis: Int, keepDims: Boolean): NumberNDArrayTFJS {
+    val meanArray = tfjsArray.mean(axis, keepDims)
+    return NumberNDArrayTFJS(meanArray)
+}
+
+fun NumberNDArrayTFJS.reduceMean(axes: Array<Int>, keepDims: Boolean): NumberNDArrayTFJS {
+    val meanArray = tfjsArray.mean(axes, keepDims)
+    return NumberNDArrayTFJS(meanArray)
+}
