@@ -15,6 +15,6 @@ fun NumberNDArrayCore.reduceMin(axes: IntArray, keepDims: Boolean): NumberNDArra
         DataType.USHORT -> (this as UShortNDArray).reduceMin(axes, keepDims)
         DataType.UINT -> (this as UIntNDArray).reduceMin(axes, keepDims)
         DataType.ULONG -> (this as ULongNDArray).reduceMin(axes, keepDims)
-        else -> error("Unsupported type for reduceMax operation, supported only number types, current = $type")
+        else -> error("Unsupported type for reduceMin operation, supported only number types, current = $type")
     }
 }

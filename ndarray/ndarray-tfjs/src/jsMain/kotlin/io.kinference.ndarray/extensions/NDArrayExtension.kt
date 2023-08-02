@@ -305,3 +305,14 @@ fun NumberNDArrayTFJS.reduceMean(axes: Array<Int>, keepDims: Boolean): NumberNDA
     val meanArray = tfjsArray.mean(axes, keepDims)
     return NumberNDArrayTFJS(meanArray)
 }
+
+suspend fun NumberNDArrayTFJS.reduceSumSquare(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
+    if (axes.isEmpty()) return this
+
+    return tidyNDArray {
+        val squaredArray = this * this
+        return@tidyNDArray squaredArray.reduceSum(axes, keepDims)
+    }
+}
+
+suspend fun NumberNDArrayTFJS.reduceSumSquare(axis: Int, keepDims: Boolean) = reduceSumSquare(intArrayOf(axis), keepDims)
