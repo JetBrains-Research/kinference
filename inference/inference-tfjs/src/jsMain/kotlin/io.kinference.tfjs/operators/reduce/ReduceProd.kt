@@ -4,17 +4,15 @@ import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.dataInt
-import io.kinference.ndarray.extensions.reduceMean
+import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.toIntArray
 import io.kinference.utils.toTypedIntArray
 
-sealed class ReduceMean(
+sealed class ReduceProd(
     name: String,
     info: OperatorInfo,
     attributes: Map<String, Attribute<Any>>,
@@ -23,23 +21,23 @@ sealed class ReduceMean(
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 18)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): ReduceMean {
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): ReduceProd {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
-                in ReduceMeanVer1.VERSION.asRange() -> ReduceMeanVer1(name, attributes, inputs, outputs)
-                in ReduceMeanVer18.VERSION.asRange() -> ReduceMeanVer18(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of ReduceMean operator: $version")
+                in ReduceProdVer1.VERSION.asRange() -> ReduceProdVer1(name, attributes, inputs, outputs)
+                in ReduceProdVer18.VERSION.asRange() -> ReduceProdVer18(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of ReduceProd operator: $version")
             }
         }
     }
 }
 
 
-class ReduceMeanVer1(
+class ReduceProdVer1(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : ReduceMean(name, INFO, attributes, inputs, outputs) {
+) : ReduceProd(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -62,7 +60,7 @@ class ReduceMeanVer1(
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 18)
-        private val INFO = OperatorInfo("ReduceMean", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("ReduceProd", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val axes: Array<Int> by attribute() { array: LongArray -> Array(array.size) { array[it].toInt() } }
@@ -71,15 +69,15 @@ class ReduceMeanVer1(
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val input = inputs[0]!!.data as NumberNDArrayTFJS
         val actualAxes = if (axes.isEmpty()) input.shape.indices.toTypedIntArray() else axes
-        return listOf(input.reduceMean(actualAxes, keepDims).asTensor("reduced"))
+        return listOf(input.prod(actualAxes, keepDims).asTensor("reduced"))
     }
 }
 
-class ReduceMeanVer18(
+class ReduceProdVer18(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>, outputs: List<String>
-) : ReduceMean(name, INFO, attributes, inputs, outputs) {
+) : ReduceProd(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
             TensorProto.DataType.UINT32,
@@ -103,7 +101,7 @@ class ReduceMeanVer18(
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 18)
-        private val INFO = OperatorInfo("ReduceMean", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
+        private val INFO = OperatorInfo("ReduceProd", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val keepDims: Boolean by attribute("keepdims") { it: Number -> it.toInt() == 1 }
@@ -121,6 +119,6 @@ class ReduceMeanVer18(
             axes!!.toTypedArray()
         }
 
-        return listOf(input.reduceMean(actualAxes, keepDims).asTensor("reduced"))
+        return listOf(input.prod(actualAxes, keepDims).asTensor("reduced"))
     }
 }

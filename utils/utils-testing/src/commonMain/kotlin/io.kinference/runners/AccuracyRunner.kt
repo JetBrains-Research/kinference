@@ -68,11 +68,18 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                 model.predict(inputs)
             }
 
-            check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
-
-            inputs.forEach { it.close() }
-            expectedOutputs.forEach { it.close() }
-            actualOutputs.values.forEach { it.close() }
+            try {
+                check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
+            }
+            catch (e: Exception) {
+                model.close()
+                throw e
+            }
+            finally {
+                inputs.forEach { it.close() }
+                expectedOutputs.forEach { it.close() }
+                actualOutputs.values.forEach { it.close() }
+            }
         }
         model.close()
         if (testEngine is MemoryProfileable) {

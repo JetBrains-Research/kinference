@@ -106,6 +106,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ReduceMax" -> ReduceMax(name, version, attributes, inputs, outputs)
         "ReduceMean" -> ReduceMean(name, version, attributes, inputs, outputs)
         "ReduceMin" -> ReduceMin(name, version, attributes, inputs, outputs)
+        "ReduceProd" -> ReduceProd(name, version, attributes, inputs, outputs)
         "ReduceSum" -> ReduceSum(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
