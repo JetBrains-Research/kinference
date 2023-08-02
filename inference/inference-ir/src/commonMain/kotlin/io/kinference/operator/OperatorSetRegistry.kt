@@ -12,7 +12,7 @@ class OperatorSetRegistry(proto: List<OperatorSetIdProto>) {
     }
 
     fun getVersion(domain: String?): Int? {
-        val domainName = domain ?: OperatorInfo.DEFAULT_DOMAIN
+        val domainName = domain.takeIf { !it.isNullOrEmpty() } ?: OperatorInfo.DEFAULT_DOMAIN
         return operatorSets[domainName]
     }
 }
