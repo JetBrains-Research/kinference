@@ -21,7 +21,7 @@ class ReduceProdVer18Test {
 
     /*
      * This test for JS requires delta = 4e-3 because JS doesn't have float32 type
-     * and calculates everything with float64 consequently contains big error
+     * and calculates everything with float64 which leads to bigger error
      */
     @Test
     fun test_reduce_prod_default_axes_keepdims_random_js()  = TestRunner.runTest(Platform.JS) {
@@ -74,7 +74,7 @@ class ReduceProdVer1Test {
 
     /*
      * This test for JS requires delta = 4e-3 because JS doesn't have float32 type
-     * and calculates everything with float64 consequently contains big error
+     * and calculates everything with float64 which leads to bigger error
      */
     @Test
     fun test_reduce_prod_default_axes_keepdims_random_js()  = TestRunner.runTest(Platform.JS) {
