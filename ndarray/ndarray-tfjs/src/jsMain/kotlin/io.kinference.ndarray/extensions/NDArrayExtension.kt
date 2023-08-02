@@ -316,3 +316,14 @@ suspend fun NumberNDArrayTFJS.reduceL1(axes: IntArray, keepDims: Boolean): Numbe
 }
 
 suspend fun NumberNDArrayTFJS.reduceL1(axis: Int, keepDims: Boolean): NumberNDArrayTFJS = reduceL1(intArrayOf(axis), keepDims)
+
+suspend fun NumberNDArrayTFJS.reduceSumSquare(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
+    if (axes.isEmpty()) return this
+
+    return tidyNDArray {
+        val squaredArray = this * this
+        return@tidyNDArray squaredArray.reduceSum(axes, keepDims)
+    }
+}
+
+suspend fun NumberNDArrayTFJS.reduceSumSquare(axis: Int, keepDims: Boolean) = reduceSumSquare(intArrayOf(axis), keepDims)

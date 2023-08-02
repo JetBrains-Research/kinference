@@ -11,6 +11,6 @@ fun NumberNDArrayCore.reduceProd(axes: IntArray, keepDims: Boolean): NumberNDArr
         DataType.LONG -> (this as LongNDArray).reduceProd(axes, keepDims)
         DataType.UINT -> (this as UIntNDArray).reduceProd(axes, keepDims)
         DataType.ULONG -> (this as ULongNDArray).reduceProd(axes, keepDims)
-        else -> error("Unsupported type for reduceMax operation, supported only number types, current = $type")
+        else -> error("Unsupported type for reduceProd operation, supported only number types, current = $type")
     }
 }
