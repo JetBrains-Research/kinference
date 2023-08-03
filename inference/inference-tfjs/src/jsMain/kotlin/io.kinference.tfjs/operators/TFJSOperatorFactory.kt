@@ -95,6 +95,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "MatMulInteger" -> MatMulInteger(name, version, attributes, inputs, outputs)
         "Max" -> Max(name, version, attributes, inputs, outputs)
         "Mean" -> Mean(name, version, attributes, inputs, outputs)
+        "Min" -> Min(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)

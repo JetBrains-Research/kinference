@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
 suspend fun List<NumberNDArrayCore>.max(): NumberNDArrayCore {
-    if (isEmpty()) error("Array for max operation must have at least one element")
+    require(isNotEmpty()) { "Input array must have at least one element" }
     if (size == 1) return single()
 
     val inputType = this.first().type
@@ -21,7 +21,7 @@ suspend fun List<NumberNDArrayCore>.max(): NumberNDArrayCore {
         DataType.USHORT -> (this as List<UShortNDArray>).max()
         DataType.UINT -> (this as List<UIntNDArray>).max()
         DataType.ULONG -> (this as List<ULongNDArray>).max()
-        else -> error("Unsupported data type in max operation, tensors must have number data type, current is $inputType")
+        else -> error("Max operation is only applicable to numeric tensors, current type: $inputType")
     }
 }
 

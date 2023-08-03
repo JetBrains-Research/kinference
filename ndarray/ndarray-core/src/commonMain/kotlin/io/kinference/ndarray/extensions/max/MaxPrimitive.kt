@@ -2,38 +2,21 @@
 
 package io.kinference.ndarray.extensions.max
 
-import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
-import io.kinference.ndarray.arrays.PrimitiveNDArray
-import io.kinference.ndarray.broadcasting.Broadcasting
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.compare.compare
 import io.kinference.ndarray.stubs.maxOf
+import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
-import kotlin.math.max
+import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
 internal suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
-    if (isEmpty()) error("Array for max operation must have at least one element")
-    if (size == 1) return single()
-
-    return Broadcasting.applyWithBroadcast(this, this.first().type) { inputs, output ->
-        output as MutablePrimitiveNDArray
-        for (input in inputs) {
-            input as PrimitiveNDArray
-
-            val inputBlocksIter = input.array.blocks.iterator()
-            val outputBlocksIter = output.array.blocks.iterator()
-
-            for (blockIdx in 0 until input.array.blocksNum) {
-                val inputBlock = inputBlocksIter.next()
-                val outputBlock = outputBlocksIter.next()
-
-                for (idx in outputBlock.indices) {
-                    outputBlock[idx] = maxOf(inputBlock[idx], outputBlock[idx])
-                }
-            }
-        }
-    } as PrimitiveNDArray
+    val newShape = broadcastShape(this.map { it.shape })
+    val destination = MutablePrimitiveNDArray(newShape) { PrimitiveType.MIN_VALUE_FOR_MAX }
+    return compare(destination) { first, second -> maxOf(first, second) }
 }
 
 @MakePublic
