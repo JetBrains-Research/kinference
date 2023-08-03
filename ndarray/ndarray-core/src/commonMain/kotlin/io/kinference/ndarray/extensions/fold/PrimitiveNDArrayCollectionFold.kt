@@ -1,6 +1,6 @@
-@file:GeneratePrimitives(DataType.NUMBER)
+@file:GeneratePrimitives(DataType.ALL)
 
-package io.kinference.ndarray.extensions.compare
+package io.kinference.ndarray.extensions.fold
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
@@ -9,14 +9,14 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
-internal suspend fun List<PrimitiveNDArray>.compare(
-    dest: MutablePrimitiveNDArray,
-    comparator: (PrimitiveType, PrimitiveType) -> PrimitiveType
+internal suspend fun List<PrimitiveNDArray>.fold(
+    initial: MutablePrimitiveNDArray,
+    op: (PrimitiveType, PrimitiveType) -> PrimitiveType
 ): PrimitiveNDArray {
     require(isNotEmpty()) { "Input array must have at least one element" }
     if (size == 1) return single()
 
-    return Broadcasting.applyWithBroadcast(this, dest) { inputs, output ->
+    return Broadcasting.applyWithBroadcast(this, initial) { inputs, output ->
         output as MutablePrimitiveNDArray
         for (input in inputs) {
             input as PrimitiveNDArray
@@ -29,20 +29,20 @@ internal suspend fun List<PrimitiveNDArray>.compare(
                 val outputBlock = outputBlocksIter.next()
 
                 for (idx in outputBlock.indices) {
-                    outputBlock[idx] = comparator(inputBlock[idx], outputBlock[idx])
+                    outputBlock[idx] = op(inputBlock[idx], outputBlock[idx])
                 }
             }
         }
     } as PrimitiveNDArray
 }
 
-internal suspend fun Array<out PrimitiveNDArray>.compare(
-    dest: MutablePrimitiveNDArray,
-    comparator: (PrimitiveType, PrimitiveType) -> PrimitiveType
-) = this.toList().compare(dest, comparator)
+internal suspend fun Array<out PrimitiveNDArray>.fold(
+    initial: MutablePrimitiveNDArray,
+    op: (PrimitiveType, PrimitiveType) -> PrimitiveType
+) = this.toList().fold(initial, op)
 
-internal suspend fun compare(
-    dest: MutablePrimitiveNDArray,
-    comparator: (PrimitiveType, PrimitiveType) -> PrimitiveType,
+internal suspend fun fold(
+    initial: MutablePrimitiveNDArray,
+    op: (PrimitiveType, PrimitiveType) -> PrimitiveType,
     vararg inputs: PrimitiveNDArray
-) = inputs.compare(dest, comparator)
+) = inputs.fold(initial, op)
