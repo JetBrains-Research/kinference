@@ -8,8 +8,8 @@ fun NumberNDArrayCore.neg(): NumberNDArrayCore {
         is DoubleNDArray -> negDouble(this)
         is IntNDArray -> negInt(this)
         is LongNDArray -> negLong(this)
-        is ShortNDArray -> negShort(this)
-        is ByteNDArray -> negByte(this)
+        is ShortNDArray -> negIntegerShort(this)
+        is ByteNDArray -> negIntegerByte(this)
         else -> error("Unsupported data type: $type")
     }
 }

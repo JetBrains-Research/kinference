@@ -15,7 +15,9 @@ import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 
 @GenerateNameFromPrimitives
-internal fun negPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { (-it).toPrimitive() }
+@SpecifyPrimitives(include = [DataType.INT, DataType.LONG,DataType.FLOAT, DataType.DOUBLE])
+internal fun negPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { -it }
 
-@MakePublic
-internal operator fun PrimitiveNDArray.unaryMinus() = negPrimitive(this)
+@GenerateNameFromPrimitives
+@SpecifyPrimitives(include = [DataType.SHORT, DataType.BYTE])
+internal fun negIntegerPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { (-it).toPrimitive() }
