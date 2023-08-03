@@ -113,6 +113,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "MatMulIntegerToFloat" -> MatMulIntegerToFloat(name, version, attributes, inputs, outputs)
         "MaxPool" -> MaxPool(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
+        "Neg" -> Neg(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "Or" -> Or(name, version, attributes, inputs, outputs)
