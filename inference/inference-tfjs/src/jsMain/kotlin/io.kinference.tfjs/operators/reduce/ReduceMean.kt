@@ -11,7 +11,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.toIntArray
 import io.kinference.utils.toTypedIntArray
 
 sealed class ReduceMean(
@@ -57,8 +56,8 @@ class ReduceMeanVer1(
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("axes", setOf(AttributeProto.AttributeType.INTS), false, LongArray(0)),
-            AttributeInfo("keepdims", setOf(AttributeProto.AttributeType.INT), false, 1),
+            AttributeInfo(name = "axes", types = setOf(AttributeProto.AttributeType.INTS), required = false,  default = LongArray(0)),
+            AttributeInfo(name = "keepdims", types = setOf(AttributeProto.AttributeType.INT), required = false, default = 1),
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 18)
@@ -98,8 +97,8 @@ class ReduceMeanVer18(
         )
 
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("keepdims", setOf(AttributeProto.AttributeType.INT), false, 1),
-            AttributeInfo("noop_with_empty_axes", setOf(AttributeProto.AttributeType.INT), false, 0)
+            AttributeInfo(name = "keepdims", types = setOf(AttributeProto.AttributeType.INT), required = false, default = 1),
+            AttributeInfo(name = "noop_with_empty_axes", types = setOf(AttributeProto.AttributeType.INT), required = false, default = 0)
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 18)

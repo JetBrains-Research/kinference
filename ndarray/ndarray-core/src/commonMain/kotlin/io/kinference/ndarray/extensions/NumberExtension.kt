@@ -1,5 +1,7 @@
 package io.kinference.ndarray.extensions
 
+import kotlin.math.sqrt
+
 internal val Byte.Companion.MAX_VALUE_FOR_MIN: Byte
     get() = MAX_VALUE
 
@@ -63,3 +65,11 @@ internal val Double.Companion.MIN_VALUE_FOR_MAX: Double
 internal inline fun abs(x: UInt) = x
 
 internal inline fun abs(x: ULong) = x
+
+internal inline fun sqrt(x: Int) = sqrt(x.toDouble()).toInt()
+
+internal inline fun sqrt(x: Long) = sqrt(x.toDouble()).toLong()
+
+internal inline fun sqrt(x: UInt) = sqrt(x.toDouble()).toUInt()
+
+internal inline fun sqrt(x: ULong) = sqrt(x.toDouble()).toULong()
