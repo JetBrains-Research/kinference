@@ -16,6 +16,8 @@ internal fun PrimitiveNDArray.reduceOperationPrimitive(
     initOutputValue: PrimitiveType? = null,
     operation: (output: PrimitiveType, input: PrimitiveType) -> PrimitiveType
 ): PrimitiveNDArray {
+    if (axes.isEmpty()) return this
+
     val axesToReduce = axes.map { indexAxis(it) }.toSet()
     require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-${rank}, ${rank - 1}]" }
 
