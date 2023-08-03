@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER", "UnusedReceiverParameter")
+
 package io.kinference.ndarray.stubs
 
 import io.kinference.ndarray.arrays.pointers.*

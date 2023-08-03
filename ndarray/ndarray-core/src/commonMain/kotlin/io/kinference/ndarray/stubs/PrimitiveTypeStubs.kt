@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER", "UnusedReceiverParameter", "unused")
+
 package io.kinference.ndarray.stubs
 
 import io.kinference.primitives.types.PrimitiveType

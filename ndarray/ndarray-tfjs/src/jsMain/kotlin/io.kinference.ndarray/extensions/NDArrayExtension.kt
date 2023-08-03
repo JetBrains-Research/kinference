@@ -223,7 +223,7 @@ suspend fun NumberNDArrayTFJS.isInf(detectNegative: Boolean = true, detectPositi
 fun NumberNDArrayTFJS.isNaN() = BooleanNDArrayTFJS(tfjsArray.isNaN())
 
 suspend fun List<NumberNDArrayTFJS>.max(): NumberNDArrayTFJS {
-    if (isEmpty()) error("Array for max operation must have at least one element")
+    require(isNotEmpty()) { "Input array must have at least one element" }
     if (size == 1) return single()
 
     return tidyNDArray { reduce { acc, next -> max(acc, next) } }
@@ -233,6 +233,16 @@ suspend fun Array<out NumberNDArrayTFJS>.max() = toList().max()
 
 suspend fun maxOf(vararg inputs: NumberNDArrayTFJS) = inputs.max()
 
+suspend fun List<NumberNDArrayTFJS>.min(): NumberNDArrayTFJS {
+    require(isNotEmpty()) { "Input array must have at least one element" }
+    if (size == 1) return single()
+
+    return tidyNDArray { reduce { acc, next -> min(acc, next) } }
+}
+
+suspend fun Array<out NumberNDArrayTFJS>.min() = toList().min()
+
+suspend fun minOf(vararg inputs: NumberNDArrayTFJS) = inputs.min()
 
 suspend fun <T : NDArrayTFJS> T.trilu(k: Int = 0, upper: Boolean = true): T {
     require(rank >= 2) { "Input tensor has to be at least of rank=2, but tensor of rank=${rank} was found" }
