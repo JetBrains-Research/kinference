@@ -13,5 +13,5 @@ expect object FastMath {
 
 inline fun FastMath.exp(value: Float) = exp(value.toDouble()).toFloat()
 
-inline fun FastMath.exp(value: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
-inline fun FastMath.copySign(value: PrimitiveType, sign: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+internal inline fun FastMath.exp(value: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+internal inline fun FastMath.copySign(value: PrimitiveType, sign: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
