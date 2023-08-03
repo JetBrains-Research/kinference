@@ -11,14 +11,18 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 internal suspend fun List<PrimitiveNDArray>.fold(
-    initialValue: PrimitiveType,
+    initialValue: PrimitiveType? = null,
     op: (PrimitiveType, PrimitiveType) -> PrimitiveType
 ): PrimitiveNDArray {
     require(isNotEmpty()) { "Input array must have at least one element" }
     if (size == 1) return single()
 
     val newShape = broadcastShape(this.map { it.shape })
-    val destination = MutablePrimitiveNDArray(newShape) { initialValue }
+    val destination = MutablePrimitiveNDArray(newShape)
+
+    if (initialValue != null) {
+        destination.fill(initialValue)
+    }
 
     return Broadcasting.applyWithBroadcast(this, destination) { inputs, output ->
         output as MutablePrimitiveNDArray
