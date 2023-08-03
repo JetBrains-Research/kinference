@@ -361,3 +361,15 @@ suspend fun NumberNDArrayTFJS.reduceLogSum(axes: IntArray, keepDims: Boolean): N
 }
 
 suspend fun NumberNDArrayTFJS.reduceLogSum(axis: Int, keepDims: Boolean) = reduceLogSum(intArrayOf(axis), keepDims)
+
+
+suspend fun NumberNDArrayTFJS.reduceLogSumExp(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
+    if (axes.isEmpty()) return this
+
+    return tidyNDArray {
+        val expTensor = this.exp()
+        val sumTensor = expTensor.reduceSum(axes, keepDims)
+
+        return@tidyNDArray sumTensor.log()
+    }
+}
