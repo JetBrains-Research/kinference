@@ -2,6 +2,7 @@
 
 package io.kinference.ndarray.extensions.fold
 
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.broadcasting.Broadcasting
@@ -10,13 +11,16 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 internal suspend fun List<PrimitiveNDArray>.fold(
-    initial: MutablePrimitiveNDArray,
+    initialValue: PrimitiveType,
     op: (PrimitiveType, PrimitiveType) -> PrimitiveType
 ): PrimitiveNDArray {
     require(isNotEmpty()) { "Input array must have at least one element" }
     if (size == 1) return single()
 
-    return Broadcasting.applyWithBroadcast(this, initial) { inputs, output ->
+    val newShape = broadcastShape(this.map { it.shape })
+    val destination = MutablePrimitiveNDArray(newShape) { initialValue }
+
+    return Broadcasting.applyWithBroadcast(this, destination) { inputs, output ->
         output as MutablePrimitiveNDArray
         for (input in inputs) {
             input as PrimitiveNDArray
@@ -37,12 +41,12 @@ internal suspend fun List<PrimitiveNDArray>.fold(
 }
 
 internal suspend fun Array<out PrimitiveNDArray>.fold(
-    initial: MutablePrimitiveNDArray,
+    initialValue: PrimitiveType,
     op: (PrimitiveType, PrimitiveType) -> PrimitiveType
-) = this.toList().fold(initial, op)
+) = this.toList().fold(initialValue, op)
 
 internal suspend fun fold(
-    initial: MutablePrimitiveNDArray,
+    initialValue: PrimitiveType,
     op: (PrimitiveType, PrimitiveType) -> PrimitiveType,
     vararg inputs: PrimitiveNDArray
-) = inputs.fold(initial, op)
+) = inputs.fold(initialValue, op)

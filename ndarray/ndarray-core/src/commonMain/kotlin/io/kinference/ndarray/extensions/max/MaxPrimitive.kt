@@ -14,9 +14,7 @@ import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
 internal suspend fun List<PrimitiveNDArray>.max(): PrimitiveNDArray {
-    val newShape = broadcastShape(this.map { it.shape })
-    val destination = MutablePrimitiveNDArray(newShape) { PrimitiveType.MIN_VALUE_FOR_MAX }
-    return fold(destination) { first, second -> maxOf(first, second) }
+    return fold(initialValue = PrimitiveType.MIN_VALUE_FOR_MAX) { first, second -> maxOf(first, second) }
 }
 
 @MakePublic
