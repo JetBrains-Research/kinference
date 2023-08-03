@@ -59,3 +59,7 @@ internal val Float.Companion.MIN_VALUE_FOR_MAX: Float
 
 internal val Double.Companion.MIN_VALUE_FOR_MAX: Double
     get() = NEGATIVE_INFINITY
+
+internal inline fun abs(x: UInt) = x
+
+internal inline fun abs(x: ULong) = x
