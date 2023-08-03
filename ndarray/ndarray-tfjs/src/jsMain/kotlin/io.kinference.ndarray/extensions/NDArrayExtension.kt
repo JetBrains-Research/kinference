@@ -312,6 +312,8 @@ fun NumberNDArrayTFJS.reduceMean(axis: Int, keepDims: Boolean): NumberNDArrayTFJ
 }
 
 fun NumberNDArrayTFJS.reduceMean(axes: Array<Int>, keepDims: Boolean): NumberNDArrayTFJS {
+    if (axes.isEmpty()) return this
+
     val meanArray = tfjsArray.mean(axes, keepDims)
     return NumberNDArrayTFJS(meanArray)
 }
@@ -348,3 +350,14 @@ suspend fun NumberNDArrayTFJS.reduceL2(axes: IntArray, keepDims: Boolean): Numbe
 }
 
 suspend fun NumberNDArrayTFJS.reduceL2(axis: Int, keepDims: Boolean) = reduceL2(intArrayOf(axis), keepDims)
+
+suspend fun NumberNDArrayTFJS.reduceLogSum(axes: IntArray, keepDims: Boolean): NumberNDArrayTFJS {
+    if (axes.isEmpty()) return this
+
+    return tidyNDArray {
+        val sum = reduceSum(axes, keepDims)
+        return@tidyNDArray sum.log()
+    }
+}
+
+suspend fun NumberNDArrayTFJS.reduceLogSum(axis: Int, keepDims: Boolean) = reduceLogSum(intArrayOf(axis), keepDims)
