@@ -12,8 +12,6 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
 import io.kinference.utils.toIntArray
-import io.kinference.utils.toTypedIntArray
-import kotlinx.atomicfu.AtomicIntArray
 
 sealed class ReduceL1(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {

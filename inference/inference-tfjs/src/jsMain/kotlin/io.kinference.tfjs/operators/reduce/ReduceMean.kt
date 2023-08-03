@@ -11,7 +11,6 @@ import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
-import io.kinference.utils.toIntArray
 import io.kinference.utils.toTypedIntArray
 
 sealed class ReduceMean(
