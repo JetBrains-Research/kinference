@@ -39,3 +39,5 @@ internal fun min(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw Unsu
 internal fun max(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun maxOf(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 internal fun minOf(a: PrimitiveType, b: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
+
+internal fun ln(x: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
