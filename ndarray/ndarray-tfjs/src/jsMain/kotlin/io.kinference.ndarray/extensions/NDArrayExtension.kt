@@ -373,3 +373,5 @@ suspend fun NumberNDArrayTFJS.reduceLogSumExp(axes: IntArray, keepDims: Boolean)
         return@tidyNDArray sumTensor.log()
     }
 }
+
+suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())

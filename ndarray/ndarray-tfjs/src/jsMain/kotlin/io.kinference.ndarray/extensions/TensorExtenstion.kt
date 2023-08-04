@@ -308,3 +308,5 @@ internal fun ArrayTFJS.sin() = sin(this)
 internal fun ArrayTFJS.mean(axis: Int, keepDims: Boolean) = mean(this, arrayOf(axis), keepDims)
 
 internal fun ArrayTFJS.mean(axes: Array<Int>, keepDims: Boolean) = mean(this, axes, keepDims)
+
+internal fun ArrayTFJS.reciprocal() = reciprocal(this)

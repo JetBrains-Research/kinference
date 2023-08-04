@@ -105,6 +105,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)
+        "Reciprocal" -> Reciprocal(name, version, attributes, inputs, outputs)
         "ReduceL1" -> ReduceL1(name, version, attributes, inputs, outputs)
         "ReduceL2" -> ReduceL2(name, version, attributes, inputs, outputs)
         "ReduceLogSum" -> ReduceLogSum(name, version, attributes, inputs, outputs)
