@@ -7,6 +7,7 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.stubs.*
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
@@ -25,3 +26,6 @@ internal fun PrimitiveNDArray.round(): PrimitiveNDArray = applyElementWise { rou
 
 @MakePublic
 internal fun PrimitiveNDArray.sqrt(): PrimitiveNDArray = applyElementWise { sqrt(it) }
+
+@MakePublic
+internal fun PrimitiveNDArray.reciprocal(): PrimitiveNDArray = applyElementWise { PrimitiveConstants.ONE / it }

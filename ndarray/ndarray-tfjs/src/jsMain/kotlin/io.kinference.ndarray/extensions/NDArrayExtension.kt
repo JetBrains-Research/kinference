@@ -348,3 +348,5 @@ suspend fun NumberNDArrayTFJS.reduceL2(axes: IntArray, keepDims: Boolean): Numbe
 }
 
 suspend fun NumberNDArrayTFJS.reduceL2(axis: Int, keepDims: Boolean) = reduceL2(intArrayOf(axis), keepDims)
+
+suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())
