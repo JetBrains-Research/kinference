@@ -361,3 +361,5 @@ suspend fun NumberNDArrayTFJS.reduceLogSum(axes: IntArray, keepDims: Boolean): N
 }
 
 suspend fun NumberNDArrayTFJS.reduceLogSum(axis: Int, keepDims: Boolean) = reduceLogSum(intArrayOf(axis), keepDims)
+
+suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())
