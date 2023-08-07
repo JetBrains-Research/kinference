@@ -18,28 +18,28 @@ def main():
     parser.add_argument(
         "--core_factory_file",
         help="Path to core operator factory",
-        default="../inference/inference-core/src/commonMain/kotlin/io/kinference.core/operators/KIOperatorFactory.kt",
+        default="inference/inference-core/src/commonMain/kotlin/io/kinference.core/operators/KIOperatorFactory.kt",
         required=False
     )
 
     parser.add_argument(
         "--tfjs_factory_file",
         help="Path to TFJS operator factory",
-        default="../inference/inference-tfjs/src/jsMain/kotlin/io.kinference.tfjs/operators/TFJSOperatorFactory.kt",
+        default="inference/inference-tfjs/src/jsMain/kotlin/io.kinference.tfjs/operators/TFJSOperatorFactory.kt",
         required=False
     )
 
     parser.add_argument(
         "--core_doc_file",
         help="Path to core operators documentation",
-        default="../docs/CoreOperators.md",
+        default="docs/CoreOperators.md",
         required=False
     )
 
     parser.add_argument(
         "--tfjs_doc_file",
         help="Path to TFJS operators documentation",
-        default="../docs/TfjsOperators.md",
+        default="docs/TfjsOperators.md",
         required=False
     )
 
