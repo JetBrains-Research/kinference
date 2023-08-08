@@ -1,16 +1,12 @@
 name: Docs Generation
 
 on:
-  pull_request:
+  push:
     branches:
       - master
-    types:
-      - closed
 
 jobs:
   GenerateDocs:
-    if: ${{ github.event.pull_request.merged }}
-
     runs-on: ubuntu-latest
 
     permissions:
@@ -19,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: master
+          ssh-key: ${{ secrets.BOT_SSH_KEY }}
 
       - name: Python setup
         uses: actions/setup-python@v4
@@ -35,8 +31,7 @@ jobs:
           python docs-generator/main.py
 
       - name: Push new docs
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Update documentation
-          file_pattern: 'docs/*.md'
-          branch: master
+        run: |
+          git add docs
+          git commit -m 'CI: Update documentation'
+          git push
