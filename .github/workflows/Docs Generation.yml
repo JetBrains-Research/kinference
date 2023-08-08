@@ -33,5 +33,7 @@ jobs:
       - name: Push new docs
         run: |
           git add docs
+          git config --global user.email "doc-bot@github-actions.com"
+          git config --global user.name "Documentation Bot"
           git commit -m 'CI: Update documentation'
           git push
