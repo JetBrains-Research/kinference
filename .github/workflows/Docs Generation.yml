@@ -1,0 +1,39 @@
+name: Docs Generation
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+
+jobs:
+  GenerateDocs:
+    if: ${{ github.event.pull_request.merged }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r docs-generator/requirements.txt
+
+      - name: Generate docs
+        run: |
+          python docs-generator/main.py
+
+      - name: Push new docs
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update documentation
+          file_pattern: 'docs/*.md'

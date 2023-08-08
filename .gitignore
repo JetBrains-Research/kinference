@@ -6,3 +6,5 @@ test-data
 *.iml
 **/kotlin-gen
 credentials.conf
+venv
+.DS_Store
