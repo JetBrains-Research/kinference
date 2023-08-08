@@ -5,11 +5,7 @@ from onnx.defs import OpSchema
 def op_string(onnx_operator: OpSchema, ki_ops: List[str]) -> str:
     op_name = onnx_operator.name
     is_implemented = op_name in ki_ops
-    tick: str
-    if is_implemented:
-        tick = "x"
-    else:
-        tick = " "
+    tick = "x" if is_implemented else " "
 
     return f"- [{tick}] [{op_name}](https://github.com/onnx/onnx/blob/main/docs/Operators.md#{op_name})\n"
 
