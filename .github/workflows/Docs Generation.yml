@@ -37,3 +37,4 @@ jobs:
         with:
           commit_message: Update documentation
           file_pattern: 'docs/*.md'
+          branch: master
