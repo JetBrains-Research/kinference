@@ -13,9 +13,16 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout base code
+        uses: actions/checkout@v3
         with:
-          ssh-key: ${{ secrets.BOT_SSH_KEY }}
+          path: kinference
+
+      - name: Checkout wiki
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.repository}}.wiki
+          path: kinference-wiki
 
       - name: Python setup
         uses: actions/setup-python@v4
@@ -23,17 +30,19 @@ jobs:
           python-version: 3.9
 
       - name: Install dependencies
+        working-directory: kinference
         run: |
           python -m pip install -r docs-generator/requirements.txt
 
       - name: Generate docs
+        working-directory: kinference
         run: |
-          python docs-generator/main.py
+          python docs-generator/main.py \ 
+          --core_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-Core-supported-operators.md \ 
+          --tfjs_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-TensorFlow.js-supported-operators.md
 
-      - name: Push new docs
-        run: |
-          git add docs
-          git config --global user.email "doc-bot@github-actions.com"
-          git config --global user.name "Documentation Bot"
-          git commit -m 'CI: Update documentation'
-          git push
+      - name: Commit updated documentation
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: kinference-wiki
+          commit_message: 'CI: Update documentation'
