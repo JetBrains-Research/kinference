@@ -37,9 +37,7 @@ jobs:
       - name: Generate docs
         working-directory: kinference
         run: |
-          python docs-generator/main.py \ 
-          --core_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-Core-supported-operators.md \ 
-          --tfjs_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-TensorFlow.js-supported-operators.md
+          python docs-generator/main.py --core_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-Core-supported-operators.md --tfjs_doc_file $GITHUB_WORKSPACE/kinference-wiki/KInference-TensorFlow.js-supported-operators.md
 
       - name: Commit updated documentation
         uses: stefanzweifel/git-auto-commit-action@v4
