@@ -4,9 +4,9 @@ from onnx.defs import OpSchema
 
 def op_string(onnx_operator: OpSchema, ki_ops: List[str]) -> str:
     op_name = onnx_operator.name
-    isRealised = op_name in ki_ops
+    is_implemented = op_name in ki_ops
     tick: str
-    if isRealised:
+    if is_implemented:
         tick = "x"
     else:
         tick = " "
@@ -20,12 +20,12 @@ def doc_string(ki_ops: List[str], onnx_ops: Dict[str, List[OpSchema]]) -> str:
         out_string += f"### {domain}\n"
 
         domain_ops = onnx_ops[domain]
-        realized_ops = 0
+        implemented_ops = 0
         for onnx_op in domain_ops:
             if onnx_op.name in ki_ops:
-                realized_ops += 1
+                implemented_ops += 1
 
-        out_string += f"#### Supported ops: {realized_ops}/{len(domain_ops)}\n"
+        out_string += f"#### Supported ops: {implemented_ops}/{len(domain_ops)}\n"
 
         function_ops = list(filter(lambda op: op.has_function, domain_ops))
         basic_ops = list(filter(lambda op: not op.has_function, domain_ops))
