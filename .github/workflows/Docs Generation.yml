@@ -1,9 +1,16 @@
 name: Docs Generation
 
-on: [ pull_request ]
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
 
 jobs:
   GenerateDocs:
+    if: ${{ github.event.pull_request.merged }}
+
     runs-on: ubuntu-latest
 
     permissions:
