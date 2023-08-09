@@ -1,4 +1,4 @@
-package io.kinference.ndarray.extensions.reverse
+package io.kinference.ndarray.extensions
 
 sealed class ReverseSeqMode {
     abstract fun index(batchIdx: Int, seqIdx: Int, numBatches: Int, maxSeqLength: Int, blockSize: Int): Int

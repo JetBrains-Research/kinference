@@ -140,6 +140,8 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
         return pad(padsArray, mode, constantValue)
     }
 
+    abstract fun asMutable(): MutableNDArray
+
     override fun clone() = tfjsArray.clone().toNDArray()
 
     companion object {

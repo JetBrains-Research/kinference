@@ -46,12 +46,18 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
                 DataType.UINT32 -> NDArrayTFJS.int(value as UIntArray, typedDims)
                 DataType.UINT64 -> NDArrayTFJS.int(value as ULongArray, typedDims)
                 DataType.BOOL -> NDArrayTFJS.boolean(value as BooleanArray, typedDims)
+                DataType.STRING -> NDArrayTFJS.string(value as Array<String>, typedDims)
                 else -> error("Unsupported type: $type")
             }.asTensor(nameNotNull)
         }
 
         private fun parseArray(proto: TensorProto): Any {
-            val array = if (proto.isString()) proto.stringData else proto.arrayData
+            val array = if (proto.isString()) {
+                val data = proto.stringData
+                Array(data.size) { data[it].toString() }
+            } else {
+                proto.arrayData
+            }
             requireNotNull(array) { "Array value should be initialized" }
             return array
         }

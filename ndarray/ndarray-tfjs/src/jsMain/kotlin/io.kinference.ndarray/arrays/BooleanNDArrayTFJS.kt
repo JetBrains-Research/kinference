@@ -73,6 +73,8 @@ open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArr
     infix fun xor(other: BooleanNDArrayTFJS): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.xor(other.tfjsArray))
     }
+
+    override fun asMutable() = MutableBooleanNDArrayTFJS(tfjsArray)
 }
 
 class MutableBooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsArray), MutableNDArray {
