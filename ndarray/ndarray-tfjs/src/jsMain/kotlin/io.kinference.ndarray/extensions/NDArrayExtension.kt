@@ -375,3 +375,22 @@ suspend fun NumberNDArrayTFJS.reduceLogSumExp(axes: IntArray, keepDims: Boolean)
 }
 
 suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())
+
+fun NumberNDArrayTFJS.pythonRem(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.mod(other.tfjsArray))
+
+suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS): NumberNDArrayTFJS {
+    return tidyNDArray {
+        val pythonRem = pythonRem(other)
+        val defaultRem = pythonRem - other
+
+        val zero = NDArrayTFJS.intScalar(0)
+
+        val leftLessZero = this.less(zero)
+        val rightLessZero = other.less(zero)
+        val pythonRemNotEqualsZero = pythonRem.notEqual(zero)
+
+        val mask = (leftLessZero or rightLessZero) and pythonRemNotEqualsZero
+
+        return@tidyNDArray defaultRem.where(mask, pythonRem) as NumberNDArrayTFJS
+    }
+}
