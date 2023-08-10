@@ -52,6 +52,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "CastLike" -> CastLike(name, version, attributes, inputs, outputs)
         "Ceil" -> Ceil(name, version, attributes, inputs, outputs)
         "Celu" -> Celu(name, version, attributes, inputs, outputs)
+        "Clip" -> Clip(name, version, attributes, inputs, outputs)
         "Concat" -> Concat(name, version, attributes, inputs, outputs)
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)

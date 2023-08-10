@@ -28,7 +28,7 @@ sealed class Clip(
     }
 }
 
-class ClipVer11(
+class ClipVer11 internal constructor(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
@@ -72,6 +72,6 @@ class ClipVer11(
             DataType.ULONG -> (input as ULongNDArray).clip(minScalar as? ULong, maxScalar as? ULong)
             else -> error("Unsupported input type in Clip operator, current type ${input.type}")
         }
-        return listOf(output.asTensor("Y"))
+        return listOf(output.asTensor("output"))
     }
 }
