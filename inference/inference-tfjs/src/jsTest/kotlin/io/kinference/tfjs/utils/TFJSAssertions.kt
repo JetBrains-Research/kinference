@@ -10,6 +10,7 @@ import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.utils.ArrayAssertions
 import kotlin.math.abs
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 object TFJSAssertions {

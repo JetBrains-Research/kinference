@@ -23,6 +23,7 @@ internal fun Array<out ArrayTFJS>.getNDArrays() = Array(this.size) { this[it].to
 fun <T : NDArrayTFJS> T.dataInt() = tfjsArray.dataInt()
 fun <T : NDArrayTFJS> T.dataFloat() = tfjsArray.dataFloat()
 fun <T : NDArrayTFJS> T.dataBool() = tfjsArray.dataBool()
+fun <T : NDArrayTFJS> T.dataString() = tfjsArray.dataString()
 
 fun <T : NDArrayTFJS> T.broadcastTo(shape: Array<Int>) = tfjsArray.broadcastTo(shape).toNDArray() as T
 
@@ -375,3 +376,45 @@ suspend fun NumberNDArrayTFJS.reduceLogSumExp(axes: IntArray, keepDims: Boolean)
 }
 
 suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())
+
+suspend fun <T : NDArrayTFJS> T.reverseSeq(mode: ReverseSeqMode, seqLens: IntArray): T {
+    require(dtype != "string") { "String tensors are not supported by current version of reverseSeq" }
+
+    val numBatches = if (mode is ReverseSeqMode.BatchMajorMode) shape[0] else shape[1]
+    val maxSeqLen = if (mode is ReverseSeqMode.BatchMajorMode) shape[1] else shape[0]
+
+    require(seqLens.size == numBatches) { "Sequence lengths array size must have $numBatches elements but the array of size ${seqLens.size} was found" }
+
+    val blockSize = computeBlockSize(fromDim = 2)
+    val output = NDArrayTFJS.zerosOfType(shapeArray, dtype)
+
+    val outputBuffer = output.tfjsArray.bufferSync()
+    val inputData = this.tfjsArray.dataSync()
+
+    for (batchIdx in 0 until numBatches) {
+        val seqLength = seqLens[batchIdx]
+        require(seqLength in 0..maxSeqLen) { "Sequence length must be in range $[0, $maxSeqLen], current seq length=$seqLength" }
+
+        for (seqIdx in 0 until seqLength) {
+            val inputOffset = mode.index(batchIdx, seqIdx, numBatches, maxSeqLen, blockSize)
+            val outputOffset = mode.reverseIndex(batchIdx, seqIdx, seqLength, numBatches, maxSeqLen, blockSize)
+
+            val startIndex = strides.index(outputOffset)
+            val iterator = NDIndexer(strides, from = startIndex)
+            for (i in inputOffset until inputOffset + blockSize) {
+                outputBuffer.set(inputData[i], *iterator.next())
+            }
+        }
+
+        for (seqIdx in seqLength until maxSeqLen) {
+            val offset = mode.index(batchIdx, seqIdx, numBatches, maxSeqLen, blockSize)
+
+            val startIndex = strides.index(offset)
+            val iterator = NDIndexer(strides, from = startIndex)
+            for (i in offset until offset + blockSize) {
+                outputBuffer.set(inputData[i], *iterator.next())
+            }
+        }
+    }
+    return output.asMutable() as T
+}

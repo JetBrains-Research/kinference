@@ -76,6 +76,7 @@ fun createMutableNDArray(type: DataType, value: Any, strides: Strides): MutableN
         DataType.BOOLEAN -> MutableBooleanNDArray(value as BooleanTiledArray, strides)
         DataType.BYTE -> MutableByteNDArray(value as ByteTiledArray, strides)
         DataType.UBYTE -> MutableUByteNDArray(value as UByteTiledArray, strides)
+        DataType.ALL -> MutableStringNDArray(value as Array<String>, strides)
         else -> error("Unsupported data type $type")
     }
 }
@@ -94,6 +95,7 @@ fun createNDArray(type: DataType, value: Any, strides: Strides): NDArrayCore {
         DataType.BOOLEAN -> BooleanNDArray(value as BooleanTiledArray, strides)
         DataType.BYTE -> ByteNDArray(value as ByteTiledArray, strides)
         DataType.UBYTE -> UByteNDArray(value as UByteTiledArray, strides)
+        DataType.ALL -> StringNDArray(value as Array<String>, strides)
         else -> error("Unsupported data type $type")
     }
 }
@@ -112,6 +114,7 @@ fun createScalarNDArray(type: DataType, value: Any): NDArrayCore {
         DataType.BOOLEAN -> BooleanNDArray.scalar(value as Boolean)
         DataType.BYTE -> ByteNDArray.scalar(value as Byte)
         DataType.UBYTE -> UByteNDArray.scalar(value as UByte)
+        DataType.ALL -> StringNDArray.scalar(value as String)
         else -> error("Unsupported data type $type")
     }
 }
@@ -129,6 +132,7 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
         DataType.USHORT -> MutableUShortNDArray(UShortTiledArray(strides), strides)
         DataType.UINT -> MutableUIntNDArray(UIntTiledArray(strides), strides)
         DataType.ULONG -> MutableULongNDArray(ULongTiledArray(strides), strides)
+        DataType.ALL -> MutableStringNDArray(strides)
         else -> error("Unsupported data type $type")
     }
 }

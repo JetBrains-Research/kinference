@@ -24,7 +24,7 @@ class MutableNumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : Numb
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
-        other as MutableNumberNDArrayTFJS
+        other as NumberNDArrayTFJS
         val buffer = tfjsArray.bufferSync()
         val otherData = other.tfjsArray.dataSync()
         val startIndex = strides.index(offset)

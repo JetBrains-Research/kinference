@@ -119,6 +119,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ReduceSumSquare" -> ReduceSumSquare(name, version, attributes, inputs, outputs)
         "Relu" -> Relu(name, version, attributes, inputs, outputs)
         "Reshape" -> Reshape(name, version, attributes, inputs, outputs)
+        "ReverseSequence" -> ReverseSequence(name, version, attributes, inputs, outputs)
         "Round" -> Round(name, version, attributes, inputs, outputs)
         "ScatterElements" -> ScatterElements(name, version, attributes, inputs, outputs)
         "ScatterND" -> ScatterND(name, version, attributes, inputs, outputs)
