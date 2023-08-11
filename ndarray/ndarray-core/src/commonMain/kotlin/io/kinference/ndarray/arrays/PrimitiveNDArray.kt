@@ -15,6 +15,7 @@ import io.kinference.ndarray.extensions.abs.abs
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
 import io.kinference.ndarray.extensions.argMinMax.ArgMinMaxMode
 import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.reduce.primitive.reduceOperationPrimitive
 import io.kinference.ndarray.extensions.softmax.softmax
@@ -1266,6 +1267,15 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         fun matrixLike(shape: IntArray, init: (Int) -> PrimitiveType): PrimitiveNDArray {
             val blocks = PrimitiveTiledArray.matrixLike(shape, init)
             return PrimitiveNDArray(blocks, Strides(shape))
+        }
+
+        fun eyeLike(shape: IntArray, k: Int = 0): PrimitiveNDArray {
+            require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
+
+            return PrimitiveNDArray(shape) { it: IntArray ->
+                val (row, column) = it
+                if (column - k == row) PrimitiveConstants.ONE else PrimitiveConstants.ZERO
+            }
         }
 
         operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
