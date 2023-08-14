@@ -378,6 +378,15 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             return BooleanNDArray(BooleanTiledArray(1, 1) { value }, Strides.EMPTY)
         }
 
+        fun eyeLike(shape: IntArray, k: Int = 0): BooleanNDArray {
+            require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
+
+            return BooleanNDArray(shape) { it: IntArray ->
+                val (row, column) = it
+                (column - k) == row
+            }
+        }
+
         operator fun invoke(array: BooleanTiledArray, strides: Strides): BooleanNDArray {
             val blockSize = blockSizeByStrides(strides)
             return if (blockSize == array.blockSize) {

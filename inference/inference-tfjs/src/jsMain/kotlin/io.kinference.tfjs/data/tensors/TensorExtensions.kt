@@ -9,6 +9,8 @@ import io.kinference.types.*
 fun <T : NDArrayTFJS> T.asTensor(name: String? = null) =
     TFJSTensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape), type.resolveProtoDataType()), name ?: ""))
 
+fun <T : NDArrayTFJS> T.asTensor(type: TensorProto.DataType,name: String? = null) =
+    TFJSTensor(this, ValueInfo(ValueTypeInfo.TensorTypeInfo(TensorShape(shape), type), name ?: ""))
 
 fun String.tfTypeResolve(): TensorProto.DataType {
     return when (this) {

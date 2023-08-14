@@ -178,3 +178,5 @@ internal external val sin: (x: ArrayTFJS) -> ArrayTFJS
 internal external val mean: (x: ArrayTFJS, axis: Array<Int>, keepDims: Boolean) -> ArrayTFJS
 
 internal external val reciprocal: (x: ArrayTFJS) -> ArrayTFJS
+
+internal external val eye: (numRows: Int, numColumns: Int?, batchShape: Int?, dtype: String?) -> ArrayTFJS
