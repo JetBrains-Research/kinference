@@ -254,50 +254,22 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
         fun intOnes(shape: Array<Int>) = NumberNDArrayTFJS(ones(shape, "int32"))
         fun booleanOnes(shape: Array<Int>) = BooleanNDArrayTFJS(ones(shape, "bool"))
 
-        fun floatEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = floatEyeLike(arrayOf(numRows, numColumns), k)
-        fun floatEyeLike(shape: Array<Int>, k: Int = 0): NumberNDArrayTFJS {
+        private fun eyeLike(dtype: String, shape: Array<Int>, k: Int = 0): ArrayTFJS {
             require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
 
-            return if (k == 0) {
-                val (rows, columns) = shape
-                NumberNDArrayTFJS(eye(rows, columns, null, "float32"))
-            } else {
-                float(shape) { it: IntArray ->
-                    val (row, column) = it
-                    if (column - k == row) 1f else 0f
-                }
-            }
+            val (rows, columns) = shape
+            val indices = range(start = k, stop = k + rows, step = 1, "int32")
+            return oneHot(indices, columns, onValue = 1, offValue = 0, dtype).also { indices.dispose() }
         }
+
+        fun floatEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = floatEyeLike(arrayOf(numRows, numColumns), k)
+        fun floatEyeLike(shape: Array<Int>, k: Int = 0) = NumberNDArrayTFJS(eyeLike("float32", shape, k))
 
         fun intEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = intEyeLike(arrayOf(numRows, numColumns), k)
-        fun intEyeLike(shape: Array<Int>, k: Int = 0): NumberNDArrayTFJS {
-            require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
-
-            return if (k == 0) {
-                val (rows, columns) = shape
-                NumberNDArrayTFJS(eye(rows, columns, null, "int32"))
-            } else {
-                int(shape) { it: IntArray ->
-                    val (row, column) = it
-                    if (column - k == row) 1 else 0
-                }
-            }
-        }
+        fun intEyeLike(shape: Array<Int>, k: Int = 0) = NumberNDArrayTFJS(eyeLike("int32", shape, k))
 
         fun booleanEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = booleanEyeLike(arrayOf(numRows, numColumns), k)
-        fun booleanEyeLike(shape: Array<Int>, k: Int = 0): BooleanNDArrayTFJS {
-            require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
-
-            return if (k == 0) {
-                val (rows, columns) = shape
-                BooleanNDArrayTFJS(eye(rows, columns, null, "boolean"))
-            } else {
-                boolean(shape) { it: IntArray ->
-                    val (row, column) = it
-                    (column - k) == row
-                }
-            }
-        }
+        fun booleanEyeLike(shape: Array<Int>, k: Int = 0) = BooleanNDArrayTFJS(eyeLike("bool", shape, k))
 
         fun floatRange(start: Number, stop: Number, step: Number) = NumberNDArrayTFJS(range(start.toFloat(), stop.toFloat(), step.toFloat(), "float32"))
         fun intRange(start: Number, stop: Number, step: Number) = NumberNDArrayTFJS(range(start.toInt(), stop.toInt(), step.toInt(), "int32"))
