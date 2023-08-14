@@ -115,6 +115,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "MaxPool" -> MaxPool(name, version, attributes, inputs, outputs)
         "Mean" -> Mean(name, version, attributes, inputs, outputs)
         "Min" -> Min(name, version, attributes, inputs, outputs)
+        "Mod" -> Mod(name, version, attributes, inputs, outputs)
         "Mul" -> Mul(name, version, attributes, inputs, outputs)
         "Neg" -> Neg(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)

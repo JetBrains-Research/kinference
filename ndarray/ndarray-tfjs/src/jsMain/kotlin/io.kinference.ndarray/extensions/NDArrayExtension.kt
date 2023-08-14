@@ -418,3 +418,24 @@ suspend fun <T : NDArrayTFJS> T.reverseSeq(mode: ReverseSeqMode, seqLens: IntArr
     }
     return output.asMutable() as T
 }
+
+suspend fun NumberNDArrayTFJS.mod(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.mod(other.tfjsArray))
+
+suspend fun NumberNDArrayTFJS.fmod(other: NumberNDArrayTFJS): NumberNDArrayTFJS {
+    return tidyNDArray {
+        val modResult = mod(other)
+        val fmodResult = modResult - other
+
+        val zero = NDArrayTFJS.intScalar(0)
+
+        val leftLessZero = this.less(zero)
+        val rightLessZero = other.less(zero)
+        val modResultNotEqualsZero = modResult.notEqual(zero)
+
+        val maskForFmod = (leftLessZero xor rightLessZero) and modResultNotEqualsZero
+
+        return@tidyNDArray fmodResult.where(maskForFmod, modResult) as NumberNDArrayTFJS
+    }
+}
+
+suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS) = fmod(other)
