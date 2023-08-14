@@ -47,6 +47,7 @@ class ModVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     }
 
     private val fmod: Boolean by attribute { it: Number -> it.toInt() != 0 }
+    private val modFunction = if (fmod) NumberNDArrayTFJS::fmod else NumberNDArrayTFJS::mod
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         val left = inputs[0]!!.data as NumberNDArrayTFJS
@@ -57,11 +58,7 @@ class ModVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
         require(fmod || inputType != DataType.FLOAT) { "Operator Mod with attribute fmod=0 supports only Int tensors, current type is $inputType" }
 
-        val output = if (fmod) {
-            left.rem(right)
-        } else {
-            left.pythonRem(right)
-        }
+        val output = this.modFunction(left, right)
 
         return listOf(output.asTensor("C"))
     }

@@ -3,9 +3,11 @@
     DataType.SHORT,
     DataType.INT,
     DataType.LONG,
+    DataType.FLOAT,
+    DataType.DOUBLE
 )
 
-package io.kinference.ndarray.extensions.rem
+package io.kinference.ndarray.extensions.mod
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
@@ -19,11 +21,11 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
-internal suspend fun PrimitiveNDArray.pythonRem(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
+internal suspend fun PrimitiveNDArray.mod(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
     broadcastTwoTensorsPrimitive(this, other, dest) { left: PrimitiveType, right: PrimitiveType -> Math.floorMod(left, right) }
 
 @MakePublic
-internal suspend fun PrimitiveNDArray.pythonRem(other: PrimitiveNDArray): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.mod(other: PrimitiveNDArray): PrimitiveNDArray {
     val destShape = broadcastShape(listOf(this.shape, other.shape))
-    return pythonRem(other, MutablePrimitiveNDArray(destShape))
+    return mod(other, MutablePrimitiveNDArray(destShape))
 }

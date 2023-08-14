@@ -2,7 +2,7 @@
     DataType.NUMBER
 )
 
-package io.kinference.ndarray.extensions.rem
+package io.kinference.ndarray.extensions.mod
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
@@ -14,11 +14,11 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
-internal suspend fun PrimitiveNDArray.rem(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
+internal suspend fun PrimitiveNDArray.fmod(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
     broadcastTwoTensorsPrimitive(this, other, dest) { left: PrimitiveType, right: PrimitiveType -> (left % right).toPrimitive() }
 
 @MakePublic
-internal suspend operator fun PrimitiveNDArray.rem(other: PrimitiveNDArray): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.fmod(other: PrimitiveNDArray): PrimitiveNDArray {
     val destShape = broadcastShape(listOf(this.shape, other.shape))
-    return rem(other, MutablePrimitiveNDArray(destShape))
+    return fmod(other, MutablePrimitiveNDArray(destShape))
 }

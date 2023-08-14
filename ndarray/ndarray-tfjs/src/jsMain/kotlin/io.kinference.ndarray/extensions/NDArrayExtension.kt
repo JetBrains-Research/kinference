@@ -376,21 +376,23 @@ suspend fun NumberNDArrayTFJS.reduceLogSumExp(axes: IntArray, keepDims: Boolean)
 
 suspend fun NumberNDArrayTFJS.reciprocal() = NumberNDArrayTFJS(tfjsArray.reciprocal())
 
-fun NumberNDArrayTFJS.pythonRem(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.mod(other.tfjsArray))
+suspend fun NumberNDArrayTFJS.mod(other: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.mod(other.tfjsArray))
 
-suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS): NumberNDArrayTFJS {
+suspend fun NumberNDArrayTFJS.fmod(other: NumberNDArrayTFJS): NumberNDArrayTFJS {
     return tidyNDArray {
-        val pythonRem = pythonRem(other)
-        val defaultRem = pythonRem - other
+        val modResult = mod(other)
+        val fmodResult = modResult - other
 
         val zero = NDArrayTFJS.intScalar(0)
 
         val leftLessZero = this.less(zero)
         val rightLessZero = other.less(zero)
-        val pythonRemNotEqualsZero = pythonRem.notEqual(zero)
+        val modResultNotEqualsZero = modResult.notEqual(zero)
 
-        val mask = (leftLessZero or rightLessZero) and pythonRemNotEqualsZero
+        val maskForFmod = (leftLessZero xor rightLessZero) and modResultNotEqualsZero
 
-        return@tidyNDArray defaultRem.where(mask, pythonRem) as NumberNDArrayTFJS
+        return@tidyNDArray fmodResult.where(maskForFmod, modResult) as NumberNDArrayTFJS
     }
 }
+
+suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS) = fmod(other)

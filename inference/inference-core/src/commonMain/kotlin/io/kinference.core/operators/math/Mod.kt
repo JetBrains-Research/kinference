@@ -6,8 +6,8 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.rem.pythonRem
-import io.kinference.ndarray.extensions.rem.rem
+import io.kinference.ndarray.extensions.mod.fmod
+import io.kinference.ndarray.extensions.mod.mod
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -50,28 +50,18 @@ class ModVer10(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
 
     private val fmod: Boolean by attribute { it: Number -> it.toInt() != 0 }
 
+    private val modFunction = if (fmod) NumberNDArrayCore::fmod else NumberNDArrayCore::mod
+
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val left = inputs[0]!!.data as NumberNDArrayCore
         val right = inputs[1]!!.data as NumberNDArrayCore
 
-        require(left.type == right.type)
+        require(left.type == right.type) { "Input types must have same data type, current ${left.type} != ${right.type}" }
         val inputType = left.type
 
-        val output = if (fmod) {
-            left.rem(right)
-        } else {
-            when (inputType) {
-                DataType.BYTE -> (left as ByteNDArray).pythonRem(right as ByteNDArray)
-                DataType.SHORT -> (left as ShortNDArray).pythonRem(right as ShortNDArray)
-                DataType.INT -> (left as IntNDArray).pythonRem(right as IntNDArray)
-                DataType.LONG -> (left as LongNDArray).pythonRem(right as LongNDArray)
-                DataType.UBYTE -> (left as UByteNDArray).rem(right as UByteNDArray)
-                DataType.USHORT -> (left as UShortNDArray).rem(right as UShortNDArray)
-                DataType.UINT -> (left as UIntNDArray).rem(right as UIntNDArray)
-                DataType.ULONG -> (left as ULongNDArray).rem(right as ULongNDArray)
-                else -> error("Operator Mod with attribute fmod=0 supports only Int tensors, current type is $inputType")
-            }
-        }
+        require(fmod || inputType !in setOf(DataType.FLOAT, DataType.DOUBLE)) { "Operator Mod with attribute fmod=0 supports only Int tensors, current type is $inputType" }
+
+        val output = modFunction(left, right)
 
         return listOf(output.asTensor("C"))
     }
