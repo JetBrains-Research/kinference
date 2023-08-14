@@ -137,6 +137,25 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
     }
 }
 
+fun eyeLike(shape: IntArray, type: DataType, k: Int = 0): NDArrayCore {
+    require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
+
+    return when (type) {
+        DataType.DOUBLE -> DoubleNDArray.eyeLike(shape, k)
+        DataType.FLOAT -> FloatNDArray.eyeLike(shape, k)
+        DataType.BYTE -> ByteNDArray.eyeLike(shape, k)
+        DataType.UBYTE -> UByteNDArray.eyeLike(shape, k)
+        DataType.SHORT -> ShortNDArray.eyeLike(shape, k)
+        DataType.USHORT -> UShortNDArray.eyeLike(shape, k)
+        DataType.INT -> IntNDArray.eyeLike(shape, k)
+        DataType.UINT -> UIntNDArray.eyeLike(shape, k)
+        DataType.LONG -> LongNDArray.eyeLike(shape, k)
+        DataType.ULONG -> ULongNDArray.eyeLike(shape, k)
+        DataType.BOOLEAN -> BooleanNDArray.eyeLike(shape, k)
+        else -> error("EyeLike is only supported for numeric and boolean tensors, current type: $type")
+    }
+}
+
 fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
 
 val SUPPORTED_TYPES = setOf(DataType.DOUBLE, DataType.FLOAT, DataType.LONG, DataType.INT, DataType.SHORT)

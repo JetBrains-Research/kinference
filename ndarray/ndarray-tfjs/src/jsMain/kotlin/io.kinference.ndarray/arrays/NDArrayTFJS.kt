@@ -2,6 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.activateDefaultBackend
+import io.kinference.ndarray.core.eye
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.toFloatArray
@@ -252,6 +253,23 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
         fun floatOnes(shape: Array<Int>) = NumberNDArrayTFJS(ones(shape, "float32"))
         fun intOnes(shape: Array<Int>) = NumberNDArrayTFJS(ones(shape, "int32"))
         fun booleanOnes(shape: Array<Int>) = BooleanNDArrayTFJS(ones(shape, "bool"))
+
+        private fun eyeLike(dtype: String, shape: Array<Int>, k: Int = 0): ArrayTFJS {
+            require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
+
+            val (rows, columns) = shape
+            val indices = range(start = k, stop = k + rows, step = 1, "int32")
+            return oneHot(indices, columns, onValue = 1, offValue = 0, dtype).also { indices.dispose() }
+        }
+
+        fun floatEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = floatEyeLike(arrayOf(numRows, numColumns), k)
+        fun floatEyeLike(shape: Array<Int>, k: Int = 0) = NumberNDArrayTFJS(eyeLike("float32", shape, k))
+
+        fun intEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = intEyeLike(arrayOf(numRows, numColumns), k)
+        fun intEyeLike(shape: Array<Int>, k: Int = 0) = NumberNDArrayTFJS(eyeLike("int32", shape, k))
+
+        fun booleanEyeLike(numRows: Int, numColumns: Int, k: Int = 0) = booleanEyeLike(arrayOf(numRows, numColumns), k)
+        fun booleanEyeLike(shape: Array<Int>, k: Int = 0) = BooleanNDArrayTFJS(eyeLike("bool", shape, k))
 
         fun floatRange(start: Number, stop: Number, step: Number) = NumberNDArrayTFJS(range(start.toFloat(), stop.toFloat(), step.toFloat(), "float32"))
         fun intRange(start: Number, stop: Number, step: Number) = NumberNDArrayTFJS(range(start.toInt(), stop.toInt(), step.toInt(), "int32"))

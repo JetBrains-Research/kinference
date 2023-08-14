@@ -70,6 +70,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Erf" -> Erf(name, version, attributes, inputs, outputs)
         "Exp" -> Exp(name, version, attributes, inputs, outputs)
         "Expand" -> Expand(name, version, attributes, inputs, outputs)
+        "EyeLike" -> EyeLike(name, version, attributes, inputs, outputs)
         "FastGelu" -> FastGelu(name, version, attributes, inputs, outputs)
         "Flatten" -> Flatten(name, version, attributes, inputs, outputs)
         "Floor" -> Floor(name, version, attributes, inputs, outputs)
