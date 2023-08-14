@@ -57,6 +57,8 @@ open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         val indices = tensor(axes, arrayOf(axes.size), "int32")
         return StringNDArrayTFJS(tfjsArray.gatherNd(indices)).also { indices.dispose() }
     }
+
+    override fun asMutable() = MutableStringNDArrayTFJS(tfjsArray)
 }
 
 class MutableStringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArray), MutableNDArray {
@@ -74,9 +76,9 @@ class MutableStringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : Stri
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
-        other as MutableStringNDArrayTFJS
+        other as StringNDArrayTFJS
         val buffer = tfjsArray.bufferSync()
-        val otherData = other.tfjsArray.dataSync()
+        val otherData = other.dataString()
         val startIndex = strides.index(offset)
         val iterator = NDIndexer(strides, from = startIndex)
         for (i in startInOther until endInOther) {
@@ -98,7 +100,7 @@ class MutableStringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : Stri
     }
 
     override fun clean() {
-        val zerosArray = tensor(Array(linearSize) { false }, shapeArray, "bool")
+        val zerosArray = tensor(Array(linearSize) { "" }, shapeArray, "string")
         zerosArray.dispose()
         tfjsArray = zerosArray
     }

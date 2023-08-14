@@ -93,6 +93,13 @@ object KIAssertions {
                 ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
             }
 
+            TensorProto.DataType.STRING -> {
+                val expectedArray = (expected.data as StringNDArray).array
+                val actualArray = (actual.data as StringNDArray).array
+
+                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.name} does not match")
+            }
+
             else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
         }
     }

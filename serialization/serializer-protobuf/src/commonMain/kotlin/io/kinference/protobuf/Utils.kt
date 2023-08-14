@@ -50,6 +50,7 @@ fun DataType.resolveProtoDataType(): TensorProto.DataType {
         DataType.ULONG -> TensorProto.DataType.UINT64
         DataType.USHORT -> TensorProto.DataType.UINT16
         DataType.UBYTE -> TensorProto.DataType.UINT8
+        DataType.ALL -> TensorProto.DataType.STRING
         else -> error("Cannot resolve data type: $this")
     }
 }

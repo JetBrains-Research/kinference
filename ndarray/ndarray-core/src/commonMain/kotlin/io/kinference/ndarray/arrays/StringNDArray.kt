@@ -147,7 +147,8 @@ class MutableStringNDArray(array: Array<String>, strides: Strides = Strides.EMPT
     }
 
     override fun copyFrom(offset: Int, other: NDArray, startInOther: Int, endInOther: Int) {
-        TODO("Not yet implemented")
+        other as StringNDArray
+        other.array.copyInto(array, destinationOffset = offset, startInOther, endInOther)
     }
 
     override fun fill(value: Any, from: Int, to: Int) {

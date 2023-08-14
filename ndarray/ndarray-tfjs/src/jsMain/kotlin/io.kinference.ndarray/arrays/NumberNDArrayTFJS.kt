@@ -245,5 +245,5 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
 
     override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
 
-    fun asMutable() = MutableNumberNDArrayTFJS(tfjsArray)
+    override fun asMutable() = MutableNumberNDArrayTFJS(tfjsArray)
 }
