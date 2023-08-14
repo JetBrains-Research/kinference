@@ -16,6 +16,6 @@ suspend fun NumberNDArrayCore.mod(other: NumberNDArrayCore): NumberNDArrayCore {
         DataType.USHORT -> (this as UShortNDArray).mod(other as UShortNDArray)
         DataType.UINT -> (this as UIntNDArray).mod(other as UIntNDArray)
         DataType.ULONG -> (this as ULongNDArray).mod(other as ULongNDArray)
-        else -> error("")
+        else -> error("mod operation is only applicable to numeric tensors, current type: $type")
     }
 }

@@ -15,6 +15,6 @@ suspend fun NumberNDArrayCore.fmod(other: NumberNDArrayCore): NumberNDArrayCore 
         DataType.USHORT -> (this as UShortNDArray).fmod(other as UShortNDArray)
         DataType.UINT -> (this as UIntNDArray).fmod(other as UIntNDArray)
         DataType.ULONG -> (this as ULongNDArray).fmod(other as ULongNDArray)
-        else -> error("")
+        else -> error("fmod operation is only applicable to numeric tensors, current type: $type")
     }
 }
