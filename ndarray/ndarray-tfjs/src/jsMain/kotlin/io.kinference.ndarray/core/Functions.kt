@@ -182,3 +182,5 @@ internal external val reciprocal: (x: ArrayTFJS) -> ArrayTFJS
 internal external val eye: (numRows: Int, numColumns: Int?, batchShape: Int?, dtype: String?) -> ArrayTFJS
 
 internal external val mod: (x: ArrayTFJS, y: ArrayTFJS) -> ArrayTFJS
+
+internal external val pow: (base: ArrayTFJS, exp: ArrayTFJS) -> ArrayTFJS

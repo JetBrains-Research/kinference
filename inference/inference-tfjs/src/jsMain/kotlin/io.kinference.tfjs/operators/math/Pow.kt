@@ -1,14 +1,14 @@
-package io.kinference.core.operators.math
+package io.kinference.tfjs.operators.math
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArrayCore
-import io.kinference.ndarray.extensions.pow.pow
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.pow
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class Pow(
     name: String,
@@ -16,7 +16,7 @@ sealed class Pow(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 7)
 
@@ -53,9 +53,9 @@ class PowVer7(
         private val INFO = OperatorInfo("Pow", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val input = inputs[0]!!.data as NumberNDArrayCore
-        val powArray = inputs[1]!!.data as NumberNDArrayCore
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val powArray = inputs[1]!!.data as NumberNDArrayTFJS
         return listOf(input.pow(powArray).asTensor("Z"))
     }
 }
