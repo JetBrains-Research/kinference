@@ -22,6 +22,7 @@ internal fun PrimitiveType.isNaN(): Boolean = throw UnsupportedOperationExceptio
 internal fun PrimitiveType.withSign(sign: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
 internal fun PrimitiveType.pow(n: Int): PrimitiveType = throw UnsupportedOperationException()
+internal fun PrimitiveType.pow(n: Double): PrimitiveType = throw UnsupportedOperationException()
 internal fun PrimitiveType.pow(n: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 
 internal val PrimitiveType.Companion.MIN_VALUE_FOR_MAX: PrimitiveType
