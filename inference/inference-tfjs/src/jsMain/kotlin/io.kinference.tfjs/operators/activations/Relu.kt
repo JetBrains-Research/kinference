@@ -36,12 +36,12 @@ class ReluVer6(
     outputs: List<String>
 ) : Relu(name, INFO, attributes, inputs, outputs) {
     companion object {
-        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES
+        private val TYPE_CONSTRAINTS = FLOAT_DATA_TYPES + INT_DATA_TYPES
 
         private val INPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "X", optional = false))
         private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false))
 
-        internal val VERSION = VersionInfo(sinceVersion = 6, untilVersion = 14)
+        internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Relu", emptyMap(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
