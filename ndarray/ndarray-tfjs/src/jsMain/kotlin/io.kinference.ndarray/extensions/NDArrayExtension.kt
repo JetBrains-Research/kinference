@@ -439,3 +439,5 @@ suspend fun NumberNDArrayTFJS.fmod(other: NumberNDArrayTFJS): NumberNDArrayTFJS 
 }
 
 suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS) = fmod(other)
+
+suspend fun NumberNDArrayTFJS.pow(exp: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.pow(exp.tfjsArray))

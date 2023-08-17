@@ -105,6 +105,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Not" -> Not(name, version, attributes, inputs, outputs)
         "Or" -> Or(name, version, attributes, inputs, outputs)
         "Pad" -> Pad(name, version, attributes, inputs, outputs)
+        "Pow" -> Pow(name, version, attributes, inputs, outputs)
         "QAttention" -> QAttention(name, version, attributes, inputs, outputs)
         "QEmbedLayerNormalization" -> QEmbedLayerNormalization(name, version, attributes, inputs, outputs)
         "Range" -> Range(name, version, attributes, inputs, outputs)

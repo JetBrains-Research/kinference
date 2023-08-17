@@ -312,3 +312,12 @@ internal fun ArrayTFJS.mean(axes: Array<Int>, keepDims: Boolean) = mean(this, ax
 internal fun ArrayTFJS.reciprocal() = reciprocal(this)
 
 internal fun ArrayTFJS.mod(other: ArrayTFJS) = mod(this, other)
+
+internal fun ArrayTFJS.pow(exp: ArrayTFJS): ArrayTFJS {
+    val powArray = pow(this, exp)
+    val powRound = if (dtype == "int32" && powArray.dtype == "float32") {
+        val round = powArray.round()
+        round.also { powArray.dispose() }
+    } else powArray
+    return powRound.cast(dtype).also { powRound.dispose() }
+}
