@@ -46,4 +46,39 @@ class UnsqueezeTest {
     fun test_unsqueeze_unsorted_axes() = TestRunner.runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_unsorted_axes"))
     }
+
+    @Test
+    fun test_unsqueeze_axis_0_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_axis_0_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_axis_1_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_axis_1_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_axis_2_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_axis_2_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_with_negative_axes_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_negative_axes_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_three_axes_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_three_axes_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_two_axes_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_two_axes_v13"))
+    }
+
+    @Test
+    fun test_unsqueeze_unsorted_axes_v13() = TestRunner.runTest {
+        KIAccuracyRunner.runFromResources(getTargetPath("test_unsqueeze_unsorted_axes_v13"))
+    }
 }
