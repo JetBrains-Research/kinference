@@ -1,3 +1,4 @@
 test_data_set_0/input_0.pb:ONNX_TYPE:ONNX_SEQUENCE
 test_data_set_0/input_1.pb:ONNX_TYPE:ONNX_SEQUENCE
 test_data_set_0/output_0.pb:ONNX_TYPE:ONNX_SEQUENCE
+test_data_set_0/output_1.pb:ONNX_TYPE:ONNX_SEQUENCE

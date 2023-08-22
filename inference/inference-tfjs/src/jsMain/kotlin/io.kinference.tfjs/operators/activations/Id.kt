@@ -2,10 +2,10 @@ package io.kinference.tfjs.operators.activations
 
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.tfjs.data.tensors.TFJSTensor
-import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class Identity(
     name: String,
@@ -36,14 +36,18 @@ class IdentityVer1(
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
-        private val INPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false))
-        private val OUTPUT_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
+        private val INPUT_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "input", optional = false, onnxDataTypes = setOf(ONNXDataType.ONNX_SEQUENCE, ONNXDataType.ONNX_TENSOR))
+        )
+        private val OUTPUT_INFO = listOf(
+            IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false, onnxDataTypes = setOf(ONNXDataType.ONNX_SEQUENCE, ONNXDataType.ONNX_TENSOR))
+        )
 
-        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 14)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("Identity", emptyMap(), INPUT_INFO, OUTPUT_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        return listOf(inputs[0]!!.data.clone().asTensor("output"))
+        return listOf(inputs[0]!!.clone("output"))
     }
 }
