@@ -27,6 +27,14 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
         data.values.forEach { it.close() }
     }
 
+    override fun clone(newName: String?): TFJSMap {
+        val newMap = HashMap<Any, TFJSData<*>>(data.size)
+        for ((key, value) in data.entries) {
+            newMap[key] = value.clone()
+        }
+        return TFJSMap(newName, newMap, info)
+    }
+
     companion object {
         fun create(proto: MapProto): TFJSMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
