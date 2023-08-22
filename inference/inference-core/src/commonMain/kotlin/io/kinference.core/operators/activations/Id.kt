@@ -27,7 +27,7 @@ sealed class Identity(
 }
 
 
-class IdentityVer1(
+class IdentityVer1 internal constructor(
     name: String,
     attributes: Map<String, Attribute<Any>> = emptyMap(),
     inputs: List<String>,

@@ -5,6 +5,7 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.data.tensor.*
 import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
+import io.kinference.data.ONNXDataType
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.ndarray.arrays.LongNDArray
@@ -12,19 +13,32 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
-sealed class Loop(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+sealed class Loop(
+    name: String,
+    info: OperatorInfo,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Operator<KIONNXData<*>, KIONNXData<*>>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in LoopVer1.VERSION.asRange() -> LoopVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Loop operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Loop {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in LoopVer1.VERSION.asRange() -> LoopVer1(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Loop operator: $version")
+            }
         }
     }
 }
 
 
-class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Loop(name, INFO, attributes, inputs, outputs) {
+class LoopVer1 internal constructor(
+    name: String,
+    attributes: Map<String, Attribute<Any>>,
+    inputs: List<String>,
+    outputs: List<String>
+) : Loop(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = ALL_DATA_TYPES
 
@@ -35,18 +49,27 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         private val INPUTS_INFO = listOf(
             IOInfo(0, setOf(TensorProto.DataType.INT64), "M", optional = true, scalar = true),
             IOInfo(1, setOf(TensorProto.DataType.BOOL), "cond", optional = true, scalar = true),
-            VariadicIOInfo(2, TYPE_CONSTRAINTS, "v_initial")
+            VariadicIOInfo(2, TYPE_CONSTRAINTS, "v_initial", onnxDataTypes = setOf(ONNXDataType.ONNX_TENSOR, ONNXDataType.ONNX_SEQUENCE))
         )
 
-        private val OUTPUTS_INFO = listOf(VariadicIOInfo(0, TYPE_CONSTRAINTS, "v_final_and_scan_outputs", minimumArity = 1))
+        private val OUTPUTS_INFO = listOf(
+            VariadicIOInfo(0, TYPE_CONSTRAINTS, "v_final_and_scan_outputs", minimumArity = 1, onnxDataTypes = setOf(ONNXDataType.ONNX_TENSOR, ONNXDataType.ONNX_SEQUENCE))
+        )
 
-        internal val VERSION = VersionInfo(sinceVersion = 1, untilVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("Loop", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
     private val body: KIGraph by attribute()
 
-    private suspend fun inner(contexts: Contexts<KIONNXData<*>>, body: KIGraph, counter: Long, condition: Boolean, modified: MutableList<KITensor>, scans: List<MutableList<KITensor>>): Boolean {
+    private suspend fun inner(
+        contexts: Contexts<KIONNXData<*>>,
+        body: KIGraph,
+        counter: Long,
+        condition: Boolean,
+        modified: MutableList<KIONNXData<*>>,
+        scans: List<MutableList<KITensor>>
+    ): Boolean {
         val inputs = ArrayList<KIONNXData<*>>().apply {
             add(LongNDArray.scalar(counter).asTensor(body.inputs[0].name))
             add(BooleanNDArray.scalar(condition).asTensor(body.inputs[1].name))
@@ -61,7 +84,7 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         modified.clear()
         // remove keepgoing flag (first) and take only modified (without scans)
         for (output in outputs.drop(1).take(body.inputs.size - 2)) {
-            modified.add(output as KITensor)
+            modified.add(output)
         }
 
         require(iterationOutputs.size == scans.size) { "Loop subgraph didn't provide expected output count" }
@@ -72,9 +95,9 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         return (outputs[0] as KITensor).data.singleValue() as Boolean
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val maxTripCount = inputs[0]?.data?.singleValue() as Long?
-        val keepgoing = inputs[1]?.data?.singleValue() as Boolean?
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KIONNXData<*>?>): List<KIONNXData<*>?> {
+        val maxTripCount = (inputs[0]?.data as? LongNDArray)?.singleValue()
+        val keepgoing = (inputs[1]?.data as? BooleanNDArray)?.singleValue()
 
         require(body.inputs.size == inputs.size) { "Not enough inputs for Loop subgraph\nPresent: ${inputs.size}, Expected: ${body.inputs.size}" }
 
@@ -115,6 +138,6 @@ class LoopVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
             }
         }
 
-        return modified + scans.map { it.stack(0) }
+        return modified + scans.map { it.stack(axis = 0) }
     }
 }
