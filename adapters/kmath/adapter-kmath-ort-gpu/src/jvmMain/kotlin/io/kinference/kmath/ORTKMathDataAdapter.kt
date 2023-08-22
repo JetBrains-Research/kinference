@@ -12,19 +12,35 @@ import space.kscience.kmath.structures.Buffer
 import java.nio.*
 
 sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
+    abstract override fun rename(name: String): ORTKMathData<T>
+    abstract override fun clone(newName: String?): ORTKMathData<T>
+
     class KMathTensor(name: String?, override val data: StructureND<*>) : ORTKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-        override fun rename(name: String): ORTKMathData<StructureND<*>> = KMathTensor(name, data)
+        override fun rename(name: String): KMathTensor = KMathTensor(name, data)
+        override fun clone(newName: String?): KMathTensor {
+            return KMathTensor(newName, data.mapToBuffer { it!! })
+        }
     }
 
     class KMathMap(name: String?, override val data: Map<Any, ORTKMathData<*>>) : ORTKMathData<Map<Any, ORTKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
-        override fun rename(name: String): ORTKMathData<Map<Any, ORTKMathData<*>>> = KMathMap(name, data)
+        override fun rename(name: String): KMathMap = KMathMap(name, data)
+        override fun clone(newName: String?): KMathMap {
+            val newMap = HashMap<Any, ORTKMathData<*>>(data.size)
+            for ((key, value) in data.entries) {
+                newMap[key] = value.clone()
+            }
+            return KMathMap(newName, newMap)
+        }
     }
 
     class KMathSequence(name: String?, override val data: List<ORTKMathData<*>>) : ORTKMathData<List<ORTKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
-        override fun rename(name: String): ORTKMathData<List<ORTKMathData<*>>> = KMathSequence(name, data)
+        override fun rename(name: String): KMathSequence = KMathSequence(name, data)
+        override fun clone(newName: String?): KMathSequence {
+            return KMathSequence(newName, data.map { it.clone() })
+        }
     }
 }
 
