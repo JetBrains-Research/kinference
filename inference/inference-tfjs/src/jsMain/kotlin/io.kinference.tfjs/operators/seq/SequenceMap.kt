@@ -1,15 +1,15 @@
-package io.kinference.core.operators.seq
+package io.kinference.tfjs.operators.seq
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.KIONNXData
-import io.kinference.core.data.seq.KIONNXSequence
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.graph.KIGraph
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.graph.Contexts
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.tfjs.TFJSData
+import io.kinference.tfjs.data.seq.TFJSSequence
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.types.ValueTypeInfo
 
 sealed class SequenceMap(
@@ -18,7 +18,7 @@ sealed class SequenceMap(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KIONNXData<*>, KIONNXSequence>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSData<*>, TFJSSequence>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 17)
 
@@ -56,27 +56,27 @@ class SequenceMapVer17 internal constructor(
         private val INFO = OperatorInfo("SequenceMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val body: KIGraph by attribute()
+    private val body: TFJSGraph by attribute()
 
-    private fun KIONNXSequence.zipAsGraphInputs(additionalInputs: List<KIONNXData<*>>): List<List<KIONNXData<*>>> {
+    private fun TFJSSequence.zipAsGraphInputs(additionalInputs: List<TFJSData<*>>): List<List<TFJSData<*>>> {
         val inputSize = this.length
-        require(additionalInputs.filterIsInstance<KIONNXSequence>().all { it.length == inputSize }) { "All input sequences must have the same length" }
+        require(additionalInputs.filterIsInstance<TFJSSequence>().all { it.length == inputSize }) { "All input sequences must have the same length" }
 
         val allInputs = listOf(this) + additionalInputs
 
         return List(inputSize) { i ->
             List(allInputs.size) { j ->
                 when (val inputElement = allInputs[j]) {
-                    is KIONNXSequence -> inputElement.data[i] as KITensor
-                    is KITensor -> inputElement
+                    is TFJSSequence -> inputElement.data[i] as TFJSTensor
+                    is TFJSTensor -> inputElement
                     else -> error("Unsupported ONNX data type: ${inputElement.type}")
                 }.rename(body.availableInputs[j])
             }
         }
     }
 
-    private fun List<List<KIONNXData<*>>>.toOutputs(names: List<String>): List<KIONNXSequence> {
-        this as? List<List<KITensor>> ?: error("SequenceMap operator supports only Tensor-typed subgraph outputs")
+    private fun List<List<TFJSData<*>>>.toOutputs(names: List<String>): List<TFJSSequence> {
+        this as? List<List<TFJSTensor>> ?: error("SequenceMap operator supports only Tensor-typed subgraph outputs")
 
         val outSeqLen = this[0].size
         require(this.all { it.size == outSeqLen }) { "Output lists produced by each iteration must have the same size" }
@@ -84,7 +84,7 @@ class SequenceMapVer17 internal constructor(
         val iterators = this.map { it.iterator() }
         return List(outSeqLen) { i ->
             val data = iterators.map { it.next() }
-            KIONNXSequence(
+            TFJSSequence(
                 name = names[i],
                 data = data,
                 info = ValueTypeInfo.SequenceTypeInfo(
@@ -94,8 +94,8 @@ class SequenceMapVer17 internal constructor(
         }
     }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KIONNXData<*>?>): List<KIONNXSequence?> {
-        val inputSeq = inputs[0]!! as KIONNXSequence
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSData<*>?>): List<TFJSSequence?> {
+        val inputSeq = inputs[0]!! as TFJSSequence
         val additionalInputs = inputs.drop(1).filterNotNull()
         val graphInputs = inputSeq.zipAsGraphInputs(additionalInputs)
 
