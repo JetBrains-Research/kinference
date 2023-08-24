@@ -6,6 +6,7 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.toTypedIntArray
 
 internal val NDArrayTFJS.dtype: String
     get() = tfjsArray.dtype
@@ -441,3 +442,39 @@ suspend fun NumberNDArrayTFJS.fmod(other: NumberNDArrayTFJS): NumberNDArrayTFJS 
 suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS) = fmod(other)
 
 suspend fun NumberNDArrayTFJS.pow(exp: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.pow(exp.tfjsArray))
+
+suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, axis: Int = -1): NDArrayTFJS {
+    fun NDArrayTFJS.parseValues(): List<Number> = when (values.tfjsArray.dtype) {
+        "float32" -> values.dataFloat().take(2)
+        "int32" -> values.dataInt().take(2)
+        "bool" -> values.dataBool().take(2).map { if (it) 1 else 0 }
+        else -> error("Unsupported \"values\" data type: $type")
+    }
+
+    require(values.linearSize == 2 && values.rank == 1) {
+        "\"values\" must be two-element array of format [off_value, on_value], current array rank=${indices.rank}, linearSize=${indices.linearSize}"
+    }
+    val (offValue, onValue) = values.parseValues()
+
+    return tidyNDArray {
+        val intIndices = indices.tfjsArray.cast("int32").dataInt()
+        val actualIndices = NDArrayTFJS.int(indices.shapeArray) { it: Int ->
+            val index = intIndices[it]
+            if (index < 0) index + depth else index
+        }
+
+        val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
+        val oneHotLastAxis = oneHot(actualIndices.tfjsArray, depth, onValue, offValue, values.dtype)
+
+        if (actualAxis != indices.rank) {
+            val axes = (0..indices.rank).toTypedIntArray().apply {
+                val tmp = this[lastIndex]
+                this[lastIndex] = actualAxis
+                this[actualAxis] = tmp
+            }
+            oneHotLastAxis.transpose(axes)
+        } else {
+            oneHotLastAxis
+        }.toNDArray()
+    }
+}
