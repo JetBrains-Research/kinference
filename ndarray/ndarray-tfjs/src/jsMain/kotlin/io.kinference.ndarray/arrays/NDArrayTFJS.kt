@@ -2,7 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.activateDefaultBackend
-import io.kinference.ndarray.core.eye
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.toFloatArray
@@ -284,10 +283,19 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
         fun oneHotFloat(indices: NumberNDArrayTFJS, depth: Int, onValue: Number = 1f, offValue: Number = 0f) =
             NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue.toFloat(), offValue.toFloat(), "float32"))
 
+        suspend fun oneHotFloat(indices: NumberNDArrayTFJS, depth: Int, axis: Int, onValue: Number = 1f, offValue: Number = 0f) =
+            oneHot(indices, depth, offValue.toFloat(), onValue.toFloat(), axis, "float32") as NumberNDArrayTFJS
+
         fun oneHotInt(indices: NumberNDArrayTFJS, depth: Int, onValue: Number = 1, offValue: Number = 0) =
             NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue.toInt(), offValue.toInt(), "int32"))
 
+        suspend fun oneHotInt(indices: NumberNDArrayTFJS, depth: Int, axis: Int, onValue: Number = 1, offValue: Number = 0) =
+            oneHot(indices, depth, offValue.toInt(), onValue.toInt(), axis, "int32") as NumberNDArrayTFJS
+
         fun oneHotBool(indices: NumberNDArrayTFJS, depth: Int, onValue: Boolean = true, offValue: Boolean = false) =
-            NumberNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue.toInt(), offValue.toInt(), "bool"))
+            BooleanNDArrayTFJS(oneHot(indices.tfjsArray, depth, onValue.toInt(), offValue.toInt(), "bool"))
+
+        suspend fun oneHotBool(indices: NumberNDArrayTFJS, depth: Int, axis: Int, onValue: Number = 1, offValue: Number = 0) =
+            oneHot(indices, depth, offValue.toInt(), onValue.toInt(), axis, "bool") as BooleanNDArrayTFJS
     }
 }

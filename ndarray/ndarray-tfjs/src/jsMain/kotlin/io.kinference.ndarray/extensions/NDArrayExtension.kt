@@ -7,6 +7,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.toTypedIntArray
+import io.kinference.ndarray.resolveTFJSDataType
 
 internal val NDArrayTFJS.dtype: String
     get() = tfjsArray.dtype
@@ -447,7 +448,7 @@ suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, 
     fun NDArrayTFJS.parseValues(): List<Number> = when (values.tfjsArray.dtype) {
         "float32" -> values.dataFloat().take(2)
         "int32" -> values.dataInt().take(2)
-        "bool" -> values.dataBool().take(2).map { if (it) 1 else 0 }
+        "bool" -> values.dataBool().take(2).map { it.toInt() }
         else -> error("Unsupported \"values\" data type: $type")
     }
 
@@ -456,6 +457,15 @@ suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, 
     }
     val (offValue, onValue) = values.parseValues()
 
+    return oneHot(indices, depth, offValue, onValue, axis, values.tfjsArray.dtype)
+}
+
+suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Number, onValue: Number, axis: Int = -1, type: DataType): NDArrayTFJS {
+    val dtype = type.resolveDTypeTFJS()
+    return oneHot(indices, depth, offValue, onValue, axis, dtype)
+}
+
+internal suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Number, onValue: Number, axis: Int = -1, dtype: String): NDArrayTFJS {
     return tidyNDArray {
         val intIndices = indices.tfjsArray.cast("int32").dataInt()
         val actualIndices = NDArrayTFJS.int(indices.shapeArray) { it: Int ->
@@ -464,7 +474,7 @@ suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, 
         }
 
         val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
-        val oneHotLastAxis = oneHot(actualIndices.tfjsArray, depth, onValue, offValue, values.dtype)
+        val oneHotLastAxis = oneHot(actualIndices.tfjsArray, depth, onValue, offValue, dtype)
 
         if (actualAxis != indices.rank) {
             val axes = (0..indices.rank).toTypedIntArray().apply {
