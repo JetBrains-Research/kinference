@@ -1,17 +1,14 @@
-package io.kinference.core.operators.layer.normalization
+package io.kinference.tfjs.operators.layer.normalization
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.pointers.mapTo
-import io.kinference.ndarray.arrays.tiled.DoubleTiledArray
-import io.kinference.ndarray.arrays.tiled.FloatTiledArray
-import io.kinference.ndarray.extensions.batchNorm.batchNorm
+import io.kinference.ndarray.arrays.NumberNDArrayTFJS
+import io.kinference.ndarray.extensions.batchNorm
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.tfjs.data.tensors.TFJSTensor
+import io.kinference.tfjs.data.tensors.asTensor
 
 sealed class BatchNormalization(
     name: String,
@@ -19,7 +16,7 @@ sealed class BatchNormalization(
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
     outputs: List<String>
-) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
+) : Operator<TFJSTensor, TFJSTensor>(name, info, attributes, inputs, outputs) {
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 9)
 
@@ -61,48 +58,22 @@ class BatchNormalizationVer9 internal constructor(
 
         internal val VERSION = VersionInfo(sinceVersion = 9)
         private val INFO = OperatorInfo("BatchNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.DEFAULT_DOMAIN)
-
-
-        private fun NumberNDArray.toFloatNDArray() = when (this) {
-            is FloatNDArray -> this
-            is DoubleNDArray-> {
-                val result = FloatNDArray(FloatTiledArray(strides), strides)
-                this.array.pointer().mapTo(result.array.pointer(), linearSize) { it.toFloat() }
-                result
-            }
-            else -> error("Unsupported data type: $type")
-        }
-
-        private fun NumberNDArray.toDoubleNDArray() = when (this) {
-            is DoubleNDArray -> this
-            is FloatNDArray-> {
-                val result = DoubleNDArray(DoubleTiledArray(strides), strides)
-                this.array.pointer().mapTo(result.array.pointer(), linearSize) { it.toDouble() }
-                result
-            }
-            else -> error("Unsupported data type: $type")
-        }
     }
 
-    private val epsilon: Number by attribute()
+    private val epsilon: Float by attribute { it: Number -> it.toFloat() }
     private val momentum: Number by attribute()
     private val trainingMode: Boolean by attribute("training_mode") { it: Number -> it.toInt() != 0 }
 
-    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+    override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
         require(!trainingMode) { "Training mode is not supported for BatchNormalization operator" }
 
-        val input = inputs[0]!!.data as NumberNDArrayCore
-        val scale = inputs[1]!!.data as NumberNDArrayCore
-        val bias = inputs[2]!!.data as NumberNDArrayCore
-        val mean = inputs[3]!!.data as NumberNDArrayCore
-        val variance = inputs[4]!!.data as NumberNDArrayCore
+        val input = inputs[0]!!.data as NumberNDArrayTFJS
+        val scale = inputs[1]!!.data as NumberNDArrayTFJS
+        val bias = inputs[2]!!.data as NumberNDArrayTFJS
+        val mean = inputs[3]!!.data as NumberNDArrayTFJS
+        val variance = inputs[4]!!.data as NumberNDArrayTFJS
 
-        val output = when (input) {
-            is FloatNDArray -> input.batchNorm(scale.toFloatNDArray(), bias.toFloatNDArray(), mean.toFloatNDArray(), variance.toFloatNDArray(), epsilon.toFloat())
-            is DoubleNDArray -> input.batchNorm(scale.toDoubleNDArray(), bias.toDoubleNDArray(), mean.toDoubleNDArray(), variance.toDoubleNDArray(), epsilon.toDouble())
-            else -> error("Unsupported data type: ${input.type}")
-        }
-
+        val output = input.batchNorm(scale, bias, mean, variance, epsilon)
         return listOf(output.asTensor("Y"))
     }
 }
