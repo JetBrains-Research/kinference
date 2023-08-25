@@ -51,6 +51,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Atan" -> Atan(name, version, attributes, inputs, outputs)
         "Atanh" -> Atanh(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
+        "BatchNormalization" -> BatchNormalization(name, version, attributes, inputs, outputs)
         "BitShift" -> BitShift(name, version, attributes, inputs, outputs)
         "BitwiseAnd" -> BitwiseAnd(name, version, attributes, inputs, outputs)
         "BitwiseNot" -> BitwiseNot(name, version, attributes, inputs, outputs)
