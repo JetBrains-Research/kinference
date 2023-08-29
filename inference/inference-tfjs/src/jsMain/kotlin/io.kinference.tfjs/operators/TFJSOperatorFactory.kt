@@ -47,6 +47,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Atan" -> Atan(name, version, attributes, inputs, outputs)
         "Atanh" -> Atanh(name, version, attributes, inputs, outputs)
         "Attention" -> Attention(name, version, attributes, inputs, outputs)
+        "BatchNormalization" -> BatchNormalization(name, version, attributes, inputs, outputs)
         "BiasGelu" -> BiasGelu(name, version, attributes, inputs, outputs)
         "Cast" -> Cast(name, version, attributes, inputs, outputs)
         "CastLike" -> CastLike(name, version, attributes, inputs, outputs)
