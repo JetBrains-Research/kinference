@@ -28,11 +28,18 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
 
 open class IOInfo(
     val index: Int, val types: Set<TensorProto.DataType>, val name: String,
-    val optional: Boolean = false, val onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
+    val optional: Boolean = false, val onnxDataTypes: Set<ONNXDataType> = setOf(ONNXDataType.ONNX_TENSOR),
     val scalar: Boolean = false, val differentiable: Boolean? = null /* null == undefined, TODO */
 ) {
     init {
         require(types.isNotEmpty()) { "Input info must have at least one type constraint!" }
+    }
+
+    companion object {
+        operator fun invoke(
+            index: Int, types: Set<TensorProto.DataType>, name: String, optional: Boolean = false,
+            onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR, scalar: Boolean = false, differentiable: Boolean? = null
+        ) = IOInfo(index, types, name, optional, setOf(onnxDataType), scalar, differentiable)
     }
 }
 
@@ -42,10 +49,17 @@ data class VersionInfo(val sinceVersion: Int, val untilVersion: Int = Int.MAX_VA
 
 class VariadicIOInfo(
     startIndex: Int, types: Set<TensorProto.DataType>, name: String,
-    val minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
-    scalar: Boolean = false, differentiable: Boolean? = null,
-    val heterogeneous: Boolean = true
-) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataType, scalar, differentiable)
+    val minimumArity: Int = 0, onnxDataTypes: Set<ONNXDataType> = setOf(ONNXDataType.ONNX_TENSOR),
+    scalar: Boolean = false, differentiable: Boolean? = null, val heterogeneous: Boolean = true
+) : IOInfo(startIndex, types, name, minimumArity == 0, onnxDataTypes, scalar, differentiable) {
+    companion object {
+        operator fun invoke(
+            startIndex: Int, types: Set<TensorProto.DataType>, name: String,
+            minimumArity: Int = 0, onnxDataType: ONNXDataType = ONNXDataType.ONNX_TENSOR,
+            scalar: Boolean = false, differentiable: Boolean? = null, heterogeneous: Boolean = true
+        ) = VariadicIOInfo(startIndex, types, name, minimumArity, setOf(onnxDataType), scalar, differentiable, heterogeneous)
+    }
+}
 
 data class OperatorInfo(
     val type: String,
@@ -149,8 +163,8 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
                 //if (!constraint.heterogeneous) require(value.info.type == variadicType) { "All ${what}s for '${constraint.name}' must have same type\nPresent: ${value.info.type}, Expected: $variadicType" }
             }
 
-            require(value.type == constraint.onnxDataType) {
-                "Wrong $what ONNX data type '${value.name}' for '${info.type}' operator\nPresent: ${value.type}, Expected: ${constraint.onnxDataType}"
+            require(value.type in constraint.onnxDataTypes) {
+                "Wrong $what ONNX data type '${value.name}' for '${info.type}' operator\nPresent: ${value.type}, Expected: [${constraint.onnxDataTypes.joinToString()}]"
             }
         }
     }

@@ -149,6 +149,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "SequenceErase" -> SequenceErase(name, version, attributes, inputs, outputs)
         "SequenceInsert" -> SequenceInsert(name, version, attributes, inputs, outputs)
         "SequenceLength" -> SequenceLength(name, version, attributes, inputs, outputs)
+        "SequenceMap" -> SequenceMap(name, version, attributes, inputs, outputs)
         "Shape" -> Shape(name, version, attributes, inputs, outputs)
         "Sigmoid" -> Sigmoid(name, version, attributes, inputs, outputs)
         "Sign" -> Sign(name, version, attributes, inputs, outputs)

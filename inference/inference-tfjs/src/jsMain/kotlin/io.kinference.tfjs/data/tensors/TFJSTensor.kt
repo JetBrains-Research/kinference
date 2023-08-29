@@ -22,6 +22,10 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         data.close()
     }
 
+    override fun clone(newName: String?): TFJSTensor {
+        return TFJSTensor(newName, data.clone(), info)
+    }
+
     companion object {
         //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): TFJSTensor {

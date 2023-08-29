@@ -20,6 +20,10 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
         data.forEach { it.close() }
     }
 
+    override fun clone(newName: String?): TFJSSequence {
+        return TFJSSequence(newName, data.map { it.clone() }, info)
+    }
+
     val length: Int = data.size
 
     companion object {

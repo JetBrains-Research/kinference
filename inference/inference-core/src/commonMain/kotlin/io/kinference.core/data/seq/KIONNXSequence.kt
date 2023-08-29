@@ -18,6 +18,10 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
         data.forEach { it.close() }
     }
 
+    override fun clone(newName: String?): KIONNXSequence {
+        return KIONNXSequence(newName, data.map { it.clone() }, info)
+    }
+
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
     val length: Int = data.size

@@ -14,4 +14,8 @@ class ORTSequence(name: String?, override val data: OnnxSequence) : ONNXSequence
     override fun close() {
         data.close()
     }
+
+    override fun clone(newName: String?): ORTSequence {
+        error("Cloning is not supported for OnnxRuntime backends")
+    }
 }

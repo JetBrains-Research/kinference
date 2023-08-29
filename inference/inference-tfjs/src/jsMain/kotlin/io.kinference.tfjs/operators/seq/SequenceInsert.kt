@@ -57,8 +57,9 @@ class SequenceInsertVer11 internal constructor(
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSData<*>?>): List<TFJSSequence?> {
-        val seq = ArrayList(inputs[0]!!.data as List<TFJSTensor>)
-        val tensor = inputs[1]!! as TFJSTensor
+        val seqInput = (inputs[0]!! as TFJSSequence).clone().data
+        val seq = ArrayList(seqInput as List<TFJSTensor>)
+        val tensor = (inputs[1]!! as TFJSTensor).clone()
         val positionTensor = inputs.getOrNull(2)?.data as? NumberNDArrayTFJS
 
         val position = positionTensor?.singleValue()?.toInt() ?: seq.size
