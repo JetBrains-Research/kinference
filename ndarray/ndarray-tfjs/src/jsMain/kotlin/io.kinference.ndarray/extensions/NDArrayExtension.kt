@@ -487,6 +487,8 @@ internal suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Nu
         } else {
             oneHotLastAxis
         }.toNDArray()
+    }
+}
 
 suspend fun NumberNDArrayTFJS.batchNorm(
     scale: NumberNDArrayTFJS,
