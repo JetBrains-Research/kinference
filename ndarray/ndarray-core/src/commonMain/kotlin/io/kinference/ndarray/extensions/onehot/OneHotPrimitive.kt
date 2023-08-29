@@ -15,7 +15,7 @@ private inline fun getValue(left: Int, right: Int, offValue: PrimitiveType, onVa
 
 @MakePublic
 @GenerateNameFromPrimitives
-internal suspend fun oneHotPrimitive(axis: Int, indices: NumberNDArrayCore, depth: Int, offValue: PrimitiveType, onValue: PrimitiveType): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: NumberNDArrayCore, depth: Int, offValue: PrimitiveType, onValue: PrimitiveType): PrimitiveNDArray {
     val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
 
     val arrayIndicesShape = IntArray(indices.rank + 1) { if (it != actualAxis) 1 else depth }
@@ -42,12 +42,12 @@ internal suspend fun oneHotPrimitive(axis: Int, indices: NumberNDArrayCore, dept
 
 @MakePublic
 @GenerateNameFromPrimitives
-internal suspend fun oneHotPrimitive(axis: Int, indices: NumberNDArrayCore, depth: Int, values: PrimitiveNDArray): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: NumberNDArrayCore, depth: Int, values: PrimitiveNDArray): PrimitiveNDArray {
     require(values.rank == 1 && values.linearSize == 2)  {
         "\"values\" must be two-element array of format [off_value, on_value], current array rank=${indices.rank}, linearSize=${indices.linearSize}"
     }
     val valuesArray = values.array.toArray()
     val offValue = valuesArray[0]
     val onValue = valuesArray[1]
-    return oneHotPrimitive(axis, indices, depth, offValue, onValue)
+    return oneHot(axis, indices, depth, offValue, onValue)
 }

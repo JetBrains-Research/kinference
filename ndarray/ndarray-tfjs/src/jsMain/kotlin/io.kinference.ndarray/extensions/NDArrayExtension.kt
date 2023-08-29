@@ -444,7 +444,7 @@ suspend operator fun NumberNDArrayTFJS.rem(other: NumberNDArrayTFJS) = fmod(othe
 
 suspend fun NumberNDArrayTFJS.pow(exp: NumberNDArrayTFJS) = NumberNDArrayTFJS(tfjsArray.pow(exp.tfjsArray))
 
-suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, axis: Int = -1): NDArrayTFJS {
+suspend fun NDArrayTFJS.Companion.oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, axis: Int = -1): NDArrayTFJS {
     fun NDArrayTFJS.parseValues(): List<Number> = when (values.tfjsArray.dtype) {
         "float32" -> values.dataFloat().take(2)
         "int32" -> values.dataInt().take(2)
@@ -460,7 +460,7 @@ suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, values: NDArrayTFJS, 
     return oneHot(indices, depth, offValue, onValue, axis, values.tfjsArray.dtype)
 }
 
-suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Number, onValue: Number, axis: Int = -1, type: DataType): NDArrayTFJS {
+suspend fun NDArrayTFJS.Companion.oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Number, onValue: Number, axis: Int = -1, type: DataType): NDArrayTFJS {
     val dtype = type.resolveDTypeTFJS()
     return oneHot(indices, depth, offValue, onValue, axis, dtype)
 }

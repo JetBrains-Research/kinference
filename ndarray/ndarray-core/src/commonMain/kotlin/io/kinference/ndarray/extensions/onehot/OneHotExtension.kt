@@ -18,17 +18,17 @@ internal fun NumberNDArrayCore.getOneHotIndices(depth: Int) = when (this) {
 
 suspend fun oneHot(indices: NumberNDArrayCore, depth: Int, values: NDArrayCore, axis: Int = -1): NDArrayCore {
     return when (values) {
-        is FloatNDArray -> oneHotFloat(axis, indices, depth, values)
-        is DoubleNDArray -> oneHotDouble(axis, indices, depth, values)
-        is IntNDArray -> oneHotInt(axis, indices, depth, values)
-        is LongNDArray -> oneHotLong(axis, indices, depth, values)
-        is ShortNDArray -> oneHotShort(axis, indices, depth, values)
-        is ByteNDArray -> oneHotByte(axis, indices, depth, values)
-        is UIntNDArray -> oneHotUInt(axis, indices, depth, values)
-        is ULongNDArray -> oneHotULong(axis, indices, depth, values)
-        is UShortNDArray -> oneHotUShort(axis, indices, depth, values)
-        is UByteNDArray -> oneHotUByte(axis, indices, depth, values)
-        is BooleanNDArray -> oneHotBoolean(axis, indices, depth, values)
+        is FloatNDArray -> FloatNDArray.oneHot(axis, indices, depth, values)
+        is DoubleNDArray -> DoubleNDArray.oneHot(axis, indices, depth, values)
+        is IntNDArray -> IntNDArray.oneHot(axis, indices, depth, values)
+        is LongNDArray -> LongNDArray.oneHot(axis, indices, depth, values)
+        is ShortNDArray -> ShortNDArray.oneHot(axis, indices, depth, values)
+        is ByteNDArray -> ByteNDArray.oneHot(axis, indices, depth, values)
+        is UIntNDArray -> UIntNDArray.oneHot(axis, indices, depth, values)
+        is ULongNDArray -> ULongNDArray.oneHot(axis, indices, depth, values)
+        is UShortNDArray -> UShortNDArray.oneHot(axis, indices, depth, values)
+        is UByteNDArray -> UByteNDArray.oneHot(axis, indices, depth, values)
+        is BooleanNDArray -> BooleanNDArray.oneHot(axis, indices, depth, values)
         else -> error("Unsupported \"values\" data type: ${values.type}")
     }
 }

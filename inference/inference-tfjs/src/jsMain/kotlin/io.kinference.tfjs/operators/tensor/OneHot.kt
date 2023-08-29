@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.NDArrayTFJS
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.dataInt
 import io.kinference.ndarray.extensions.oneHot
@@ -59,6 +60,6 @@ class OneHotVer9 internal constructor(
         val depth = inputs[1]!!.data.dataInt()[0]
         val indices = inputs[0]!!.data as NumberNDArrayTFJS
         val values = inputs[2]!!.data
-        return listOf(oneHot(indices, depth, values, axis).asTensor("output"))
+        return listOf(NDArrayTFJS.oneHot(indices, depth, values, axis).asTensor("output"))
     }
 }
