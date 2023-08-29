@@ -104,6 +104,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "Neg" -> Neg(name, version, attributes, inputs, outputs)
         "NonZero" -> NonZero(name, version, attributes, inputs, outputs)
         "Not" -> Not(name, version, attributes, inputs, outputs)
+        "OneHot" -> OneHot(name, version, attributes, inputs, outputs)
         "Or" -> Or(name, version, attributes, inputs, outputs)
         "Pad" -> Pad(name, version, attributes, inputs, outputs)
         "Pow" -> Pow(name, version, attributes, inputs, outputs)

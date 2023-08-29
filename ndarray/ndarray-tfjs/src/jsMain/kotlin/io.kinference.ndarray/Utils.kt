@@ -35,6 +35,14 @@ fun String.resolveTFJSDataType(): DataType {
     }
 }
 
+internal fun DataType.resolveDTypeTFJS() = when (this) {
+    DataType.DOUBLE, DataType.FLOAT -> "float32"
+    DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG,
+    DataType.UBYTE, DataType.USHORT, DataType.UINT, DataType.ULONG -> "int32"
+    DataType.BOOLEAN -> "bool"
+    else -> error("Unsupported data type: $this")
+}
+
 inline fun <T> T.applyIf(predicate: Boolean, func: (T) -> (T)): T {
     return if (predicate) func(this) else this
 }
