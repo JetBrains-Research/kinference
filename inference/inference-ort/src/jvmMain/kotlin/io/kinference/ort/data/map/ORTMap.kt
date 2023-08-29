@@ -14,4 +14,8 @@ class ORTMap(name: String?, override val data: OnnxMap) : ONNXMap<OnnxMap, ORTBa
     override fun close() {
         data.close()
     }
+
+    override fun clone(newName: String?): ORTMap {
+        error("Cloning is not supported for OnnxRuntime backends")
+    }
 }

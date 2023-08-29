@@ -15,19 +15,35 @@ import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
 sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
+    abstract override fun rename(name: String): KIKMathData<T>
+    abstract override fun clone(newName: String?): KIKMathData<T>
+
     class KMathTensor(name: String?, override val data: StructureND<*>) : KIKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-        override fun rename(name: String): KIKMathData<StructureND<*>> = KMathTensor(name, data)
+        override fun rename(name: String): KMathTensor = KMathTensor(name, data)
+        override fun clone(newName: String?): KMathTensor {
+            return KMathTensor(newName, data.mapToBuffer { it!! })
+        }
     }
 
     class KMathMap(name: String?, override val data: Map<Any, KIKMathData<*>>) : KIKMathData<Map<Any, KIKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
-        override fun rename(name: String): KIKMathData<Map<Any, KIKMathData<*>>> = KMathMap(name, data)
+        override fun rename(name: String): KMathMap = KMathMap(name, data)
+        override fun clone(newName: String?): KMathMap {
+            val newMap = HashMap<Any, KIKMathData<*>>(data.size)
+            for ((key, value) in data.entries) {
+                newMap[key] = value.clone()
+            }
+            return KMathMap(newName, newMap)
+        }
     }
 
     class KMathSequence(name: String?, override val data: List<KIKMathData<*>>) : KIKMathData<List<KIKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
-        override fun rename(name: String): KIKMathData<List<KIKMathData<*>>> = KMathSequence(name, data)
+        override fun rename(name: String): KMathSequence = KMathSequence(name, data)
+        override fun clone(newName: String?): KMathSequence {
+            return KMathSequence(newName, data.map { it.clone() })
+        }
     }
 }
 

@@ -62,7 +62,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                 val outputs = model.predict(inputs)
                 val memoryAfterTest = testEngine.allocatedMemory()
                 logger.info { "Memory after predict: $memoryAfterTest" }
-                assertLessOrEquals(expectedOutputs.getInMemorySize(), memoryAfterTest - memoryBeforeTest, "Memory leak found")
+                val outputsInMemorySize = expectedOutputs.getInMemorySize()
+                assertLessOrEquals(
+                    expected = outputsInMemorySize, actual = memoryAfterTest - memoryBeforeTest,
+                    message = "Memory leak found. Expected memory usage: ${memoryBeforeTest + outputsInMemorySize}, actual: $memoryAfterTest"
+                )
                 outputs
             } else {
                 model.predict(inputs)

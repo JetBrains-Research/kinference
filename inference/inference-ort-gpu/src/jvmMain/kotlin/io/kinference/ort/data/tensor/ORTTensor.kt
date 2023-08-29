@@ -21,6 +21,20 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         data.close()
     }
 
+    override fun clone(newName: String?): ORTTensor {
+        return when(data.info.type) {
+            OnnxJavaType.DOUBLE -> invoke(toDoubleArray(), shape, newName)
+            OnnxJavaType.FLOAT -> invoke(toFloatArray(), shape, newName)
+            OnnxJavaType.INT32 -> invoke(toIntArray(), shape, newName)
+            OnnxJavaType.INT8 -> invoke(toByteArray(), shape, newName)
+            OnnxJavaType.INT64 -> invoke(toLongArray(), shape, newName)
+            OnnxJavaType.INT16 -> invoke(toShortArray(), shape, newName)
+            OnnxJavaType.UINT8 -> invoke(toUByteArray(), shape, newName)
+            OnnxJavaType.BOOL -> invoke(toBooleanArray(), shape, newName)
+            else -> error("Unsupported data type: $type")
+        }
+    }
+
     fun toDoubleArray(): DoubleArray {
         require(data.info.type == OnnxJavaType.DOUBLE) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
         return data.doubleBuffer.array()

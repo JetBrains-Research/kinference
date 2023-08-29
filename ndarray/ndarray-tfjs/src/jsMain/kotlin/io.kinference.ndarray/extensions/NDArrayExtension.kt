@@ -8,6 +8,7 @@ import io.kinference.ndarray.core.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.toTypedIntArray
 import io.kinference.ndarray.resolveTFJSDataType
+import io.kinference.utils.toIntArray
 
 internal val NDArrayTFJS.dtype: String
     get() = tfjsArray.dtype
@@ -486,5 +487,28 @@ internal suspend fun oneHot(indices: NumberNDArrayTFJS, depth: Int, offValue: Nu
         } else {
             oneHotLastAxis
         }.toNDArray()
+
+suspend fun NumberNDArrayTFJS.batchNorm(
+    scale: NumberNDArrayTFJS,
+    bias: NumberNDArrayTFJS,
+    mean: NumberNDArrayTFJS,
+    variance: NumberNDArrayTFJS,
+    epsilon: Float
+) : NumberNDArrayTFJS {
+    val numChannels = this.shape.getOrNull(1) ?: 1
+
+    require(scale.rank == 1 && scale.shape[0] == numChannels) { "\"scale\" must be a tensor of shape [$numChannels]" }
+    require(bias.rank == 1 && bias.shape[0] == numChannels) { "\"bias\" must be a tensor of shape [$numChannels]" }
+    require(mean.rank == 1 && mean.shape[0] == numChannels) { "\"mean\" must be a tensor of shape [$numChannels]" }
+    require(variance.rank == 1 && variance.shape[0] == numChannels) { "\"variance\" must be a tensor of shape [$numChannels]" }
+    return tidyNDArray {
+        val indicesArray = shape.indices.toIntArray()
+        val axes = intArrayOf(0) + if (rank > 2) indicesArray.sliceArray(2 until rank) else IntArray(0)
+
+        val bcastScale = scale.unsqueeze(*axes).broadcastTo(shapeArray)
+        val bcastBias = bias.unsqueeze(*axes).broadcastTo(shapeArray)
+        val bcastMean = mean.unsqueeze(*axes).broadcastTo(shapeArray)
+        val bcastVar = variance.unsqueeze(*axes).broadcastTo(shapeArray)
+        NumberNDArrayTFJS(batchNorm(tfjsArray, bcastMean.tfjsArray, bcastVar.tfjsArray, bcastBias.tfjsArray, bcastScale.tfjsArray, epsilon))
     }
 }

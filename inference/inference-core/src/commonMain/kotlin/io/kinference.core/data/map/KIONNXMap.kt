@@ -27,6 +27,14 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
 
+    override fun clone(newName: String?): KIONNXMap {
+        val newMap = HashMap<Any, KIONNXData<*>>(data.size)
+        for ((key, value) in data.entries) {
+            newMap[key] = value.clone()
+        }
+        return KIONNXMap(newName, newMap, info)
+    }
+
     companion object {
         fun create(proto: MapProto): KIONNXMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())

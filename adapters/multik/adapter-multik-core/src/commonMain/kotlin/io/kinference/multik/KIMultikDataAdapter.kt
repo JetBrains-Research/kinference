@@ -20,19 +20,35 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.first
 internal typealias MultikDataType = org.jetbrains.kotlinx.multik.ndarray.data.DataType
 
 sealed class KIMultikData<T>(override val name: String?) : BaseONNXData<T> {
+    abstract override fun rename(name: String): KIMultikData<T>
+    abstract override fun clone(newName: String?): KIMultikData<T>
+
     class MultikTensor(name: String?, override val data: MultiArray<Number, Dimension>) : KIMultikData<MultiArray<Number, Dimension>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-        override fun rename(name: String): KIMultikData<MultiArray<Number, Dimension>> = MultikTensor(name, data)
+        override fun rename(name: String): MultikTensor = MultikTensor(name, data)
+        override fun clone(newName: String?): MultikTensor {
+            return MultikTensor(newName, data.deepCopy())
+        }
     }
 
     class MultikMap(name: String?, override val data: Map<Any, KIMultikData<*>>) : KIMultikData<Map<Any, KIMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
-        override fun rename(name: String): KIMultikData<Map<Any, KIMultikData<*>>> = MultikMap(name, data)
+        override fun rename(name: String): MultikMap = MultikMap(name, data)
+        override fun clone(newName: String?): MultikMap {
+            val newMap = HashMap<Any, KIMultikData<*>>(data.size)
+            for ((key, value) in data.entries) {
+                newMap[key] = value.clone()
+            }
+            return MultikMap(newName, newMap)
+        }
     }
 
     class MultikSequence(name: String?, override val data: List<KIMultikData<*>>) : KIMultikData<List<KIMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
-        override fun rename(name: String): KIMultikData<List<KIMultikData<*>>> = MultikSequence(name, data)
+        override fun rename(name: String): MultikSequence = MultikSequence(name, data)
+        override fun clone(newName: String?): MultikSequence {
+            return MultikSequence(newName, data.map { it.clone() })
+        }
     }
 }
 
