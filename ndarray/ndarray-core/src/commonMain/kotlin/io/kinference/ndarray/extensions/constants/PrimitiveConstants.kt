@@ -4,6 +4,9 @@ package io.kinference.ndarray.extensions.constants
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
+import io.kinference.ndarray.toUShort
+import io.kinference.ndarray.toUByte
+
 
 @GenerateNameFromPrimitives
 @MakePublic
