@@ -17,6 +17,7 @@ import io.kinference.core.operators.logical.*
 import io.kinference.core.operators.math.*
 import io.kinference.core.operators.ml.*
 import io.kinference.core.operators.convolution.*
+import io.kinference.core.operators.ml.svm.SVMClassifier
 import io.kinference.core.operators.pool.*
 import io.kinference.core.operators.quantization.*
 import io.kinference.core.operators.quantization.lstm.DynamicQuantizeLSTM
@@ -167,6 +168,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
         "Squeeze" -> Squeeze(name, version, attributes, inputs, outputs)
         "Sub" -> Sub(name, version, attributes, inputs, outputs)
         "Sum" -> Sum(name, version, attributes, inputs, outputs)
+        "SVMClassifier" -> SVMClassifier(name, version, attributes, inputs, outputs)
         "Tan" -> Tan(name, version, attributes, inputs, outputs)
         "Tanh" -> Tanh(name, version, attributes, inputs, outputs)
         "Tile" -> Tile(name, version, attributes, inputs, outputs)

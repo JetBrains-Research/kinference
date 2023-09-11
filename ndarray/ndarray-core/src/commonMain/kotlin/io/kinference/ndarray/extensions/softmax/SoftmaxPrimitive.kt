@@ -17,11 +17,11 @@ import io.kinference.ndarray.extensions.*
 
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
+internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
 
-    val outputArray = PrimitiveTiledArray(input.linearSize, input.array.blockSize)
+    val outputArray = dest.array
     val maxesArray = PrimitiveArray(inputBlocks.size)
 
     //Finding Max for each block
@@ -107,5 +107,9 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, column
         }
     }
 
-    return MutablePrimitiveNDArray(outputArray, input.strides)
+    return dest
 }
+
+@GenerateNameFromPrimitives
+internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
+    softmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)

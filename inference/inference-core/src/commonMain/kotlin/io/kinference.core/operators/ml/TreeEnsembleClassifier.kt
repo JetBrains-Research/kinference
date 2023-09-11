@@ -4,6 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.ml.trees.*
+import io.kinference.core.operators.ml.utils.LabelsInfo
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
@@ -28,13 +29,6 @@ sealed class TreeEnsembleClassifier(
                 else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
             }
         }
-    }
-
-    sealed class LabelsInfo<T>(val labels: List<T>, val labelsDataType: TensorProto.DataType) {
-        val size: Int = labels.size
-
-        class LongLabelsInfo(labels: List<Long>) : LabelsInfo<Long>(labels, TensorProto.DataType.INT64)
-        class StringLabelsInfo(labels: List<String>) : LabelsInfo<String>(labels, TensorProto.DataType.STRING)
     }
 }
 
@@ -94,14 +88,12 @@ class TreeEnsembleClassifierVer1(
         }
     }
 
-    private val labels: LabelsInfo<*> = if (hasAttributeSet("classlabels_int64s")) {
-        val attr = getAttribute<LongArray>("classlabels_int64s")
-        LabelsInfo.LongLabelsInfo(attr.toList())
-    } else {
-        require(hasAttributeSet("classlabels_strings")) { "Either classlabels_int64s or classlabels_strings attribute should be specified" }
-        val attr = getAttribute<List<String>>("classlabels_strings")
-        LabelsInfo.StringLabelsInfo(attr)
-    }
+    private val labels = LabelsInfo.fromAttributes(
+        operator = this,
+        intLabelsName = "classlabels_int64s",
+        stringLabelsName = "classlabels_strings"
+    )
+
 
     private val ensembleInfo = TreeEnsembleInfo(
         baseValues = getAttributeOrNull("base_values"),

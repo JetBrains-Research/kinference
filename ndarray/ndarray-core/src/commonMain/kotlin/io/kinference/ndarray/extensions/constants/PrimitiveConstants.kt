@@ -1,8 +1,6 @@
 @file:GeneratePrimitives(DataType.NUMBER)
 package io.kinference.ndarray.extensions.constants
 
-import io.kinference.ndarray.toUByte
-import io.kinference.ndarray.toUShort
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
@@ -24,5 +22,8 @@ internal object PrimitiveConstants {
     val TWO = (2.0).toPrimitive()
     val FGELU_COEF_1 = (0.035677408136300125).toPrimitive()
     val FGELU_COEF_2 = (0.7978845608028654).toPrimitive()
+
+    val INV_ERF_COEF_1 = (4.330746750799873).toPrimitive()
+    val INV_ERF_COEF_2 = (6.802721088435375).toPrimitive()
 }
 

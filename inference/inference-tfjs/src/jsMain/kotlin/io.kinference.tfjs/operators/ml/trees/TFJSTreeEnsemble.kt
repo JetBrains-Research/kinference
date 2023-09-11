@@ -3,11 +3,12 @@ package io.kinference.tfjs.operators.ml.trees
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.dataFloat
 import io.kinference.primitives.types.DataType
+import io.kinference.tfjs.operators.ml.utils.PostTransform
 import io.kinference.trees.*
 
 class TFJSTreeEnsemble(
     aggregator: Aggregator,
-    transform: PostTransform,
+    private val transform: PostTransform,
     treeDepths: IntArray,
     treeSizes: IntArray,
     featureIds: IntArray,
@@ -18,7 +19,7 @@ class TFJSTreeEnsemble(
     numTargets: Int,
     splitMode: TreeSplitType
 ) : SingleModeTreeEnsemble<NumberNDArrayTFJS>(
-    aggregator, transform, treeDepths, treeSizes, featureIds, nodeFloatSplits,
+    aggregator, treeDepths, treeSizes, featureIds, nodeFloatSplits,
     nonLeafValuesCount, leafValues, biases, numTargets, splitMode
 ) {
     override suspend fun execute(input: NumberNDArrayTFJS): NumberNDArrayTFJS {
@@ -47,7 +48,7 @@ class TFJSTreeEnsemble(
         fun fromInfo(info: TreeEnsembleInfo): TFJSTreeEnsemble {
             return TFJSTreeEnsemble(
                 aggregator = info.aggregator,
-                transform = info.transform,
+                transform = PostTransform[info.transformType],
                 treeDepths = info.treeDepths,
                 treeSizes = info.treeSizes,
                 featureIds = info.featureIds,
