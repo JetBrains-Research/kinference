@@ -143,7 +143,6 @@ class SVMClassifierVer1(
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        this.info.outputs
         // [batch, features_count] or [features_count], reshape to 2D
         val input = (inputs[0]!!.data as NumberNDArrayCore).let {
             if (it.rank == 1) it.reshape(intArrayOf(1, it.shape[0])) else it
