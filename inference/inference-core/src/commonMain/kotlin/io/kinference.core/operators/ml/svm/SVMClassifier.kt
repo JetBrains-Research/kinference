@@ -26,7 +26,7 @@ sealed class SVMClassifier(
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): SVMClassifier {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in SVMClassifierVer1.VERSION.asRange() -> SVMClassifierVer1(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of TreeEnsembleClassifier operator: $version")
+                else -> error("Unsupported version of SVMClassifier operator: $version")
             }
         }
     }
