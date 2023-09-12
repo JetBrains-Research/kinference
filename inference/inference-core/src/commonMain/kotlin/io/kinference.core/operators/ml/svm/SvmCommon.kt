@@ -4,7 +4,6 @@ import io.kinference.core.operators.ml.utils.LabelsInfo
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
-import io.kinference.trees.PostTransformType
 import kotlin.jvm.JvmStatic
 import kotlin.math.*
 
@@ -102,7 +101,7 @@ abstract class SvmCommon(protected val svmInfo: SvmInfo) {
         val batchSize = scores.shape[0]
 
         val scoresPointer = scores.array.pointer()
-        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITHOUT_POST_TRANSFORM) {
+        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITH_POST_TRANSFORM) {
             repeat(batchSize) {
                 val score = scoresPointer.get()
                 scoresPointer.setAndIncrement(1f - score)
@@ -112,19 +111,11 @@ abstract class SvmCommon(protected val svmInfo: SvmInfo) {
             return scores
         }
 
-        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITH_POST_TRANSFORM) {
-            if (svmInfo.postTransformType == PostTransformType.LOGISTIC) {
-                repeat(batchSize) {
-                    val score = scoresPointer.get()
-                    scoresPointer.setAndIncrement(computeLogistic(-score))
-                    scoresPointer.setAndIncrement(computeLogistic(score))
-                }
-            } else {
-                repeat(batchSize) {
-                    val score = scoresPointer.get()
-                    scoresPointer.setAndIncrement(-score)
-                    scoresPointer.setAndIncrement(score)
-                }
+        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITHOUT_POST_TRANSFORM) {
+            repeat(batchSize) {
+                val score = scoresPointer.get()
+                scoresPointer.setAndIncrement(-score)
+                scoresPointer.setAndIncrement(score)
             }
 
             return scores

@@ -15,6 +15,7 @@ internal object PrimitiveConstants {
     val ZERO = (0).toPrimitive()
     val MINUS_ONE = (-1).toPrimitive()
     val SQRT_1_2 = (0.7071067811865475).toPrimitive()
+    val SQRT_2 = (1.41421356237309504880168872420969808).toPrimitive()
     val HALF = (0.5).toPrimitive()
     val ERF_P_VALUE = (0.3275911).toPrimitive()
     val ERF_COEF_1 = (0.254829592).toPrimitive()

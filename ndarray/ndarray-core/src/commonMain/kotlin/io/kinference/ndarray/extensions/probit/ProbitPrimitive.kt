@@ -32,8 +32,12 @@ internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimi
             val inputBlock = inputBlocks[blockIdx]
             val outputBlock = outputBlocks[blockIdx]
 
+            for (j in outputBlock.indices) {
+                outputBlock[j] = PrimitiveConstants.TWO * inputBlock[j] - PrimitiveConstants.ONE
+            }
+
             for (j in temporaryBlockOne.indices) {
-                val inputValue = inputBlock[j]
+                val inputValue = outputBlock[j]
                 temporaryBlockOne[j] = ln((PrimitiveConstants.ONE - inputValue) * (PrimitiveConstants.ONE + inputValue))
             }
 
@@ -42,7 +46,7 @@ internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimi
             }
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = FastMath.copySign(sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]), outputBlock[j])
+                outputBlock[j] = PrimitiveConstants.SQRT_2 * FastMath.copySign(sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]), outputBlock[j])
             }
         }
     }

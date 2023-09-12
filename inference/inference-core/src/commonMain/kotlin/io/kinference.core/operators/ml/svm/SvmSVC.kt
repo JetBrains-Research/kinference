@@ -20,7 +20,7 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
     private fun calculateScoresAndVotes(kernel: FloatNDArray): ScoresAndVotes {
         val (batchSize, vectorsCount) = kernel.shape
 
-        val scoresPerBatch = if (!svmInfo.hasProba && svmInfo.classCount <= 2) 2 else svmInfo.numClassifier
+        val scoresPerBatch = if (!svmInfo.haveProba && svmInfo.classCount <= 2) 2 else svmInfo.numClassifier
 
         val votes = Array(batchSize) { IntArray(svmInfo.classCount) }
         val scores = MutableFloatNDArray(batchSize, scoresPerBatch)
@@ -76,7 +76,7 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
     }
 
     private suspend fun calculateProbabilities(scores: FloatNDArray): FloatNDArray {
-        if (!svmInfo.hasProba) return scores
+        if (!svmInfo.haveProba) return scores
 
         val (batchSize, numClassifiers) = scores.shape
 

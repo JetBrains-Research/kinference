@@ -37,13 +37,13 @@ data class SvmInfo(
         return@let true
     }
 
-    val hasProba = probA.isNotEmpty()
+    val haveProba = probA.isNotEmpty()
 
     val numClassifier = classCount * (classCount - 1) / 2
 
     val postTransform = PostTransform[postTransformType]
 
-    val writeAdditionalScores = if (svmMode == SvmMode.SVC && !hasProba) {
+    val writeAdditionalScores = if (svmMode == SvmMode.SVC && !haveProba) {
         if (postTransformType == PostTransformType.NONE)
             WriteAdditionalScores.WITHOUT_POST_TRANSFORM
         else
@@ -51,7 +51,7 @@ data class SvmInfo(
     } else null
 
     init {
-        if (classCount == 2 && postTransformType == PostTransformType.PROBIT) error("post_transform PROBIT doesn't supported for binary case")
+        if (writeAdditionalScores != null && classCount == 2 && postTransformType == PostTransformType.PROBIT) error("post_transform PROBIT doesn't supported for binary case")
     }
 
     companion object {

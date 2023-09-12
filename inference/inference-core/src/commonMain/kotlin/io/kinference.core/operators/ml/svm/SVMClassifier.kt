@@ -59,14 +59,14 @@ class SVMClassifierVer1(
             AttributeInfo("classlabels_ints", setOf(AttributeProto.AttributeType.INTS), required = false),
             AttributeInfo("classlabels_strings", setOf(AttributeProto.AttributeType.STRINGS), required = false),
             AttributeInfo("coefficients", setOf(AttributeProto.AttributeType.FLOATS), required = true),
-            AttributeInfo("kernel_params", setOf(AttributeProto.AttributeType.FLOATS), required = true),
+            AttributeInfo("kernel_params", setOf(AttributeProto.AttributeType.FLOATS), required = false, default = floatArrayOf()),
             AttributeInfo("kernel_type", setOf(AttributeProto.AttributeType.STRING), required = false, default = "LINEAR"),
             AttributeInfo("post_transform", setOf(AttributeProto.AttributeType.STRING), required = false, default = "NONE"),
-            AttributeInfo("prob_a", setOf(AttributeProto.AttributeType.FLOATS), required = true),
-            AttributeInfo("prob_b", setOf(AttributeProto.AttributeType.FLOATS), required = true),
+            AttributeInfo("prob_a", setOf(AttributeProto.AttributeType.FLOATS), required = false, default = floatArrayOf()),
+            AttributeInfo("prob_b", setOf(AttributeProto.AttributeType.FLOATS), required = false, default = floatArrayOf()),
             AttributeInfo("rho", setOf(AttributeProto.AttributeType.FLOATS), required = true),
-            AttributeInfo("support_vectors", setOf(AttributeProto.AttributeType.FLOATS), required = true),
-            AttributeInfo("vectors_per_class", setOf(AttributeProto.AttributeType.INTS), required = true),
+            AttributeInfo("support_vectors", setOf(AttributeProto.AttributeType.FLOATS), required = false, default = floatArrayOf()),
+            AttributeInfo("vectors_per_class", setOf(AttributeProto.AttributeType.INTS), required = false, default = longArrayOf()),
         )
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
