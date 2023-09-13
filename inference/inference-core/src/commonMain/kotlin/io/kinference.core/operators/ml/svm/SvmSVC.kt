@@ -172,8 +172,8 @@ internal class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(i
         return futureOutput
     }
 
-    // ONNX realisation: https://github.com/onnx/onnx/blob/02a41bf1031defac78bd482328381f137ca99137/onnx/reference/ops/aionnxml/op_svm_classifier.py#L20
-    // ONNXRuntime realisation: https://github.com/microsoft/onnxruntime/blob/c0a4fe777fcc1311bf1379651ca68dfde176d94d/onnxruntime/core/providers/cpu/ml/ml_common.h#L189
+    // ONNX implementation: https://github.com/onnx/onnx/blob/02a41bf1031defac78bd482328381f137ca99137/onnx/reference/ops/aionnxml/op_svm_classifier.py#L20
+    // ONNXRuntime implementation: https://github.com/microsoft/onnxruntime/blob/c0a4fe777fcc1311bf1379651ca68dfde176d94d/onnxruntime/core/providers/cpu/ml/ml_common.h#L189
     // Reference article: https://www.csie.ntu.edu.tw/~cjlin/papers/svmprob/svmprob.pdf
     //r shape: [classCount, classCount]
     //p shape: [classCount]

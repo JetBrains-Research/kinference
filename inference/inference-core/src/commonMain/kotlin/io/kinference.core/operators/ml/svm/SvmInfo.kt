@@ -41,7 +41,7 @@ internal data class SvmInfo(
     } else null
 
     init {
-        if (writeAdditionalScores != null && classCount == 2 && postTransformType == PostTransformType.PROBIT) error("post_transform PROBIT doesn't supported for binary case")
+        if (writeAdditionalScores != null && classCount == 2 && postTransformType == PostTransformType.PROBIT) error("post_transform PROBIT isn't supported for binary case")
     }
 
     companion object {

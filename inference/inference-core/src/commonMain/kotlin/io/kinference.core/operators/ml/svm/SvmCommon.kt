@@ -94,34 +94,28 @@ internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
         return output
     }
 
-    protected suspend fun updateScoresInplace(scores: FloatNDArray): FloatNDArray {
-        if (svmInfo.writeAdditionalScores == null) return svmInfo.postTransform.apply(scores as MutableFloatNDArray)
-
-        // Add additional score
+    private fun addAdditionalScore(scores: FloatNDArray, updateScoreFunction: (Float) -> Pair<Float, Float>): FloatNDArray {
         val batchSize = scores.shape[0]
+        val blocks = scores.array.blocks
 
-        val scoresPointer = scores.array.pointer()
-        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITH_POST_TRANSFORM) {
-            repeat(batchSize) {
-                val score = scoresPointer.get()
-                scoresPointer.setAndIncrement(1f - score)
-                scoresPointer.setAndIncrement(score)
-            }
+        for (blockIdx in 0 until batchSize) {
+            val block = blocks[blockIdx]
 
-            return scores
-        }
-
-        if (svmInfo.writeAdditionalScores == WriteAdditionalScores.WITHOUT_POST_TRANSFORM) {
-            repeat(batchSize) {
-                val score = scoresPointer.get()
-                scoresPointer.setAndIncrement(-score)
-                scoresPointer.setAndIncrement(score)
-            }
-
-            return scores
+            val (leftScore, rightScore) = updateScoreFunction(block[0])
+            block[0] = leftScore
+            block[1] = rightScore
         }
 
         return scores
+    }
+
+    protected suspend fun updateScoresInplace(scores: FloatNDArray): FloatNDArray {
+        if (svmInfo.writeAdditionalScores == null) return svmInfo.postTransform.apply(scores as MutableFloatNDArray)
+
+        return when (svmInfo.writeAdditionalScores) {
+            WriteAdditionalScores.WITH_POST_TRANSFORM -> addAdditionalScore(scores) { 1f - it to it }
+            WriteAdditionalScores.WITHOUT_POST_TRANSFORM -> addAdditionalScore(scores) { -it to it }
+        }
     }
 
 
