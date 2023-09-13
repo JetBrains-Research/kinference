@@ -8,7 +8,7 @@ import io.kinference.ndarray.math.exp
 import kotlin.math.abs
 import kotlin.math.pow
 
-class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
+internal class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
     init {
         require(info.svmMode == SvmMode.SVC) { "Incorrect svmMode in info" }
     }
@@ -172,9 +172,11 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
         return futureOutput
     }
 
+    // ONNX realisation: https://github.com/onnx/onnx/blob/02a41bf1031defac78bd482328381f137ca99137/onnx/reference/ops/aionnxml/op_svm_classifier.py#L20
+    // ONNXRuntime realisation: https://github.com/microsoft/onnxruntime/blob/c0a4fe777fcc1311bf1379651ca68dfde176d94d/onnxruntime/core/providers/cpu/ml/ml_common.h#L189
     //r shape: [classCount, classCount]
-    //dest shape: [classCount]
-    private suspend fun multiclassProbability(r: FloatArray, dest: MutableFloatNDArray) {
+    //p shape: [classCount]
+    private suspend fun multiclassProbability(r: FloatArray, p: MutableFloatNDArray) {
         val maxIter = maxOf(100, svmInfo.classCount)
 
         val Q = FloatArray(svmInfo.classCount * svmInfo.classCount)
@@ -182,7 +184,7 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
 
         val eps = 0.005f / svmInfo.classCount
 
-        dest.fill(1f / svmInfo.classCount)
+        p.fill(1f / svmInfo.classCount)
 
         for (i in 0 until svmInfo.classCount) {
             val iOffset = i * svmInfo.classCount
@@ -209,12 +211,12 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
             var pQp = 0f
             for (i in 0 until svmInfo.classCount) {
                 val iOffset = i * svmInfo.classCount
-                val destPointer = dest.array.pointer()
+                val pPointer = p.array.pointer()
                 for (j in 0 until svmInfo.classCount) {
-                    Qp[i] += Q[iOffset + j] * destPointer.getAndIncrement()
+                    Qp[i] += Q[iOffset + j] * pPointer.getAndIncrement()
                 }
-                destPointer.linearIndex = i
-                pQp += destPointer.get() * Qp[i]
+                pPointer.linearIndex = i
+                pQp += pPointer.get() * Qp[i]
             }
 
             var maxError = 0f
@@ -226,9 +228,8 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
             }
 
             if (maxError < eps) break
-
-
-            val destPointer = dest.array.pointer()
+            
+            val destPointer = p.array.pointer()
             for (i in 0 until svmInfo.classCount) {
                 val iDiagOffset = i * svmInfo.classCount + i
                 val iOffset  = i * svmInfo.classCount
@@ -242,7 +243,7 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
                 for (j in 0 until svmInfo.classCount) {
                     Qp[j] = (Qp[j] + diff * Q[iOffset + j]) / onePlusDiff
                 }
-                dest.divAssign(FloatNDArray.scalar(onePlusDiff))
+                p.divAssign(FloatNDArray.scalar(onePlusDiff))
             }
         }
     }

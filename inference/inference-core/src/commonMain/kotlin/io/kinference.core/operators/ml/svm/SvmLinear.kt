@@ -3,7 +3,7 @@ package io.kinference.core.operators.ml.svm
 import io.kinference.core.operators.ml.utils.LabelsInfo
 import io.kinference.ndarray.arrays.*
 
-class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
+internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
     init {
         require(info.svmMode == SvmMode.LINEAR) { "Incorrect svmMode in info" }
     }

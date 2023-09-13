@@ -6,7 +6,7 @@ import io.kinference.ndarray.extensions.all.all
 import io.kinference.trees.*
 import io.kinference.utils.toIntArray
 
-data class SvmInfo(
+internal data class SvmInfo(
     val svmMode: SvmMode,
     // coefficients: if linear [classCount, featureCount]
     //               else      [classCount - 1, vectorCount]

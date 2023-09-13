@@ -4,6 +4,7 @@ import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.ml.utils.LabelsInfo
+import io.kinference.core.operators.ml.utils.LabelsInfo.Companion.getLabelsInfo
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
@@ -32,7 +33,7 @@ sealed class SVMClassifier(
     }
 }
 
-class SVMClassifierVer1(
+class SVMClassifierVer1 internal constructor(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
@@ -55,9 +56,12 @@ class SVMClassifierVer1(
             IOInfo(1, setOf(TensorProto.DataType.FLOAT), "Z", optional = false),
         )
 
+        private val labelsIntAttributeInfo = AttributeInfo("classlabels_ints", setOf(AttributeProto.AttributeType.INTS), required = false)
+        private val labelsStringAttributeInfo = AttributeInfo("classlabels_strings", setOf(AttributeProto.AttributeType.STRINGS), required = false)
+
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("classlabels_ints", setOf(AttributeProto.AttributeType.INTS), required = false),
-            AttributeInfo("classlabels_strings", setOf(AttributeProto.AttributeType.STRINGS), required = false),
+            labelsIntAttributeInfo,
+            labelsStringAttributeInfo,
             AttributeInfo("coefficients", setOf(AttributeProto.AttributeType.FLOATS), required = true),
             AttributeInfo("kernel_params", setOf(AttributeProto.AttributeType.FLOATS), required = false, default = floatArrayOf()),
             AttributeInfo("kernel_type", setOf(AttributeProto.AttributeType.STRING), required = false, default = "LINEAR"),
@@ -73,10 +77,9 @@ class SVMClassifierVer1(
         private val INFO = OperatorInfo("SVMClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
     }
 
-    private val labels = LabelsInfo.fromAttributes(
-        operator = this,
-        intLabelsName = "classlabels_ints",
-        stringLabelsName = "classlabels_strings"
+    private val labels = getLabelsInfo(
+        intLabelsName = labelsIntAttributeInfo.name,
+        stringLabelsName = labelsStringAttributeInfo.name
     )
 
     private val svmInfo = SvmInfo(

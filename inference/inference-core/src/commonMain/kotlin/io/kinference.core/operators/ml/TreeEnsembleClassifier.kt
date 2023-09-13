@@ -5,6 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.ml.trees.*
 import io.kinference.core.operators.ml.utils.LabelsInfo
+import io.kinference.core.operators.ml.utils.LabelsInfo.Companion.getLabelsInfo
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
@@ -56,14 +57,18 @@ class TreeEnsembleClassifierVer1(
             IOInfo(1, setOf(TensorProto.DataType.FLOAT), "Z", optional = false),
         )
 
+        val labelsIntAttributeInfo = AttributeInfo("classlabels_int64s", setOf(AttributeType.INTS), required = false)
+        val labelsStringAttributeInfo = AttributeInfo("classlabels_strings", setOf(AttributeType.STRINGS), required = false)
+
+
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("base_values", setOf(AttributeType.FLOATS), required = false),
             AttributeInfo("class_ids", setOf(AttributeType.INTS), required = true),
             AttributeInfo("class_nodeids", setOf(AttributeType.INTS), required = true),
             AttributeInfo("class_treeids", setOf(AttributeType.INTS), required = true),
             AttributeInfo("class_weights", setOf(AttributeType.FLOATS), required = true),
-            AttributeInfo("classlabels_int64s", setOf(AttributeType.INTS), required = false),
-            AttributeInfo("classlabels_strings", setOf(AttributeType.STRINGS), required = false),
+            labelsIntAttributeInfo,
+            labelsStringAttributeInfo,
             AttributeInfo("nodes_falsenodeids", setOf(AttributeType.INTS), required = true),
             AttributeInfo("nodes_featureids", setOf(AttributeType.INTS), required = true),
             AttributeInfo("nodes_hitrates", setOf(AttributeType.FLOATS), required = false),
@@ -88,10 +93,9 @@ class TreeEnsembleClassifierVer1(
         }
     }
 
-    private val labels = LabelsInfo.fromAttributes(
-        operator = this,
-        intLabelsName = "classlabels_int64s",
-        stringLabelsName = "classlabels_strings"
+    private val labels = getLabelsInfo(
+        intLabelsName = labelsIntAttributeInfo.name,
+        stringLabelsName = labelsStringAttributeInfo.name
     )
 
 

@@ -1,6 +1,6 @@
 package io.kinference.core.operators.ml.svm
 
-enum class SvmMode {
+internal enum class SvmMode {
     SVC,
     LINEAR
 }

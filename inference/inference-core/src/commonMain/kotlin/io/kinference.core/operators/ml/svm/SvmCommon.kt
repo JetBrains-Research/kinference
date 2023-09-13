@@ -7,7 +7,7 @@ import io.kinference.ndarray.math.exp
 import kotlin.jvm.JvmStatic
 import kotlin.math.*
 
-abstract class SvmCommon(protected val svmInfo: SvmInfo) {
+internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
     data class LabelsAndScores(
         val labels: NDArrayCore,
         val scores: FloatNDArray
