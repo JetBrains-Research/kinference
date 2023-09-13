@@ -230,13 +230,13 @@ internal class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(i
 
             if (maxError < eps) break
 
-            val destPointer = p.array.pointer()
+            val pPointer = p.array.pointer()
             for (i in 0 until svmInfo.classCount) {
                 val iDiagOffset = i * svmInfo.classCount + i
                 val iOffset  = i * svmInfo.classCount
 
                 val diff = (-Qp[i] + pQp) / Q[iDiagOffset]
-                destPointer.setAndIncrement(destPointer.get() + diff)
+                pPointer.setAndIncrement(pPointer.get() + diff)
 
                 val onePlusDiff = 1f + diff
                 pQp = (pQp + diff * (diff * Q[iDiagOffset] + 2f * Qp[i])) / onePlusDiff.pow(2)
