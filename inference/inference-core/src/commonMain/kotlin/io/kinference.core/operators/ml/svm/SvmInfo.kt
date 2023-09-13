@@ -2,6 +2,7 @@ package io.kinference.core.operators.ml.svm
 
 import io.kinference.core.operators.ml.utils.PostTransform
 import io.kinference.ndarray.arrays.FloatNDArray
+import io.kinference.ndarray.extensions.all.all
 import io.kinference.trees.*
 import io.kinference.utils.toIntArray
 
@@ -24,18 +25,7 @@ data class SvmInfo(
     val startingVector: IntArray,
 ) {
 
-    val weightsAreAllPositive = let {
-        val coefssBlocks = coefficients.array.blocks
-        for (block in coefssBlocks) {
-            for (value in block) {
-                if (value < 0f) {
-                    return@let false
-                }
-            }
-        }
-
-        return@let true
-    }
+    val weightsAreAllPositive = coefficients.all { it >= 0f }
 
     val haveProba = probA.isNotEmpty()
 

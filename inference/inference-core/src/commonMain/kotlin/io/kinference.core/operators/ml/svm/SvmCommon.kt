@@ -132,11 +132,5 @@ abstract class SvmCommon(protected val svmInfo: SvmInfo) {
                 SvmMode.LINEAR -> SvmLinear(info, labelsInfo)
             }
         }
-
-        @JvmStatic
-        protected fun computeLogistic(value: Float): Float {
-            val result = 1f / (1f + FastMath.exp(-abs(value)))
-            return if (value < 0) 1f - result else result
-        }
     }
 }

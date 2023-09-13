@@ -3,6 +3,8 @@ package io.kinference.core.operators.ml.svm
 import io.kinference.core.operators.ml.utils.LabelsInfo
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEachWith
+import io.kinference.ndarray.math.FastMath
+import io.kinference.ndarray.math.exp
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -73,6 +75,11 @@ class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(info) {
     private fun sigmoidProbability(score: Float, proba: Float, probb: Float): Float {
         val value = score * proba + probb
         return 1f - computeLogistic(value)
+    }
+
+    private fun computeLogistic(value: Float): Float {
+        val result = 1f / (1f + FastMath.exp(-abs(value)))
+        return if (value < 0) 1f - result else result
     }
 
     private suspend fun calculateProbabilities(scores: FloatNDArray): FloatNDArray {
