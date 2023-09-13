@@ -4,7 +4,6 @@ import io.kinference.ndarray.arrays.*
 
 abstract class SingleModeTreeEnsemble<T : NumberNDArray>(
     private val aggregator: Aggregator,
-    protected val transform: PostTransform,
     private val treeDepths: IntArray,
     private val treeSizes: IntArray,
     featureIds: IntArray,

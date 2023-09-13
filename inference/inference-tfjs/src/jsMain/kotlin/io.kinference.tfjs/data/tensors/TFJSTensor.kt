@@ -58,7 +58,7 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         private fun parseArray(proto: TensorProto): Any {
             val array = if (proto.isString()) {
                 val data = proto.stringData
-                Array(data.size) { data[it].toString() }
+                Array(data.size) { data[it].utf8() }
             } else {
                 proto.arrayData
             }

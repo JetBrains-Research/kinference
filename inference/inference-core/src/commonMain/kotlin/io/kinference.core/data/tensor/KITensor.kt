@@ -77,7 +77,7 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
         }
 
         private fun parseArray(proto: TensorProto): Any {
-            val array = if (proto.isString()) proto.stringData.map { it.toString() } else proto.arrayData
+            val array = if (proto.isString()) proto.stringData.map { it.utf8() } else proto.arrayData
             requireNotNull(array) { "Array value should be initialized" }
             return array
         }

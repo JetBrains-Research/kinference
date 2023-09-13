@@ -271,7 +271,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun softmax(axis: Int): PrimitiveNDArray {
-        return softmax(this, axis, strides) as PrimitiveNDArray
+        return softmax(this, axis) as PrimitiveNDArray
     }
 
     override suspend fun logSoftmax(axis: Int): PrimitiveNDArray {
@@ -285,7 +285,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             }
             else -> error("LogSoftmax supported only for DOUBLE and FLOAT types")
         }
-        val output = softmax(this, axis, strides)
+        val output = softmax(this, axis)
         return output.mapMutable(log(output.type)) as MutablePrimitiveNDArray
     }
 
@@ -340,8 +340,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
         require(shape.size in 1..2 && other.shape.size in 1..2)
-        val actualThis = (if (this.shape.size == 1) this.reshape(intArrayOf(1, shape[0])) else this) as PrimitiveNDArray
-        val actualOther = (if (other.shape.size == 1) other.reshape(intArrayOf(1, other.shape[0])) else other) as PrimitiveNDArray
+        val actualThis = (if (this.shape.size == 1) this.reshape(intArrayOf(1, shape[0])) else this)
+        val actualOther = (if (other.shape.size == 1) other.reshape(intArrayOf(1, other.shape[0])) else other)
 
         require(actualThis.shape[1] == actualOther.shape[0])
 
@@ -1115,6 +1115,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
         return MutablePrimitiveNDArray(this.array, strides)
     }
+
+    override suspend fun reshape(shape: IntArray): PrimitiveNDArray = reshape(Strides(shape))
 
     private fun transposeByBlocks(permutations: IntArray): PrimitiveNDArray {
         val outputBlocks =  this.array.blocks.copyOf()

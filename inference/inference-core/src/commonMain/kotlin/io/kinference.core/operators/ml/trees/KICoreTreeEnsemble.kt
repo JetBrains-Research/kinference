@@ -1,5 +1,6 @@
 package io.kinference.core.operators.ml.trees
 
+import io.kinference.core.operators.ml.utils.PostTransform
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.primitives.types.DataType
@@ -12,7 +13,7 @@ import kotlin.math.*
 
 class KICoreTreeEnsemble(
     aggregator: Aggregator,
-    transform: PostTransform,
+    private val transform: PostTransform,
     treeDepths: IntArray,
     treeSizes: IntArray,
     featureIds: IntArray,
@@ -23,7 +24,7 @@ class KICoreTreeEnsemble(
     numTargets: Int,
     splitMode: TreeSplitType
 ) : SingleModeTreeEnsemble<NumberNDArrayCore>(
-    aggregator, transform, treeDepths, treeSizes, featureIds, nodeFloatSplits,
+    aggregator, treeDepths, treeSizes, featureIds, nodeFloatSplits,
     nonLeafValuesCount, leafValues, biases, numTargets, splitMode
 ) {
     override suspend fun execute(input: NumberNDArrayCore): FloatNDArray {
@@ -50,7 +51,7 @@ class KICoreTreeEnsemble(
             }
         }
         val output = MutableFloatNDArray(FloatTiledArray(outputBlocks), Strides(outputShape))
-        return transform.apply(output) as FloatNDArray
+        return transform.apply(output)
     }
 
     companion object {
@@ -86,7 +87,7 @@ class KICoreTreeEnsemble(
         fun fromInfo(info: TreeEnsembleInfo): KICoreTreeEnsemble {
             return KICoreTreeEnsemble(
                 aggregator = info.aggregator,
-                transform = info.transform,
+                transform = PostTransform[info.transformType],
                 treeDepths = info.treeDepths,
                 treeSizes = info.treeSizes,
                 featureIds = info.featureIds,

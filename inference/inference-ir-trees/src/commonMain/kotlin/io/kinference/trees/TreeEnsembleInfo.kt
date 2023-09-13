@@ -5,7 +5,7 @@ import kotlin.math.log2
 
 data class TreeEnsembleInfo(
     val aggregator: Aggregator,
-    val transform: PostTransform,
+    val transformType: PostTransformType,
     val treeDepths: IntArray,
     val treeSizes: IntArray,
     val featureIds: IntArray,
@@ -68,7 +68,7 @@ data class TreeEnsembleInfo(
 
             return TreeEnsembleInfo(
                 aggregator = Aggregator[aggregatorType],
-                transform = PostTransform[postTransformType],
+                transformType = postTransformType,
                 treeDepths = treeDepths,
                 treeSizes = treeSizes,
                 featureIds = IntArray(featureIds.size) { featureIds[it].toInt() },
