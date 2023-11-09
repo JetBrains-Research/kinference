@@ -514,3 +514,106 @@ suspend fun NumberNDArrayTFJS.batchNorm(
         NumberNDArrayTFJS(batchNorm(tfjsArray, bcastMean.tfjsArray, bcastVar.tfjsArray, bcastBias.tfjsArray, bcastScale.tfjsArray, epsilon))
     }
 }
+
+suspend fun NumberNDArrayTFJS.conv(
+    w: NumberNDArrayTFJS,
+    b: NumberNDArrayTFJS?,
+    groups: Int,
+    autoPad: String,
+    pads: IntArray?,
+    strides: IntArray?,
+    dilations: IntArray?
+) : NumberNDArrayTFJS {
+    val effectiveStrides = strides ?: IntArray(rank - 2) { 1 }
+    val effectiveDilations = dilations ?: IntArray(rank - 2) { 1 }
+    val padding: Any = when (autoPad) {
+        "SAME_UPPER", "SAME_LOWER" -> "same"
+        "VALID" -> "valid"
+        "NOTSET" -> {
+            if (pads != null) {
+                // Convert ONNX pads to TensorFlow.js padding format
+                // Check if the pads array has an even number of elements
+                if (pads.size % 2 != 0) {
+                    error("Pads array must have an even number of elements.")
+                }
+
+                // TensorFlow.js expects padding for NCHW as [[0, 0], [0, 0], [padTop, padBottom], [padLeft, padRight]]
+                // Assuming pads is [padTop, padLeft, padBottom, padRight] for ONNX
+                val tfjsPads = Array(4) { IntArray(2) { 0 } } // Initialize to zero
+                tfjsPads[2][0] = pads[0] // padTop
+                tfjsPads[2][1] = pads[2] // padBottom
+                tfjsPads[3][0] = pads[1] // padLeft
+                tfjsPads[3][1] = pads[3] // padRight
+
+                tfjsPads
+            } else {
+                "valid" // Default to valid if no explicit pads are given
+            }
+        }
+
+        else -> error("Unsupported auto_pad value: $autoPad")
+    }
+
+    val convOutputs = mutableListOf<ArrayTFJS>()
+    val inputChannels = shape[1]
+    val channelsPerGroup = inputChannels / groups
+
+    return tidyNDArray {
+        for (group in 0 until groups) {
+            // Calculate the slicing indices for input and filter
+            val inputStarts = IntArray(rank) { if (it == 1) group * channelsPerGroup else 0 }
+            val inputEnds = IntArray(rank) { if (it == 1) (group + 1) * channelsPerGroup else shape[it] }
+
+            val filterStarts = IntArray(rank) { if (it == 0) group * (w.shape[0] / groups) else 0 }
+            val filterEnds = IntArray(rank) { if (it == 0) (group + 1) * (w.shape[0] / groups) else w.shape[it] }
+
+            val inputSlice = this.slice(starts = inputStarts, ends = inputEnds)
+            val filterSlice = w.slice(starts = filterStarts, ends = filterEnds)
+
+            val convResult = when (rank) {
+                3 -> conv1d(
+                    inputSlice.tfjsArray,
+                    filterSlice.transpose(intArrayOf(2, 1, 0)).tfjsArray,
+                    effectiveStrides[0],
+                    padding,
+                    "NCW",
+                    effectiveDilations[0],
+                    null
+                )
+
+                4 -> conv2d(
+                    inputSlice.tfjsArray,
+                    filterSlice.transpose(intArrayOf(2, 3, 1, 0)).tfjsArray,
+                    effectiveStrides.map { it }.toTypedArray(),
+                    padding,
+                    "NCHW",
+                    effectiveDilations.map { it }.toTypedArray(),
+                    null
+                )
+
+                5 -> conv3d(
+                    inputSlice.tfjsArray,
+                    filterSlice.transpose(intArrayOf(2, 3, 4, 1, 0)).tfjsArray,
+                    effectiveStrides.map { it }.toTypedArray(),
+                    padding,
+                    "NCDHW",
+                    effectiveDilations.map { it }.toTypedArray()
+                )
+
+                else -> error("Unsupported tensor rank for convolution: $rank")
+            }
+
+            convOutputs.add(convResult)
+        }
+
+        val y = concat(convOutputs.toTypedArray(), 1)
+        return@tidyNDArray if (b != null) {
+            val indicesArray = y.shape.indices.toIntArray()
+            val axes = intArrayOf(0) + if (y.rank > 2) indicesArray.sliceArray(2 until y.rank) else IntArray(0)
+
+            val bcastBias = b.unsqueeze(*axes).broadcastTo(y.shape)
+            NumberNDArrayTFJS(y.add(bcastBias.tfjsArray))
+        } else
+            NumberNDArrayTFJS(y)
+    }
+}
