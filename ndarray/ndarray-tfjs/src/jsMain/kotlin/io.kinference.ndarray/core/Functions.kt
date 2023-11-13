@@ -185,8 +185,8 @@ internal external val mod: (x: ArrayTFJS, y: ArrayTFJS) -> ArrayTFJS
 
 internal external val pow: (base: ArrayTFJS, exp: ArrayTFJS) -> ArrayTFJS
 
-internal external val conv1d: (x: ArrayTFJS, filter: ArrayTFJS, stride: Number, pad: Any, dataFormat: String?, dilation: Number?, dimRoundingMode: String?) -> ArrayTFJS
+internal external val conv1d: (x: ArrayTFJS, filter: ArrayTFJS, stride: Number, pad: Any, dataFormat: String?, dilation: Number?) -> ArrayTFJS
 
-internal external val conv2d: (x: ArrayTFJS, filter: ArrayTFJS, strides: Array<Number>, pad: Any, dataFormat: String?, dilation: Array<Number>?, dimRoundingMode: String?) -> ArrayTFJS
+internal external val conv2d: (x: ArrayTFJS, filter: ArrayTFJS, strides: Array<Number>, pad: Any, dataFormat: String?, dilation: Array<Number>?) -> ArrayTFJS
 
 internal external val conv3d: (x: ArrayTFJS, filter: ArrayTFJS, strides: Array<Number>, pad: Any, dataFormat: String?, dilation: Array<Number>?) -> ArrayTFJS

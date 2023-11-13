@@ -524,39 +524,25 @@ suspend fun NumberNDArrayTFJS.conv(
     strides: IntArray?,
     dilations: IntArray?
 ) : NumberNDArrayTFJS {
-    val effectiveStrides = strides ?: IntArray(rank - 2) { 1 }
-    val effectiveDilations = dilations ?: IntArray(rank - 2) { 1 }
-    val padding: Any = when (autoPad) {
-        "SAME_UPPER", "SAME_LOWER" -> "same"
-        "VALID" -> "valid"
-        "NOTSET" -> {
-            if (pads != null) {
-                // Convert ONNX pads to TensorFlow.js padding format
-                // Check if the pads array has an even number of elements
-                if (pads.size % 2 != 0) {
-                    error("Pads array must have an even number of elements.")
-                }
-
-                // TensorFlow.js expects padding for NCHW as [[0, 0], [0, 0], [padTop, padBottom], [padLeft, padRight]]
-                // Assuming pads is [padTop, padLeft, padBottom, padRight] for ONNX
-                val tfjsPads = Array(4) { IntArray(2) { 0 } } // Initialize to zero
-                tfjsPads[2][0] = pads[0] // padTop
-                tfjsPads[2][1] = pads[2] // padBottom
-                tfjsPads[3][0] = pads[1] // padLeft
-                tfjsPads[3][1] = pads[3] // padRight
-
-                tfjsPads
-            } else {
-                "valid" // Default to valid if no explicit pads are given
-            }
-        }
-
-        else -> error("Unsupported auto_pad value: $autoPad")
-    }
-
+    val effectiveStrides: Array<Number> = (strides ?: IntArray(rank - 2) { 1 }).map { it }.toTypedArray()
+    val effectiveDilations: Array<Number> = (dilations ?: IntArray(rank - 2) { 1 }).map { it }.toTypedArray()
+    val padding: Any = convertOnnxPaddingToTfjs(autoPad, pads, rank - 2)
     val convOutputs = mutableListOf<ArrayTFJS>()
     val inputChannels = shape[1]
     val channelsPerGroup = inputChannels / groups
+
+    val (transposeArr, convFunction) = when (rank) {
+        3 -> intArrayOf(2, 1, 0) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv1d(i, f, s.first(), p, "NCW", d.first())
+        }
+        4 -> intArrayOf(2, 3, 1, 0) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv2d(i, f, s, p, "NCHW", d)
+        }
+        5 -> intArrayOf(2, 3, 4, 1, 0) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv3d(i, f, s, p, "NCDHW", d)
+        }
+        else -> error("Unsupported tensor rank for convolution: $rank")
+    }
 
     return tidyNDArray {
         for (group in 0 until groups) {
@@ -567,42 +553,10 @@ suspend fun NumberNDArrayTFJS.conv(
             val filterStarts = IntArray(rank) { if (it == 0) group * (w.shape[0] / groups) else 0 }
             val filterEnds = IntArray(rank) { if (it == 0) (group + 1) * (w.shape[0] / groups) else w.shape[it] }
 
-            val inputSlice = this.slice(starts = inputStarts, ends = inputEnds)
-            val filterSlice = w.slice(starts = filterStarts, ends = filterEnds)
+            val inputSlice = this.slice(starts = inputStarts, ends = inputEnds).tfjsArray
+            val filterSlice = w.slice(starts = filterStarts, ends = filterEnds).transpose(transposeArr).tfjsArray
 
-            val convResult = when (rank) {
-                3 -> conv1d(
-                    inputSlice.tfjsArray,
-                    filterSlice.transpose(intArrayOf(2, 1, 0)).tfjsArray,
-                    effectiveStrides[0],
-                    padding,
-                    "NCW",
-                    effectiveDilations[0],
-                    null
-                )
-
-                4 -> conv2d(
-                    inputSlice.tfjsArray,
-                    filterSlice.transpose(intArrayOf(2, 3, 1, 0)).tfjsArray,
-                    effectiveStrides.map { it }.toTypedArray(),
-                    padding,
-                    "NCHW",
-                    effectiveDilations.map { it }.toTypedArray(),
-                    null
-                )
-
-                5 -> conv3d(
-                    inputSlice.tfjsArray,
-                    filterSlice.transpose(intArrayOf(2, 3, 4, 1, 0)).tfjsArray,
-                    effectiveStrides.map { it }.toTypedArray(),
-                    padding,
-                    "NCDHW",
-                    effectiveDilations.map { it }.toTypedArray()
-                )
-
-                else -> error("Unsupported tensor rank for convolution: $rank")
-            }
-
+            val convResult = convFunction(inputSlice, filterSlice, effectiveStrides, padding, effectiveDilations)
             convOutputs.add(convResult)
         }
 
@@ -615,5 +569,29 @@ suspend fun NumberNDArrayTFJS.conv(
             NumberNDArrayTFJS(y.add(bcastBias.tfjsArray))
         } else
             NumberNDArrayTFJS(y)
+    }
+}
+
+private fun convertOnnxPaddingToTfjs(autoPad: String, pads: IntArray?, numSpatialDims: Int): Any {
+    return when (autoPad) {
+        "SAME_UPPER", "SAME_LOWER" -> "same"
+        "VALID" -> "valid"
+        "NOTSET" -> {
+            if (pads != null) {
+                // Ensure the pads array has the correct number of elements
+                require(pads.size == 2 * numSpatialDims) { "\"pads\" array must have ${2 * numSpatialDims} elements for ${numSpatialDims}D convolution." }
+
+                val tfjsPads = Array(numSpatialDims + 2) { IntArray(2) { 0 } }
+                // ONNX pads array is in the order of [begin0, begin1, ..., end0, end1, ...]
+                for (i in 0 until numSpatialDims) {
+                    tfjsPads[i + 2 - numSpatialDims % 2][0] = pads[i] // Begin padding
+                    tfjsPads[i + 2 - numSpatialDims % 2][1] = pads[i + numSpatialDims] // End padding
+                }
+                tfjsPads
+            } else {
+                "valid" // Default to valid if no explicit pads are given
+            }
+        }
+        else -> error("Unsupported auto_pad value: $autoPad")
     }
 }
