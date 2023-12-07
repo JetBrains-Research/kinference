@@ -14,7 +14,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                implementation("com.squareup.okio:okio:3.0.0")
+                implementation("com.squareup.okio:okio:${Versions.okio}")
             }
         }
     }

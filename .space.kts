@@ -1,8 +1,7 @@
-val jsContainer = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1"
-val jvmContainer = "amazoncorretto:17"
+val container = "registry.jetbrains.team/p/ki/containers-ci/ci-corretto-17-firefox:1.0.1"
 
 job("KInference / Build") {
-    container("Build With Gradle", jvmContainer) {
+    container("Build With Gradle", container) {
         kotlinScript { api ->
             api.gradlew("assemble", "--parallel", "--console=plain", "--no-daemon")
         }
@@ -10,7 +9,7 @@ job("KInference / Build") {
 }
 
 job("KInference / Test / JVM") {
-    container("JVM Tests", jvmContainer) {
+    container("JVM Tests", container) {
         kotlinScript { api ->
             api.gradlew("jvmTest", "--parallel", "--console=plain", "-Pci", "--no-daemon")
         }
@@ -18,7 +17,7 @@ job("KInference / Test / JVM") {
 }
 
 job("KInference / Test / JS IR") {
-    container("JS IR Tests", jsContainer) {
+    container("JS IR Tests", container) {
         shellScript {
             content = xvfbRun("./gradlew jsTest --parallel --console=plain -Pci --no-daemon")
         }
@@ -26,7 +25,7 @@ job("KInference / Test / JS IR") {
 }
 
 job("KInference / Heavy Test / JVM") {
-    container("JVM Heavy Tests", jvmContainer) {
+    container("JVM Heavy Tests", container) {
         addAwsKeys()
 
         kotlinScript { api ->
@@ -36,7 +35,7 @@ job("KInference / Heavy Test / JVM") {
 }
 
 job("KInference / Heavy Test / JS IR") {
-    container("JS IR Heavy Tests", jsContainer) {
+    container("JS IR Heavy Tests", container) {
         addAwsKeys()
 
         shellScript {
@@ -52,7 +51,7 @@ job("KInference / Release") {
         }
     }
 
-    container("Release", jvmContainer) {
+    container("Release", container) {
         addAwsKeys()
 
         kotlinScript { api ->

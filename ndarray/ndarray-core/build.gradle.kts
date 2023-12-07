@@ -1,12 +1,10 @@
 import io.kinference.gradle.Versions
-import org.jetbrains.kotlin.gradle.tasks.CompileUsingKotlinDaemon
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilerExecutionStrategy
 
 group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.24" apply true
+    id("io.kinference.primitives") version "0.1.25" apply true
 }
 
 kotlin {

@@ -11,6 +11,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
+import space.kscience.kmath.UnsafeKMathAPI
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
@@ -22,7 +23,7 @@ sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): KMathTensor = KMathTensor(name, data)
         override fun clone(newName: String?): KMathTensor {
-            return KMathTensor(newName, data.mapToBuffer { it!! })
+            return KMathTensor(newName, BufferND(data.shape) { data.get(it) })
         }
     }
 
@@ -97,12 +98,13 @@ object KIKMathTensorAdapter : ONNXDataAdapter<KIKMathData.KMathTensor, KITensor>
             }
             else -> error("Unsupported data type $type")
         }
-        return KIKMathData.KMathTensor(data.name, BufferND(DefaultStrides(array.shape), buffer))
+        return KIKMathData.KMathTensor(data.name, BufferND(Strides(ShapeND(array.shape)), buffer))
     }
 
+    @OptIn(UnsafeKMathAPI::class)
     override fun toONNXData(data: KIKMathData.KMathTensor): KITensor {
         val elements = data.data.elements().map { it.second!! }.iterator()
-        val shape = data.data.shape
+        val shape = data.data.shape.asArray()
         return when (val element = data.data.elements().first().second!!) {
             is Byte -> ByteNDArray(shape) { elements.next() as Byte }
             is Short -> ShortNDArray(shape) { elements.next() as Short }
@@ -156,8 +158,9 @@ fun KIONNXData<*>.toKIKMathData() = when (this.type) {
     ONNXDataType.ONNX_MAP -> KIKMathMapAdapter.fromONNXData(this as KIONNXMap)
 }
 
+@OptIn(UnsafeKMathAPI::class)
 fun KIKMathData<*>.extractTypeInfo(): ValueTypeInfo = when (this) {
-    is KIKMathData.KMathTensor -> ValueTypeInfo.TensorTypeInfo(TensorShape(data.shape), data.elements().first().second.resolveProtoType())
+    is KIKMathData.KMathTensor -> ValueTypeInfo.TensorTypeInfo(TensorShape(data.shape.asArray()), data.elements().first().second.resolveProtoType())
     is KIKMathData.KMathSequence -> ValueTypeInfo.SequenceTypeInfo(data[0].extractTypeInfo())
     is KIKMathData.KMathMap -> {
         val first = data.entries.first()

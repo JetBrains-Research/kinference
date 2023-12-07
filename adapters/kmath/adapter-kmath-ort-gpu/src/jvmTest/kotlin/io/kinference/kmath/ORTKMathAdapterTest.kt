@@ -17,7 +17,7 @@ class ORTKMathAdapterTest {
     fun gpu_test_kmath_adapter_convert_to_onnx_data() {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedTensor = ORTKMathTensorAdapter.toONNXData(ORTKMathData.KMathTensor("test", kmathArray))
         val expectedTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val expectedOrtTensor = ORTTensor("test", expectedTensor)
@@ -28,7 +28,7 @@ class ORTKMathAdapterTest {
     fun gpu_test_kmath_adapter_convert_to_onnx_data_ubyte() {
         val array = UByteArray(4) { it.toUByte() }
         val shape = intArrayOf(1, 2, 2)
-        val kmathArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedTensor = ORTKMathTensorAdapter.toONNXData(ORTKMathData.KMathTensor("test", kmathArray))
         val expectedTensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), ByteBuffer.wrap(array.toByteArray()), shape.toLongArray(), OnnxJavaType.UINT8)
         val expectedOrtTensor = ORTTensor("test", expectedTensor)
@@ -41,7 +41,7 @@ class ORTKMathAdapterTest {
         val shape = intArrayOf(2, 3)
         val tensor = OnnxTensor.createTensor(OrtEnvironment.getEnvironment(), IntBuffer.wrap(array), shape.toLongArray())
         val ortTensor = ORTTensor("test", tensor)
-        val expectedArray = BufferND(DefaultStrides(shape), Buffer.auto(shape.reduce(Int::times)) { array[it] })
+        val expectedArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
         val convertedArray = ORTKMathTensorAdapter.fromONNXData(ortTensor).data as StructureND<Int>
         StructureND.contentEquals(expectedArray, convertedArray)
     }
