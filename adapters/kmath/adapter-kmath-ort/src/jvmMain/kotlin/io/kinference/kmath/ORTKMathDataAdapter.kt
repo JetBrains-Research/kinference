@@ -7,6 +7,7 @@ import io.kinference.ort.data.seq.ORTSequence
 import io.kinference.ort.data.tensor.ORTTensor
 import io.kinference.utils.toIntArray
 import io.kinference.utils.toLongArray
+import space.kscience.kmath.UnsafeKMathAPI
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import java.nio.*
@@ -19,7 +20,7 @@ sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): KMathTensor = KMathTensor(name, data)
         override fun clone(newName: String?): KMathTensor {
-            return KMathTensor(newName, data.mapToBuffer { it!! })
+            return KMathTensor(newName, BufferND(data.shape) { data.get(it) })
         }
     }
 
@@ -79,14 +80,15 @@ object ORTKMathTensorAdapter : ONNXDataAdapter<ORTKMathData.KMathTensor, ORTTens
             }
             else -> error("Unsupported data type: $type")
         }
-        return ORTKMathData.KMathTensor(data.name ?: "", BufferND(DefaultStrides(info.shape.toIntArray()), buffer))
+        return ORTKMathData.KMathTensor(data.name ?: "", BufferND(Strides(ShapeND(info.shape.toIntArray())), buffer))
     }
 
+    @OptIn(UnsafeKMathAPI::class)
     override fun toONNXData(data: ORTKMathData.KMathTensor): ORTTensor {
         val env = OrtEnvironment.getEnvironment()
         val elements = data.data.elements().map { it.second!! }.iterator()
-        val linSize = data.data.shape.fold(1, Int::times)
-        val shapeLong = data.data.shape.toLongArray()
+        val linSize = data.data.shape.linearSize
+        val shapeLong = data.data.shape.asArray().toLongArray()
         val tensor = when (val element = data.data.elements().first().second!!) {
             is Byte -> OnnxTensor.createTensor(env, ByteBuffer.wrap(ByteArray(linSize) { elements.next() as Byte }), shapeLong)
             is UByte -> OnnxTensor.createTensor(env, ByteBuffer.wrap(ByteArray(linSize) { (elements.next() as UByte).toByte() }), shapeLong, OnnxJavaType.UINT8)
@@ -129,4 +131,4 @@ object ORTKMathSequenceAdapter : ONNXDataAdapter<ORTKMathData.KMathSequence, ORT
     }
 }
 
-private fun Any.toScalarBuffer() = BufferND(DefaultStrides(IntArray(0)), Buffer.auto(1) { this })
+private fun Any.toScalarBuffer() = BufferND(Strides(ShapeND(0)), Buffer.auto(1) { this })
