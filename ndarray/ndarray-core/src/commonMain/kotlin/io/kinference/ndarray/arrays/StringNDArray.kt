@@ -20,6 +20,10 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return array[0]
     }
 
+    override fun markOutput() {
+        TODO("Not yet implemented")
+    }
+
     override fun get(index: IntArray): String {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.offset(index)

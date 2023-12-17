@@ -22,6 +22,10 @@ open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return value as String
     }
 
+    override fun markOutput() {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun reshape(strides: Strides): StringNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape.toTypedArray())
         return StringNDArrayTFJS(result)

@@ -8,6 +8,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArraysDispatcher
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -77,6 +78,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
+    }
+
+    override fun markOutput() {
+        array.blocks.forEach { ArraysDispatcher.markOutput(it) }
     }
 
     override fun toMutable(): MutableBooleanNDArray {

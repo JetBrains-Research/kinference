@@ -26,6 +26,10 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         return TFJSTensor(newName, data.clone(), info)
     }
 
+    override fun markOutput() {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         //TODO: complex, uint32/64 tensors
         fun create(proto: TensorProto): TFJSTensor {

@@ -36,6 +36,8 @@ interface ONNXData<T, B : BackendInfo> : BaseONNXData<T>, Closeable {
 abstract class ONNXTensor<T, B : BackendInfo>(override val name: String?, override val data: T) : ONNXData<T, B> {
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
     abstract override fun clone(newName: String?): ONNXTensor<T, B>
+
+    abstract fun markOutput()
 }
 
 /**

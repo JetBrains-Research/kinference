@@ -217,6 +217,8 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             contexts.graph!!.putValue(input.name!!, input)
         }
 
+        ArraysDispatcher.releaseAllOutputArrays()
+
         coroutineScope {
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>

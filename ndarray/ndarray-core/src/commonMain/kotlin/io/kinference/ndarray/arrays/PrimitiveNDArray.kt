@@ -24,6 +24,7 @@ import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.ArraysDispatcher
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -88,6 +89,10 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
+    }
+
+    override fun markOutput() {
+        array.blocks.forEach { ArraysDispatcher.markOutput(it) }
     }
 
     override fun clone(): PrimitiveNDArray {

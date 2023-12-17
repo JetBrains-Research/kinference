@@ -1,12 +1,11 @@
 package io.kinference.operator
 
 import io.kinference.attribute.Attribute
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.graph.Contexts
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.Closeable
+import io.kinference.utils.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -98,6 +97,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
 ) : Closeable {
     private val _inputs: ArrayList<String> = ArrayList(inputs)
     private val _outputs: ArrayList<String> = ArrayList(outputs)
+    private val operatorClassName by lazy { this::class.simpleName!! }
 
     val inputs: List<String>
         get() = _inputs.toList()
@@ -169,9 +169,13 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         }
     }
 
-    suspend fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
+    suspend fun <D : ONNXData<*, *>, U : ONNXTensor<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
-        val outputs = apply(contexts, inputs)
+        ArraysDispatcher.setOperatorContext(operatorClassName)
+        val outputs = apply(contexts, inputs) as List<U?>
+        ArraysDispatcher.releaseOutputArrays()
+        outputs.forEach { it?.markOutput() }
+        ArraysDispatcher.releaseContext()
         require(outputs.size >= this.outputs.size) {
             "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}"
         }
@@ -279,3 +283,16 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         val NUMBER_DATA_TYPES = INT_DATA_TYPES + UINT_DATA_TYPES + FLOAT_DATA_TYPES
     }
 }
+
+//class OperatorContext(val name: String) : AbstractCoroutineContextElement(Key) {
+//    companion object Key : CoroutineContext.Key<OperatorContext>
+//}
+//
+//fun withOperatorContext(name: String, context: CoroutineContext): CoroutineContext {
+//    val contextElement = OperatorContext(name)
+//    return context + contextElement
+//}
+//
+//fun CoroutineScope.getOperatorContext(): OperatorContext? {
+//    return coroutineContext[OperatorContext.Key]
+//}

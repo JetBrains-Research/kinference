@@ -35,6 +35,10 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         }
     }
 
+    override fun markOutput() {
+        TODO("Not yet implemented")
+    }
+
     fun toDoubleArray(): DoubleArray {
         require(data.info.type == OnnxJavaType.DOUBLE) { "Incompatible tensor type. Current tensor type: ${data.info.type}" }
         return data.doubleBuffer.array()

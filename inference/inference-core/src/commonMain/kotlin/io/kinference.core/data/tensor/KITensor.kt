@@ -23,6 +23,10 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
         return KITensor(newName, data.clone(), info)
     }
 
+    override fun markOutput() {
+        data.markOutput()
+    }
+
     suspend operator fun minus(other: KITensor): KITensor {
         require(this.data is NumberNDArrayCore && other.data is NumberNDArrayCore)
         return (this.data - other.data).asTensor()

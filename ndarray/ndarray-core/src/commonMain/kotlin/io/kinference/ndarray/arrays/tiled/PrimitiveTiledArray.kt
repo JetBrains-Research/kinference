@@ -3,17 +3,20 @@
 
 package io.kinference.ndarray.arrays.tiled
 
+import io.kinference.ndarray.arrays.NDArrayDispatcher
 import io.kinference.ndarray.arrays.Strides
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.ArraysDispatcher
+import kotlinx.coroutines.*
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal class PrimitiveTiledArray {
+internal class PrimitiveTiledArray : NDArrayDispatcher {
     val size: Int
     val blockSize: Int
     val blocksNum: Int
@@ -67,9 +70,20 @@ internal class PrimitiveTiledArray {
             require(size % blockSize == 0) { "Size must divide blockSize" }
 
         this.blocksNum = if (blockSize == 0) 0 else size / blockSize
-        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
+        this.blocks = Array(blocksNum) {
+            val array = ArraysDispatcher.getArray(PrimitiveArray::class.simpleName!!, blockSize)
+            if (array != null)
+                array as PrimitiveArray
+            else {
+                val newArray = PrimitiveArray(blockSize)
+                ArraysDispatcher.putArray(PrimitiveArray::class.simpleName!!, blockSize, newArray)
+                newArray
+            }
+//            PrimitiveArray(blockSize)
+        }
         this.blockSize = blockSize
         this.size = size
+        trackCreation()
     }
 
     constructor(blocks: Array<PrimitiveArray>) {
@@ -77,6 +91,7 @@ internal class PrimitiveTiledArray {
         this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
         this.blocksNum = blocks.size
         this.size = this.blocksNum * this.blockSize
+        trackCreation()
     }
 
     constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
@@ -86,6 +101,7 @@ internal class PrimitiveTiledArray {
                 block[idx] = init(count++)
             }
         }
+        trackCreation()
     }
 
     fun pointer(startIndex: Int = 0) = PrimitivePointer(this, startIndex)
@@ -181,5 +197,9 @@ internal class PrimitiveTiledArray {
 
             count -= blockSize
         }
+    }
+
+    override fun trackCreation() {
+        NDArrayDispatcher.logCreation(this::class.simpleName!!, size)
     }
 }
