@@ -3,6 +3,7 @@ package io.kinference.tfjs.operators.conv
 import io.kinference.attribute.Attribute
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.ConvParameters
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
@@ -25,7 +26,7 @@ sealed class Conv(
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in ConvVer11.VERSION.asRange() -> ConvVer11(name, attributes, inputs, outputs)
-                else -> error("Unsupported version of Conv1d operator: $version")
+                else -> error("Unsupported version of Conv operator: $version")
         }
     }
 }
@@ -74,7 +75,16 @@ class ConvVer11(
         val w = inputs[1]!!.data as NumberNDArrayTFJS
         val b = inputs.getOrNull(2)?.data as NumberNDArrayTFJS?
 
-        val y = x.conv(w, b, group, autoPad, pads, strides, dilations)
+        val convParameters = ConvParameters.Builder()
+            .specifyDimensions(x.rank - 2)
+            .specifyStrides(strides)
+            .specifyGroups(group)
+            .specifyDilations(dilations)
+            .specifyPads(pads)
+            .specifyAutoPad(autoPad)
+            .build()
+
+        val y = x.conv(w, b, convParameters)
         return listOf(y.asTensor("Y"))
     }
 }
