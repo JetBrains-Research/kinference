@@ -1,13 +1,13 @@
 package io.kinference.gradle
 
 object Versions {
-    const val okio = "3.6.0"
-    const val wire = "4.9.3"
+    const val okio = "3.4.0"
+    const val wire = "4.8.1"
 
     // Don't forget change version for plugin
-    const val primitives = "0.1.25"
+    const val primitives = "0.1.24"
 
-    const val coroutines = "1.8.0-RC"
+    const val coroutines = "1.7.3"
     const val slf4j = "2.0.9"
     const val loglevel = "1.8.1"
 
