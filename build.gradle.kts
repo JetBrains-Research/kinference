@@ -58,8 +58,8 @@ subprojects {
             }
 
             languageSettings {
-                apiVersion = "1.9"
-                languageVersion = "1.9"
+                apiVersion = "1.8"
+                languageVersion = "1.8"
             }
         }
 

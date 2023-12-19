@@ -4,7 +4,7 @@ sealed class ReverseSeqMode {
     abstract fun index(batchIdx: Int, seqIdx: Int, numBatches: Int, maxSeqLength: Int, blockSize: Int): Int
     abstract fun reverseIndex(batchIdx: Int, seqIdx: Int, seqLen: Int, numBatches: Int, maxSeqLength: Int, blockSize: Int): Int
 
-    data object BatchMajorMode : ReverseSeqMode() {
+    object BatchMajorMode : ReverseSeqMode() {
         override fun index(batchIdx: Int, seqIdx: Int, numBatches: Int, maxSeqLength: Int, blockSize: Int): Int {
             return batchIdx * maxSeqLength * blockSize + seqIdx * blockSize
         }
@@ -14,7 +14,7 @@ sealed class ReverseSeqMode {
         }
     }
 
-    data object TimeMajorMode : ReverseSeqMode() {
+    object TimeMajorMode : ReverseSeqMode() {
         override fun index(batchIdx: Int, seqIdx: Int, numBatches: Int, maxSeqLength: Int, blockSize: Int): Int {
             return seqIdx * numBatches * blockSize + batchIdx * blockSize
         }
