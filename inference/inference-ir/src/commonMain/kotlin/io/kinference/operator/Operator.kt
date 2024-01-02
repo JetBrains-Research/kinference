@@ -97,7 +97,8 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
 ) : Closeable {
     private val _inputs: ArrayList<String> = ArrayList(inputs)
     private val _outputs: ArrayList<String> = ArrayList(outputs)
-    private val operatorClassName by lazy { this::class.simpleName!! }
+
+    val operatorClassName by lazy { this::class.simpleName!! }
 
     val inputs: List<String>
         get() = _inputs.toList()
@@ -173,7 +174,6 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         check(info.inputs, inputs, "input")
         ArraysDispatcher.setOperatorContext(operatorClassName)
         val outputs = apply(contexts, inputs) as List<U?>
-        ArraysDispatcher.releaseOutputArrays()
         outputs.forEach { it?.markOutput() }
         ArraysDispatcher.releaseContext()
         require(outputs.size >= this.outputs.size) {

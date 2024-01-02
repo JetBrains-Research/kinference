@@ -119,6 +119,8 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                     "Remove unused operators from model for more performance!"
             }
         }
+
+        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
     }
 
     abstract fun prepareInput(proto: TensorProto): T
@@ -217,8 +219,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             contexts.graph!!.putValue(input.name!!, input)
         }
 
-        ArraysDispatcher.releaseAllOutputArrays()
-
         coroutineScope {
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>
@@ -244,6 +244,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                 }
             }
         }
+        ArraysDispatcher.releaseAllOutputArrays()
         return outputs.map { contexts.graph!!.getValue(it.name) }
     }
 }

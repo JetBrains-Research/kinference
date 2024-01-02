@@ -92,7 +92,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override fun markOutput() {
-        array.blocks.forEach { ArraysDispatcher.markOutput(it) }
+        array.markOutput.forEach { it.invoke() }
     }
 
     override fun clone(): PrimitiveNDArray {

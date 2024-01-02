@@ -81,7 +81,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     override fun markOutput() {
-        array.blocks.forEach { ArraysDispatcher.markOutput(it) }
+        array.markOutput.forEach { it.invoke() }
     }
 
     override fun toMutable(): MutableBooleanNDArray {
