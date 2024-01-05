@@ -120,7 +120,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             }
         }
 
-        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
+//        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
     }
 
     abstract fun prepareInput(proto: TensorProto): T
@@ -204,6 +204,9 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
     
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
+
+        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
+
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
@@ -244,7 +247,9 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                 }
             }
         }
+        val result = outputs.map { contexts.graph!!.getValue(it.name) }
+        result.forEach { it.markOutput(ArrayUsageMarker.GlobalOutput) }
         ArraysDispatcher.releaseAllOutputArrays()
-        return outputs.map { contexts.graph!!.getValue(it.name) }
+        return result // outputs.map { contexts.graph!!.getValue(it.name) }
     }
 }

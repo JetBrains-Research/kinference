@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArrayUsageMarker
 import kotlin.jvm.JvmName
 
 open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCore {
@@ -20,8 +21,8 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return array[0]
     }
 
-    override fun markOutput() {
-        TODO("Not yet implemented")
+    override fun markOutput(marker: ArrayUsageMarker) {
+//        TODO("Not yet implemented")
     }
 
     override fun get(index: IntArray): String {

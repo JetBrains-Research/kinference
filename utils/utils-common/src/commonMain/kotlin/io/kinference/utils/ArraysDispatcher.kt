@@ -1,13 +1,22 @@
 package io.kinference.utils
 
-class ArrayContainer<T>(val array: T, var isOutput: Boolean = false) {
-    val markAsOutput: () -> Unit = {
-        isOutput = true
+
+enum class ArrayUsageMarker {
+    Unused,
+    Used,
+    ContextOutput,
+    GlobalOutput
+}
+
+class ArrayContainer<T>(val array: T, var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
+    val markAsOutput: (ArrayUsageMarker) -> Unit = {
+        marker = it
     }
 }
 
 object ArraysDispatcher {
     private const val INIT_SIZE_VALUE: Int = 16
+    private val contextStack: ArrayDeque<String> = ArrayDeque()
     private var currentOperatorContext: String = "NotAnOperator"
     private val contexts: MutableSet<String> = mutableSetOf(currentOperatorContext)
 
@@ -20,7 +29,11 @@ object ArraysDispatcher {
     private var sizes = IntArray(INIT_SIZE_VALUE)
 
     fun addContexts(operators: List<String>) {
-        contexts.addAll(operators)
+        if (currentOperatorContext == "NotAnOperator") {
+            contexts.addAll(operators)
+        } else {
+            operators.forEach { contexts.add("$currentOperatorContext.$it") }
+        }
 
         for (i in 0 until sIdx) {
             contexts.forEach { context ->
@@ -37,16 +50,18 @@ object ArraysDispatcher {
     }
 
     fun setOperatorContext(context: String) {
-        currentOperatorContext = context
+        pushOperatorContext(context)
+//        currentOperatorContext = context
     }
 
-    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Pair<Array<T>, Array<() -> Unit>> {
+    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Pair<Array<T>, Array<(ArrayUsageMarker) -> Unit>> {
         val arrays = Array(count) { type.zeroes as T }
-        val markers = Array(count) { {} }
+        val markers = Array(count) { { _: ArrayUsageMarker -> } }
 
         // Populate the arrays and markers
         for (i in 0 until count) {
             val container = getArray(type, size)
+            container.marker = ArrayUsageMarker.Used
             arrays[i] = container.array as T
             markers[i] = container.markAsOutput
         }
@@ -114,6 +129,23 @@ object ArraysDispatcher {
         sizes = sizes.copyOf(newSize)
     }
 
+    private fun pushOperatorContext(newContext: String) {
+        contextStack.addFirst(currentOperatorContext)  // Save the current context
+        currentOperatorContext = if (currentOperatorContext == "NotAnOperator") {
+            newContext  // If the base context, start new
+        } else {
+            "$currentOperatorContext.$newContext"  // Otherwise, append
+        }
+    }
+
+    private fun popOperatorContext() {
+        currentOperatorContext = if (contextStack.isNotEmpty()) {
+            contextStack.removeFirst()
+        } else {
+            "NotAnOperator"
+        }
+    }
+
     fun releaseAllOutputArrays() {
         // Iterate through all sizes, types, and contexts
         for (i in 0 until sIdx) {
@@ -122,14 +154,17 @@ object ArraysDispatcher {
 
             for (j in usedPerSize.indices) {
                 contexts.forEach { context ->
-                    val usedArrays = usedPerSize[j][context]
-                    val unusedArrays = unusedPerSize[j][context]
+                    val usedArrays = usedPerSize[j][context]!!
+                    val unusedArrays = unusedPerSize[j][context]!!
 
-                    for (k in usedArrays!!.size - 1 downTo 0) {
+                    for (k in usedArrays.size - 1 downTo 0) {
                         val arrayContainer = usedArrays[k]
-                        if (arrayContainer.isOutput) {
-                            arrayContainer.isOutput = false
-                            unusedArrays!!.addLast(arrayContainer)
+                        if (arrayContainer.marker == ArrayUsageMarker.ContextOutput) {
+                            arrayContainer.marker = ArrayUsageMarker.Unused
+                            unusedArrays.addLast(arrayContainer)
+                            usedArrays.removeAt(k)
+                        } else if (arrayContainer.marker == ArrayUsageMarker.GlobalOutput) {
+                            arrayContainer.marker = ArrayUsageMarker.Unused
                             usedArrays.removeAt(k)
                         }
                     }
@@ -145,20 +180,22 @@ object ArraysDispatcher {
             val unusedPerSize = contextUnusedArrays[i]
 
             for (j in usedPerSize.indices) {
-                val usedArrays = usedPerSize[j][currentOperatorContext]
-                val unusedArrays = unusedPerSize[j][currentOperatorContext]
+                val usedArrays = usedPerSize[j][currentOperatorContext]!!
+                val unusedArrays = unusedPerSize[j][currentOperatorContext]!!
 
-                for (k in usedArrays!!.size - 1 downTo 0) {
+                for (k in usedArrays.size - 1 downTo 0) {
                     val arrayContainer = usedArrays[k]
-                    if (!arrayContainer.isOutput) {
-                        unusedArrays!!.addLast(arrayContainer)
+                    if (arrayContainer.marker != ArrayUsageMarker.ContextOutput) {
+                        unusedArrays.addLast(arrayContainer)
                         usedArrays.removeAt(k)
                     }
                 }
             }
         }
 
-        currentOperatorContext = "NotAnOperator"
+        popOperatorContext()
+
+//        currentOperatorContext = "NotAnOperator"
     }
 }
 

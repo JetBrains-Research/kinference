@@ -170,11 +170,11 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         }
     }
 
-    suspend fun <D : ONNXData<*, *>, U : ONNXTensor<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
+    suspend fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
         ArraysDispatcher.setOperatorContext(operatorClassName)
-        val outputs = apply(contexts, inputs) as List<U?>
-        outputs.forEach { it?.markOutput() }
+        val outputs = apply(contexts, inputs)
+        outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
         ArraysDispatcher.releaseContext()
         require(outputs.size >= this.outputs.size) {
             "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}"

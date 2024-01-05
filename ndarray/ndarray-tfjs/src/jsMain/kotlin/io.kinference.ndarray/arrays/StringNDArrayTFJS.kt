@@ -2,6 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArrayUsageMarker
 
 open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.ALL
@@ -22,7 +23,7 @@ open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return value as String
     }
 
-    override fun markOutput() {
+    override fun markOutput(marker: ArrayUsageMarker) {
         TODO("Not yet implemented")
     }
 

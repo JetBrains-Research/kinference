@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArrayUsageMarker
 import io.kinference.utils.Closeable
 import kotlin.math.min
 
@@ -45,7 +46,7 @@ interface NDArray : Closeable {
      */
     fun singleValue(): Any
 
-    fun markOutput()
+    fun markOutput(marker: ArrayUsageMarker)
 
     /**
      * Creates an array containing the same data with the new strides.

@@ -9,9 +9,7 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.ArrayTypes
-import io.kinference.utils.ArraysDispatcher
-import kotlinx.coroutines.*
+import io.kinference.utils.*
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
@@ -21,11 +19,11 @@ internal class PrimitiveTiledArray {
     val blockSize: Int
     val blocksNum: Int
     val blocks: Array<PrimitiveArray>
-    val markOutput: Array<() -> Unit>
+    val marker: Array<(ArrayUsageMarker) -> Unit>
 
     companion object {
         private val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
-        private val emptyMarker: Array<() -> Unit> = arrayOf()
+        private val emptyMarker: Array<(ArrayUsageMarker) -> Unit> = arrayOf()
 
         operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -75,9 +73,15 @@ internal class PrimitiveTiledArray {
         this.blocksNum = if (blockSize == 0) 0 else size / blockSize
         this.blockSize = blockSize
         this.size = size
+
+        // With array dispatcher
         val pairs = ArraysDispatcher.getArraysAndMarkers<PrimitiveArray>(type, this.blockSize, this.blocksNum)
         this.blocks = pairs.first
-        this.markOutput = pairs.second
+        this.marker = pairs.second
+
+        // Without memory management
+//        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
+//        this.marker = emptyMarker
     }
 
     constructor(blocks: Array<PrimitiveArray>) {
@@ -85,7 +89,7 @@ internal class PrimitiveTiledArray {
         this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
         this.blocksNum = blocks.size
         this.size = this.blocksNum * this.blockSize
-        this.markOutput = emptyMarker
+        this.marker = emptyMarker
     }
 
     constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {

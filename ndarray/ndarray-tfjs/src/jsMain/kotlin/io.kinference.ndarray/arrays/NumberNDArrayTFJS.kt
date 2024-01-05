@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
+import io.kinference.utils.ArrayUsageMarker
 
 open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {
@@ -246,7 +247,7 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
     override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
 
     override fun asMutable() = MutableNumberNDArrayTFJS(tfjsArray)
-    override fun markOutput() {
+    override fun markOutput(marker: ArrayUsageMarker) {
         TODO("Not yet implemented")
     }
 }

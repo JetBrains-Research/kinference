@@ -8,7 +8,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.ArraysDispatcher
+import io.kinference.utils.ArrayUsageMarker
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -80,8 +80,8 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun markOutput() {
-        array.markOutput.forEach { it.invoke() }
+    override fun markOutput(marker: ArrayUsageMarker) {
+        array.marker.forEach { it.invoke(marker) }
     }
 
     override fun toMutable(): MutableBooleanNDArray {

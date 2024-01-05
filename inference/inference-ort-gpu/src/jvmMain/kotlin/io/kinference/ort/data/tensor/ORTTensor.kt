@@ -5,6 +5,7 @@ import io.kinference.data.ONNXDataType
 import io.kinference.data.ONNXTensor
 import io.kinference.ort.ORTBackend
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.ArrayUsageMarker
 import io.kinference.utils.toLongArray
 import java.nio.*
 
@@ -35,8 +36,8 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         }
     }
 
-    override fun markOutput() {
-        TODO("Not yet implemented")
+    override fun markOutput(marker: ArrayUsageMarker) {
+//        TODO("Not yet implemented")
     }
 
     fun toDoubleArray(): DoubleArray {

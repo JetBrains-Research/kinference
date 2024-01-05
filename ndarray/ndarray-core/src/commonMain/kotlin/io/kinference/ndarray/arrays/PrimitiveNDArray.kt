@@ -24,7 +24,7 @@ import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.ArraysDispatcher
+import io.kinference.utils.ArrayUsageMarker
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -91,8 +91,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return array.blocks[0][0]
     }
 
-    override fun markOutput() {
-        array.markOutput.forEach { it.invoke() }
+    override fun markOutput(marker: ArrayUsageMarker) {
+        array.marker.forEach { it.invoke(marker) }
     }
 
     override fun clone(): PrimitiveNDArray {

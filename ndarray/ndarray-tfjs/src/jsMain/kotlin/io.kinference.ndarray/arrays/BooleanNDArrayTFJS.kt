@@ -2,6 +2,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArrayUsageMarker
 
 open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.BOOLEAN
@@ -22,7 +23,7 @@ open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArr
         return value != 0
     }
 
-    override fun markOutput() {
+    override fun markOutput(marker: ArrayUsageMarker) {
         TODO("Not yet implemented")
     }
 

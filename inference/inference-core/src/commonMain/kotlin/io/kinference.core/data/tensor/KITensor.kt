@@ -9,6 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
+import io.kinference.utils.ArrayUsageMarker
 
 //TODO: support segments
 //TODO: support external data
@@ -23,8 +24,8 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
         return KITensor(newName, data.clone(), info)
     }
 
-    override fun markOutput() {
-        data.markOutput()
+    override fun markOutput(marker: ArrayUsageMarker) {
+        data.markOutput(marker)
     }
 
     suspend operator fun minus(other: KITensor): KITensor {
