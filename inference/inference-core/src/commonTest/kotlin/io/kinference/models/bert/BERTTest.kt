@@ -22,6 +22,6 @@ class BERTTest {
 
     @Test
     fun benchmark_test_vanilla_bert_performance() = TestRunner.runTest {
-        KIPerformanceRunner.runFromS3("bert:standard:en:v1", count = 20)
+        KIPerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
     }
 }

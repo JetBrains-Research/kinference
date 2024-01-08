@@ -84,12 +84,12 @@ internal class PrimitiveTiledArray {
 //        this.marker = emptyMarker
     }
 
-    constructor(blocks: Array<PrimitiveArray>) {
+    constructor(blocks: Array<PrimitiveArray>, markers: Array<(ArrayUsageMarker) -> Unit> = emptyMarker) {
         this.blocks = blocks
         this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
         this.blocksNum = blocks.size
         this.size = this.blocksNum * this.blockSize
-        this.marker = emptyMarker
+        this.marker = markers
     }
 
     constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {

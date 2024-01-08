@@ -16,6 +16,7 @@ import io.kinference.operator.*
 import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.ArrayUsageMarker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.min
@@ -61,8 +62,15 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val kBlocks = k.array.blocks
             val vBlocks = v.array.blocks
 
-            val resultBlocks = if (past == null || past.linearSize == 0) {
-                kBlocks.plus(vBlocks)
+            val kMarker = k.array.marker
+            val vMarker = v.array.marker
+
+            val resultBlocks: Array<FloatArray>
+            val resultMarker: Array<(ArrayUsageMarker)->Unit>
+
+            if (past == null || past.linearSize == 0) {
+                resultBlocks = kBlocks.plus(vBlocks)
+                resultMarker = kMarker.plus(vMarker)
             } else {
                 val pastSeqLen = past.shape[3]
                 presentDims[3] += pastSeqLen
@@ -95,10 +103,11 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     }
                 }
 
-                futureRes as Array<FloatArray>
+                resultBlocks = futureRes as Array<FloatArray>
+                resultMarker = Array(resultBlocks.size) { { } }
             }
 
-            return FloatNDArray(FloatTiledArray(resultBlocks), Strides(presentDims))
+            return FloatNDArray(FloatTiledArray(resultBlocks, resultMarker), Strides(presentDims))
         }
 
 
