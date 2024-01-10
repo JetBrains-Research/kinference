@@ -76,6 +76,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 presentDims[3] += pastSeqLen
 
                 val pastBlocks = past.array.blocks
+                val pastMarker = past.array.marker
 
                 val blocksInRow = headSize / past.array.blockSize
 
@@ -84,27 +85,34 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
                 val rowsSize = batchSize * numHeads
                 val futureRes = arrayOfNulls<FloatArray>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
+                val futureResMarker = arrayOfNulls<(ArrayUsageMarker)->Unit>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
 
                 var resBlockIdx = 0
                 var pastBlocIdx = 0
 
                 repeat(2) { presentKeyValueIdx ->
                     val kvBlocks = if (presentKeyValueIdx == 0) kBlocks else vBlocks
+                    val kvMarker = if (presentKeyValueIdx == 0) kMarker else vMarker
+
                     var kvBlockIdx = 0
 
                     repeat(rowsSize) {
                         pastBlocks.copyInto(futureRes, resBlockIdx, pastBlocIdx, pastBlocIdx + pastRowBlocksCount)
+                        pastMarker.copyInto(futureResMarker, resBlockIdx, pastBlocIdx, pastBlocIdx + pastRowBlocksCount)
+
                         resBlockIdx += pastRowBlocksCount
                         pastBlocIdx += pastRowBlocksCount
 
                         kvBlocks.copyInto(futureRes, resBlockIdx, kvBlockIdx, kvBlockIdx + kvRowBlocksCount)
+                        kvMarker.copyInto(futureResMarker, resBlockIdx, kvBlockIdx, kvBlockIdx + kvRowBlocksCount)
                         resBlockIdx += kvRowBlocksCount
                         kvBlockIdx += kvRowBlocksCount
                     }
                 }
-
                 resultBlocks = futureRes as Array<FloatArray>
-                resultMarker = Array(resultBlocks.size) { { } }
+                resultMarker = futureResMarker as Array<(ArrayUsageMarker)->Unit>
+//                resultBlocks = futureRes as Array<FloatArray>
+//                resultMarker = Array(resultBlocks.size) { { } }
             }
 
             return FloatNDArray(FloatTiledArray(resultBlocks, resultMarker), Strides(presentDims))
