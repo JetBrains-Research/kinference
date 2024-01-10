@@ -130,6 +130,10 @@ repositories {
     maven {
         url = uri("https://packages.jetbrains.team/maven/p/ki/maven")
     }
+    
+    maven {
+        url = uri("https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
+    }
 }
 ```
 
