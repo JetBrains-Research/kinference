@@ -7,10 +7,13 @@ import io.kinference.ndarray.ConvParameters
 import io.kinference.ndarray.arrays.NumberNDArrayTFJS
 import io.kinference.ndarray.extensions.*
 import io.kinference.operator.*
+import io.kinference.optimizer.GraphOptimizer
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.data.tensors.asTensor
+import io.kinference.tfjs.optimizer.rules.context.ConvContextRule
+import io.kinference.tfjs.optimizer.rules.context.LSTMContextRule
 import io.kinference.utils.toIntArray
 
 sealed class Conv(
@@ -71,20 +74,25 @@ class ConvVer11(
     private val strides: IntArray? by attributeOrNull { it: LongArray? -> it?.toIntArray() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<TFJSTensor?>): List<TFJSTensor?> {
-        val x = inputs[0]!!.data as NumberNDArrayTFJS
-        val w = inputs[1]!!.data as NumberNDArrayTFJS
-        val b = inputs.getOrNull(2)?.data as NumberNDArrayTFJS?
+        val output = tidyNDArray {
+            val x = inputs[0]!!.data as NumberNDArrayTFJS
+            val w = inputs[1]!!
+            val preparedWeights = (w.takeIf { GraphOptimizer.isOpt(it.name) } ?: ConvContextRule.prepareWeights(w)).data as NumberNDArrayTFJS
+            val b = inputs.getOrNull(2)?.data as NumberNDArrayTFJS?
 
-        val convParameters = ConvParameters.Builder()
-            .specifyDimensions(x.rank - 2)
-            .specifyStrides(strides)
-            .specifyGroups(group)
-            .specifyDilations(dilations)
-            .specifyPads(pads)
-            .specifyAutoPad(autoPad)
-            .build()
+            val convParameters = ConvParameters.Builder()
+                .specifyDimensions(x.rank - 2)
+                .specifyKernelShape(preparedWeights.shape.sliceArray(0 until preparedWeights.rank - 2), kernelShape)
+                .specifyStrides(strides)
+                .specifyGroups(group)
+                .specifyDilations(dilations)
+                .specifyPads(pads)
+                .specifyAutoPad(autoPad)
+                .build()
 
-        val y = x.conv(w, b, convParameters)
-        return listOf(y.asTensor("Y"))
+            val y = x.conv(preparedWeights, b, convParameters)
+            y
+        }
+        return listOf(output.asTensor("Y"))
     }
 }

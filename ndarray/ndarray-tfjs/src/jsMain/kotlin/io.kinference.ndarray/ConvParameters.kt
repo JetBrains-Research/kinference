@@ -1,6 +1,7 @@
 package io.kinference.ndarray
 
 class ConvParameters(
+    val kernelShape: IntArray,
     val pads: Any,
     val strides: IntArray,
     val dilations: IntArray,
@@ -12,6 +13,7 @@ class ConvParameters(
         private var pads: IntArray? = null,
         private var strides: IntArray? = null,
         private var dilations: IntArray? = null,
+        private var kernelShape: IntArray? = null,
         private var groups: Int = 1
     ) {
         fun specifyDimensions(dimensions: Int) = apply { this.dimensions = dimensions }
@@ -19,6 +21,17 @@ class ConvParameters(
         fun specifyPads(pads: IntArray?) = apply { this.pads = pads }
 
         fun specifyAutoPad(autoPad: String) = apply { this.autoPad = AutoPad.valueOf(autoPad) }
+
+        fun specifyKernelShape(weightsInfer: IntArray, explicitKernelShape: IntArray?) = apply {
+            if (explicitKernelShape == null)
+                this.kernelShape = weightsInfer
+            else
+                if (weightsInfer.contentEquals(explicitKernelShape))
+                    this.kernelShape = explicitKernelShape
+                else
+                    error("Explicit kernel shape doesn't match inferred kernel shape.")
+            println("$kernelShape\n")
+        }
 
         fun specifyStrides(strides: IntArray?) = apply { this.strides = strides }
 
@@ -37,11 +50,14 @@ class ConvParameters(
                 // Ensure the pads array has the correct number of elements
                 require(pads!!.size == 2 * dimensions!!) { "\"pads\" array must have ${2 * dimensions!!} elements for ${dimensions!!}D convolution." }
 
+                // Initialize padding array for TensorFlow.js (batch, spatial dims..., channel)
+                // NHWC format: +2 for batch and channel dimensions
                 val tfjsPads = Array(dimensions!! + 2) { IntArray(2) { 0 } }
+
                 // ONNX pads array is in the order of [begin0, begin1, ..., end0, end1, ...]
                 for (i in 0 until dimensions!!) {
-                    tfjsPads[i + 2 - dimensions!! % 2][0] = pads!![i] // Begin padding
-                    tfjsPads[i + 2 - dimensions!! % 2][1] = pads!![i + dimensions!!] // End padding
+                    tfjsPads[i + 1][0] = pads!![i]
+                    tfjsPads[i + 1][1] = pads!![i + dimensions!!]
                 }
                 return tfjsPads
             } else {
@@ -57,7 +73,7 @@ class ConvParameters(
         }
 
         fun build(): ConvParameters {
-            require(dimensions != null) { "Number of dimensions must be specified before build." }
+            require(dimensions != null && kernelShape != null) { "Number of dimensions and kernelShape must be specified before build." }
 
             if (strides == null)
                 strides = defaultStrides()
@@ -65,7 +81,7 @@ class ConvParameters(
             if (dilations == null)
                 dilations = defaultDilations()
 
-            return ConvParameters(inferPads(), strides!!, dilations!!, groups, dimensions!!)
+            return ConvParameters(kernelShape!!, inferPads(), strides!!, dilations!!, groups, dimensions!!)
         }
     }
 }
