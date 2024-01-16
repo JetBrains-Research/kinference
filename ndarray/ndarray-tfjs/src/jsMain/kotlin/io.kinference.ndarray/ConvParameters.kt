@@ -30,7 +30,6 @@ class ConvParameters(
                     this.kernelShape = explicitKernelShape
                 else
                     error("Explicit kernel shape doesn't match inferred kernel shape.")
-            println("$kernelShape\n")
         }
 
         fun specifyStrides(strides: IntArray?) = apply { this.strides = strides }
