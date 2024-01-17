@@ -175,7 +175,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         ArraysDispatcher.setOperatorContext(operatorClassName)
         val outputs = apply(contexts, inputs)
         outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
-        ArraysDispatcher.releaseContext()
+        ArraysDispatcher.releaseUsedInContext()
         require(outputs.size >= this.outputs.size) {
             "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}"
         }

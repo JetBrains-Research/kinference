@@ -1,5 +1,6 @@
 package io.kinference.utils
 
+typealias StateMarker = (ArrayUsageMarker) -> Unit
 
 enum class ArrayUsageMarker {
     Unused,
@@ -9,24 +10,26 @@ enum class ArrayUsageMarker {
 }
 
 class ArrayContainer<T>(val array: T, var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
-    val markAsOutput: (ArrayUsageMarker) -> Unit = {
+    val markAsOutput: StateMarker = {
         marker = it
     }
 }
 
 object ArraysDispatcher {
-    private const val INIT_SIZE_VALUE: Int = 16
+    private const val INIT_SIZE_VALUE: Int = 1
+    private val typesSize = ArrayTypes.entries.size
     private val contextStack: ArrayDeque<String> = ArrayDeque()
     private var currentOperatorContext: String = "NotAnOperator"
     private val contexts: MutableSet<String> = mutableSetOf(currentOperatorContext)
 
     private var contextUsedArrays: Array<Array<MutableMap<String, ArrayDeque<ArrayContainer<*>>>>> =
-        Array(INIT_SIZE_VALUE) { Array(ArrayTypes.entries.size) { mutableMapOf() } }
+        Array(typesSize) { Array(INIT_SIZE_VALUE) { mutableMapOf() } }
     private var contextUnusedArrays: Array<Array<MutableMap<String, ArrayDeque<ArrayContainer<*>>>>> =
-        Array(INIT_SIZE_VALUE) { Array(ArrayTypes.entries.size) { mutableMapOf() } }
+        Array(typesSize) { Array(INIT_SIZE_VALUE) { mutableMapOf() } }
 
-    private var sIdx = 0
-    private var sizes = IntArray(INIT_SIZE_VALUE)
+    private val sizeIndices = IntArray(typesSize)
+    private var sizes = Array(typesSize) { IntArray(INIT_SIZE_VALUE) }
+    private var sizesUsage = Array(typesSize) { IntArray(INIT_SIZE_VALUE) }
 
     fun addContexts(operators: List<String>) {
         if (currentOperatorContext == "NotAnOperator") {
@@ -35,15 +38,13 @@ object ArraysDispatcher {
             operators.forEach { contexts.add("$currentOperatorContext.$it") }
         }
 
-        for (i in 0 until sIdx) {
-            contexts.forEach { context ->
-                contextUsedArrays[i].forEach {
-                    if (it[context] == null)
-                        it[context] = ArrayDeque()
-                }
-                contextUnusedArrays[i].forEach {
-                    if (it[context] == null)
-                        it[context] = ArrayDeque()
+        for (i in 0 until typesSize) {
+            for (j in 0 until sizeIndices[i]) {
+                contexts.forEach {
+                    if (contextUsedArrays[i][j][it] == null)
+                        contextUsedArrays[i][j][it] = ArrayDeque()
+                    if (contextUnusedArrays[i][j][it] == null)
+                        contextUnusedArrays[i][j][it] = ArrayDeque()
                 }
             }
         }
@@ -51,82 +52,77 @@ object ArraysDispatcher {
 
     fun setOperatorContext(context: String) {
         pushOperatorContext(context)
-//        currentOperatorContext = context
     }
 
-    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Pair<Array<T>, Array<(ArrayUsageMarker) -> Unit>> {
-        val arrays = Array(count) { type.zeroes as T }
-        val markers = Array(count) { { _: ArrayUsageMarker -> } }
-
-        // Populate the arrays and markers
-        for (i in 0 until count) {
-            val container = getArray(type, size)
-            container.marker = ArrayUsageMarker.Used
-            arrays[i] = container.array as T
-            markers[i] = container.markAsOutput
-        }
-
-        return Pair(arrays, markers)
+    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer<T>> {
+        return Array(count) { getArray(type, size) as ArrayContainer<T> }
     }
-
 
     fun getArray(type: ArrayTypes, size: Int): ArrayContainer<*> {
-        val idx = sizes.indexOf(size)
-        if (idx == -1) {
+        val tIndex = type.index
+        val used = contextUnusedArrays[tIndex]
+        val sIndex = sizes[tIndex].indexOf(size)
+        return if (sIndex != -1 && used[sIndex][currentOperatorContext]!!.isNotEmpty()) {
+            val array = used[sIndex][currentOperatorContext]!!.removeFirst()
+            array.marker = ArrayUsageMarker.Used
+            resetPrimitiveArray(array)
+            contextUsedArrays[tIndex][sIndex][currentOperatorContext]!!.addLast(array)
+            sizesUsage[tIndex][sIndex]++
+            array
+        } else {
             val newArray = type.createArray(size)
             putArray(type, size, newArray)
-            return newArray
-        } else {
-            val contextUnused = contextUnusedArrays[idx][type.index][currentOperatorContext]!!
-            if (contextUnused.isNotEmpty()) {
-                val array = contextUnused.removeFirst()
-                resetPrimitiveArray(array)
-                contextUsedArrays[idx][type.index][currentOperatorContext]!!.addLast(array)
-                return array
-            } else {
-                val newArray = type.createArray(size)
-                putArray(type, size, newArray)
-                return newArray
-            }
+            newArray
         }
     }
 
-    private fun putArray(type: ArrayTypes, size: Int, array: ArrayContainer<*>) {
-        var idx = sizes.indexOf(size)
-        if (idx == -1) {
-            if (sIdx >= contextUsedArrays.size)
-                grow()
+    fun releaseUsedInContext() {
+        // When the context is released, move used arrays to unused struct and skip context outputs
+        for (i in 0 until typesSize) {
+            for (j in 0 until sizeIndices[i]) {
+                val usedArrays = contextUsedArrays[i][j][currentOperatorContext]!!
+                val unusedArrays = contextUnusedArrays[i][j][currentOperatorContext]!!
 
-            idx = sIdx++
-            contexts.forEach { context ->
-                contextUsedArrays[idx].forEach { it[context] = ArrayDeque() }
-                contextUnusedArrays[idx].forEach { it[context] = ArrayDeque() }
+                for (k in usedArrays.size - 1 downTo 0) {
+                    val arrayContainer = usedArrays[k]
+                    if (arrayContainer.marker != ArrayUsageMarker.ContextOutput) {
+                        unusedArrays.addLast(arrayContainer)
+                        usedArrays.removeAt(k)
+                    }
+                }
             }
-            sizes[idx] = size
         }
-        contextUsedArrays[idx][type.index][currentOperatorContext]!!.addLast(array)
+
+        popOperatorContext()
     }
 
-    private fun grow() {
-        // Determine the new size, typically double the current size
-        val newSize = sizes.size * 2
+    fun releaseAllOutputArrays() {
+        // Iterate through all types, sizes, and contexts
+        for (i in 0 until typesSize) {
+            for (j in 0 until sizeIndices[i]) {
+                val usedPerSize = contextUsedArrays[i][j]
+                val unusedPerSize = contextUnusedArrays[i][j]
 
-        // Create new arrays of the new size
-        val newContextUsedArrays = Array(newSize) { Array(ArrayTypes.entries.size) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() } }
-        val newContextUnusedArrays = Array(newSize) { Array(ArrayTypes.entries.size) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() } }
+                contexts.forEach { context ->
+                    val usedArrays = usedPerSize[context]!!
+                    val unusedArrays = unusedPerSize[context]!!
 
-        // Transfer the old data into the new arrays
-        for (i in contextUsedArrays.indices) {
-            newContextUsedArrays[i] = contextUsedArrays[i]
-            newContextUnusedArrays[i] = contextUnusedArrays[i]
+                    // Move all context outputs into unused and permanently remove all global outputs
+                    for (k in usedArrays.size - 1 downTo 0) {
+                        val arrayContainer = usedArrays[k]
+                        if (arrayContainer.marker == ArrayUsageMarker.ContextOutput) {
+                            arrayContainer.marker = ArrayUsageMarker.Unused
+                            unusedArrays.addLast(arrayContainer)
+                            usedArrays.removeAt(k)
+                        } else if (arrayContainer.marker == ArrayUsageMarker.GlobalOutput) {
+                            arrayContainer.marker = ArrayUsageMarker.Unused
+                            usedArrays.removeAt(k)
+                        }
+                    }
+                }
+            }
         }
-
-        // Assign the new arrays back to the contextUsedArrays and contextUnusedArrays
-        contextUsedArrays = newContextUsedArrays
-        contextUnusedArrays = newContextUnusedArrays
-
-        // Resize the sizes array
-        sizes = sizes.copyOf(newSize)
+        reorderBasedOnUsage()
     }
 
     private fun pushOperatorContext(newContext: String) {
@@ -146,72 +142,109 @@ object ArraysDispatcher {
         }
     }
 
-    fun releaseAllOutputArrays() {
-        // Iterate through all sizes, types, and contexts
-        for (i in 0 until sIdx) {
-            val usedPerSize = contextUsedArrays[i]
-            val unusedPerSize = contextUnusedArrays[i]
+    private fun putArray(type: ArrayTypes, size: Int, array: ArrayContainer<*>) {
+        val tIndex = type.index
+        val used = contextUnusedArrays[tIndex]
+        var idx = sizes[tIndex].indexOf(size)
+        if (idx == -1) {
+            if (sizeIndices[tIndex] >= used.size)
+                grow(type)
 
-            for (j in usedPerSize.indices) {
+            idx = sizeIndices[tIndex]++
+            for (i in idx until sizes[tIndex].size) {
                 contexts.forEach { context ->
-                    val usedArrays = usedPerSize[j][context]!!
-                    val unusedArrays = unusedPerSize[j][context]!!
-
-                    for (k in usedArrays.size - 1 downTo 0) {
-                        val arrayContainer = usedArrays[k]
-                        if (arrayContainer.marker == ArrayUsageMarker.ContextOutput) {
-                            arrayContainer.marker = ArrayUsageMarker.Unused
-                            unusedArrays.addLast(arrayContainer)
-                            usedArrays.removeAt(k)
-                        } else if (arrayContainer.marker == ArrayUsageMarker.GlobalOutput) {
-                            arrayContainer.marker = ArrayUsageMarker.Unused
-                            usedArrays.removeAt(k)
-                        }
-                    }
+                    contextUsedArrays[tIndex][i][context] = ArrayDeque()
+                    contextUnusedArrays[tIndex][i][context] = ArrayDeque()
                 }
             }
+            sizes[tIndex][idx] = size
         }
+        contextUsedArrays[tIndex][idx][currentOperatorContext]!!.addLast(array)
     }
 
-    fun releaseContext() {
-        // When the context is released, move all arrays except output to unused struct
-        for (i in 0 until sIdx) {
-            val usedPerSize = contextUsedArrays[i]
-            val unusedPerSize = contextUnusedArrays[i]
+    private fun grow(type: ArrayTypes) {
+        // Determine the new size, typically double the current size
+        val tIndex = type.index
+        val newSize = sizes[tIndex].size * 2
 
-            for (j in usedPerSize.indices) {
-                val usedArrays = usedPerSize[j][currentOperatorContext]!!
-                val unusedArrays = unusedPerSize[j][currentOperatorContext]!!
+        // Create new arrays of the new size
+        val newContextUsedArrays = Array(typesSize) { Array(newSize) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() } }
+        val newContextUnusedArrays = Array(typesSize) { Array(newSize) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() } }
 
-                for (k in usedArrays.size - 1 downTo 0) {
-                    val arrayContainer = usedArrays[k]
-                    if (arrayContainer.marker != ArrayUsageMarker.ContextOutput) {
-                        unusedArrays.addLast(arrayContainer)
-                        usedArrays.removeAt(k)
-                    }
-                }
-            }
+        // Transfer the old data into the new arrays
+        for (i in contextUsedArrays[tIndex].indices) {
+            newContextUsedArrays[tIndex][i] = contextUsedArrays[tIndex][i]
+            newContextUnusedArrays[tIndex][i] = contextUnusedArrays[tIndex][i]
         }
 
-        popOperatorContext()
+        // Assign the new arrays back to the contextUsedArrays and contextUnusedArrays
+        contextUsedArrays[tIndex] = newContextUsedArrays[tIndex]
+        contextUnusedArrays[tIndex] = newContextUnusedArrays[tIndex]
 
-//        currentOperatorContext = "NotAnOperator"
+        // Resize the sizes array
+        sizes[tIndex] = sizes[tIndex].copyOf(newSize)
+        sizesUsage[tIndex] = sizesUsage[tIndex].copyOf(newSize)
+    }
+
+    private fun reorderBasedOnUsage() {
+        for (typeIndex in 0 until typesSize) {
+            val currentOrder = sizes[typeIndex].indices.toList()
+
+            val sortedIndices = sizes[typeIndex].indices
+                .map { index -> Pair(index, sizesUsage[typeIndex].getOrElse(index) { 0 }) }
+                .sortedWith(compareByDescending<Pair<Int, Int>> { it.second }.thenBy { sizes[typeIndex][it.first] == 0 })
+
+            // Check if reordering is necessary
+            val newOrder = sortedIndices.map { it.first }
+            if (newOrder == currentOrder) continue
+
+            // Apply changes only if there's a different order
+            val newSizes = IntArray(sizes[typeIndex].size)
+            val newSizesUsage = IntArray(sizes[typeIndex].size)
+            val newContextUsed = Array(sizes[typeIndex].size) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() }
+            val newContextUnused = Array(sizes[typeIndex].size) { mutableMapOf<String, ArrayDeque<ArrayContainer<*>>>() }
+
+            for (i in sortedIndices.indices) {
+                val oldIndex = sortedIndices[i].first
+                newSizes[i] = sizes[typeIndex][oldIndex]
+                newSizesUsage[i] = sizesUsage[typeIndex][oldIndex]
+                newContextUsed[i] = contextUsedArrays[typeIndex][oldIndex]
+                newContextUnused[i] = contextUnusedArrays[typeIndex][oldIndex]
+            }
+
+            sizes[typeIndex] = newSizes
+            sizesUsage[typeIndex] = newSizesUsage
+            contextUsedArrays[typeIndex] = newContextUsed
+            contextUnusedArrays[typeIndex] = newContextUnused
+        }
+
+        // Reset or decay sizesUsage here if necessary
+        decaySizesUsage()
+    }
+
+    private fun decaySizesUsage() {
+        // Decay mechanism here is simple halving of usage counts
+        for (typeIndex in 0 until typesSize) {
+            for (i in sizesUsage[typeIndex].indices) {
+                sizesUsage[typeIndex][i] /= 2
+            }
+        }
     }
 }
 
-enum class ArrayTypes(val index: Int, val initializer: (Int) -> ArrayContainer<*>, val zeroes: Any) {
-    ByteArray(0, { size -> ArrayContainer(ByteArray(size)) }, ByteArray(0)),
-    UByteArray(1, { size -> ArrayContainer(UByteArray(size)) }, UByteArray(0)),
-    ShortArray(2, { size -> ArrayContainer(ShortArray(size)) }, ShortArray(0)),
-    UShortArray(3, { size -> ArrayContainer(UShortArray(size)) }, UShortArray(0)),
-    IntArray(4, { size -> ArrayContainer(IntArray(size)) }, IntArray(0)),
-    UIntArray(5, { size -> ArrayContainer(UIntArray(size)) }, UIntArray(0)),
-    LongArray(6, { size -> ArrayContainer(LongArray(size)) }, LongArray(0)),
-    ULongArray(7, { size -> ArrayContainer(ULongArray(size)) }, ULongArray(0)),
-    FloatArray(8, { size -> ArrayContainer(FloatArray(size)) }, FloatArray(0)),
-    DoubleArray(9, { size -> ArrayContainer(DoubleArray(size)) }, DoubleArray(0)),
-    CharArray(10, { size -> ArrayContainer(CharArray(size)) }, CharArray(0)),
-    BooleanArray(11, { size -> ArrayContainer(BooleanArray(size)) }, BooleanArray(0));
+enum class ArrayTypes(val index: Int, val initializer: (Int) -> ArrayContainer<*>) {
+    ByteArray(0, { size -> ArrayContainer(ByteArray(size)) }),
+    UByteArray(1, { size -> ArrayContainer(UByteArray(size)) }),
+    ShortArray(2, { size -> ArrayContainer(ShortArray(size)) }),
+    UShortArray(3, { size -> ArrayContainer(UShortArray(size)) }),
+    IntArray(4, { size -> ArrayContainer(IntArray(size)) }),
+    UIntArray(5, { size -> ArrayContainer(UIntArray(size)) }),
+    LongArray(6, { size -> ArrayContainer(LongArray(size)) }),
+    ULongArray(7, { size -> ArrayContainer(ULongArray(size)) }),
+    FloatArray(8, { size -> ArrayContainer(FloatArray(size)) }),
+    DoubleArray(9, { size -> ArrayContainer(DoubleArray(size)) }),
+    CharArray(10, { size -> ArrayContainer(CharArray(size)) }),
+    BooleanArray(11, { size -> ArrayContainer(BooleanArray(size)) });
 
     fun createArray(size: Int) : ArrayContainer<*> {
         return initializer(size)
@@ -220,14 +253,14 @@ enum class ArrayTypes(val index: Int, val initializer: (Int) -> ArrayContainer<*
 
 fun resetPrimitiveArray(array: ArrayContainer<*>) {
     when (val arr = array.array!!) {
-        is ByteArray -> arr.fill(0)       // 8 bit signed
-        is UByteArray -> arr.fill(0u)     // 8 bit unsigned
-        is ShortArray -> arr.fill(0)      // 16 bit signed
-        is UShortArray -> arr.fill(0u)    // 16 bit unsigned
-        is IntArray -> arr.fill(0)        // 32 bit signed
-        is UIntArray -> arr.fill(0u)      // 32 bit unsigned
-        is LongArray -> arr.fill(0L)      // 64 bit signed
-        is ULongArray -> arr.fill(0U)     // 64 bit unsigned
+        is ByteArray -> arr.fill(0)       // 8-bit signed
+        is UByteArray -> arr.fill(0u)     // 8-bit unsigned
+        is ShortArray -> arr.fill(0)      // 16-bit signed
+        is UShortArray -> arr.fill(0u)    // 16-bit unsigned
+        is IntArray -> arr.fill(0)        // 32-bit signed
+        is UIntArray -> arr.fill(0u)      // 32-bit unsigned
+        is LongArray -> arr.fill(0L)      // 64-bit signed
+        is ULongArray -> arr.fill(0U)     // 64-bit unsigned
         is FloatArray -> arr.fill(0.0f)
         is DoubleArray -> arr.fill(0.0)
         is CharArray -> arr.fill('\u0000')

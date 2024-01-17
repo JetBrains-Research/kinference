@@ -19,11 +19,11 @@ internal class PrimitiveTiledArray {
     val blockSize: Int
     val blocksNum: Int
     val blocks: Array<PrimitiveArray>
-    val marker: Array<(ArrayUsageMarker) -> Unit>
+    val marker: Array<StateMarker>
 
     companion object {
         private val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
-        private val emptyMarker: Array<(ArrayUsageMarker) -> Unit> = arrayOf()
+        private val emptyMarker: Array<StateMarker> = arrayOf()
 
         operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -75,9 +75,9 @@ internal class PrimitiveTiledArray {
         this.size = size
 
         // With array dispatcher
-        val pairs = ArraysDispatcher.getArraysAndMarkers<PrimitiveArray>(type, this.blockSize, this.blocksNum)
-        this.blocks = pairs.first
-        this.marker = pairs.second
+        val containerArray = ArraysDispatcher.getArraysAndMarkers<PrimitiveArray>(type, this.blockSize, this.blocksNum)
+        this.blocks = Array(containerArray.size) { i -> containerArray[i].array }
+        this.marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
 
         // Without memory management
 //        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
