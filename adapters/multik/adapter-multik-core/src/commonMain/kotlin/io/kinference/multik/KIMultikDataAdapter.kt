@@ -82,7 +82,7 @@ object KIMultikMapAdapter : ONNXDataAdapter<KIMultikData.MultikMap, KIONNXMap> {
 
     override fun toONNXData(data: KIMultikData.MultikMap): KIONNXMap {
         val typeInfo = data.extractTypeInfo()
-        val mapData = data.data.mapValues { it.value.toKIONNXData() }
+        val mapData = data.data.mapValues { it.value.toKIONNXData() } as Map<Any, KIONNXData<*>>
         return KIONNXMap(data.name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
     }
 }
@@ -94,7 +94,7 @@ object KIMultikSequenceAdapter : ONNXDataAdapter<KIMultikData.MultikSequence, KI
 
     override fun toONNXData(data: KIMultikData.MultikSequence): KIONNXSequence {
         val typeInfo = data.extractTypeInfo()
-        val mapData = data.data.map { it.toKIONNXData() }
+        val mapData = data.data.map { it.toKIONNXData() } as List<KIONNXData<*>>
         return KIONNXSequence(data.name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
     }
 }

@@ -2,6 +2,7 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.operator.Operator
+import io.kinference.profiler.ProfilingContext
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
@@ -119,8 +120,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                     "Remove unused operators from model for more performance!"
             }
         }
-
-//        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
     }
 
     abstract fun prepareInput(proto: TensorProto): T
@@ -205,7 +204,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
 
-        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
+        operatorsContextAllocationControl()
 
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
@@ -226,9 +225,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>
                 contexts.profiling.profile(operator.info.type) { profilingContext ->
-                    outputs = operator.applyWithCheck(
-                        Contexts(contexts.graph, profilingContext),
-                        operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+                    outputs = applyWithAllocationControl(contexts, profilingContext, operator)
                 }
 
                 contexts.profiling.profile("${operator.info.type}:cleanup") {
@@ -247,9 +244,12 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                 }
             }
         }
-        val result = outputs.map { contexts.graph!!.getValue(it.name) }
-        result.forEach { it.markOutput(ArrayUsageMarker.GlobalOutput) }
-        ArraysDispatcher.releaseAllOutputArrays()
-        return result // outputs.map { contexts.graph!!.getValue(it.name) }
+        return returnOutputsWithAllocationControl(contexts)
     }
+
+    protected abstract suspend fun operatorsContextAllocationControl()
+
+    protected abstract suspend fun applyWithAllocationControl(contexts: Contexts<T>, profilingContext: ProfilingContext?, operator: Operator<T, T>): List<T?>
+
+    protected abstract suspend fun returnOutputsWithAllocationControl(contexts: Contexts<T>): List<T>
 }

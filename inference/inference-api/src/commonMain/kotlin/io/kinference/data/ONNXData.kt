@@ -1,7 +1,6 @@
 package io.kinference.data
 
 import io.kinference.BackendInfo
-import io.kinference.utils.ArrayUsageMarker
 import io.kinference.utils.Closeable
 
 /**
@@ -29,8 +28,6 @@ interface ONNXData<T, B : BackendInfo> : BaseONNXData<T>, Closeable {
     val backend: B
     override fun rename(name: String): ONNXData<T, B>
     override fun clone(newName: String?): ONNXData<T, B>
-
-    fun markOutput(marker: ArrayUsageMarker)
 }
 
 /**

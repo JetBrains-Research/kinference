@@ -1,17 +1,16 @@
 package io.kinference.core.data.map
 
-import io.kinference.core.CoreBackend
-import io.kinference.core.KIONNXData
+import io.kinference.core.*
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
 import io.kinference.data.ONNXMap
+import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.protobuf.message.MapProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.utils.ArrayUsageMarker
 
-class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data) {
+class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(data: Map<Any, KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
 
     override val backend = CoreBackend
@@ -27,6 +26,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     }
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
+
     override fun markOutput(marker: ArrayUsageMarker) {
         data.values.forEach { it.markOutput(marker) }
     }

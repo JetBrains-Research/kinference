@@ -2,7 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.ArrayUsageMarker
 
 open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.ALL

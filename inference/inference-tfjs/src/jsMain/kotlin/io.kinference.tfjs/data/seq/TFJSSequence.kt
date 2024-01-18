@@ -7,7 +7,6 @@ import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.types.*
-import io.kinference.utils.ArrayUsageMarker
 
 class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<TFJSData<*>>, TFJSBackend>(name, data) {
     constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> TFJSData<*>) : this(name, List(size, init), info)
@@ -16,9 +15,6 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
     override val backend = TFJSBackend
 
     override fun rename(name: String) = TFJSSequence(name, data, info)
-    override fun markOutput(marker: ArrayUsageMarker) {
-//        TODO("Not yet implemented")
-    }
 
     override fun close() {
         data.forEach { it.close() }

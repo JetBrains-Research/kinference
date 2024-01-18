@@ -16,7 +16,6 @@ import io.kinference.operator.*
 import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.ArrayUsageMarker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.min
@@ -66,7 +65,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val vMarker = v.array.marker
 
             val resultBlocks: Array<FloatArray>
-            val resultMarker: Array<(ArrayUsageMarker)->Unit>
+            val resultMarker: Array<StateMarker>
 
             if (past == null || past.linearSize == 0) {
                 resultBlocks = kBlocks.plus(vBlocks)
@@ -85,7 +84,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
                 val rowsSize = batchSize * numHeads
                 val futureRes = arrayOfNulls<FloatArray>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
-                val futureResMarker = arrayOfNulls<(ArrayUsageMarker)->Unit>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
+                val futureResMarker = arrayOfNulls<StateMarker>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
 
                 var resBlockIdx = 0
                 var pastBlocIdx = 0
@@ -110,9 +109,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     }
                 }
                 resultBlocks = futureRes as Array<FloatArray>
-                resultMarker = futureResMarker as Array<(ArrayUsageMarker)->Unit>
-//                resultBlocks = futureRes as Array<FloatArray>
-//                resultMarker = Array(resultBlocks.size) { { } }
+                resultMarker = futureResMarker as Array<StateMarker>
             }
 
             return FloatNDArray(FloatTiledArray(resultBlocks, resultMarker), Strides(presentDims))

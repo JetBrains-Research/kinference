@@ -2,7 +2,6 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.ArrayUsageMarker
 
 open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray) {
     override val type: DataType = DataType.BOOLEAN

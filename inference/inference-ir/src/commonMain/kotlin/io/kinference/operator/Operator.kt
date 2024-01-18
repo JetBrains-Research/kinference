@@ -172,10 +172,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
 
     suspend fun <D : ONNXData<*, *>> applyWithCheck(contexts: Contexts<D>, inputs: List<T?>): List<U?> {
         check(info.inputs, inputs, "input")
-        ArraysDispatcher.setOperatorContext(operatorClassName)
         val outputs = apply(contexts, inputs)
-        outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
-        ArraysDispatcher.releaseUsedInContext()
         require(outputs.size >= this.outputs.size) {
             "Operator '${info.type}' doesn't provide expected output size\nPresent: ${outputs.size}, Expected: at least ${this.outputs.size}"
         }
@@ -283,16 +280,3 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         val NUMBER_DATA_TYPES = INT_DATA_TYPES + UINT_DATA_TYPES + FLOAT_DATA_TYPES
     }
 }
-
-//class OperatorContext(val name: String) : AbstractCoroutineContextElement(Key) {
-//    companion object Key : CoroutineContext.Key<OperatorContext>
-//}
-//
-//fun withOperatorContext(name: String, context: CoroutineContext): CoroutineContext {
-//    val contextElement = OperatorContext(name)
-//    return context + contextElement
-//}
-//
-//fun CoroutineScope.getOperatorContext(): OperatorContext? {
-//    return coroutineContext[OperatorContext.Key]
-//}

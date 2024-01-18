@@ -3,13 +3,12 @@
 
 package io.kinference.ndarray.arrays.tiled
 
-import io.kinference.ndarray.arrays.Strides
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.*
 import kotlin.math.min
 
 @GenerateNameFromPrimitives

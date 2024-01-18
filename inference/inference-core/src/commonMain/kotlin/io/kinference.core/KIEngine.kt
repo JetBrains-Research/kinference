@@ -14,6 +14,7 @@ import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
 import io.kinference.model.Model
+import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
@@ -24,6 +25,16 @@ import okio.Path
 import okio.Path.Companion.toPath
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
+
+// Define an interface for allocation control marking output
+interface KIONNXDataArraysReleaser {
+    fun markOutput(marker: ArrayUsageMarker)
+}
+
+fun <T> KIONNXData<T>.markOutput(marker: ArrayUsageMarker) {
+    if (this is KIONNXDataArraysReleaser)
+        this.markOutput(marker)
+}
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 

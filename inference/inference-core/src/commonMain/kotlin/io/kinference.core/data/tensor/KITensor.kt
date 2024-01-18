@@ -1,6 +1,7 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.core.CoreBackend
+import io.kinference.core.KIONNXDataArraysReleaser
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
@@ -9,11 +10,10 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.utils.ArrayUsageMarker
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
+class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     override fun close() {

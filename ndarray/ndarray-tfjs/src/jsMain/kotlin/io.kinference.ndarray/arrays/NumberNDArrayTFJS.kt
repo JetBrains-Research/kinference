@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.*
-import io.kinference.utils.ArrayUsageMarker
 
 open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArrayTFJS(tfjsArray), NumberNDArray {
     override fun get(index: IntArray): Number {

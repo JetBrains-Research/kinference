@@ -8,7 +8,6 @@ import io.kinference.protobuf.message.TensorProto.DataType
 import io.kinference.tfjs.TFJSBackend
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
-import io.kinference.utils.ArrayUsageMarker
 
 class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayTFJS, TFJSBackend>(name, data) {
     constructor(data: NDArrayTFJS, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
@@ -25,10 +24,6 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
 
     override fun clone(newName: String?): TFJSTensor {
         return TFJSTensor(newName, data.clone(), info)
-    }
-
-    override fun markOutput(marker: ArrayUsageMarker) {
-//        TODO("Not yet implemented")
     }
 
     companion object {

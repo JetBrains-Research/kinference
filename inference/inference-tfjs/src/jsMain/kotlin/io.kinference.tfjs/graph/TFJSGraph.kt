@@ -3,6 +3,7 @@ package io.kinference.tfjs.graph
 import io.kinference.graph.*
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
@@ -20,6 +21,24 @@ class TFJSGraph(
     override fun close() {
         preparedTensorsContext.close()
         super.close()
+    }
+
+    override suspend fun operatorsContextAllocationControl() {
+
+    }
+
+    override suspend fun applyWithAllocationControl(
+        contexts: Contexts<TFJSData<*>>,
+        profilingContext: ProfilingContext?,
+        operator: Operator<TFJSData<*>, TFJSData<*>>
+    ): List<TFJSData<*>?> {
+        return operator.applyWithCheck(
+            Contexts(contexts.graph, profilingContext),
+            operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+    }
+
+    override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<TFJSData<*>>): List<TFJSData<*>> {
+        return outputs.map { contexts.graph!!.getValue(it.name) }
     }
 
     override fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)

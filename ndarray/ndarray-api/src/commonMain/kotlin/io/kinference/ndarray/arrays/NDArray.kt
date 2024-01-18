@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.ArrayUsageMarker
 import io.kinference.utils.Closeable
 import kotlin.math.min
 
