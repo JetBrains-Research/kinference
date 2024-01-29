@@ -84,24 +84,24 @@ internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
 suspend fun parallelizeByBlocks(blockSize: Int,
                                 countBlocks: Int,
                                 minDataPerLaunch: Int,
-                                body: (blockStart: Int, blockEnd: Int) -> Unit) {
+                                body: (blockStart: Int, blockEnd: Int, coroutineIndex: Int) -> Unit) {
 
     val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
 
     if (batchSize == countBlocks) {
-        body(0, countBlocks)
+        body(0, countBlocks, 0)
     } else {
         coroutineScope {
-            for (blockStart in 0 until countBlocks step batchSize) {
+            for ((index, blockStart) in (0 until countBlocks step batchSize).withIndex()) {
                 launch {
-                    body(blockStart, min(blockStart + batchSize, countBlocks))
+                    body(blockStart, min(blockStart + batchSize, countBlocks), index)
                 }
             }
         }
     }
 }
 
-suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, noinline body: (rowStart: Int, rowEnd: Int) -> Unit) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, noinline body: (rowStart: Int, rowEnd: Int, index: Int) -> Unit) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
 
 internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
     val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)

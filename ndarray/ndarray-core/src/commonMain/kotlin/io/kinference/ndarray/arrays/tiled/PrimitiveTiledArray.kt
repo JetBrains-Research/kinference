@@ -21,7 +21,7 @@ internal class PrimitiveTiledArray {
     val marker: Array<StateMarker>
 
     companion object {
-        private val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
+        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
         private val emptyMarker: Array<StateMarker> = arrayOf()
 
         operator fun invoke(strides: Strides): PrimitiveTiledArray {

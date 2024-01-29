@@ -27,7 +27,7 @@ internal suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
     val blocksNum = this.array.blocksNum
     val blockSize = this.array.blockSize
 
-    parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd, _ ->
         for (blockIdx in blockStart until blockEnd) {
             val inputBlock = inputBlocks[blockIdx]
             val outputBlock = outputBlocks[blockIdx]

@@ -22,7 +22,7 @@ internal suspend fun logisticPrimitive(input: PrimitiveNDArray, dest: MutablePri
 
     val outputBlocks = dest.array.blocks
 
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
             val inputBlock = inputBlocks[blockNum]
             val outputBlock = outputBlocks[blockNum]

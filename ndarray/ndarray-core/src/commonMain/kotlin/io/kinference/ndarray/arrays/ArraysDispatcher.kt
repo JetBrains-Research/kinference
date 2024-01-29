@@ -1,5 +1,13 @@
 package io.kinference.ndarray.arrays
 
+import kotlin.coroutines.CoroutineContext
+
+internal expect fun getArraysDispatcherContext(): CoroutineContext
+
+expect inline fun <reified T> ArraysDispatcher.getArrays(type: ArrayTypes, size: Int, count: Int): Array<T>
+
+expect inline fun <reified T> ArraysDispatcher.getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer<T>>
+
 object ArraysDispatcher {
     private const val INIT_SIZE_VALUE: Int = 1
     private val typesSize = ArrayTypes.entries.size
@@ -7,6 +15,11 @@ object ArraysDispatcher {
     private var currentOperatorContext: String = "NotAnOperator"
     private val contexts: MutableSet<String> = mutableSetOf(currentOperatorContext)
 
+    // These two structures have better performance and memory usage than within wrapper class with more readable code.
+    // These are basically two queues for used and unused primitive arrays. Structure is as follows:
+    // 1. Array by predefined types (all types are known compiled time). Special enum class contains name and index inside this array
+    // 2. Array by size. We are starting with one element and grow it doubling (typically there are no more than 16 different sizes)
+    // 3. Map with name of operator context as key, and actual queue as value (we always take from the head and put to the tail)
     private var contextUsedArrays: Array<Array<MutableMap<String, ArrayDeque<ArrayContainer<*>>>>> =
         Array(typesSize) { Array(INIT_SIZE_VALUE) { mutableMapOf() } }
     private var contextUnusedArrays: Array<Array<MutableMap<String, ArrayDeque<ArrayContainer<*>>>>> =
@@ -15,6 +28,8 @@ object ArraysDispatcher {
     private val sizeIndices = IntArray(typesSize)
     private var sizes = Array(typesSize) { IntArray(INIT_SIZE_VALUE) }
     private var sizesUsage = Array(typesSize) { IntArray(INIT_SIZE_VALUE) }
+
+    val singleThreadContext = getArraysDispatcherContext()
 
     fun addContexts(operators: List<String>) {
         if (currentOperatorContext == "NotAnOperator") {
@@ -37,10 +52,6 @@ object ArraysDispatcher {
 
     fun setOperatorContext(context: String) {
         pushOperatorContext(context)
-    }
-
-    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer<T>> {
-        return Array(count) { getArray(type, size) as ArrayContainer<T> }
     }
 
     fun getArray(type: ArrayTypes, size: Int): ArrayContainer<*> {
