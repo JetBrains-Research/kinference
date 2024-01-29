@@ -58,7 +58,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
         val countBlocks = newStrides.linearSize / array.blockSize
 
-        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
+        val copyBlocks = array.copyOfRangeBlocks(offsetBlocks, offsetBlocks + countBlocks)
         val newArray = BooleanTiledArray(copyBlocks)
 
         return BooleanNDArray(newArray, newStrides)
@@ -76,11 +76,14 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
-        return array.blocks[0][0]
+        return array[0]
     }
 
     override fun markOutput(marker: ArrayUsageMarker) {
-        array.marker.forEach { it.invoke(marker) }
+//        array.marker.forEach { it.invoke(marker) }
+        for (blockIdx in array.indices) {
+            array.getMarker(blockIdx).invoke(marker)
+        }
     }
 
     override fun toMutable(): MutableBooleanNDArray {
@@ -241,7 +244,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     }
 
     private fun transposeByBlocks(permutations: IntArray): BooleanNDArray {
-        val outputBlocks =  this.array.blocks.copyOf()
+        val outputBlocks =  this.array.copyOfBlocks()
         val outputStrides = strides.transpose(permutations)
 
         var axisToStop: Int = permutations.size
@@ -262,7 +265,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
                     val outputStartBlockNum = outputOffset / this.array.blockSize
 
                     repeat(countBlocksToCopy) {
-                        outputBlocks[outputStartBlockNum + it] = this.array.blocks[inputStartBlockNum + it]
+                        outputBlocks[outputStartBlockNum + it] = this.array.getBlock(inputStartBlockNum + it)
                     }
                 }
 
@@ -342,9 +345,9 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             val (blockOffset, offset) = array.indexFor(row)
             var col = 0
             for (i in 0 until newBlocksInRow) {
-                val block = outputArray.blocks[blockNum++]
+                val block = outputArray.getBlock(blockNum++)
                 for (idx in 0 until outputArray.blockSize) {
-                    block[idx] = this.array.blocks[blockOffset + col * this.blocksInRow][offset]
+                    block[idx] = this.array.getBlock(blockOffset + col * this.blocksInRow)[offset]
                     col++
                 }
             }
@@ -453,7 +456,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
 
         val countBlocks = newStrides.linearSize / array.blockSize
 
-        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
+        val copyBlocks = array.copyOfRangeBlocks(offsetBlocks, offsetBlocks + countBlocks)
         val newArray = BooleanTiledArray(copyBlocks)
 
         return MutableBooleanNDArray(newArray, newStrides)
@@ -484,7 +487,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
         array as BooleanNDArray
         val (blockIndex, blockOffset) = array.array.indexFor(index)
-        this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
+        this.array.fill(array.array.getBlock(blockIndex)[blockOffset], from, to)
     }
 
     // TODO separate from PrimitiveArray (maybe LateInitArray will help)
@@ -505,8 +508,8 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
 
                 val (deltaBlock, deltaOffset) = prevArray.indexFor(temp)
 
-                var tempNewBlock = newArray.blocks[newArrayBlock]
-                var tempPrevBlock = prevArray.blocks[prevArrayBlock]
+                var tempNewBlock = newArray.getBlock(newArrayBlock)
+                var tempPrevBlock = prevArray.getBlock(prevArrayBlock)
 
                 for (i in 0 until newStrides.shape[index]) {
                     tempNewBlock[newArrayOffset++] = tempPrevBlock[prevArrayOffset]
@@ -520,13 +523,13 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
                     }
 
                     if (prevArrayBlock < prevArray.blocksNum)
-                        tempPrevBlock = prevArray.blocks[prevArrayBlock]
+                        tempPrevBlock = prevArray.getBlock(prevArrayBlock)
 
                     if (newArrayOffset >= newArray.blockSize) {
                         newArrayOffset = 0
 
                         if (++newArrayBlock < newArray.blocksNum)
-                            tempNewBlock = newArray.blocks[newArrayBlock]
+                            tempNewBlock = newArray.getBlock(newArrayBlock)
                     }
                 }
             }

@@ -31,13 +31,15 @@ class KICoreTreeEnsemble(
         val actualInput = reformatInput(input)
         val n = if (input.rank == 1) 1 else input.shape[0]
         val outputShape = if (numTargets == 1) intArrayOf(n) else intArrayOf(n, numTargets)
-        val outputBlocks = Array(n) { FloatArray(numTargets) }
+//        val outputBlocks = Array(n) { FloatArray(numTargets) }
+
+        val outputArray = FloatTiledArray(numTargets * n, numTargets)
 
         val leadDim = actualInput.shape[0]
-        val arrayBlocks = actualInput.array.blocks
+        val inputArray = actualInput.array
 
         if (input.rank == 1 || leadDim == 1) {
-            applyEntry(arrayBlocks[0], outputBlocks[0])
+            applyEntry(inputArray.getBlock(0), outputArray.getBlock(0))
         } else {
             val batchSize = ceil(leadDim.toFloat() / PlatformUtils.threads).toInt()
 
@@ -45,12 +47,12 @@ class KICoreTreeEnsemble(
                 for (i in 0 until leadDim step batchSize) {
                     launch {
                         for (j in i until min(i + batchSize, leadDim))
-                            applyEntry(arrayBlocks[j], outputBlocks[j])
+                            applyEntry(inputArray.getBlock(j), outputArray.getBlock(j))
                     }
                 }
             }
         }
-        val output = MutableFloatNDArray(FloatTiledArray(outputBlocks), Strides(outputShape))
+        val output = MutableFloatNDArray(outputArray, Strides(outputShape))
         return transform.apply(output)
     }
 

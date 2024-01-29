@@ -29,16 +29,16 @@ internal suspend fun PrimitiveNDArray.batchNorm(
 
     val output = MutablePrimitiveNDArray(this.strides)
 
-    val inputBlocks = this.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = this.array
+    val outputArray = output.array
 
-    val scaleBlocks = scale.array.blocks
-    val biasBlocks = bias.array.blocks
-    val meanBlocks = mean.array.blocks
-    val varBlocks = variance.array.blocks
+    val scaleArray = scale.array
+    val biasArray = bias.array
+    val meanArray = mean.array
+    val varArray = variance.array
 
     val paramsBlockSize = scale.array.blockSize
-    val numInputBlocks = inputBlocks.size
+    val numInputBlocks = inputArray.blocksNum
 
     val blocksPerBatch = numInputBlocks / numBatches
     val blocksPerChannel = blocksPerBatch / numChannels
@@ -53,16 +53,16 @@ internal suspend fun PrimitiveNDArray.batchNorm(
                     val channelArrBlockIdx = channel / paramsBlockSize
                     val inBlockIdx = channel % paramsBlockSize
 
-                    val scaleScalar = scaleBlocks[channelArrBlockIdx][inBlockIdx]
-                    val biasScalar = biasBlocks[channelArrBlockIdx][inBlockIdx]
-                    val meanScalar = meanBlocks[channelArrBlockIdx][inBlockIdx]
-                    val varScalar = varBlocks[channelArrBlockIdx][inBlockIdx]
+                    val scaleScalar = scaleArray.getBlock(channelArrBlockIdx)[inBlockIdx]
+                    val biasScalar = biasArray.getBlock(channelArrBlockIdx)[inBlockIdx]
+                    val meanScalar = meanArray.getBlock(channelArrBlockIdx)[inBlockIdx]
+                    val varScalar = varArray.getBlock(channelArrBlockIdx)[inBlockIdx]
 
                     val blocksPerChannelLimit = min(blocksPerBatchLimit, channelStartBlockIdx + blocksPerChannel)
 
                     for (i in channelStartBlockIdx until blocksPerChannelLimit) {
-                        val inputBlock = inputBlocks[i]
-                        val outputBlock = outputBlocks[i]
+                        val inputBlock = inputArray.getBlock(i)
+                        val outputBlock = outputArray.getBlock(i)
                         val tempBlockSqrt = PrimitiveArray(outputBlock.size)
 
                         for (j in outputBlock.indices) {

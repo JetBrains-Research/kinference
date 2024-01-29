@@ -4,6 +4,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName
@@ -28,16 +29,30 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
     }
 
     override fun viewMutable(vararg axes: Int): MutablePrimitiveNDArray {
+        for ((i, axis) in axes.withIndex()) {
+            require(shape[i] > axis)
+        }
+
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
-        val offsetBlocks = offset / array.blockSize
 
         val newShape = shape.copyOfRange(axes.size, shape.size)
         val newStrides = Strides(newShape)
 
+        if (array.blockSize == 0)
+            return MutablePrimitiveNDArray(array, newStrides)
+
+        val offsetBlocks = offset / array.blockSize
         val countBlocks = newStrides.linearSize / array.blockSize
 
-        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
-        val newArray = PrimitiveTiledArray(copyBlocks)
+//        val copyBlocks = array.copyOfRangeBlocks(offsetBlocks, offsetBlocks + countBlocks)
+//        val newArray = PrimitiveTiledArray(copyBlocks)
+
+        val newArray = if (newShape.isEmpty()) {
+            val inBlockOffset = offset % array.blockSize
+            this.array.view(offsetBlocks, countBlocks, inBlockOffset)
+        } else {
+            this.array.view(offsetBlocks, countBlocks)
+        }
 
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
@@ -53,14 +68,14 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
 
     override fun fillByArrayValue(array: NDArray, index: Int, from: Int, to: Int) {
         array as PrimitiveNDArray
-        val (blockIndex, blockOffset) = array.array.indexFor(index)
-        this.array.fill(array.array.blocks[blockIndex][blockOffset], from, to)
+        this.array.fill(array.array[index], from, to)
     }
 
     override suspend fun mapMutable(function: PrimitiveToPrimitiveFunction): MutablePrimitiveNDArray {
         function as PrimitiveMap
 
-        for (block in array.blocks) {
+        for (blockIdx in array.indices) {
+            val block = array.getBlock(blockIdx)
             for (idx in block.indices) {
                 block[idx] = function.apply(block[idx])
             }
@@ -73,10 +88,11 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         other as PrimitiveNDArray
 
         when {
-            this.isScalar() && other.isScalar() -> this.array.blocks[0][0] = (this.array.blocks[0][0] + other.array.blocks[0][0]).toPrimitive()
+            this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] + other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array.blocks[0][0]
-                for (block in this.array.blocks) {
+                val scalar = other.array[0]
+                for (blockIdx in this.array.indices) {
+                    val block = this.array.getBlock(blockIdx)
                     for (idx in block.indices) {
                         block[idx] = (block[idx] + scalar).toPrimitive()
                     }
@@ -87,20 +103,10 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                 // TODO change to real plusAssign
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
-                /*val leftArray = left.array.toArray()
-                val rightArray = right.array.toArray()
-                val destArray = dest.array.toArray()
-
-                for (index in 0 until left.linearSize) {
-                    destArray[index] = (leftArray[index] + rightArray[index]).toPrimitive()
-                }
-
-                dest.array = PrimitiveTiledArray(destArray, dest.strides)*/
-
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
+                for (blockNum in left.array.indices) {
+                    val leftBlock = left.array.getBlock(blockNum)
+                    val rightBlock = right.array.getBlock(blockNum)
+                    val destBlock = dest.array.getBlock(blockNum)
 
                     for (idx in leftBlock.indices) {
                         destBlock[idx] = (leftBlock[idx] + rightBlock[idx]).toPrimitive()
@@ -114,10 +120,11 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         other as PrimitiveNDArray
 
         when {
-            this.isScalar() && other.isScalar() -> this.array.blocks[0][0] = (this.array.blocks[0][0] - other.array.blocks[0][0]).toPrimitive()
+            this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] - other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array.blocks[0][0]
-                for (block in this.array.blocks) {
+                val scalar = other.array[0]
+                for (blockIdx in this.array.indices) {
+                    val block = this.array.getBlock(blockIdx)
                     for (idx in block.indices) {
                         block[idx] = (block[idx] - scalar).toPrimitive()
                     }
@@ -127,10 +134,10 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
+                for (blockNum in left.array.indices) {
+                    val leftBlock = left.array.getBlock(blockNum)
+                    val rightBlock = right.array.getBlock(blockNum)
+                    val destBlock = dest.array.getBlock(blockNum)
 
                     for (idx in leftBlock.indices) {
                         destBlock[idx] = (leftBlock[idx] - rightBlock[idx]).toPrimitive()
@@ -144,10 +151,11 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         other as PrimitiveNDArray
 
         when {
-            this.isScalar() && other.isScalar() -> this.array.blocks[0][0] = (this.array.blocks[0][0] * other.array.blocks[0][0]).toPrimitive()
+            this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] * other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array.blocks[0][0]
-                for (block in this.array.blocks) {
+                val scalar = other.array[0]
+                for (blockIdx in this.array.indices) {
+                    val block = this.array.getBlock(blockIdx)
                     for (idx in block.indices) {
                         block[idx] = (block[idx] * scalar).toPrimitive()
                     }
@@ -158,9 +166,9 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
                 for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
+                    val leftBlock = left.array.getBlock(blockNum)
+                    val rightBlock = right.array.getBlock(blockNum)
+                    val destBlock = dest.array.getBlock(blockNum)
 
                     for (idx in leftBlock.indices) {
                         destBlock[idx] = (leftBlock[idx] * rightBlock[idx]).toPrimitive()
@@ -174,10 +182,11 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         other as PrimitiveNDArray
 
         when {
-            this.isScalar() && other.isScalar() -> this.array.blocks[0][0] = (this.array.blocks[0][0] / other.array.blocks[0][0]).toPrimitive()
+            this.isScalar() && other.isScalar() -> this.array[0] = (this.array[0] / other.array[0]).toPrimitive()
             other.isScalar() -> {
-                val scalar = other.array.blocks[0][0]
-                for (block in this.array.blocks) {
+                val scalar = other.array[0]
+                for (blockIdx in this.array.indices) {
+                    val block = this.array.getBlock(blockIdx)
                     for (idx in block.indices) {
                         block[idx] = (block[idx] / scalar).toPrimitive()
                     }
@@ -187,10 +196,10 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
 
-                for (blockNum in 0 until left.array.blocksNum) {
-                    val leftBlock = left.array.blocks[blockNum]
-                    val rightBlock = right.array.blocks[blockNum]
-                    val destBlock = dest.array.blocks[blockNum]
+                for (blockNum in left.array.indices) {
+                    val leftBlock = left.array.getBlock(blockNum)
+                    val rightBlock = right.array.getBlock(blockNum)
+                    val destBlock = dest.array.getBlock(blockNum)
 
                     for (idx in leftBlock.indices) {
                         destBlock[idx] = (leftBlock[idx] / rightBlock[idx]).toPrimitive()
@@ -206,8 +215,8 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
     }
 
     override fun clean() {
-        for (block in array.blocks) {
-            block.fill((0).toPrimitive())
+        for (blockIdx in array.indices) {
+            array.getBlock(blockIdx).fill(PrimitiveConstants.ZERO)
         }
     }
 

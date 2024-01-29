@@ -20,18 +20,18 @@ import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 @GenerateNameFromPrimitives
 internal suspend fun softmaxZeroPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
-    val inputBlocks = input.array.blocks
+    val inputArray = input.array
 
     val outputArray = dest.array
-    val maxesArray = PrimitiveArray(inputBlocks.size)
+    val maxesArray = PrimitiveArray(inputArray.blocksNum)
 
     //Finding Max for each block
     // Constant 65536 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputArray.blocksNum, 65536) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = inputBlocks[blockNum].max()
+            maxesArray[blockNum] = inputArray.getBlock(blockNum).max()
         }
     }
 
@@ -53,8 +53,8 @@ internal suspend fun softmaxZeroPrimitive(input: PrimitiveNDArray, dest: Mutable
 
             var localSum = PrimitiveConstants.ZERO
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val inputBlock = inputBlocks[rowBlockIdx]
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+                val inputBlock = inputArray.getBlock(rowBlockIdx)
+                val outputBlock = outputArray.getBlock(rowBlockIdx)
 
                 for (j in outputBlock.indices) {
                     val inputValue = inputBlock[j]
@@ -69,7 +69,7 @@ internal suspend fun softmaxZeroPrimitive(input: PrimitiveNDArray, dest: Mutable
             }
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+                val outputBlock = outputArray.getBlock(rowBlockIdx)
 
                 for (j in outputBlock.indices) {
                     outputBlock[j] /= localSum

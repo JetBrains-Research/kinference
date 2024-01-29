@@ -3,6 +3,7 @@ package io.kinference.ndarray.extensions.dot
 
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
+import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlinx.coroutines.*
@@ -27,12 +28,12 @@ internal suspend fun dotResizeParallel(left: PrimitiveNDArray, right: PrimitiveN
         lBlockSize = 30
     }
 
-    val destCopy = coroutineScope {
+    val (destCopy, needToCopyBack) = coroutineScope {
         val leftBlocksInProgress = async {
             if (left.array.blockSize > lBlockSize) {
                 copyArray(left, blockSize = lBlockSize)
             } else {
-                left.array.blocks to left.blocksInRow
+                left.array.copyOfBlocks() to left.blocksInRow
             }
         }
 
@@ -40,15 +41,15 @@ internal suspend fun dotResizeParallel(left: PrimitiveNDArray, right: PrimitiveN
             if (right.array.blockSize > rdBlockSize) {
                 copyArray(right, blockSize = rdBlockSize)
             } else {
-                right.array.blocks to right.blocksInRow
+                right.array.copyOfBlocks() to right.blocksInRow
             }
         }
 
         val destBlocksInProgress = async {
             if (dest.array.blockSize > rdBlockSize) {
-                emptyBlocks(dest.shape, blockSize = rdBlockSize).first
+                emptyBlocks(dest.shape, blockSize = rdBlockSize).first to true
             } else {
-                dest.array.blocks
+                dest.array.copyOfBlocks() to false
             }
         }
 
@@ -57,7 +58,7 @@ internal suspend fun dotResizeParallel(left: PrimitiveNDArray, right: PrimitiveN
 
         val (rightBlocks, rdBlocksInRow) = rightBlocksInProgress.await()
 
-        val destBlocks = destBlocksInProgress.await()
+        val (destBlocks, needToCopyBack) = destBlocksInProgress.await()
 
         for (iStart in 0 until n step nBatchSize) {
             val iEnd = min(iStart + nBatchSize, n)
@@ -80,10 +81,12 @@ internal suspend fun dotResizeParallel(left: PrimitiveNDArray, right: PrimitiveN
             }
         }
 
-        return@coroutineScope destBlocks
+        return@coroutineScope destBlocks to needToCopyBack
     }
 
-    copyBlocks(destCopy, dest.array.blocks)
+    if (needToCopyBack) {
+        copyBlocks(destCopy, dest.array)
+    }
 
     return dest
 }
@@ -124,7 +127,7 @@ private fun copyArray(array: PrimitiveNDArray, blockSize: Int): Pair<Array<Primi
         lastBlockSize = shape[1] % blockSize
     }
 
-    val inputBlocks = array.array.blocks
+    val inputArray = array.array
     val inputBlockSize = array.array.blockSize
 
     var inputBlockIdx = 0
@@ -137,7 +140,7 @@ private fun copyArray(array: PrimitiveNDArray, blockSize: Int): Pair<Array<Primi
 
         var copied = 0
         while (copied < actualBlockSize) {
-            val inputBlock = inputBlocks[inputBlockIdx]
+            val inputBlock = inputArray.getBlock(inputBlockIdx)
             val copySize = min(inputBlockSize - inputBlockOffset, actualBlockSize - copied)
 
             inputBlock.copyInto(
@@ -162,18 +165,16 @@ private fun copyArray(array: PrimitiveNDArray, blockSize: Int): Pair<Array<Primi
     return outputArray to blocksInRow
 }
 
-private fun copyBlocks(srcBlocks: Array<PrimitiveArray>, dstBlocks: Array<PrimitiveArray>) {
-    if (srcBlocks === dstBlocks) return
-
+private fun copyBlocks(srcBlocks: Array<PrimitiveArray>, dstArray: PrimitiveTiledArray) {
     var srcBlockIdx = 0
     var srcBlockOffset = 0
 
     var dstBlockIdx = 0
     var dstBlockOffset = 0
 
-    while (srcBlockIdx < srcBlocks.size && dstBlockIdx < dstBlocks.size) {
+    while (srcBlockIdx < srcBlocks.size && dstBlockIdx < dstArray.blocksNum) {
         val srcBlock = srcBlocks[srcBlockIdx]
-        val dstBlock = dstBlocks[dstBlockIdx]
+        val dstBlock = dstArray.getBlock(dstBlockIdx)
 
         val copySize = minOf(srcBlock.size - srcBlockOffset, dstBlock.size - dstBlockOffset)
 

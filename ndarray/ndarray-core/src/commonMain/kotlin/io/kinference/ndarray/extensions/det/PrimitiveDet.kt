@@ -37,7 +37,7 @@ internal suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
 
     for (batchIdx in 0 until batchSize) {
         val inputMatrix = reshapedInput.view(batchIdx).clone()
-        val inputBlocks = inputMatrix.array.blocks
+        val inputArray = inputMatrix.array
 
         var result = PrimitiveConstants.ONE
         var swapsCount = 0
@@ -58,9 +58,11 @@ internal suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
                 val iRowBlockOffset = rowForI * blocksInRow
 
                 for (blockIdx in 0 until blocksInRow) {
-                    val iBlock = inputBlocks[iBlocksOffset + blockIdx]
-                    inputBlocks[iBlocksOffset + blockIdx] = inputBlocks[iRowBlockOffset + blockIdx]
-                    inputBlocks[iRowBlockOffset + blockIdx] = iBlock
+                    val iBlock = inputArray.getBlock(iBlocksOffset + blockIdx)
+                    inputArray.setBlock(iBlocksOffset + blockIdx, inputArray.getBlock(iRowBlockOffset + blockIdx))
+//                    inputBlocks[iBlocksOffset + blockIdx] = inputBlocks[iRowBlockOffset + blockIdx]
+//                    inputBlocks[iRowBlockOffset + blockIdx] = iBlock
+                    inputArray.setBlock(iRowBlockOffset + blockIdx, iBlock)
                 }
             }
 
@@ -75,8 +77,8 @@ internal suspend fun PrimitiveNDArray.det(): PrimitiveNDArray {
                 val scale = jScale / iScale
 
                 for (blockIdx in 0 until blocksInRow) {
-                    val iBlock = inputBlocks[iBlocksOffset + blockIdx]
-                    val jBlock = inputBlocks[jBlockOffset + blockIdx]
+                    val iBlock = inputArray.getBlock(iBlocksOffset + blockIdx)
+                    val jBlock = inputArray.getBlock(jBlockOffset + blockIdx)
 
                     for (idx in jBlock.indices) {
                         jBlock[idx] = jBlock[idx] - iBlock[idx] * scale

@@ -17,16 +17,16 @@ import io.kinference.primitives.types.DataType
 internal suspend fun PrimitiveNDArray.exp(): PrimitiveNDArray {
     val output = PrimitiveNDArray(strides)
 
-    val inputBlocks = this.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = this.array
+    val outputArray = output.array
 
     val blockSize = this.array.blockSize
     val blocksNum = this.array.blocksNum
 
     parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd ->
         for (blockIdx in blockStart until blockEnd) {
-            val inputBlock = inputBlocks[blockIdx]
-            val outputBlock = outputBlocks[blockIdx]
+            val inputBlock = inputArray.getBlock(blockIdx)
+            val outputBlock = outputArray.getBlock(blockIdx)
 
             for (idx in outputBlock.indices) {
                 outputBlock[idx] = FastMath.exp(inputBlock[idx])

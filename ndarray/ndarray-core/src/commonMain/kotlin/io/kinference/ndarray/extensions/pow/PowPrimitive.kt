@@ -27,16 +27,16 @@ internal suspend fun broadcastTwoTensorsPrimitivePow(
     dest: MutablePrimitiveNDArray
 ): MutablePrimitiveNDArray {
     when {
-        left.isScalar() && right.isScalar() -> dest.array.blocks[0][0] = left.singleValue().pow(right.singleValue())
+        left.isScalar() && right.isScalar() -> dest.array[0] = left.singleValue().pow(right.singleValue())
         right.isScalar() -> broadcastRightScalarPow(left.array, right.singleValue(), dest.array)
         left.isScalar() -> broadcastLeftScalarPow(left.singleValue(), right.array, dest.array)
         else -> left.applyWithBroadcast(right, dest) { left, right, dest ->
             left as PrimitiveNDArray; right as DoubleNDArray; dest as MutablePrimitiveNDArray
 
             for (blockNum in 0 until dest.array.blocksNum) {
-                val leftBlock = left.array.blocks[blockNum]
-                val rightBlock = right.array.blocks[blockNum]
-                val destBlock = dest.array.blocks[blockNum]
+                val leftBlock = left.array.getBlock(blockNum)
+                val rightBlock = right.array.getBlock(blockNum)
+                val destBlock = dest.array.getBlock(blockNum)
 
                 for (idx in destBlock.indices) {
                     destBlock[idx] = leftBlock[idx].pow(rightBlock[idx])
@@ -55,8 +55,8 @@ private fun broadcastRightScalarPow(
     require(left.blocksNum == dest.blocksNum && left.blockSize == dest.blockSize)
 
     for (blockNum in 0 until dest.blocksNum) {
-        val leftBlock = left.blocks[blockNum]
-        val destBlock = dest.blocks[blockNum]
+        val leftBlock = left.getBlock(blockNum)
+        val destBlock = dest.getBlock(blockNum)
 
         for (idx in destBlock.indices) {
             destBlock[idx] = leftBlock[idx].pow(rightScalar)
@@ -72,8 +72,8 @@ private fun broadcastLeftScalarPow(
     require(right.blocksNum == dest.blocksNum && right.blockSize == dest.blockSize)
 
     for (blockNum in 0 until dest.blocksNum) {
-        val rightBlock = right.blocks[blockNum]
-        val destBlock = dest.blocks[blockNum]
+        val rightBlock = right.getBlock(blockNum)
+        val destBlock = dest.getBlock(blockNum)
 
         for (idx in destBlock.indices) {
             destBlock[idx] = leftScalar.pow(rightBlock[idx])

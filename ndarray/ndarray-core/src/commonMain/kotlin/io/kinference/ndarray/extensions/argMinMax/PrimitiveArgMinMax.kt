@@ -47,17 +47,17 @@ private fun argMinMaxAlongLastAxis(
 
     val outputPointer = output.array.pointer()
     val blocksPerIteration = input.blocksInRow
-    val inputBlocks = input.array.blocks
+    val inputArray = input.array
     val blockSize = input.array.blockSize
 
     repeat(iterations) { iter ->
         val startBlock = iter * blocksPerIteration
 
-        var minMaxValue = inputBlocks[startBlock][0]
+        var minMaxValue = inputArray.getBlock(startBlock)[0]
         var minMaxIndex = 0
 
         for (blockIdx in 0 until blocksPerIteration) {
-            val block = inputBlocks[startBlock + blockIdx]
+            val block = inputArray.getBlock(startBlock + blockIdx)
             val indexOffset = blockIdx * blockSize
 
             for (idx in 0 until blockSize) {
@@ -84,11 +84,11 @@ private fun argMinMaxDefault(
     elementsPerDim: Int,
     comparator: (PrimitiveType, PrimitiveType) -> Boolean
 ): MutableIntNDArray {
-    val inputBlocks = input.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = input.array
+    val outputArray = output.array
 
     val minMaxValuesArray = PrimitiveTiledArray(elementsPerDim, output.array.blockSize)
-    val minMaxValuesBlocks = minMaxValuesArray.blocks
+//    val minMaxValuesBlocks = minMaxValuesArray.blocks
 
     val blocksPerDim = elementsPerDim / input.array.blockSize
     val blockSize = output.array.blockSize
@@ -100,8 +100,8 @@ private fun argMinMaxDefault(
 
         // Copy values from first dim
         for (blockIdx in 0 until blocksPerDim) {
-            val inputBlock = inputBlocks[inputBlockIterOffset + blockIdx]
-            val minMaxValuesBlock = minMaxValuesBlocks[blockIdx]
+            val inputBlock = inputArray.getBlock(inputBlockIterOffset + blockIdx)
+            val minMaxValuesBlock = minMaxValuesArray.getBlock(blockIdx)
 
             for (idx in 0 until blockSize) {
                 minMaxValuesBlock[idx] = inputBlock[idx]
@@ -112,9 +112,9 @@ private fun argMinMaxDefault(
             val inputBlockFullOffset = inputBlockIterOffset + dimIdx * blocksPerDim
 
             for (blockIdx in 0 until blocksPerDim) {
-                val inputBlock = inputBlocks[inputBlockFullOffset + blockIdx]
-                val minMaxValuesBlock = minMaxValuesBlocks[blockIdx]
-                val outputBlock = outputBlocks[outputBlockIterOffset + blockIdx]
+                val inputBlock = inputArray.getBlock(inputBlockFullOffset + blockIdx)
+                val minMaxValuesBlock = minMaxValuesArray.getBlock(blockIdx)
+                val outputBlock = outputArray.getBlock(outputBlockIterOffset + blockIdx)
 
                 for (idx in 0 until blockSize) {
                     val value = inputBlock[idx]

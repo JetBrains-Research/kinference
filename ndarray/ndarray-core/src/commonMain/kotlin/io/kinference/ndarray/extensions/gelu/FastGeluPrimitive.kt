@@ -19,23 +19,23 @@ import kotlin.math.*
 internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray?): MutablePrimitiveNDArray {
     val output = MutablePrimitiveNDArray(input.strides)
 
-    val inputBlocks = input.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = input.array
+    val outputArray = output.array
+    val biasArray = bias?.array
 
     val blockSize = input.array.blockSize
 
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, inputArray.blocksNum, 2048) { blockStart, blockEnd ->
         val temporaryBlockExp = PrimitiveArray(blockSize)
         for (blockIdx in blockStart until blockEnd) {
-            val outputBlock = outputBlocks[blockIdx]
-            val block = inputBlocks[blockIdx]
+            val outputBlock = outputArray.getBlock(blockIdx)
+            val block = inputArray.getBlock(blockIdx)
 
-            if (bias != null) {
-                val biasBlocks = bias.array.blocks
-                val biasBlock = biasBlocks[blockIdx % biasBlocks.size]
+            if (biasArray != null) {
+                val biasBlock = biasArray.getBlock(blockIdx % biasArray.blocksNum)
                 for (j in outputBlock.indices) {
                     outputBlock[j] = block[j] + biasBlock[j]
                 }

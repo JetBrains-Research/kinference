@@ -39,7 +39,8 @@ internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
 
         if (svmInfo.kernelType == KernelType.POLY) {
             if (svmInfo.degree != 1f) {
-                for (block in futureOutput.array.blocks) {
+                for (blockIdx in futureOutput.array.indices) {
+                    val block = futureOutput.array.getBlock(blockIdx)
                     for (idx in block.indices) {
 
                         block[idx] = block[idx].pow(svmInfo.degree)
@@ -47,7 +48,8 @@ internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
                 }
             }
         } else if (svmInfo.kernelType == KernelType.SIGMOID) {
-            for (block in futureOutput.array.blocks) {
+            for (blockIdx in futureOutput.array.indices) {
+                val block = futureOutput.array.getBlock(blockIdx)
                 for (idx in block.indices) {
                     // TODO: Add inplace tanh for MutableArrays
                     block[idx] = tanh(block[idx])
@@ -80,7 +82,8 @@ internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
 
                 var sum = 0f
 
-                for (diffBlock in diff.array.blocks) {
+                for (diffBlockIdx in diff.array.indices) {
+                    val diffBlock = diff.array.getBlock(diffBlockIdx)
                     for (idx in diffBlock.indices) {
                         val value = diffBlock[idx]
                         sum += value * value
@@ -96,10 +99,10 @@ internal abstract class SvmCommon(protected val svmInfo: SvmInfo) {
 
     private fun addAdditionalScore(scores: FloatNDArray, updateScoreFunction: (Float) -> Pair<Float, Float>): FloatNDArray {
         val batchSize = scores.shape[0]
-        val blocks = scores.array.blocks
+//        val blocks = scores.array.blocks
 
         for (blockIdx in 0 until batchSize) {
-            val block = blocks[blockIdx]
+            val block = scores.array.getBlock(blockIdx) //blocks[blockIdx]
 
             val (leftScore, rightScore) = updateScoreFunction(block[0])
             block[0] = leftScore

@@ -23,7 +23,7 @@ internal class PrimitivePointer {
         this.array = array
         this.blockNum = startIndex / array.blockSize
         this.indexInBlock = startIndex % array.blockSize
-        this.currentBlock = array.blocks[blockNum]
+        this.currentBlock = array.getBlock(blockNum)
     }
 
     @Suppress("unused")
@@ -40,7 +40,7 @@ internal class PrimitivePointer {
             require(value >= 0 && value < array.size) { "Linear index of Iterator must be >= 0 and < array size" }
             this.blockNum = value / array.blockSize
             this.indexInBlock = value % array.blockSize
-            this.currentBlock = array.blocks[blockNum]
+            this.currentBlock = array.getBlock(blockNum)
         }
 
     fun set(value: PrimitiveType) {
@@ -56,7 +56,7 @@ internal class PrimitivePointer {
             blockNum < array.blocksNum - 1 -> {
                 blockNum++
                 indexInBlock = 0
-                currentBlock = array.blocks[blockNum]
+                currentBlock = array.getBlock(blockNum)
             }
             else -> indexInBlock = array.blockSize
         }
@@ -74,7 +74,7 @@ internal class PrimitivePointer {
             blockNum > 0 -> {
                 blockNum--
                 indexInBlock = array.blockSize - 1
-                currentBlock = array.blocks[blockNum]
+                currentBlock = array.getBlock(blockNum)
             }
             else -> indexInBlock = -1
         }

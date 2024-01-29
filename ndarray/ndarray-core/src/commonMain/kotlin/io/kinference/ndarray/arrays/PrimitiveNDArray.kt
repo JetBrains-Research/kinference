@@ -61,11 +61,17 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
 
         val offsetBlocks = offset / array.blockSize
-
         val countBlocks = newStrides.linearSize / array.blockSize
 
-        val copyBlocks = array.blocks.copyOfRange(offsetBlocks, offsetBlocks + countBlocks)
-        val newArray = PrimitiveTiledArray(copyBlocks)
+//        val copyBlocks = array.copyOfRangeBlocks(offsetBlocks, offsetBlocks + countBlocks)
+//        val newArray = PrimitiveTiledArray(copyBlocks)
+
+        val newArray = if (newShape.isEmpty()) {
+            val inBlockOffset = offset % array.blockSize
+            this.array.view(offsetBlocks, countBlocks, inBlockOffset)
+        } else {
+            this.array.view(offsetBlocks, countBlocks)
+        }
 
         return PrimitiveNDArray(newArray, newStrides)
     }
@@ -87,11 +93,14 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
-        return array.blocks[0][0]
+        return array[0]
     }
 
     override fun markOutput(marker: ArrayUsageMarker) {
-        array.marker.forEach { it.invoke(marker) }
+        for (blockIdx in array.indices) {
+            array.getMarker(blockIdx).invoke(marker)
+        }
+//        array.marker.forEach { it.invoke(marker) }
     }
 
     override fun clone(): PrimitiveNDArray {
@@ -104,9 +113,9 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         function as PrimitiveMap
         destination as MutablePrimitiveNDArray
 
-        for (blockNum in 0 until array.blocksNum) {
-            val thisBlock = this.array.blocks[blockNum]
-            val destBlock = destination.array.blocks[blockNum]
+        for (blockNum in array.indices) {
+            val thisBlock = this.array.getBlock(blockNum)
+            val destBlock = destination.array.getBlock(blockNum)
 
             for (idx in thisBlock.indices) {
                 destBlock[idx] = function.apply(thisBlock[idx])
@@ -191,7 +200,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
     override suspend fun min(): PrimitiveType {
         var min = PrimitiveType.MAX_VALUE_FOR_MIN
-        for (block in array.blocks) {
+        for (blockIdx in array.indices) {
+            val block = array.getBlock(blockIdx)
             for (idx in block.indices) {
                 val tmp = block[idx]
                 if (tmp < min) min = tmp
@@ -206,7 +216,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
     override suspend fun max(): PrimitiveType {
         var max = PrimitiveType.MIN_VALUE_FOR_MAX
-        for (block in array.blocks) {
+        for (blockIdx in array.indices) {
+            val block = array.getBlock(blockIdx)
             for (idx in block.indices) {
                 val tmp = block[idx]
                 if (tmp > max) max = tmp
@@ -219,7 +230,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override suspend fun sum(): PrimitiveType {
         var sum = (0).toPrimitive()
 
-        for (block in array.blocks) {
+        for (blockIdx in array.indices) {
+            val block = array.getBlock(blockIdx)
             for (idx in block.indices) {
                 sum = (sum + block[idx]).toPrimitive()
             }
@@ -1123,7 +1135,9 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override suspend fun reshape(shape: IntArray): PrimitiveNDArray = reshape(Strides(shape))
 
     private fun transposeByBlocks(permutations: IntArray): PrimitiveNDArray {
-        val outputBlocks =  this.array.blocks.copyOf()
+        val outputBlocks = this.array.copyOfBlocks()
+        val outputMarkers = this.array.copyOfMarkers()
+
         val outputStrides = strides.transpose(permutations)
 
         var axisToStop: Int = permutations.size
@@ -1144,7 +1158,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                     val outputStartBlockNum = outputOffset / this.array.blockSize
 
                     repeat(countBlocksToCopy) {
-                        outputBlocks[outputStartBlockNum + it] = this.array.blocks[inputStartBlockNum + it]
+                        outputBlocks[outputStartBlockNum + it] = this.array.getBlock(inputStartBlockNum + it)
+                        outputMarkers[outputStartBlockNum + it] = this.array.getMarker(inputStartBlockNum + it)
                     }
                 }
 
@@ -1163,7 +1178,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
         transposeByBlocksRec(0, 0, 0)
 
-        return PrimitiveNDArray(PrimitiveTiledArray(outputBlocks), outputStrides)
+        return PrimitiveNDArray(PrimitiveTiledArray(outputBlocks, outputMarkers), outputStrides)
     }
 
     override suspend fun transpose(permutations: IntArray): PrimitiveNDArray {
@@ -1232,9 +1247,9 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             val (blockOffset, offset) = array.indexFor(row)
             var col = 0
             for (i in 0 until newBlocksInRow) {
-                val block = outputArray.blocks[blockNum++]
+                val block = outputArray.getBlock(blockNum++)
                 for (idx in 0 until outputArray.blockSize) {
-                    block[idx] = this.array.blocks[blockOffset + col * this.blocksInRow][offset]
+                    block[idx] = this.array.getBlock(blockOffset + col * this.blocksInRow)[offset]
                     col++
                 }
             }

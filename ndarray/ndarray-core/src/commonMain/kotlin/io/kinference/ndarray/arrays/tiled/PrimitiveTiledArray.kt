@@ -17,8 +17,13 @@ internal class PrimitiveTiledArray {
     val size: Int
     val blockSize: Int
     val blocksNum: Int
-    val blocks: Array<PrimitiveArray>
-    val marker: Array<StateMarker>
+    private val blocks: Array<PrimitiveArray>
+    private val marker: Array<StateMarker>
+
+    private val blocksOffset: Int
+    private val inBlockIdx: Int?
+
+    val indices: IntRange
 
     companion object {
         private val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
@@ -77,18 +82,38 @@ internal class PrimitiveTiledArray {
         val containerArray = ArraysDispatcher.getArraysAndMarkers<PrimitiveArray>(type, this.blockSize, this.blocksNum)
         this.blocks = Array(containerArray.size) { i -> containerArray[i].array }
         this.marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
-
+        this.indices = 0 until blocksNum
         // Without memory management
 //        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
 //        this.marker = emptyMarker
+
+        this.blocksOffset = 0
+//        this.endBlockIdx = blocks.size
+        this.inBlockIdx = null
     }
 
-    constructor(blocks: Array<PrimitiveArray>, markers: Array<(ArrayUsageMarker) -> Unit> = emptyMarker) {
+    constructor(
+        blocks: Array<PrimitiveArray>,
+        markers: Array<(ArrayUsageMarker) -> Unit> = emptyMarker,
+        blocksOffset: Int = 0,
+        blocksCount: Int = blocks.size,
+        inBlockIdx: Int? = null
+    ) {
+        require(blocksOffset >= 0 && blocksCount > 0 && blocksOffset + blocksCount <= blocks.size)
+
         this.blocks = blocks
+        this.blocksNum = blocksCount
         this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
-        this.blocksNum = blocks.size
-        this.size = this.blocksNum * this.blockSize
+
+        this.blocksOffset = blocksOffset
+//        this.endBlockIdx = endBlockIdx
+        if (inBlockIdx != null) require(blocksNum == 1 && inBlockIdx < blockSize)
+        this.inBlockIdx = inBlockIdx
+
+//        this.blocksNum = blocks.size
+        this.size = if (inBlockIdx == null) this.blocksNum * this.blockSize else 1
         this.marker = markers
+        this.indices = 0 until blocksNum
     }
 
     constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
@@ -110,7 +135,8 @@ internal class PrimitiveTiledArray {
         val array = PrimitiveArray(size)
         var offset = 0
 
-        for (block in blocks) {
+        for (blockIdx in indices) {
+            val block = blocks[blocksOffset + blockIdx]
             block.copyInto(array, offset)
             offset += blockSize
         }
@@ -125,20 +151,30 @@ internal class PrimitiveTiledArray {
     }
 
     operator fun get(i: Int): PrimitiveType {
+        require(i < size)
+
+        val inBlockOffset = inBlockIdx ?: 0
+
         val (blockIdx, blockOff) = indexFor(i)
-        return blocks[blockIdx][blockOff]
+        return blocks[blocksOffset + blockIdx][inBlockOffset + blockOff]
     }
 
     operator fun set(i: Int, value: PrimitiveType) {
+        require(i < size)
+
+        val inBlockOffset = inBlockIdx ?: 0
+
+
         val (blockIdx, blockOff) = indexFor(i)
-        blocks[blockIdx][blockOff] = value
+        blocks[blocksOffset + blockIdx][inBlockOffset + blockOff] = value
     }
 
     fun copyOf(): PrimitiveTiledArray {
+        require(inBlockIdx == null)
         val copyArray = PrimitiveTiledArray(size, blockSize)
 
         for (blockNum in 0 until blocksNum) {
-            val thisBlock = this.blocks[blockNum]
+            val thisBlock = this.blocks[blocksOffset + blockNum]
             val destBlock = copyArray.blocks[blockNum]
 
             thisBlock.copyInto(destBlock)
@@ -148,26 +184,23 @@ internal class PrimitiveTiledArray {
     }
 
     fun copyInto(dest: PrimitiveTiledArray, destOffset: Int = 0, srcStart: Int = 0, srcEnd: Int = size) {
+        require(srcStart >= 0 && srcEnd <= size && srcStart <= srcEnd && srcEnd - srcStart <= dest.size - destOffset)
+
+
         if (srcStart == srcEnd)
             return
 
-        val thisPtr = PrimitivePointer(this, srcStart)
-        val destPtr = PrimitivePointer(dest, destOffset)
+        val thisPtr = this.pointer(srcStart) //PrimitivePointer(this, srcStart)
+        val destPtr = dest.pointer(destOffset) //PrimitivePointer(dest, destOffset)
 
         destPtr.accept(thisPtr, srcEnd - srcStart) { _: PrimitiveType, src: PrimitiveType -> src }
     }
 
-    @FilterPrimitives(exclude = [DataType.BOOLEAN])
-    fun plus(other: PrimitiveTiledArray): PrimitiveTiledArray {
-        val thisPtr = PrimitivePointer(this)
-        val destPtr = PrimitivePointer(other)
-        thisPtr.accept(destPtr, this.size) { src: PrimitiveType, dst: PrimitiveType -> (src + dst).toPrimitive() }
-        return this
-    }
-
     fun copyOfRange(fromIndex: Int, toIndex: Int): PrimitiveArray {
+        require(fromIndex >= 0 && toIndex <= size && fromIndex <= toIndex)
+
         val array = PrimitiveArray(toIndex - fromIndex)
-        val pointer = PrimitivePointer(this, fromIndex)
+        val pointer = this.pointer(fromIndex) //PrimitivePointer(this, fromIndex)
 
         for (i in array.indices) {
             array[i] = pointer.getAndIncrement()
@@ -177,10 +210,11 @@ internal class PrimitiveTiledArray {
     }
 
     fun fill(value: PrimitiveType, from: Int = 0, to: Int = size) {
+        require(from >= 0 && to <= size && from <= to)
         if (from == to)
             return
 
-        val pointer = PrimitivePointer(this, from)
+        val pointer = this.pointer(from) //PrimitivePointer(this, from)
 
         var count = to - from
 
@@ -193,5 +227,58 @@ internal class PrimitiveTiledArray {
 
             count -= blockSize
         }
+    }
+
+    fun getBlock(index: Int): PrimitiveArray {
+        require(inBlockIdx == null && index < blocksNum)
+
+        return blocks[blocksOffset + index]
+    }
+
+    fun setBlock(index: Int, block: PrimitiveArray) {
+        require(inBlockIdx == null && index < blocksNum && block.size == this.blockSize)
+
+        blocks[blocksOffset + index] = block
+    }
+
+    fun getMarker(index: Int): StateMarker {
+        require(inBlockIdx == null && index < blocksNum)
+
+        return marker[blocksOffset + index]
+    }
+
+    fun copyOfBlocks(): Array<PrimitiveArray> {
+        require(inBlockIdx == null)
+        return blocks.copyOfRange(blocksOffset, blocksOffset + blocksNum)
+    }
+
+    fun copyOfMarkers(): Array<StateMarker> {
+        require(inBlockIdx == null)
+
+        return marker.copyOfRange(blocksOffset, blocksOffset + blocksNum)
+    }
+
+    fun copyOfRangeBlocks(fromIndex: Int, toIndex: Int): Array<PrimitiveArray>  {
+        require(inBlockIdx == null && fromIndex >= 0 && toIndex <= blocksNum && fromIndex < toIndex)
+
+        return blocks.copyOfRange(blocksOffset + fromIndex, blocksOffset + toIndex)
+    }
+
+    fun copyIntoBlocks(destination: Array<PrimitiveArray>, destinationOffset: Int = 0, startIndex: Int = 0, endIndex: Int = blocksNum) {
+        require(inBlockIdx == null && startIndex >= 0 && endIndex <= blocksNum && startIndex < endIndex && endIndex - startIndex <= destination.size - destinationOffset)
+
+        blocks.copyInto(destination, destinationOffset, blocksOffset + startIndex, blocksOffset + endIndex)
+    }
+
+    fun copyIntoMarkers(destination: Array<StateMarker>, destinationOffset: Int = 0, startIndex: Int = 0, endIndex: Int = blocksNum) {
+        require(inBlockIdx == null && startIndex >= 0 && endIndex <= blocksNum && startIndex < endIndex && endIndex - startIndex <= destination.size - destinationOffset)
+
+        marker.copyInto(destination, destinationOffset, blocksOffset + startIndex, blocksOffset + endIndex)
+    }
+
+    fun view(blocksOffset: Int, blocksCount: Int, inBlockIdx: Int? = null): PrimitiveTiledArray {
+        require(blocksOffset >= 0 && blocksCount > 0 && this.blocksOffset + blocksOffset + blocksCount <= blocks.size)
+
+        return PrimitiveTiledArray(blocks, marker, this.blocksOffset + blocksOffset, blocksCount, inBlockIdx)
     }
 }

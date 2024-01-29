@@ -12,13 +12,13 @@ import io.kinference.primitives.types.PrimitiveType
 internal fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): MutablePrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
 
-    val inputBlockIter = array.blocks.iterator()
-    val outputBlockIter = output.array.blocks.iterator()
+//    val inputBlockIter = array.blocks.iterator()
+//    val outputBlockIter = output.array.blocks.iterator()
     val blockSize = output.array.blockSize
 
-    repeat(output.array.blocksNum) {
-        val inputBlock = inputBlockIter.next()
-        val outputBlock = outputBlockIter.next()
+    repeat(output.array.blocksNum) { blockIdx ->
+        val inputBlock = this.array.getBlock(blockIdx)
+        val outputBlock = output.array.getBlock(blockIdx)
 
         for (idx in 0 until blockSize) {
             outputBlock[idx] = func(inputBlock[idx])
@@ -32,13 +32,13 @@ internal fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> Primitiv
 internal fun PrimitiveNDArray.predicateElementWise(predicate: (PrimitiveType) -> Boolean): BooleanNDArray {
     val output = MutableBooleanNDArray(strides)
 
-    val inputBlockIter = array.blocks.iterator()
-    val outputBlockIter = output.array.blocks.iterator()
+//    val inputBlockIter = array.blocks.iterator()
+//    val outputBlockIter = output.array.blocks.iterator()
     val blockSize = output.array.blockSize
 
-    repeat(output.array.blocksNum) {
-        val inputBlock = inputBlockIter.next()
-        val outputBlock = outputBlockIter.next()
+    repeat(output.array.blocksNum) { blockIdx ->
+        val inputBlock = this.array.getBlock(blockIdx)
+        val outputBlock = output.array.getBlock(blockIdx)
 
         for (idx in 0 until blockSize) {
             outputBlock[idx] = predicate(inputBlock[idx])

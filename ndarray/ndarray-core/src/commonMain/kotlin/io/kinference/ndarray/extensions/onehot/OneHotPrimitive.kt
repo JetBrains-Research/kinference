@@ -25,13 +25,15 @@ internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: Numbe
 
     val outputShape = indices.shape.toMutableList().apply { add(actualAxis, depth) }.toIntArray()
     val output = MutablePrimitiveNDArray(outputShape)
+
+
     return arrayIndices.applyWithBroadcast(oneHotIndices, output) { arrayIdx, oneHotIdx, dest ->
         arrayIdx as IntNDArray; oneHotIdx as IntNDArray; dest as MutablePrimitiveNDArray
 
         for (blockNum in 0 until dest.array.blocksNum) {
-            val arrayIdxBlock = arrayIdx.array.blocks[blockNum]
-            val oneHotIdxBlock = oneHotIdx.array.blocks[blockNum]
-            val destBlock = dest.array.blocks[blockNum]
+            val arrayIdxBlock = arrayIdx.array.getBlock(blockNum)
+            val oneHotIdxBlock = oneHotIdx.array.getBlock(blockNum)
+            val destBlock = dest.array.getBlock(blockNum)
 
             for (i in destBlock.indices) {
                 destBlock[i] = getValue(arrayIdxBlock[i], oneHotIdxBlock[i], offValue, onValue)

@@ -14,9 +14,9 @@ internal suspend fun dotParallelM(left: PrimitiveNDArray, right: PrimitiveNDArra
     val lBlocksInRow = left.blocksInRow
     val rdBlocksInRow = right.blocksInRow
 
-    val leftBlocks = left.array.blocks
-    val rightBlocks = right.array.blocks
-    val destBlocks = dest.array.blocks
+    val leftArray = left.array
+    val rightArray = right.array
+    val destArray = dest.array
 
     val lBlockSize = left.array.blockSize
     val rdBlockSize = right.array.blockSize
@@ -29,16 +29,16 @@ internal suspend fun dotParallelM(left: PrimitiveNDArray, right: PrimitiveNDArra
     parallelizeByRows(rdBlockFlop, rdBlocksInRow, DotUtils.MIN_DATA_PER_LAUNCH) { rdColStart, rdColEnd ->
         for (rdCol in rdColStart until rdColEnd) {
             for (i in 0 until n) {
-                val destBlock = destBlocks[i * rdBlocksInRow + rdCol]
+                val destBlock = destArray.getBlock(i * rdBlocksInRow + rdCol)
                 val leftBlockOffset = i * lBlocksInRow
 
                 for (lCol in 0 until lBlocksInRow) {
-                    val leftBlock = leftBlocks[leftBlockOffset + lCol]
+                    val leftBlock = leftArray.getBlock(leftBlockOffset + lCol)
                     val rightOffset = lCol * lBlockSize
 
                     for (k in 0 until lBlockSize) {
                         val temp = leftBlock[k]
-                        val rightBlock = rightBlocks[(rightOffset + k) * rdBlocksInRow + rdCol]
+                        val rightBlock = rightArray.getBlock((rightOffset + k) * rdBlocksInRow + rdCol)
 
                         for (j in 0 until rdBlockSize) {
                             destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()

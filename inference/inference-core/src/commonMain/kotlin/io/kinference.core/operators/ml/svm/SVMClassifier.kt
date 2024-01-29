@@ -103,9 +103,9 @@ class SVMClassifierVer1 internal constructor(
             DataType.DOUBLE -> {
                 this as DoubleNDArray
                 val tiledArray = FloatTiledArray(this.linearSize, this.array.blockSize)
-                for (blockIdx in this.array.blocks.indices) {
-                    val inputBlock = this.array.blocks[blockIdx]
-                    val outputBlock = tiledArray.blocks[blockIdx]
+                for (blockIdx in this.array.indices) {
+                    val inputBlock = this.array.getBlock(blockIdx)
+                    val outputBlock = tiledArray.getBlock(blockIdx)
 
                     for (j in outputBlock.indices) {
                         outputBlock[j] = inputBlock[j].toFloat()
@@ -117,9 +117,9 @@ class SVMClassifierVer1 internal constructor(
             DataType.INT -> {
                 this as IntNDArray
                 val tiledArray = FloatTiledArray(this.linearSize, this.array.blockSize)
-                for (blockIdx in this.array.blocks.indices) {
-                    val inputBlock = this.array.blocks[blockIdx]
-                    val outputBlock = tiledArray.blocks[blockIdx]
+                for (blockIdx in this.array.indices) {
+                    val inputBlock = this.array.getBlock(blockIdx)
+                    val outputBlock = tiledArray.getBlock(blockIdx)
 
                     for (j in outputBlock.indices) {
                         outputBlock[j] = inputBlock[j].toFloat()
@@ -130,9 +130,9 @@ class SVMClassifierVer1 internal constructor(
             DataType.LONG -> {
                 this as LongNDArray
                 val tiledArray = FloatTiledArray(this.linearSize, this.array.blockSize)
-                for (blockIdx in this.array.blocks.indices) {
-                    val inputBlock = this.array.blocks[blockIdx]
-                    val outputBlock = tiledArray.blocks[blockIdx]
+                for (blockIdx in this.array.indices) {
+                    val inputBlock = this.array.getBlock(blockIdx)
+                    val outputBlock = tiledArray.getBlock(blockIdx)
 
                     for (j in outputBlock.indices) {
                         outputBlock[j] = inputBlock[j].toFloat()

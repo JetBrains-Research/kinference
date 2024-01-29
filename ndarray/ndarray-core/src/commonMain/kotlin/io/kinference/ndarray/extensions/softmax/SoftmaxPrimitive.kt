@@ -19,18 +19,18 @@ import io.kinference.ndarray.extensions.*
 @GenerateNameFromPrimitives
 internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
-    val inputBlocks = input.array.blocks
+    val inputArray = input.array
 
     val outputArray = dest.array
-    val maxesArray = PrimitiveArray(inputBlocks.size)
+    val maxesArray = PrimitiveArray(inputArray.blocksNum)
 
     //Finding Max for each block
     // Constant 65536 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputArray.blocksNum, 65536) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = inputBlocks[blockNum].max()
+            maxesArray[blockNum] = inputArray.getBlock(blockNum).max()
         }
     }
 
@@ -49,8 +49,8 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
             }
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val inputBlock = inputBlocks[rowBlockIdx]
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+                val inputBlock = inputArray.getBlock(rowBlockIdx)
+                val outputBlock = outputArray.getBlock(rowBlockIdx)
 
                 for (j in outputBlock.indices) {
                     outputBlock[j] = inputBlock[j] - localMax
@@ -63,9 +63,9 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputArray.blocksNum, 2048) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
-            val outputBlock = outputArray.blocks[blockNum]
+            val outputBlock = outputArray.getBlock(blockNum)
 
             for (j in outputBlock.indices) {
                 outputBlock[j] = FastMath.exp(outputBlock[j])
@@ -73,15 +73,15 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
         }
     }
 
-    val sumsArray = PrimitiveArray(outputArray.blocks.size)
+    val sumsArray = PrimitiveArray(outputArray.blocksNum)
 
     // Calculate sum for each block
     // Constant 131072 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 131072) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputArray.blocksNum, 131072) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
-            sumsArray[blockNum] = outputArray.blocks[blockNum].sum()
+            sumsArray[blockNum] = outputArray.getBlock(blockNum).sum()
         }
     }
 
@@ -98,7 +98,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
             }
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+                val outputBlock = outputArray.getBlock(rowBlockIdx)
 
                 for (j in outputBlock.indices) {
                     outputBlock[j] /= localSum

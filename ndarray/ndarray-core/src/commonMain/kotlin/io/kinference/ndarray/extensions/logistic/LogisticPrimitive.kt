@@ -18,14 +18,14 @@ import kotlin.math.abs
 @GenerateNameFromPrimitives
 internal suspend fun logisticPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
-    val inputBlocks = input.array.blocks
+    val inputArray = input.array
 
-    val outputBlocks = dest.array.blocks
+    val outputArray = dest.array
 
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(inputBlockSize, inputArray.blocksNum, 2048) { blockStart, blockEnd ->
         for (blockNum in blockStart until blockEnd) {
-            val inputBlock = inputBlocks[blockNum]
-            val outputBlock = outputBlocks[blockNum]
+            val inputBlock = inputArray.getBlock(blockNum)
+            val outputBlock = inputArray.getBlock(blockNum)
 
             for (j in outputBlock.indices) {
                 val inputValue = inputBlock[j]

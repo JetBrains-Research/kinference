@@ -20,17 +20,17 @@ import kotlin.math.sqrt
 
 @GenerateNameFromPrimitives
 internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
-    val inputBlocks = input.array.blocks
-    val outputBlocks = dest.array.blocks
+    val inputArray = input.array
+    val outputArray = dest.array
     val blockSize = input.array.blockSize
 
-    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, inputArray.blocksNum, 2048) { blockStart, blockEnd ->
         val temporaryBlockOne = PrimitiveArray(blockSize)
         val temporaryBlockTwo = PrimitiveArray(blockSize)
 
         for (blockIdx in blockStart until blockEnd) {
-            val inputBlock = inputBlocks[blockIdx]
-            val outputBlock = outputBlocks[blockIdx]
+            val inputBlock = inputArray.getBlock(blockIdx)
+            val outputBlock = inputArray.getBlock(blockIdx)
 
             for (j in outputBlock.indices) {
                 outputBlock[j] = PrimitiveConstants.TWO * inputBlock[j] - PrimitiveConstants.ONE

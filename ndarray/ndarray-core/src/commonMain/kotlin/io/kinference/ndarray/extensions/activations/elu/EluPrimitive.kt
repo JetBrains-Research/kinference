@@ -21,16 +21,16 @@ internal suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
     val actualAlpha = alpha.toPrimitive()
     val output = MutablePrimitiveNDArray(strides)
 
-    val inputBlocks = this.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = this.array
+    val outputArray = output.array
 
     val blocksNum = this.array.blocksNum
     val blockSize = this.array.blockSize
 
     parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd ->
         for (blockIdx in blockStart until blockEnd) {
-            val inputBlock = inputBlocks[blockIdx]
-            val outputBlock = outputBlocks[blockIdx]
+            val inputBlock = inputArray.getBlock(blockIdx) //inputBlocks[blockIdx]
+            val outputBlock = outputArray.getBlock(blockIdx) //outputBlocks[blockIdx]
 
             for (idx in outputBlock.indices) {
                 val x = inputBlock[idx]

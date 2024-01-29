@@ -16,9 +16,9 @@ internal suspend fun dotParallelN(left: PrimitiveNDArray, right: PrimitiveNDArra
     val lBlocksInRow = left.blocksInRow
     val rdBlocksInRow = right.blocksInRow
 
-    val leftBlocks = left.array.blocks
-    val rightBlocks = right.array.blocks
-    val destBlocks = dest.array.blocks
+    val leftArray = left.array
+    val rightArray = right.array
+    val destArray = dest.array
 
     val lBlockSize = left.array.blockSize
 
@@ -31,17 +31,17 @@ internal suspend fun dotParallelN(left: PrimitiveNDArray, right: PrimitiveNDArra
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lBlocksInRow
             val destBlockOffset = i * rdBlocksInRow
-            val rightBlockIterator = rightBlocks.iterator()
+//            val rightBlockIterator = rightBlocks.iterator()
 
             for (lCol in 0 until lBlocksInRow) {
-                val leftBlock = leftBlocks[leftBlockOffset + lCol]
+                val leftBlock = leftArray.getBlock(leftBlockOffset + lCol)
 
                 for (k in 0 until lBlockSize) {
                     val temp = leftBlock[k]
 
                     for (rdCol in 0 until rdBlocksInRow) {
-                        val destBlock = destBlocks[destBlockOffset + rdCol]
-                        val rightBlock = rightBlockIterator.next()
+                        val destBlock = destArray.getBlock(destBlockOffset + rdCol)
+                        val rightBlock = rightArray.getBlock((lCol * lBlockSize + k) * rdBlocksInRow + rdCol)
 
                         for (j in destBlock.indices) {
                             destBlock[j] = (destBlock[j] + temp * rightBlock[j]).toPrimitive()

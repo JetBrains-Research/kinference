@@ -24,8 +24,8 @@ internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
     val blockSize = this.array.blockSize
     val blocksPerColumn = columns / blockSize
 
-    val inputBlocks = this.array.blocks
-    val outputBlocks = output.array.blocks
+    val inputArray = this.array
+    val outputArray = output.array
 
     repeat(rows) { row ->
         var maxValue = PrimitiveType.MIN_VALUE_FOR_MAX
@@ -35,7 +35,7 @@ internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
         val startBlockOffset = blocksPerColumn * row
 
         for (blockIdx in startBlockOffset until startBlockOffset + blocksPerColumn) {
-            val block = inputBlocks[blockIdx]
+            val block = inputArray.getBlock(blockIdx)
 
             for (idx in block.indices) {
                 if (block[idx] > maxValue) {
@@ -46,7 +46,7 @@ internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
             }
         }
 
-        outputBlocks[maxBlockIdx][maxIndex] = PrimitiveConstants.ONE
+        outputArray.getBlock(maxBlockIdx)[maxIndex] = PrimitiveConstants.ONE
     }
 
     return output

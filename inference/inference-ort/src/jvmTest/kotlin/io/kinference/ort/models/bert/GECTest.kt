@@ -2,6 +2,7 @@ package io.kinference.ort.models.bert
 
 import io.kinference.ort.ORTTestEngine
 import io.kinference.utils.TestRunner
+import kotlinx.coroutines.delay
 import kotlin.test.Test
 
 
@@ -22,6 +23,6 @@ class GECTest {
 
     @Test
     fun benchmark_test_gec_performance() = TestRunner.runTest {
-        ORTTestEngine.ORTPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 3)
+        ORTTestEngine.ORTPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 20)
     }
 }

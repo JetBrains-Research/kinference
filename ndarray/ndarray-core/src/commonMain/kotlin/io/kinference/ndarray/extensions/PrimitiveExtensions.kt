@@ -43,12 +43,12 @@ internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 P
 
                     var k = 0
                     for (lBlockNum in 0 until this.blocksInRow) {
-                        val lBlock = this.array.blocks[lBlockOffset + lBlockNum]
+                        val lBlock = this.array.getBlock(lBlockOffset + lBlockNum)
                         for (lInd in lBlock.indices) {
                             val temp = lBlock[lInd].toInt() - zeroPointA
                             val rBlockOffset = k * other.blocksInRow
-                            val rBlock = other.array.blocks[rBlockOffset + rdBlockNum]
-                            val dBlock = destination.array.blocks[dBlockOffset + rdBlockNum]
+                            val rBlock = other.array.getBlock(rBlockOffset + rdBlockNum)
+                            val dBlock = destination.array.getBlock(dBlockOffset + rdBlockNum)
                             for (idx in rBlock.indices) {
                                 dBlock[idx] += (temp * (rBlock[idx].toInt() - zeroPointB)) * scale
                             }
@@ -74,7 +74,7 @@ internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 P
 @MakePublic
 internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
     return if (zeroPoint.linearSize == 1) {
-        val zero = zeroPoint.array.blocks[0][0].toInt()
+        val zero = zeroPoint.singleValue().toInt()
         val arr = IntTiledArray(this.strides)
         arr.pointer().accept(array.pointer(), arr.size) { _, src -> src.toInt() - zero }
         IntNDArray(arr, strides)
@@ -93,8 +93,8 @@ internal fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: Fl
 
     when {
         canDequantizePerTensor(zeroPoint, scale) -> {
-            val zero = if (zeros == null) 0f else zeros.blocks[0][0].toFloat()
-            val sc = scale.array.blocks[0][0]
+            val zero = if (zeros == null) 0f else zeros[0].toFloat()
+            val sc = scale.singleValue()
 
             output.array.pointer().accept(this.array.pointer(), output.linearSize) { _, src -> (src.toFloat() - zero) * sc }
         }
@@ -137,9 +137,9 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     val dBlockSize = destination.array.blockSize
     val lrBlockSize = this.array.blockSize
 
-    val destBlocks = destination.array.blocks
-    val leftBlocks = this.array.blocks
-    val rightBlocks = other.array.blocks
+    val destArray = destination.array
+    val leftArray = this.array
+    val rightArray = other.array
     val rowFlop = t * m
     val zero = (0).toPrimitive()
 
@@ -150,15 +150,16 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
         val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow
-            val rightBlockIter = rightBlocks.iterator()
+//            val rightBlockIter = rightArray.iterator()
 
             val destBlockOffset = i * dBlocksInRow
 
             for (k in 0 until m) {
                 val tempArray = mSums[k]
+                val rightBlockOffset = k * lrBlocksInRow
                 for (lrBlock in 0 until lrBlocksInRow) {
-                    val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
-                    val rightBlock = rightBlockIter.next()
+                    val leftBlock = leftArray.getBlock(leftBlockOffset + lrBlock)
+                    val rightBlock = rightArray.getBlock(rightBlockOffset + lrBlock)
 
                     for (j in tempArray.indices) {
                         tempArray[j] += leftBlock[j] * rightBlock[j]
@@ -168,7 +169,7 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
 
             val mSumsIter = mSums.iterator()
             for (destBlockNum in 0 until dBlocksInRow) {
-                val destBlock = destBlocks[destBlockOffset + destBlockNum]
+                val destBlock = destArray.getBlock(destBlockOffset + destBlockNum)
                 for (j in destBlock.indices) {
                     val sumBlock = mSumsIter.next()
                     destBlock[j] = sumBlock.sum() * alpha

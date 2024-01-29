@@ -11,18 +11,18 @@ import kotlin.math.min
 suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
     val output = MutableFloatNDArray(strides)
 
-    val inputBlocks = this.array.blocks
+    val inputArray = this.array
     val blocksNum = this.array.blocksNum
     val blockSize = this.array.blockSize
 
-    val outputBlocks = output.array.blocks
+    val outputArray = output.array
 
     if (alpha == 1f) {
-        val inputIter = inputBlocks.iterator()
-        val outputIter = outputBlocks.iterator()
-        repeat(blocksNum) {
-            val inputBlock = inputIter.next()
-            val outputBlock = outputIter.next()
+//        val inputIter = inputBlocks.iterator()
+//        val outputIter = outputBlocks.iterator()
+        repeat(blocksNum) { blockIdx ->
+            val inputBlock = inputArray.getBlock(blockIdx)
+            val outputBlock = outputArray.getBlock(blockIdx)
 
             for (idx in outputBlock.indices) {
                 outputBlock[idx] = inputBlock[idx]
@@ -31,8 +31,8 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
     } else {
         parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
             for (blockIdx in blockStart until blockEnd) {
-                val inputBlock = inputBlocks[blockIdx]
-                val outputBlock = outputBlocks[blockIdx]
+                val inputBlock = inputArray.getBlock(blockIdx)
+                val outputBlock = outputArray.getBlock(blockIdx)
 
                 for (idx in outputBlock.indices) {
                     outputBlock[idx] = inputBlock[idx] / alpha
@@ -43,7 +43,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
 
     parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd ->
         for (blockIdx in blockStart until blockEnd) {
-            val outputBlock = outputBlocks[blockIdx]
+            val outputBlock = outputArray.getBlock(blockIdx)
 
             for (idx in outputBlock.indices) {
                 outputBlock[idx] = FastMath.exp(outputBlock[idx])
@@ -53,7 +53,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
 
     parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
         for (blockIdx in blockStart until blockEnd) {
-            val outputBlock = outputBlocks[blockIdx]
+            val outputBlock = outputArray.getBlock(blockIdx)
 
             for (idx in outputBlock.indices) {
                 outputBlock[idx] = outputBlock[idx] - 1f
@@ -64,7 +64,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
     if (alpha != 1f) {
         parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
             for (blockIdx in blockStart until blockEnd) {
-                val outputBlock = outputBlocks[blockIdx]
+                val outputBlock = outputArray.getBlock(blockIdx)
 
                 for (idx in outputBlock.indices) {
                     outputBlock[idx] = outputBlock[idx] * alpha
@@ -75,8 +75,8 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
 
     parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
         for (blockIdx in blockStart until blockEnd) {
-            val inputBlock = inputBlocks[blockIdx]
-            val outputBlock = outputBlocks[blockIdx]
+            val inputBlock = inputArray.getBlock(blockIdx)
+            val outputBlock = outputArray.getBlock(blockIdx)
 
             for (idx in outputBlock.indices) {
                 outputBlock[idx] = max(0f, inputBlock[idx]) + min(0f, outputBlock[idx])

@@ -23,11 +23,11 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
         val futureOutput = MutableLongNDArray(batchSize)
         val futureOutputPointer = futureOutput.array.pointer()
 
-        val scoresBlocks = scores.array.blocks
+        val scoresArray = scores.array
 
         if (svmInfo.weightsAreAllPositive) {
             for (batchNum in 0 until batchSize) {
-                val scoresBlock = scoresBlocks[batchNum]
+                val scoresBlock = scoresArray.getBlock(batchNum)
                 val maxWeight = maxOf(scoresBlock[0], scoresBlock[1])
                 if (maxWeight >= 0.5f) {
                     futureOutputPointer.setAndIncrement(labels[1])
@@ -38,7 +38,7 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
             }
         } else {
             for (batchNum in 0 until batchSize) {
-                val scoresBlock = scoresBlocks[batchNum]
+                val scoresBlock = scoresArray.getBlock(batchNum)
                 val maxWeight = maxOf(scoresBlock[0], scoresBlock[1])
                 if (maxWeight > 0f) {
                     futureOutputPointer.setAndIncrement(labels[1])
@@ -59,11 +59,11 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
         val labels = (labelsInfo as LabelsInfo.StringLabelsInfo).labels
         val futureOutput = MutableStringNDArray(batchSize)
 
-        val scoresBlocks = scores.array.blocks
+        val scoresArray = scores.array
 
         if (svmInfo.weightsAreAllPositive) {
             for (batchNum in 0 until batchSize) {
-                val scoresBlock = scoresBlocks[batchNum]
+                val scoresBlock = scoresArray.getBlock(batchNum) //scoresBlocks[batchNum]
                 val maxWeight = maxOf(scoresBlock[0], scoresBlock[1])
                 if (maxWeight >= 0.5f) {
                     futureOutput.setLinear(batchNum, labels[1])
@@ -74,7 +74,7 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
             }
         } else {
             for (batchNum in 0 until batchSize) {
-                val scoresBlock = scoresBlocks[batchNum]
+                val scoresBlock = scoresArray.getBlock(batchNum) //scoresBlocks[batchNum]
                 val maxWeight = maxOf(scoresBlock[0], scoresBlock[1])
                 if (maxWeight > 0f) {
                     futureOutput.setLinear(batchNum, labels[1])
@@ -105,14 +105,14 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
 
         for (batchNum in 0 until batchSize) {
             val scoresBatch = scores.view(batchNum)
-            val scoresBlocks = scoresBatch.array.blocks
+            val scoresArray = scoresBatch.array
 
             var maxClass = -1
             var maxWeight = Float.NEGATIVE_INFINITY
 
-            for (blockNum in scoresBlocks.indices) {
+            for (blockNum in scoresArray.indices) {
                 val indexOffset = blockNum * scoresBlockSize
-                val scoresBlock = scoresBlocks[blockNum]
+                val scoresBlock = scoresArray.getBlock(blockNum) //scoresBlocks[blockNum]
 
                 for (j in scoresBlock.indices) {
                     if (scoresBlock[j] > maxWeight) {
@@ -143,14 +143,14 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
 
         for (batchNum in 0 until batchSize) {
             val scoresBatch = scores.view(batchNum)
-            val scoresBlocks = scoresBatch.array.blocks
+            val scoresArray = scoresBatch.array
 
             var maxClass = -1
             var maxWeight = Float.NEGATIVE_INFINITY
 
-            for (blockNum in scoresBlocks.indices) {
+            for (blockNum in scoresArray.indices) {
                 val indexOffset = blockNum * scoresBlockSize
-                val scoresBlock = scoresBlocks[blockNum]
+                val scoresBlock = scoresArray.getBlock(blockNum)
 
                 for (j in scoresBlock.indices) {
                     if (scoresBlock[j] > maxWeight) {

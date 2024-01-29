@@ -10,8 +10,8 @@ import io.kinference.primitives.types.PrimitiveType
 @MakePublic
 @GenerateNameFromPrimitives
 internal fun PrimitiveNDArray.all(predicate: (input: PrimitiveType) -> Boolean): Boolean {
-    val blocks = array.blocks
-    for (block in blocks) {
+    for (blockIdx in array.indices) {
+        val block = array.getBlock(blockIdx)
         for (idx in block.indices) {
             if (!predicate(block[idx])) {
                 return false

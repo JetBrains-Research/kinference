@@ -29,12 +29,12 @@ internal suspend fun List<PrimitiveNDArray>.fold(
         for (input in inputs) {
             input as PrimitiveNDArray
 
-            val inputBlocksIter = input.array.blocks.iterator()
-            val outputBlocksIter = output.array.blocks.iterator()
+            val inputArray = input.array
+            val outputArray = output.array
 
             for (blockIdx in 0 until input.array.blocksNum) {
-                val inputBlock = inputBlocksIter.next()
-                val outputBlock = outputBlocksIter.next()
+                val inputBlock = inputArray.getBlock(blockIdx)
+                val outputBlock = outputArray.getBlock(blockIdx)
 
                 for (idx in outputBlock.indices) {
                     outputBlock[idx] = op(inputBlock[idx], outputBlock[idx])
