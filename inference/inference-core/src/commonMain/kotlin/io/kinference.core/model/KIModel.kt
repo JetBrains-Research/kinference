@@ -4,6 +4,8 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.graph.KIGraph
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
+import io.kinference.ndarray.arrays.ArrayDispatcher
+import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
@@ -32,6 +34,7 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
             val name = "${proto.domain}:${proto.modelVersion}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
+            ArrayDispatcher.initStorage(Operator.totalOperatorsCount)
             return KIModel(name, opSet, graph)
         }
     }

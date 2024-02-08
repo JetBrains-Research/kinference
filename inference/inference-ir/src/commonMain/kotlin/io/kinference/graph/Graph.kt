@@ -203,9 +203,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
     
     suspend fun execute(inputs: List<T>, _contexts: Contexts<T> = emptyContexts()): List<T> {
-
-        operatorsContextAllocationControl()
-
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
@@ -246,8 +243,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         }
         return returnOutputsWithAllocationControl(contexts)
     }
-
-    protected abstract suspend fun operatorsContextAllocationControl()
 
     protected abstract suspend fun applyWithAllocationControl(contexts: Contexts<T>, profilingContext: ProfilingContext?, operator: Operator<T, T>): List<T?>
 

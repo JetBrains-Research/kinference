@@ -28,7 +28,7 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
     val blockSize = input.array.blockSize
 
     val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val containerTemporaryBlockExpArrays = ArraysDispatcher.getArrays<PrimitiveArray>(PrimitiveTiledArray.type, blockSize, coroutineCount)
+    val containerTemporaryBlockExpArrays = ArrayDispatcher.getArrays<PrimitiveArray>(PrimitiveTiledArray.type, blockSize, coroutineCount)
     val temporaryBlockExpArrays = Array(coroutineCount) { i -> containerTemporaryBlockExpArrays[i] }
 
     // Constant 2048 was precomputed on M1 Max processor

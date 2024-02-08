@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.KIOperatorFactory
 import io.kinference.graph.*
 import io.kinference.ndarray.arrays.ArrayUsageMarker
-import io.kinference.ndarray.arrays.ArraysDispatcher
+import io.kinference.ndarray.arrays.ArrayDispatcher
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.ProfilingContext
@@ -26,21 +26,18 @@ class KIGraph private constructor(
     }
 
     override fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
-    override suspend fun operatorsContextAllocationControl() {
-        ArraysDispatcher.addContexts(operators.map { it.operatorClassName }.toList())
-    }
 
     override suspend fun applyWithAllocationControl(
         contexts: Contexts<KIONNXData<*>>,
         profilingContext: ProfilingContext?,
         operator: Operator<KIONNXData<*>, KIONNXData<*>>
     ): List<KIONNXData<*>?> {
-        ArraysDispatcher.setOperatorContext(operator.operatorClassName)
+        ArrayDispatcher.setOperatorContext(operator.operatorIndex)
         val outputs = operator.applyWithCheck(
             Contexts(contexts.graph, profilingContext),
             operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
         outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
-        ArraysDispatcher.releaseUsedInContext()
+        ArrayDispatcher.releaseUsedInContext()
 
         return outputs
     }
@@ -48,7 +45,7 @@ class KIGraph private constructor(
     override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<KIONNXData<*>>): List<KIONNXData<*>> {
         val result = outputs.map { contexts.graph!!.getValue(it.name) }
         result.forEach { it.markOutput(ArrayUsageMarker.GlobalOutput) }
-        ArraysDispatcher.releaseAllOutputArrays()
+        ArrayDispatcher.releaseAllOutputArrays()
         return result
     }
 

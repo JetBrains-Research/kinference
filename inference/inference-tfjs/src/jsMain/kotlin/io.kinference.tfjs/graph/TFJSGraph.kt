@@ -23,10 +23,6 @@ class TFJSGraph(
         super.close()
     }
 
-    override suspend fun operatorsContextAllocationControl() {
-
-    }
-
     override suspend fun applyWithAllocationControl(
         contexts: Contexts<TFJSData<*>>,
         profilingContext: ProfilingContext?,
