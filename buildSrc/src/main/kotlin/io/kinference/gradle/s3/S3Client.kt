@@ -42,12 +42,6 @@ class S3Client(val config: Config) {
             File(toFolder, toKey)
         }
 
-//        File(toFolder, "descriptor.txt").writeText(
-//            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") {
-//                it.absolutePath.drop(toFolder.absolutePath.length + 1).replace('\\', '/')
-//            }
-//        )
-
         val toDownload = objects.zip(files).filter { (obj, file) ->
             //Have to use variant with size because of multipart etag in s3
             !file.exists() || file.length() != obj.size
