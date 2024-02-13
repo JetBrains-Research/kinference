@@ -8,7 +8,7 @@ import java.io.File
 
 
 class S3Client(val config: Config) {
-    private val bucket: String = "kinference.grazie.aws.intellij.net"
+    private val bucket: String = "kinference.dev.grazie.aws.intellij.net"
 
     private val client by lazy {
         AmazonS3ClientBuilder.standard()
@@ -42,11 +42,11 @@ class S3Client(val config: Config) {
             File(toFolder, toKey)
         }
 
-        File(toFolder, "descriptor.txt").writeText(
-            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") {
-                it.absolutePath.drop(toFolder.absolutePath.length + 1).replace('\\', '/')
-            }
-        )
+//        File(toFolder, "descriptor.txt").writeText(
+//            files.filter { it.name != "model.onnx" }.joinToString(separator = "\n") {
+//                it.absolutePath.drop(toFolder.absolutePath.length + 1).replace('\\', '/')
+//            }
+//        )
 
         val toDownload = objects.zip(files).filter { (obj, file) ->
             //Have to use variant with size because of multipart etag in s3
