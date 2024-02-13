@@ -8,11 +8,6 @@ import kotlin.test.Test
 
 
 class GPTFLCCTest {
-    //    @Test
-    fun heavy_test_gpt_py_model_v2() = TestRunner.runTest {
-        KIAccuracyRunner.runFromS3("gpt2:flcc-py-completion:quantized:v2", delta = 10.0)
-    }
-
     @Test
     fun heavy_test_gpt_py_model_v3() = TestRunner.runTest(Platform.JVM) {
         KIAccuracyRunner.runFromS3("gpt2:flcc-py-completion:standard:v3")
@@ -33,8 +28,4 @@ class GPTFLCCTest {
         KIPerformanceRunner.runFromS3("gpt2:flcc-py-completion:quantized:v3", count = 20)
     }
 
-    @Test
-    fun benchmark_test_gpt_py_performance_v2() = TestRunner.runTest {
-        KIPerformanceRunner.runFromS3("gpt2:flcc-py-completion:quantized:v2", count = 20)
-    }
 }
