@@ -74,8 +74,8 @@ internal class PrimitiveTiledArray {
         this.size = size
 
         // With array dispatcher
-        val containerArray = ArrayDispatcher.getArraysAndMarkers<PrimitiveArray>(type, this.blockSize, this.blocksNum)
-        this.blocks = Array(containerArray.size) { i -> containerArray[i].array }
+        val containerArray = ArrayDispatcher.getArraysAndMarkers(type, this.blockSize, this.blocksNum)
+        this.blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
         this.marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
     }
 

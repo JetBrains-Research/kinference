@@ -26,10 +26,10 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
 
     // This approach when arrays acquired before parallelizeByBlocks() is faster
     val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val containerTemporaryBlockArrays = ArrayDispatcher.getArrays<PrimitiveArray>(PrimitiveTiledArray.type, blockSize, coroutineCount)
-    val containerTemporaryBlockAbsArrays = ArrayDispatcher.getArrays<PrimitiveArray>(PrimitiveTiledArray.type, blockSize, coroutineCount)
-    val temporaryBlockArrays = Array(coroutineCount) { i -> containerTemporaryBlockArrays[i] }
-    val temporaryBlockAbsArrays = Array(coroutineCount) { i -> containerTemporaryBlockAbsArrays[i] }
+    val containerTemporaryBlockArrays =ArrayDispatcher.getArraysAndMarkers(PrimitiveTiledArray.type, blockSize, coroutineCount)
+    val containerTemporaryBlockAbsArrays = ArrayDispatcher.getArraysAndMarkers(PrimitiveTiledArray.type, blockSize, coroutineCount)
+    val temporaryBlockArrays = Array(containerTemporaryBlockArrays.size) { i -> (containerTemporaryBlockArrays[i] as PrimitiveArrayContainer).array }
+    val temporaryBlockAbsArrays = Array(containerTemporaryBlockAbsArrays.size) { i -> (containerTemporaryBlockAbsArrays[i] as PrimitiveArrayContainer).array }
 
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches

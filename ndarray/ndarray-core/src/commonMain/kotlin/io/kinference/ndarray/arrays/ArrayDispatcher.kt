@@ -1,5 +1,57 @@
 package io.kinference.ndarray.arrays
 
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
+
+sealed class ArrayContainer(var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
+    val markAsOutput: StateMarker = {
+        marker = it
+    }
+
+    // Atomic reference to the next node, initialized to a special instance of empty container
+    val next: AtomicRef<ArrayContainer?> = atomic(null)
+
+    private class EmptyArrayContainer: ArrayContainer()
+
+    companion object {
+        fun emptyContainer(): ArrayContainer = EmptyArrayContainer()
+
+        operator fun invoke(type: ArrayTypes, size: Int): ArrayContainer {
+            return when (type) {
+                ArrayTypes.ByteArray -> ByteArrayContainer(ByteArray(size))         // 8-bit signed
+                ArrayTypes.UByteArray -> UByteArrayContainer(UByteArray(size))      // 8-bit unsigned
+                ArrayTypes.ShortArray -> ShortArrayContainer(ShortArray(size))      // 16-bit signed
+                ArrayTypes.UShortArray -> UShortArrayContainer(UShortArray(size))   // 16-bit unsigned
+                ArrayTypes.IntArray -> IntArrayContainer(IntArray(size))            // 32-bit signed
+                ArrayTypes.UIntArray -> UIntArrayContainer(UIntArray(size))         // 32-bit unsigned
+                ArrayTypes.LongArray -> LongArrayContainer(LongArray(size))         // 64-bit signed
+                ArrayTypes.ULongArray -> ULongArrayContainer(ULongArray(size))      // 64-bit unsigned
+                ArrayTypes.FloatArray -> FloatArrayContainer(FloatArray(size))
+                ArrayTypes.DoubleArray -> DoubleArrayContainer(DoubleArray(size))
+                ArrayTypes.BooleanArray -> BooleanArrayContainer(BooleanArray(size))
+                else -> throw IllegalArgumentException("Unsupported array type")
+            }
+        }
+
+        fun resetArray(arrayContainer: ArrayContainer) {
+            when (arrayContainer) {
+                is ByteArrayContainer -> arrayContainer.array.fill(0)       // 8-bit signed
+                is UByteArrayContainer -> arrayContainer.array.fill(0u)     // 8-bit unsigned
+                is ShortArrayContainer -> arrayContainer.array.fill(0)      // 16-bit signed
+                is UShortArrayContainer -> arrayContainer.array.fill(0u)    // 16-bit unsigned
+                is IntArrayContainer -> arrayContainer.array.fill(0)        // 32-bit signed
+                is UIntArrayContainer -> arrayContainer.array.fill(0u)      // 32-bit unsigned
+                is LongArrayContainer -> arrayContainer.array.fill(0L)      // 64-bit signed
+                is ULongArrayContainer -> arrayContainer.array.fill(0U)     // 64-bit unsigned
+                is FloatArrayContainer -> arrayContainer.array.fill(0.0f)
+                is DoubleArrayContainer -> arrayContainer.array.fill(0.0)
+                is BooleanArrayContainer -> arrayContainer.array.fill(false)
+                else -> throw IllegalArgumentException("Unsupported array type")
+            }
+        }
+    }
+}
+
 object ArrayDispatcher {
     private const val INIT_SIZE_VALUE: Int = 2
     private val typeSize: Int = ArrayTypes.entries.size
@@ -18,6 +70,58 @@ object ArrayDispatcher {
     private var sizeIndices: Array<IntArray> = arrayOf()
     private var sizes: Array<Array<IntArray>> = arrayOf()
 
+    class LockFreeArrayContainerQueue {
+        // Initialize the head with the emptyContainer sentinel node
+        private val head = atomic(ArrayContainer.emptyContainer())
+        private val tail = atomic(head.value)
+
+        fun addLast(container: ArrayContainer) {
+            while (true) {
+                val curTail = tail.value
+                val tailNext = curTail.next.value
+
+                if (curTail == tail.value) { // Ensure the tail hasn't been moved
+                    if (tailNext == null) { // Tail is at the end, attempt to append the new container
+                        if (curTail.next.compareAndSet(null, container)) {
+                            // Successfully added, try to move the tail to the new container
+                            tail.compareAndSet(curTail, container)
+                            return
+                        }
+                    } else {
+                        // Tail not pointing to the last node, try to advance the tail
+                        tail.compareAndSet(curTail, tailNext)
+                    }
+                }
+            }
+        }
+
+        fun removeFirstOrNull(): ArrayContainer? {
+            while (true) {
+                val curHead = head.value
+                val headNext = curHead.next.value
+
+                if (headNext != null) {
+                    // Attempt to update the sentinel's next pointer to skip the first data node, effectively dequeuing it
+                    if (curHead.next.compareAndSet(headNext, headNext.next.value)) {
+                        // Nullify the removed node's next pointer to avoid dangling references
+                        headNext.next.value = null
+
+                        // Check if we've just removed the last element, making the queue empty (besides the sentinel)
+                        if (headNext == tail.value) {
+                            // Attempt to reset the tail to the sentinel node, since the queue is now empty
+                            tail.compareAndSet(headNext, curHead)
+                        }
+
+                        return headNext  // Return the dequeued container
+                    }
+                } else {
+                    // The queue is empty (besides the sentinel)
+                    return null
+                }
+            }
+        }
+    }
+
     private class ArrayStorage(contextLength: Int, typeLength: Int, sizeLength: Int) {
         /**
          * Structure is as follows:
@@ -26,10 +130,10 @@ object ArrayDispatcher {
          * 3. Array by size. Starting with 'INIT_SIZE_VALUE' element and grow it doubling (typically there are no more than 16 different sizes)
          * 4. Queue of array containers (used as FIFO)
          */
-        private var storage: Array<Array<Array<ArrayDeque<ArrayContainer<*>>>>> =
-            Array(contextLength) { Array(typeLength) { Array(sizeLength) { ArrayDeque() } } }
+        private var storage: Array<Array<Array<LockFreeArrayContainerQueue>>> =
+            Array(contextLength) { Array(typeLength) { Array(sizeLength) { LockFreeArrayContainerQueue() } } }
 
-        operator fun get(contextIndex: Int, typeIndex: Int, sizeIndex: Int): ArrayDeque<ArrayContainer<*>> {
+        operator fun get(contextIndex: Int, typeIndex: Int, sizeIndex: Int): LockFreeArrayContainerQueue {
             return storage[contextIndex][typeIndex][sizeIndex]
         }
 
@@ -39,8 +143,8 @@ object ArrayDispatcher {
 
         fun grow(contextIndex: Int, typeIndex: Int, newSize: Int) {
             // Create a new array of the new size
-            val newStorage: Array<ArrayDeque<ArrayContainer<*>>> =
-                Array(newSize) { ArrayDeque() }
+            val newStorage: Array<LockFreeArrayContainerQueue> =
+                Array(newSize) { LockFreeArrayContainerQueue() }
 
             // Transfer the old data into the new arrays
             for (i in storage[contextIndex][typeIndex].indices) {
@@ -65,37 +169,8 @@ object ArrayDispatcher {
         pushOperatorContext(contextIndex)
     }
 
-    inline fun <reified T> getArrays(type: ArrayTypes, size: Int, count: Int): Array<T> {
-        return Array(count) { (getArray(type, size)).array as T }
-    }
-
-    inline fun <reified T> getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer<T>> {
-        return Array(count) { getArray(type, size) as ArrayContainer<T> }
-    }
-
-    fun getArray(type: ArrayTypes, size: Int): ArrayContainer<*> {
-        // If we are not in the operator mode, then we don't store a created array
-        if (!operatorMode) {
-            return type.createArray(size)
-        }
-
-        val tIndex = type.index
-        val sIndex = sizes[currentOperatorContextIndex][tIndex].indexOf(size)
-
-        // Checking that we have this array size in our storage for this context and type
-        if (sIndex != -1) {
-            val array = contextUnusedArrays[currentOperatorContextIndex, tIndex, sIndex].removeFirstOrNull()
-            array?.let {
-                it.marker = ArrayUsageMarker.Used
-                resetPrimitiveArray(it)
-                contextUsedArrays[currentOperatorContextIndex, tIndex, sIndex].addLast(it)
-                return it
-            }
-        }
-
-        val newArray = type.createArray(size)
-        putArray(tIndex, sIndex, size, newArray)
-        return newArray
+    fun getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
+        return Array(count) { getArray(type, size) }
     }
 
     fun releaseUsedInContext() {
@@ -106,13 +181,18 @@ object ArrayDispatcher {
                 val unusedArrays = contextUnusedArrays[currentOperatorContextIndex, i, j]
                 val outputArrays = contextOutputArrays[currentOperatorContextIndex, i, j]
 
-                while (usedArrays.isNotEmpty()) {
-                    val container = usedArrays.removeFirst()
-                    if (container.marker != ArrayUsageMarker.ContextOutput) {
-                        container.marker = ArrayUsageMarker.Unused
-                        unusedArrays.addLast(container)
+                var isProcessed = false
+                while (!isProcessed) {
+                    val container = usedArrays.removeFirstOrNull()
+                    if (container != null) {
+                        if (container.marker != ArrayUsageMarker.ContextOutput) {
+                            container.marker = ArrayUsageMarker.Unused
+                            unusedArrays.addLast(container)
+                        } else {
+                            outputArrays.addLast(container)
+                        }
                     } else {
-                        outputArrays.addLast(container)
+                        isProcessed = true
                     }
                 }
             }
@@ -130,20 +210,49 @@ object ArrayDispatcher {
                     val unusedArrays = contextUnusedArrays[i, j, k]
 
                     // Move all context outputs into unused and permanently remove all global outputs
-                    while (outputArrays.isNotEmpty()) {
-                        val container = outputArrays.removeFirst()
-                        if (container.marker == ArrayUsageMarker.ContextOutput) {
-                            unusedArrays.addLast(container)
+                    var isProcessed = false
+                    while (!isProcessed) {
+                        val container = outputArrays.removeFirstOrNull()
+                        if (container != null) {
+                            if (container.marker == ArrayUsageMarker.ContextOutput) {
+                                unusedArrays.addLast(container)
+                            }
+                            container.marker = ArrayUsageMarker.Unused
+                        } else {
+                            isProcessed = true
                         }
-
-                        container.marker = ArrayUsageMarker.Unused
                     }
                 }
             }
         }
     }
 
-    private fun putArray(typeIndex: Int, sizeIndex: Int, size: Int, array: ArrayContainer<*>) {
+    private fun getArray(type: ArrayTypes, size: Int): ArrayContainer {
+        // If we are not in the operator mode, then we don't store a created array
+        if (!operatorMode) {
+            return ArrayContainer(type, size)
+        }
+
+        val tIndex = type.index
+        val sIndex = sizes[currentOperatorContextIndex][tIndex].indexOf(size)
+
+        // Checking that we have this array size in our storage for this context and type
+        if (sIndex != -1) {
+            val array = contextUnusedArrays[currentOperatorContextIndex, tIndex, sIndex].removeFirstOrNull()
+            array?.let {
+                it.marker = ArrayUsageMarker.Used
+                ArrayContainer.resetArray(it)
+                contextUsedArrays[currentOperatorContextIndex, tIndex, sIndex].addLast(it)
+                return it
+            }
+        }
+
+        val newArray = ArrayContainer(type, size)
+        putArray(tIndex, sIndex, size, newArray)
+        return newArray
+    }
+
+    private fun putArray(typeIndex: Int, sizeIndex: Int, size: Int, array: ArrayContainer) {
         // Checking that we have corresponding size-representing index and enough space if the size is new.
         // If not, then we grow the corresponding array and add a new index.
         val idx = if (sizeIndex != -1) {

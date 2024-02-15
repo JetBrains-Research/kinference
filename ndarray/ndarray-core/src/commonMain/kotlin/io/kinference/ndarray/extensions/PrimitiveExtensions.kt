@@ -143,12 +143,22 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     val rowFlop = t * m
     val zero = (0).toPrimitive()
 
+    // This approach when arrays acquired before parallelizeByBlocks() is faster
+    val coroutineCount = countCoroutinesByData(rowFlop, n, 262144)
+    val containerArray = ArrayDispatcher.getArraysAndMarkers(PrimitiveTiledArray.type, lrBlockSize, m * coroutineCount)
+    val mSumsArrays = Array(coroutineCount) { index ->
+        Array(m) { mIndex ->
+            (containerArray[index * m + mIndex] as PrimitiveArrayContainer).array
+        }
+    }
+
     // Constant 262144 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
     // TODO: (dmitriyb) Implement concurrent array retrieve with a separate structure from ArraysDispatcher
-    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, _: Int ->
-        val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
+    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, coroutineIndex: Int ->
+//        val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
+        val mSums = mSumsArrays[coroutineIndex]
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow
             val rightBlockIter = rightBlocks.iterator()
