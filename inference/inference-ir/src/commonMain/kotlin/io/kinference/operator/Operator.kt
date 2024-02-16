@@ -123,7 +123,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
 
         for (attribute in attributes.values) {
             if (attribute.name !in info.attributes) {
-                println("Unknown attribute '${attribute.name}' in ${info.type} operator")
+                logger.debug { "Unknown attribute '${attribute.name}' in ${info.type} operator" }
             }
         }
     }
@@ -247,6 +247,8 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     }
 
     companion object {
+        private val logger = LoggerFactory.create("io.kinference.operator.Operator")
+
         val ALL_DATA_TYPES = TensorProto.DataType.values().toHashSet() - TensorProto.DataType.UNDEFINED
         val PRIMITIVE_DATA_TYPES = setOf(
             TensorProto.DataType.BOOL,

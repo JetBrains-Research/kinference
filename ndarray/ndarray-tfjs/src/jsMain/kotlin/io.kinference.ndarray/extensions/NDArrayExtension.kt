@@ -7,7 +7,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.core.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.toTypedIntArray
-import io.kinference.ndarray.resolveTFJSDataType
 import io.kinference.utils.toIntArray
 
 internal val NDArrayTFJS.dtype: String
@@ -513,4 +512,71 @@ suspend fun NumberNDArrayTFJS.batchNorm(
         val bcastVar = variance.unsqueeze(*axes).broadcastTo(shapeArray)
         NumberNDArrayTFJS(batchNorm(tfjsArray, bcastMean.tfjsArray, bcastVar.tfjsArray, bcastBias.tfjsArray, bcastScale.tfjsArray, epsilon))
     }
+}
+
+suspend fun NumberNDArrayTFJS.conv(
+    w: NumberNDArrayTFJS,
+    b: NumberNDArrayTFJS?,
+    convParameters: ConvParameters
+) : NumberNDArrayTFJS {
+    require(rank == w.rank) { "Input and filter ranks should match: $rank != ${w.rank}" }
+
+    val effectiveStrides: Array<Number> = convParameters.strides.map { it }.toTypedArray()
+    val effectiveDilations: Array<Number> = convParameters.dilations.map { it }.toTypedArray()
+    val padding: Any = convParameters.pads
+    val convOutputs = mutableListOf<ArrayTFJS>()
+
+    data class TranspositionInfo(
+        val inputTransposeArr: IntArray,
+        val outputTransposeArr: Array<Int>
+    )
+
+    val (transposeInfo, convFunction) = when (rank) {
+        3 -> TranspositionInfo(intArrayOf(0, 2, 1), arrayOf(0, 2, 1)) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv1d(i, f, s.first(), p, "NWC", d.first())
+        }
+        4 -> TranspositionInfo(intArrayOf(0, 2, 3, 1), arrayOf(0, 3, 1, 2)) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv2d(i, f, s, p, "NHWC", d)
+        }
+        5 -> TranspositionInfo(intArrayOf(0, 2, 3, 4, 1), arrayOf(0, 4, 1, 2, 3)) to { i: ArrayTFJS, f: ArrayTFJS, s: Array<Number>, p: Any, d: Array<Number> ->
+            conv3d(i, f, s, p, "NDHWC", d)
+        }
+        else -> error("Unsupported tensor rank for convolution: $rank. Supported ranks are: 3, 4 and 5")
+    }
+
+    val transposedInput = this.transpose(transposeInfo.inputTransposeArr)
+    val inputChannelIndex = rank - 1  // Channel dimension is the last dimension in N(DH)WC
+    val inputChannels = transposedInput.shape[inputChannelIndex]
+    val channelsPerGroup = inputChannels / convParameters.groups
+    val totalFilters = w.shape[inputChannelIndex]
+    val filtersPerGroup = totalFilters / convParameters.groups
+
+    for (group in 0 until convParameters.groups) {
+        // Calculate the slicing indices for the input tensor in NHWC format
+        val inputStarts = IntArray(rank) { if (it == inputChannelIndex) group * channelsPerGroup else 0 }
+        val inputEnds = IntArray(rank) { if (it == inputChannelIndex) (group + 1) * channelsPerGroup else transposedInput.shape[it] }
+
+        val filterStarts = IntArray(rank) { 0 }
+        val filterEnds = w.shape.copyOf()
+        filterStarts[inputChannelIndex] = group * filtersPerGroup // Start index for the filter group
+        filterEnds[inputChannelIndex] = (group + 1) * filtersPerGroup // End index for the filter group
+
+        val inputSlice = transposedInput.slice(inputStarts, inputEnds).tfjsArray
+        val filterSlice = w.slice(filterStarts, filterEnds).tfjsArray
+
+        val convResult = convFunction(inputSlice, filterSlice, effectiveStrides, padding, effectiveDilations)
+        convOutputs.add(convResult)
+    }
+
+    val yTFJS = concat(convOutputs.toTypedArray(), -1) // Concatenate along the last axis (channel axis)
+    val y = yTFJS.transpose(transposeInfo.outputTransposeArr)
+
+    return if (b != null) {
+        val indicesArray = y.shape.indices.toIntArray()
+        val axes = intArrayOf(0) + if (y.rank > 2) indicesArray.sliceArray(2 until y.rank) else IntArray(0)
+
+        val bcastBias = b.unsqueeze(*axes).broadcastTo(y.shape)
+        NumberNDArrayTFJS(y.add(bcastBias.tfjsArray))
+    } else
+        NumberNDArrayTFJS(y)
 }

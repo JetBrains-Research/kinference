@@ -118,26 +118,26 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
         internal suspend fun getScores(
             unidir: Boolean, q: NDArrayCore, k: NDArrayCore, v: NDArrayCore, mask: IntNDArray?,
-            past: NDArrayCore?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int,
+            past: NDArrayCore?, batchSize: Int, seqLen: Int, numHeads: Int, hiddenSize: Int, maskFilterValue: Float = -10_000f
         ): Pair<NDArrayCore, NDArrayCore> {
             val headSize = hiddenSize / numHeads
 
             val pastSeqLen = past?.shape?.get(3) ?: 0
             val present = makePresent(past, k, v, batchSize, seqLen, numHeads, hiddenSize)
 
-            val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, numHeads, present)
+            val scores = normalizedScores(unidir, q, mask, batchSize, seqLen, pastSeqLen, headSize, numHeads, present, maskFilterValue)
             return attentionScore(scores, batchSize, seqLen, numHeads, hiddenSize, present)
         }
 
         private suspend fun normalizedScores(
             unidir: Boolean, queries: NDArrayCore, maskIndices: IntNDArray?, batchSize: Int,
-            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, present: NDArrayCore
+            seqLen: Int, pastSeqLen: Int, headSize: Int, numHeads: Int, present: NDArrayCore, maskFilterValue: Float = -10_000f
         ): NumberNDArrayCore {
             val allSeqLen = present.shape[3]
 
             val scores = allocateNDArray(queries.type, Strides(intArrayOf(batchSize, numHeads, seqLen, allSeqLen))) as MutableNumberNDArrayCore
 
-            val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen)
+            val maskData = maskIndices?.maskFromIndices(unidir, batchSize, seqLen, pastSeqLen, maskFilterValue)
 
             val alpha = 1.0 / sqrt(headSize.toDouble())
 
@@ -162,7 +162,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             return scores.softmax(axis = -1)
         }
 
-        private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int): FloatNDArray {
+        private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int, maskFilterValue: Float = -10_000f): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
             val mask = MutableFloatNDArray(Strides(maskDataShape))
@@ -174,17 +174,17 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                         val maskPointer = mask.array.pointer(maskOffset * i)
                         val maskIndicesPointer = this.array.pointer(i * fullSeqLen)
 
-                        maskPointer.accept(maskIndicesPointer, fullSeqLen) { _, src -> if (src > 0) 0f else -10000f }
+                        maskPointer.accept(maskIndicesPointer, fullSeqLen) { _, src -> if (src > 0) 0f else maskFilterValue }
                     } else {
                         //for left/right-side padding
                         val maskIndicesPointer = this.array.pointer(i)
                         val maskPointer = mask.array.pointer(maskOffset * i + maskIndicesPointer.get())
-                        maskPointer.map(fullSeqLen - maskIndicesPointer.get()) { -10000f }
+                        maskPointer.map(fullSeqLen - maskIndicesPointer.get()) { maskFilterValue }
 
                         if (this.rank == 1 && this.shape[0] == 2 * batchSize) {
                             maskIndicesPointer.linearIndex = i + batchSize
                             maskPointer.linearIndex = maskOffset * i
-                            maskPointer.map(min(maskIndicesPointer.get(), fullSeqLen)) { -10000f }
+                            maskPointer.map(min(maskIndicesPointer.get(), fullSeqLen)) { maskFilterValue }
                         }
                     }
 
@@ -200,7 +200,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     for (seqIdx in 0 until seqLen - 1) {
                         val start = pastSeqLen + seqIdx + 1
                         maskPointer.linearIndex = seqIdx * fullSeqLen + maskOffset * i + start
-                        maskPointer.map(fullSeqLen - start) { it - 10000f }
+                        maskPointer.map(fullSeqLen - start) { it + maskFilterValue }
                     }
                 }
             }
@@ -223,7 +223,8 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
 
         val ATTRIBUTES_INFO = listOf(
             AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),
-            AttributeInfo("unidirectional", setOf(AttributeProto.AttributeType.INT), false, default = 0)
+            AttributeInfo("unidirectional", setOf(AttributeProto.AttributeType.INT), false, default = 0),
+            AttributeInfo("mask_filter_value", setOf(AttributeProto.AttributeType.FLOAT), false, default = -10_000f)
         )
 
         val INPUTS_INFO = listOf(
@@ -275,6 +276,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
 
     private val numHeads: Int by attribute("num_heads") { it: Number -> it.toInt() }
     private val unidir: Boolean by attribute("unidirectional") { it: Number -> it.toInt() == 1 }
+    private val maskFilterValue: Float by attribute("mask_filter_value") { it: Number -> it.toFloat() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val input = inputs[0]!!
@@ -297,7 +299,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
             batchSize, seqLen, hiddenSize, numHeads,
         )
 
-        val (scores, present) = getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize)
+        val (scores, present) = getScores(unidir, queries, keys, values, maskIndices, past, batchSize, seqLen, numHeads, hiddenSize, maskFilterValue)
         return listOf(scores.asTensor(), present.asTensor())
     }
 }

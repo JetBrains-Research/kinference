@@ -85,7 +85,7 @@ class GraphOptimizer<T : ONNXData<*, *>>(val graph: Graph<T>) {
         val report = OptimizationReport()
         for (rule in rules) rule.apply(graph, report)
 
-        logger.info { report.toString() }
+        logger.debug { report.toString() }
 
         return graph
     }
