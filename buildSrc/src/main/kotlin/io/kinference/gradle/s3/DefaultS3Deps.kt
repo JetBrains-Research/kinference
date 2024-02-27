@@ -3,7 +3,6 @@ package io.kinference.gradle.s3
 fun S3Dependency.Context.defaultS3Deps() {
     s3Test("bert:standard:en:v1")
     s3Test("bert:gec:en:standard:v2")
-    s3Test("gpt2:flcc-py-completion:quantized:v2")
     s3Test("gpt2:flcc-py-completion:quantized:v3")
     s3Test("gpt2:flcc-py-completion:standard:v3")
     s3Test("gpt2:grazie:distilled:quantized:v6")

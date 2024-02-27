@@ -10,6 +10,7 @@ import io.kinference.tfjs.TFJSData
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.graph.TFJSGraph
 import io.kinference.tfjs.operators.activations.*
+import io.kinference.tfjs.operators.conv.Conv
 import io.kinference.tfjs.operators.flow.*
 import io.kinference.tfjs.operators.layer.attention.Attention
 import io.kinference.tfjs.operators.layer.attention.QAttention
@@ -58,6 +59,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
         "ConcatFromSequence" -> ConcatFromSequence(name, version, attributes, inputs, outputs)
         "Constant" -> Constant(name, version, attributes, inputs, outputs)
         "ConstantOfShape" -> ConstantOfShape(name, version, attributes, inputs, outputs)
+        "Conv" -> Conv(name, version, attributes, inputs, outputs)
         "Cos" -> Cos(name, version, attributes, inputs, outputs)
         "Cosh" -> Cosh(name, version, attributes, inputs, outputs)
         "CumSum" -> CumSum(name, version, attributes, inputs, outputs)
