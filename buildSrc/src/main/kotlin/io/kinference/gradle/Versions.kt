@@ -11,7 +11,7 @@ object Versions {
     const val slf4j = "2.0.9"
     const val loglevel = "1.8.1"
 
-    const val ort = "1.13.1.patched"
+    const val ort = "1.17.0.patched-1"
     const val tfjs = "4.14.0"
 
     const val kmath = "0.3.1"
