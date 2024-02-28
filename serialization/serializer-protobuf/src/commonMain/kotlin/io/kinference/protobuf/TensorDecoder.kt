@@ -6,13 +6,14 @@ import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.message.StringStringEntryProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.Companion.hasData
+import io.kinference.utils.InlineInt
 import io.kinference.utils.toIntArray
 import okio.Buffer
 import okio.ByteString
 
 abstract class TensorDecoder {
     protected abstract fun initContainer(): ArrayContainer
-    protected abstract fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (Int) -> Any): Any
+    protected abstract fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any
     protected abstract fun parseInt32Data(proto: TensorProto): Any
     protected abstract fun hasIntArray(proto: TensorProto): Boolean
 

@@ -4,11 +4,14 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.memory.ArrayDispatcher
+import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.InlineInt
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
@@ -29,14 +32,14 @@ internal class PrimitiveTiledArray {
             return PrimitiveTiledArray(strides.linearSize, blockSize)
         }
 
-        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+        operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
             return PrimitiveTiledArray(strides.linearSize, blockSize, init)
         }
 
         operator fun invoke(shape: IntArray) = invoke(Strides(shape))
 
-        operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
+        operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType) = invoke(Strides(shape), init)
 
         operator fun invoke(strides: Strides, array: PrimitiveArray): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -87,11 +90,11 @@ internal class PrimitiveTiledArray {
         this.marker = markers
     }
 
-    constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
+    constructor(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : this(size, blockSize) {
         var count = 0
         for (block in blocks) {
             for (idx in 0 until blockSize) {
-                block[idx] = init(count++)
+                block[idx] = init(InlineInt(count++))
             }
         }
     }

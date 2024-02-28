@@ -55,12 +55,12 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
             "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                FloatNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+                FloatNDArray(intArrayOf(value.size)) { value[it.value] }.asTensor()
             }
             "value_int" -> LongNDArray.scalar(value as Long).asTensor()
             "value_ints" -> {
                 value as LongArray
-                LongNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+                LongNDArray(intArrayOf(value.size)) { value[it.value] }.asTensor()
             }
             "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
             "value_strings" -> {

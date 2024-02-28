@@ -5,6 +5,7 @@ import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.TiledArrayContainer
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 
 object TiledTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = TiledArrayContainer()
@@ -29,7 +30,7 @@ object TiledTensorDecoder : TensorDecoder() {
     }
 
 
-    override fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (Int) -> Any): Any {
+    override fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any {
         return createTiledArray(type.resolveLocalDataType(), shape, init)
     }
 }

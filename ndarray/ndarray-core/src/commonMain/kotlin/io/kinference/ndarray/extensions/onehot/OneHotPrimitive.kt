@@ -19,7 +19,7 @@ internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: Numbe
     val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
 
     val arrayIndicesShape = IntArray(indices.rank + 1) { if (it != actualAxis) 1 else depth }
-    val arrayIndices = IntNDArray(arrayIndicesShape) { it }
+    val arrayIndices = IntNDArray(arrayIndicesShape) { it.value }
 
     val oneHotIndices = (indices.unsqueeze(actualAxis) as NumberNDArrayCore).getOneHotIndices(depth)
 

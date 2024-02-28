@@ -24,6 +24,7 @@ import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -31,10 +32,10 @@ import kotlin.math.*
 @MakePublic
 internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore {
     constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
+    constructor(shape: IntArray, init: (InlineInt) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
 
     constructor(strides: Strides) : this(PrimitiveTiledArray(strides), strides)
-    constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
+    constructor(strides: Strides, init: (InlineInt) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
 
     var array: PrimitiveTiledArray = array
         protected set
@@ -1303,7 +1304,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         }
 
         @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): PrimitiveNDArray {
+        operator fun invoke(vararg shape: Int, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
         }
     }

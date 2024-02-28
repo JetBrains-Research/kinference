@@ -68,7 +68,7 @@ class ShapeVer1 internal constructor(
         val outputShape = shape.sliceArray(actualStart until actualEnd)
 
         val outputTensorShape = intArrayOf(outputShape.size)
-        val data = LongNDArray(outputTensorShape) { outputShape[it].toLong() }
+        val data = LongNDArray(outputTensorShape) { outputShape[it.value].toLong() }
 
         return listOf(data.asTensor("shape"))
     }

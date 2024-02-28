@@ -86,7 +86,7 @@ class TreeEnsembleClassifierVer1(
 
         private fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
             return when (dataType) {
-                TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it) as Long }
+                TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it.value) as Long }
                 TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
                 else -> error("Unsupported data type: $dataType")
             }

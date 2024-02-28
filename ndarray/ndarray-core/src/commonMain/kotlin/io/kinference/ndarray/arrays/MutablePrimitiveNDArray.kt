@@ -6,16 +6,17 @@ import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
 @MakePublic
 internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
     constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
+    constructor(shape: IntArray, init: (InlineInt) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
 
     constructor(strides: Strides) : this(PrimitiveTiledArray(strides), strides)
-    constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
+    constructor(strides: Strides, init: (InlineInt) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
 
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
@@ -235,7 +236,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         }
 
         @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): MutablePrimitiveNDArray {
+        operator fun invoke(vararg shape: Int, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
         }
     }

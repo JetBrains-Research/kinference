@@ -3,8 +3,9 @@ package io.kinference.ndarray.extensions
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.InlineInt
 
-inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (Int) -> T): Any {
+inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (InlineInt) -> T): Any {
     return when (type) {
         DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
         DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
@@ -40,14 +41,14 @@ inline fun <reified T> createPrimitiveArray(type: DataType, size: Int, noinline 
 
 fun tiledFromPrimitiveArray(shape: IntArray, array: Any): Any {
     return when (array) {
-        is DoubleArray -> DoubleTiledArray(shape) { array[it] }
-        is FloatArray -> FloatTiledArray(shape) { array[it] }
-        is LongArray -> LongTiledArray(shape) { array[it] }
-        is IntArray -> IntTiledArray(shape) { array[it] }
-        is ShortArray -> ShortTiledArray(shape) { array[it] }
-        is BooleanArray -> BooleanTiledArray(shape) { array[it] }
-        is ByteArray -> ByteTiledArray(shape) { array[it] }
-        is UByteArray -> UByteTiledArray(shape) { array[it] }
+        is DoubleArray -> DoubleTiledArray(shape) { array[it.value] }
+        is FloatArray -> FloatTiledArray(shape) { array[it.value] }
+        is LongArray -> LongTiledArray(shape) { array[it.value] }
+        is IntArray -> IntTiledArray(shape) { array[it.value] }
+        is ShortArray -> ShortTiledArray(shape) { array[it.value] }
+        is BooleanArray -> BooleanTiledArray(shape) { array[it.value] }
+        is ByteArray -> ByteTiledArray(shape) { array[it.value] }
+        is UByteArray -> UByteTiledArray(shape) { array[it.value] }
         else -> error("Unsupported array type: ${array::class.simpleName}")
     }
 }

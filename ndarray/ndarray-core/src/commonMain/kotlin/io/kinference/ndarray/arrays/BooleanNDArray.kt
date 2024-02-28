@@ -8,6 +8,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -17,10 +18,10 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
 
 open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
+    constructor(shape: IntArray, init: (InlineInt) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
 
     constructor(strides: Strides) : this(BooleanTiledArray(strides), strides)
-    constructor(strides: Strides, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
+    constructor(strides: Strides, init: (InlineInt) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
 
     override val type: DataType = DataType.BOOLEAN
 
@@ -416,7 +417,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         }
 
         @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): BooleanNDArray {
+        operator fun invoke(vararg shape: Int, init: (InlineInt) -> Boolean): BooleanNDArray {
             return BooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
         }
 
@@ -429,10 +430,10 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
 class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides.EMPTY): BooleanNDArray(array, strides), MutableNDArrayCore {
     constructor(shape: IntArray) : this(BooleanTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
+    constructor(shape: IntArray, init: (InlineInt) -> Boolean) : this(BooleanTiledArray(shape, init), Strides(shape))
 
     constructor(strides: Strides) : this(BooleanTiledArray(strides), strides)
-    constructor(strides: Strides, init: (Int) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
+    constructor(strides: Strides, init: (InlineInt) -> Boolean) : this(BooleanTiledArray(strides, init), strides)
 
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
@@ -578,7 +579,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         }
 
         @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> Boolean): MutableBooleanNDArray {
+        operator fun invoke(vararg shape: Int, init: (InlineInt) -> Boolean): MutableBooleanNDArray {
             return MutableBooleanNDArray(BooleanTiledArray(shape, init), Strides(shape))
         }
 

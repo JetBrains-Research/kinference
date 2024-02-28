@@ -98,9 +98,6 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     private val _inputs: ArrayList<String> = ArrayList(inputs)
     private val _outputs: ArrayList<String> = ArrayList(outputs)
 
-    // this index will be used for representing operator context in ArraysDispatcher
-    val operatorIndex = totalOperatorsCount++
-
     val inputs: List<String>
         get() = _inputs.toList()
 
@@ -281,7 +278,5 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
         )
 
         val NUMBER_DATA_TYPES = INT_DATA_TYPES + UINT_DATA_TYPES + FLOAT_DATA_TYPES
-
-        var totalOperatorsCount = 0
     }
 }

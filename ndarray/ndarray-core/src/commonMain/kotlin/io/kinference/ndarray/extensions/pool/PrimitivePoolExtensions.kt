@@ -37,8 +37,8 @@ internal suspend fun PrimitiveNDArray.maxPool(
     }
 
     val defaultIndices = when (storageOrder) {
-        0 -> LongNDArray(shape) { it.toLong() }
-        1 -> LongNDArray(shape) { computeColumnMajorIndex(it, shape).toLong() }
+        0 -> LongNDArray(shape) { it.value.toLong() }
+        1 -> LongNDArray(shape) { computeColumnMajorIndex(it.value, shape).toLong() }
         else -> null
     }
 

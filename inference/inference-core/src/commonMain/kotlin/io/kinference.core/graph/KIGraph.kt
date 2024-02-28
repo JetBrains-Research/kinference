@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.KIOperatorFactory
 import io.kinference.graph.*
 import io.kinference.ndarray.arrays.ArrayUsageMarker
-import io.kinference.ndarray.arrays.ArrayDispatcher
+import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.ProfilingContext
@@ -32,12 +32,12 @@ class KIGraph private constructor(
         profilingContext: ProfilingContext?,
         operator: Operator<KIONNXData<*>, KIONNXData<*>>
     ): List<KIONNXData<*>?> {
-        ArrayDispatcher.setOperatorContext(operator.operatorIndex)
+        ArrayDispatcher.beginOperatorMode()
         val outputs = operator.applyWithCheck(
             Contexts(contexts.graph, profilingContext),
             operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
         outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
-        ArrayDispatcher.releaseUsedInContext()
+        ArrayDispatcher.endOperatorMode()
 
         return outputs
     }
