@@ -45,7 +45,7 @@ class KIKMathAdapterTest {
         val convertedMap = KIKMathMapAdapter.toONNXData(KMathMap("test", kmathMap as Map<Any, KIKMathData<*>>))
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
-        val tensor = KITensor(null, IntNDArray(shape) { it }, tensorInfo)
+        val tensor = KITensor(null, IntNDArray(shape) { it.value }, tensorInfo)
         val expectedValueInfo = ValueTypeInfo.MapTypeInfo(TensorProto.DataType.INT32, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
         val expectedMapData = mapOf(
             0 to KIONNXSequence(null, listOf(tensor), ValueTypeInfo.SequenceTypeInfo(tensorInfo)),
@@ -66,7 +66,7 @@ class KIKMathAdapterTest {
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
         val expectedValueInfo = ValueTypeInfo.SequenceTypeInfo(ValueTypeInfo.SequenceTypeInfo(tensorInfo))
-        val expectedSeqData = KIONNXSequence("", List(1) { KITensor("", IntNDArray(shape) { it }, tensorInfo) }, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        val expectedSeqData = KIONNXSequence("", List(1) { KITensor("", IntNDArray(shape) { it.value }, tensorInfo) }, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
         val expectedSeq = KIONNXSequence("test", List(4) { expectedSeqData }, expectedValueInfo)
         assertKIEquals(expectedSeq, convertedSeq)
     }
