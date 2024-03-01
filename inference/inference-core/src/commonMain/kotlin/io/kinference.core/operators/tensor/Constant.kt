@@ -3,11 +3,13 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.core.operators.activations.Log
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.utils.InlineInt
 
 sealed class Constant(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -55,12 +57,14 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
             "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                FloatNDArray(intArrayOf(value.size)) { value[it.value] }.asTensor()
+                val typedLambda: (InlineInt) -> Float = { value[it.value] }
+                FloatNDArray(intArrayOf(value.size), typedLambda).asTensor()
             }
             "value_int" -> LongNDArray.scalar(value as Long).asTensor()
             "value_ints" -> {
                 value as LongArray
-                LongNDArray(intArrayOf(value.size)) { value[it.value] }.asTensor()
+                val typedLambda: (InlineInt) -> Long = { value[it.value] }
+                LongNDArray(intArrayOf(value.size), typedLambda).asTensor()
             }
             "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
             "value_strings" -> {

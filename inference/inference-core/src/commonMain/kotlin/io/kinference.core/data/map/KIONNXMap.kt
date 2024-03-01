@@ -21,7 +21,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     val valueType: ValueTypeInfo?
         get() = info.valueType
 
-    override fun close() {
+    override suspend fun close() {
         data.values.forEach { it.close() }
     }
 
@@ -31,7 +31,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
         data.values.forEach { it.markOutput(marker) }
     }
 
-    override fun clone(newName: String?): KIONNXMap {
+    override suspend fun clone(newName: String?): KIONNXMap {
         val newMap = HashMap<Any, KIONNXData<*>>(data.size)
         for ((key, value) in data.entries) {
             newMap[key] = value.clone()
@@ -40,7 +40,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     }
 
     companion object {
-        fun create(proto: MapProto): KIONNXMap {
+        suspend fun create(proto: MapProto): KIONNXMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
             val name = proto.name!!
             val map = HashMap<Any, KIONNXData<*>>().apply {

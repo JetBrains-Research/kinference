@@ -21,12 +21,12 @@ internal typealias MultikDataType = org.jetbrains.kotlinx.multik.ndarray.data.Da
 
 sealed class KIMultikData<T>(override val name: String?) : BaseONNXData<T> {
     abstract override fun rename(name: String): KIMultikData<T>
-    abstract override fun clone(newName: String?): KIMultikData<T>
+    abstract override suspend fun clone(newName: String?): KIMultikData<T>
 
     class MultikTensor(name: String?, override val data: MultiArray<Number, Dimension>) : KIMultikData<MultiArray<Number, Dimension>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): MultikTensor = MultikTensor(name, data)
-        override fun clone(newName: String?): MultikTensor {
+        override suspend fun clone(newName: String?): MultikTensor {
             return MultikTensor(newName, data.deepCopy())
         }
     }
@@ -34,7 +34,7 @@ sealed class KIMultikData<T>(override val name: String?) : BaseONNXData<T> {
     class MultikMap(name: String?, override val data: Map<Any, KIMultikData<*>>) : KIMultikData<Map<Any, KIMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
         override fun rename(name: String): MultikMap = MultikMap(name, data)
-        override fun clone(newName: String?): MultikMap {
+        override suspend fun clone(newName: String?): MultikMap {
             val newMap = HashMap<Any, KIMultikData<*>>(data.size)
             for ((key, value) in data.entries) {
                 newMap[key] = value.clone()
@@ -46,7 +46,7 @@ sealed class KIMultikData<T>(override val name: String?) : BaseONNXData<T> {
     class MultikSequence(name: String?, override val data: List<KIMultikData<*>>) : KIMultikData<List<KIMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
         override fun rename(name: String): MultikSequence = MultikSequence(name, data)
-        override fun clone(newName: String?): MultikSequence {
+        override suspend fun clone(newName: String?): MultikSequence {
             return MultikSequence(newName, data.map { it.clone() })
         }
     }
@@ -69,7 +69,7 @@ object KIMultikTensorAdapter : ONNXDataAdapter<KIMultikData.MultikTensor, KITens
         return KIMultikData.MultikTensor(data.name, multikArray)
     }
 
-    override fun toONNXData(data: KIMultikData.MultikTensor): KITensor {
+    override suspend fun toONNXData(data: KIMultikData.MultikTensor): KITensor {
         val tiledArray = tiledFromPrimitiveArray(data.data.shape, data.data.data.data)
         return createNDArray(data.data.dtype.resolveKIDataType(), tiledArray, data.data.shape).asTensor(data.name)
     }
@@ -80,7 +80,7 @@ object KIMultikMapAdapter : ONNXDataAdapter<KIMultikData.MultikMap, KIONNXMap> {
         return KIMultikData.MultikMap(data.name, data.data.mapValues { it.value.fromKIONNXData() })
     }
 
-    override fun toONNXData(data: KIMultikData.MultikMap): KIONNXMap {
+    override suspend fun toONNXData(data: KIMultikData.MultikMap): KIONNXMap {
         val typeInfo = data.extractTypeInfo()
         val mapData = data.data.mapValues { it.value.toKIONNXData() } as Map<Any, KIONNXData<*>>
         return KIONNXMap(data.name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
@@ -92,7 +92,7 @@ object KIMultikSequenceAdapter : ONNXDataAdapter<KIMultikData.MultikSequence, KI
         return KIMultikData.MultikSequence(data.name, data.data.map { it.fromKIONNXData() })
     }
 
-    override fun toONNXData(data: KIMultikData.MultikSequence): KIONNXSequence {
+    override suspend fun toONNXData(data: KIMultikData.MultikSequence): KIONNXSequence {
         val typeInfo = data.extractTypeInfo()
         val mapData = data.data.map { it.toKIONNXData() } as List<KIONNXData<*>>
         return KIONNXSequence(data.name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
@@ -125,7 +125,7 @@ fun KIONNXData<*>.fromKIONNXData() = when (this.type) {
     ONNXDataType.ONNX_SEQUENCE -> KIMultikSequenceAdapter.fromONNXData(this as KIONNXSequence)
 }
 
-fun KIMultikData<*>.toKIONNXData() = when (this.type) {
+suspend fun KIMultikData<*>.toKIONNXData() = when (this.type) {
     ONNXDataType.ONNX_TENSOR -> KIMultikTensorAdapter.toONNXData(this as KIMultikData.MultikTensor)
     ONNXDataType.ONNX_MAP -> KIMultikMapAdapter.toONNXData(this as KIMultikData.MultikMap)
     ONNXDataType.ONNX_SEQUENCE -> KIMultikSequenceAdapter.toONNXData(this as KIMultikData.MultikSequence)

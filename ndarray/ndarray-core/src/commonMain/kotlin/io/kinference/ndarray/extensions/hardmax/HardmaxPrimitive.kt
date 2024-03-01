@@ -14,7 +14,7 @@ import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.*
 
 @MakePublic
-internal fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.hardmax(axis: Int = 1): PrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
 
     val actualAxis = indexAxis(axis)

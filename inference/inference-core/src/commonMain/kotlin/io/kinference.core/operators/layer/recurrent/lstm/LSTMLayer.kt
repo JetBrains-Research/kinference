@@ -46,7 +46,7 @@ class LSTMLayer(hiddenSize: Int, activations: List<String>, direction: LayerDire
 
         apply(input, outputArray, lstmStates, lstmGates, sequenceLens, 0, seqLength, batchSize, dataType)
 
-        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
+        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.getStateData())
     }
 
     suspend fun apply(

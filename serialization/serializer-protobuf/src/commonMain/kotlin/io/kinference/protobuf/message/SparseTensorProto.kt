@@ -10,7 +10,7 @@ class SparseTensorProto(
     val dims: LongArray? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): SparseTensorProto {
+        suspend fun decode(reader: ProtobufReader): SparseTensorProto {
             var values: TensorProto? = null
             var indices: TensorProto? = null
             var dims: LongArray? = null

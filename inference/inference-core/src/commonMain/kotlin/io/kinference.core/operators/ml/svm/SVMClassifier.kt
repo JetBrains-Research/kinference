@@ -9,6 +9,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
@@ -82,22 +83,36 @@ class SVMClassifierVer1 internal constructor(
         stringLabelsName = labelsStringAttributeInfo.name
     )
 
-    private val svmInfo = SvmInfo(
-        getAttribute("coefficients"),
-        getAttributeOrNull("kernel_params"),
-        getAttributeOrNull("kernel_type"),
-        getAttributeOrNull("post_transform"),
-        getAttribute("prob_a"),
-        getAttribute("prob_b"),
-        getAttribute("rho"),
-        getAttribute("support_vectors"),
-        getAttribute("vectors_per_class"),
-        labels.size
-    )
+    private var svmInfo: SvmInfo? = null
 
-    private val svm = SvmCommon.fromInfo(svmInfo, labels)
+    private suspend fun getSvmInfo(): SvmInfo {
+        if (svmInfo == null) {
+            svmInfo = SvmInfo(
+                getAttribute("coefficients"),
+                getAttributeOrNull("kernel_params"),
+                getAttributeOrNull("kernel_type"),
+                getAttributeOrNull("post_transform"),
+                getAttribute("prob_a"),
+                getAttribute("prob_b"),
+                getAttribute("rho"),
+                getAttribute("support_vectors"),
+                getAttribute("vectors_per_class"),
+                labels.size
+            )
+        }
+        return svmInfo!!
+    }
 
-    private fun NumberNDArrayCore.toFloatTensor(): FloatNDArray {
+    private var svm: SvmCommon? = null
+
+    private suspend fun getSvm(): SvmCommon {
+        if (svm == null) {
+            svm = SvmCommon.fromInfo(getSvmInfo(), labels)
+        }
+        return svm!!
+    }
+
+    private suspend fun NumberNDArrayCore.toFloatTensor(): FloatNDArray {
         return when (this.type) {
             DataType.FLOAT -> this as FloatNDArray
             DataType.DOUBLE -> {
@@ -151,7 +166,7 @@ class SVMClassifierVer1 internal constructor(
             if (it.rank == 1) it.reshape(intArrayOf(1, it.shape[0])) else it
         }.toFloatTensor()
 
-        val (labels, scores) = svm.run(input)
+        val (labels, scores) = getSvm().run(input)
 
 
         return listOf(labels.asTensor("Y"), scores.asTensor("Z"))

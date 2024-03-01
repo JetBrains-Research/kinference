@@ -15,9 +15,9 @@ internal class PrimitiveArrayContainer: ArrayContainer {
         _array = newArray
     }
 
-    override fun get(shape: IntArray): Any? = array
+    override suspend fun get(shape: IntArray): Any? = array
 
-    override fun decode(reader: ProtobufReader, tag: Int, dataType: TensorProto.DataType, shape: IntArray?) {
+    override suspend fun decode(reader: ProtobufReader, tag: Int, dataType: TensorProto.DataType, shape: IntArray?) {
         _array = dataType.arraySerializer().decode(reader, tag)
     }
 }

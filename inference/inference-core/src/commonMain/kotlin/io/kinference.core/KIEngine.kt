@@ -92,7 +92,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
         return loadModel(CommonDataLoader.bytes(path.toPath()), rules)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> {
+    override suspend fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> {
         return when (type) {
             ONNXDataType.ONNX_TENSOR -> KITensor.create(protoReader(bytes).readTensor())
             ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))

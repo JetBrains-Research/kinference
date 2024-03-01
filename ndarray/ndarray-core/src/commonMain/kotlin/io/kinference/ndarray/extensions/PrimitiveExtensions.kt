@@ -72,7 +72,7 @@ internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 P
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE, DataType.INT])
 @MakePublic
-internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
+internal suspend fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
     return if (zeroPoint.linearSize == 1) {
         val zero = zeroPoint.array.blocks[0][0].toInt()
         val arr = IntTiledArray(this.strides)
@@ -87,7 +87,7 @@ internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDA
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
 @MakePublic
-internal fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
+internal suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
     val zeros = zeroPoint?.array
     val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
 

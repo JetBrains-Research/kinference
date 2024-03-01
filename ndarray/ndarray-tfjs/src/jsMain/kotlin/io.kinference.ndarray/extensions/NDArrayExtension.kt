@@ -29,9 +29,9 @@ fun <T : NDArrayTFJS> T.dataString() = tfjsArray.dataString()
 
 fun <T : NDArrayTFJS> T.broadcastTo(shape: Array<Int>) = tfjsArray.broadcastTo(shape).toNDArray() as T
 
-fun <T : NDArrayTFJS> T.castToInt(): NumberNDArrayTFJS = (if (type == DataType.INT) this.clone() else tfjsArray.cast("int32").toNDArray()) as NumberNDArrayTFJS
-fun <T : NDArrayTFJS> T.castToFloat(): NumberNDArrayTFJS = (if (type == DataType.FLOAT) this.clone() else tfjsArray.cast("float32").toNDArray()) as NumberNDArrayTFJS
-fun <T : NDArrayTFJS> T.castToBool(): BooleanNDArrayTFJS = (if (type == DataType.BOOLEAN) this.clone() else tfjsArray.cast("bool").toNDArray()) as BooleanNDArrayTFJS
+suspend fun <T : NDArrayTFJS> T.castToInt(): NumberNDArrayTFJS = (if (type == DataType.INT) this.clone() else tfjsArray.cast("int32").toNDArray()) as NumberNDArrayTFJS
+suspend fun <T : NDArrayTFJS> T.castToFloat(): NumberNDArrayTFJS = (if (type == DataType.FLOAT) this.clone() else tfjsArray.cast("float32").toNDArray()) as NumberNDArrayTFJS
+suspend fun <T : NDArrayTFJS> T.castToBool(): BooleanNDArrayTFJS = (if (type == DataType.BOOLEAN) this.clone() else tfjsArray.cast("bool").toNDArray()) as BooleanNDArrayTFJS
 
 fun <T : NDArrayTFJS> Array<T>.concat(axis: Int = 0) = concat(getArrays(), axis).toNDArray() as T
 
@@ -257,7 +257,7 @@ suspend fun <T : NDArrayTFJS> T.trilu(k: Int = 0, upper: Boolean = true): T {
     } as T
 }
 
-private fun NDArrayTFJS.triluUpper(k: Int): NDArrayTFJS {
+private suspend fun NDArrayTFJS.triluUpper(k: Int): NDArrayTFJS {
     val (height, width) = shape.takeLast(2)
 
     if (k == 0) return tfjsArray.bandPart(numUpper = -1).toNDArray()
@@ -271,7 +271,7 @@ private fun NDArrayTFJS.triluUpper(k: Int): NDArrayTFJS {
     }.toNDArray()
 }
 
-private fun NDArrayTFJS.triluLower(k: Int): NDArrayTFJS {
+private suspend fun NDArrayTFJS.triluLower(k: Int): NDArrayTFJS {
     val (height, width) = shape.takeLast(2)
 
     if (k == 0) return tfjsArray.bandPart(numLower = -1).toNDArray()

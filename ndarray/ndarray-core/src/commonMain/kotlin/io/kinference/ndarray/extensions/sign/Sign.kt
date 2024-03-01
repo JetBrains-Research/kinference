@@ -2,7 +2,7 @@ package io.kinference.ndarray.extensions.sign
 
 import io.kinference.ndarray.arrays.*
 
-fun NumberNDArrayCore.sign(): NumberNDArrayCore {
+suspend fun NumberNDArrayCore.sign(): NumberNDArrayCore {
     return when (this) {
         is UIntNDArray -> signIntegerUInt(this)
         is UShortNDArray -> signIntegerUShort(this)

@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 
 sealed class GatherElements(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -77,7 +78,8 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
             } else {
                 indices as LongNDArray
                 val pointer = indices.array.pointer()
-                IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
+                val typedLambda: (InlineInt) -> Int = { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
+                IntNDArray(indices.shape, typedLambda)
             }
         }
     }

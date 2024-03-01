@@ -13,12 +13,12 @@ internal fun computeGatherShape(shape: IntArray, axis: Int, indices: NDArray): I
     return newShape
 }
 
-internal fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArrayCore {
+internal suspend fun createGatherDstArray(axis: Int, indices: NDArray, shape: IntArray, type: DataType): MutableNDArrayCore {
     val newShape = computeGatherShape(shape, axis, indices)
     return allocateNDArray(type, newShape)
 }
 
-fun gather(array: NDArrayCore, indices: NDArrayCore, axis: Int = 0): NDArrayCore {
+suspend fun gather(array: NDArrayCore, indices: NDArrayCore, axis: Int = 0): NDArrayCore {
     val actualAxis = array.indexAxis(axis)
     val dst = createGatherDstArray(actualAxis, indices, array.shape, array.type)
 

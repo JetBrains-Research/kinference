@@ -13,11 +13,11 @@ import okio.ByteString
 
 abstract class TensorDecoder {
     protected abstract fun initContainer(): ArrayContainer
-    protected abstract fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any
-    protected abstract fun parseInt32Data(proto: TensorProto): Any
-    protected abstract fun hasIntArray(proto: TensorProto): Boolean
+    protected abstract suspend fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any
+    protected abstract suspend fun parseInt32Data(proto: TensorProto): Any
+    protected abstract suspend fun hasIntArray(proto: TensorProto): Boolean
 
-    private fun TensorProto.checkArrayData() {
+    private suspend fun TensorProto.checkArrayData() {
         if (!hasIntArray(this)) return
         if (dataType == TensorProto.DataType.INT32) return
 
@@ -26,7 +26,7 @@ abstract class TensorDecoder {
         _arrayData!!.setData(newArray)
     }
 
-    fun decode(reader: ProtobufReader): TensorProto {
+    suspend fun decode(reader: ProtobufReader): TensorProto {
         val proto = TensorProto(_arrayData = initContainer())
         var rawData: ByteString? = null
         reader.forEachTag { tag ->
@@ -57,7 +57,7 @@ abstract class TensorDecoder {
         return proto
     }
 
-    private fun parseRaw(rawData: ByteString?, proto: TensorProto) {
+    private suspend fun parseRaw(rawData: ByteString?, proto: TensorProto) {
         require(proto._arrayData != null)
         val raw = rawData ?: ByteString.EMPTY
         val buffer = Buffer().apply { write(raw) }

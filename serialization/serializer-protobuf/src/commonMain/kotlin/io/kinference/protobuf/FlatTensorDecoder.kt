@@ -7,12 +7,12 @@ import io.kinference.utils.InlineInt
 
 object FlatTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = PrimitiveArrayContainer()
-    override fun hasIntArray(proto: TensorProto): Boolean {
-        return proto.arrayData is IntArray
+    override suspend fun hasIntArray(proto: TensorProto): Boolean {
+        return proto.getArrayData() is IntArray
     }
 
-    override fun parseInt32Data(proto: TensorProto): Any {
-        val data = proto.arrayData as IntArray
+    override suspend fun parseInt32Data(proto: TensorProto): Any {
+        val data = proto.getArrayData() as IntArray
         val size = data.size
 
         return when (val type = proto.dataType) {
@@ -27,7 +27,7 @@ object FlatTensorDecoder : TensorDecoder() {
         }
     }
 
-    override fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any {
+    override suspend fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any {
         val size = shape.fold(1, Int::times)
         return when (type) {
             TensorProto.DataType.DOUBLE -> DoubleArray(size) { init(InlineInt(it)) as Double }

@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.stack
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 
 sealed class ScatterElements(
     name: String,
@@ -64,7 +65,8 @@ class ScatterElementsVer11(
             } else {
                 indices as LongNDArray
                 val pointer = indices.array.pointer()
-                IntNDArray(indices.shape) { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
+                val typedLambda: (InlineInt) -> Int = { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
+                IntNDArray(indices.shape, typedLambda)
             }
         }
     }

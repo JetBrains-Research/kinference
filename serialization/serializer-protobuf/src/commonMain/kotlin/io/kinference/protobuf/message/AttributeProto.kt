@@ -21,7 +21,7 @@ class AttributeProto(
     val sparseTensors: MutableList<SparseTensorProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): AttributeProto {
+        suspend fun decode(reader: ProtobufReader): AttributeProto {
             val proto = AttributeProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

@@ -10,6 +10,7 @@ import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.*
+import io.kinference.utils.InlineInt
 
 
 @MakePublic
@@ -37,8 +38,14 @@ internal suspend fun PrimitiveNDArray.maxPool(
     }
 
     val defaultIndices = when (storageOrder) {
-        0 -> LongNDArray(shape) { it.value.toLong() }
-        1 -> LongNDArray(shape) { computeColumnMajorIndex(it.value, shape).toLong() }
+        0 -> {
+            val typedLambda: (InlineInt) -> Long = { it.value.toLong() }
+            LongNDArray(shape, typedLambda)
+        }
+        1 -> {
+            val typedLambda: (InlineInt) -> Long = { computeColumnMajorIndex(it.value, shape).toLong() }
+            LongNDArray(shape, typedLambda)
+        }
         else -> null
     }
 

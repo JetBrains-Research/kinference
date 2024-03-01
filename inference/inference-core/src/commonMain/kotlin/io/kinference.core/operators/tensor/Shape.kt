@@ -12,6 +12,7 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 import kotlin.math.max
 import kotlin.math.min
 
@@ -68,7 +69,8 @@ class ShapeVer1 internal constructor(
         val outputShape = shape.sliceArray(actualStart until actualEnd)
 
         val outputTensorShape = intArrayOf(outputShape.size)
-        val data = LongNDArray(outputTensorShape) { outputShape[it.value].toLong() }
+        val typedLambda: (InlineInt) -> Long = { outputShape[it.value].toLong() }
+        val data = LongNDArray(outputTensorShape, typedLambda)
 
         return listOf(data.asTensor("shape"))
     }

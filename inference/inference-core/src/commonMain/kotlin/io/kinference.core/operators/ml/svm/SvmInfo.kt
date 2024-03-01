@@ -49,7 +49,7 @@ internal data class SvmInfo(
         private const val DEFAULT_POST_TRANSFORM = "NONE"
         private const val DEFAULT_KERNEL_TYPE = "LINEAR"
 
-        operator fun invoke(
+        suspend operator fun invoke(
             coefficients: FloatArray,
             kernelParams: FloatArray?,
             kernelTypeStr: String?,
@@ -125,7 +125,7 @@ internal data class SvmInfo(
             val coefficients: FloatNDArray
         )
 
-        private fun configureSvcInfo(supportVectors: FloatArray, coefficients: FloatArray, vectorCount: Int, numClasses: Int, kernelType: KernelType): SupportVectorsAndCoefficients {
+        private suspend fun configureSvcInfo(supportVectors: FloatArray, coefficients: FloatArray, vectorCount: Int, numClasses: Int, kernelType: KernelType): SupportVectorsAndCoefficients {
             val featuresCount = supportVectors.size / vectorCount
             val supportVectorsTensor = if (kernelType == KernelType.RBF) {
                 // Linear read with RBF
@@ -140,7 +140,7 @@ internal data class SvmInfo(
             return SupportVectorsAndCoefficients(supportVectorsTensor, coefficientsTensor)
         }
 
-        private fun configureLinearInfo(coefficients: FloatArray, numClasses: Int, kernelType: KernelType): FloatNDArray {
+        private suspend fun configureLinearInfo(coefficients: FloatArray, numClasses: Int, kernelType: KernelType): FloatNDArray {
             val featuresCount = coefficients.size / numClasses
 
             return if (kernelType == KernelType.RBF) {

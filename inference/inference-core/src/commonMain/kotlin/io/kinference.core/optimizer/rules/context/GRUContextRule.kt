@@ -56,7 +56,7 @@ object GRUContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "GRU") 
 
     override suspend fun transform(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         graph as KIGraph
-        val initializers = graph.initializers as List<KITensor>
+        val initializers = graph.getInitializers() as List<KITensor>
 
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)

@@ -11,6 +11,8 @@ import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.ModelContext
+import kotlin.coroutines.coroutineContext
 
 
 class KIGraph private constructor(
@@ -25,27 +27,29 @@ class KIGraph private constructor(
         return context
     }
 
-    override fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
+    override suspend fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
 
     override suspend fun applyWithAllocationControl(
         contexts: Contexts<KIONNXData<*>>,
         profilingContext: ProfilingContext?,
         operator: Operator<KIONNXData<*>, KIONNXData<*>>
     ): List<KIONNXData<*>?> {
-        ArrayDispatcher.beginOperatorMode()
+        val modelName = coroutineContext[ModelContext.Key]!!.modelName
+        ArrayDispatcher.beginOperatorMode(modelName)
         val outputs = operator.applyWithCheck(
             Contexts(contexts.graph, profilingContext),
             operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
         outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
-        ArrayDispatcher.endOperatorMode()
+        ArrayDispatcher.endOperatorMode(modelName)
 
         return outputs
     }
 
     override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<KIONNXData<*>>): List<KIONNXData<*>> {
+        val modelName = coroutineContext[ModelContext.Key]!!.modelName
         val result = outputs.map { contexts.graph!!.getValue(it.name) }
         result.forEach { it.markOutput(ArrayUsageMarker.GlobalOutput) }
-        ArrayDispatcher.releaseAllOutputArrays()
+        ArrayDispatcher.releaseAllOutputArrays(modelName)
         return result
     }
 

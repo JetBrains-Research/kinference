@@ -8,6 +8,7 @@ import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
+import io.kinference.utils.InlineInt
 
 private inline fun getValue(left: Int, right: Int, offValue: PrimitiveType, onValue: PrimitiveType): PrimitiveType {
     return if (left == right) onValue else offValue
@@ -19,7 +20,8 @@ internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: Numbe
     val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
 
     val arrayIndicesShape = IntArray(indices.rank + 1) { if (it != actualAxis) 1 else depth }
-    val arrayIndices = IntNDArray(arrayIndicesShape) { it.value }
+    val typedLambda: (InlineInt) -> Int = { it.value }
+    val arrayIndices = IntNDArray(arrayIndicesShape, typedLambda)
 
     val oneHotIndices = (indices.unsqueeze(actualAxis) as NumberNDArrayCore).getOneHotIndices(depth)
 

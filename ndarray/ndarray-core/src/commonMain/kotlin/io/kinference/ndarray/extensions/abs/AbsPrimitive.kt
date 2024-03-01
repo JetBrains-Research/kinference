@@ -18,4 +18,4 @@ import io.kinference.primitives.types.DataType
 import kotlin.math.abs
 
 @GenerateNameFromPrimitives
-internal fun absPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { abs(it) }
+internal suspend fun absPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { abs(it) }

@@ -4,9 +4,12 @@ import io.kinference.core.KIONNXData
 import io.kinference.core.graph.KIGraph
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
+import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
+import io.kinference.utils.ModelContext
+import kotlinx.coroutines.withContext
 
 class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGraph) : Model<KIONNXData<*>>, Profilable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
@@ -14,16 +17,16 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>> {
+    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>>  = withContext(ModelContext(name))   {
         val contexts = Contexts<KIONNXData<*>>(
             null,
             if (profile) addProfilingContext("Model $name") else null
         )
         val execResult = graph.execute(input, contexts)
-        return execResult.associateBy { it.name!! }
+        execResult.associateBy { it.name!! }
     }
 
-    override fun close() {
+    override suspend fun close() {
         graph.close()
     }
 
@@ -32,6 +35,7 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
             val name = "${proto.domain}:${proto.modelVersion}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
+            ArrayDispatcher.addModelContext(name)
             return KIModel(name, opSet, graph)
         }
     }

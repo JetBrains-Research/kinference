@@ -5,9 +5,9 @@ import io.kinference.protobuf.message.TensorProto
 
 
 internal abstract class TiledArraySerializer<Array, Builder : ArrayBuilder<Array>> : ArraySerializer<Array, Builder>() {
-    protected abstract fun empty(shape: IntArray): Array
+    protected abstract suspend fun empty(shape: IntArray): Array
 
-    fun decode(reader: ProtobufReader, shape: IntArray, initialTag: Int): Array {
+    suspend fun decode(reader: ProtobufReader, shape: IntArray, initialTag: Int): Array {
         val builder = empty(shape).toBuilder()
         doRead(reader, builder, initialTag)
         return builder.build()

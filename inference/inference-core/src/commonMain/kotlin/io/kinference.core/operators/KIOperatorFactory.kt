@@ -30,7 +30,7 @@ import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
 
 object KIAttributeFactory : AttributeFactory<KIONNXData<*>> {
-    override fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
+    override suspend fun createTensor(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
     override suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<KIONNXData<*>> = KIGraph(proto, opSet)
 }
 

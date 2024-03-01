@@ -4,7 +4,7 @@ import io.kinference.protobuf.ProtobufReader
 
 class TensorShapeProto(val dim: List<Dimension> = emptyList()) {
     companion object {
-        fun decode(reader: ProtobufReader): TensorShapeProto {
+        suspend fun decode(reader: ProtobufReader): TensorShapeProto {
             val dim = mutableListOf<Dimension>()
             reader.forEachTag { tag ->
                 if (tag == 1)
@@ -22,7 +22,7 @@ class TensorShapeProto(val dim: List<Dimension> = emptyList()) {
         val dimParam: String? = null
     ) {
         companion object {
-            fun decode(reader: ProtobufReader): Dimension {
+            suspend fun decode(reader: ProtobufReader): Dimension {
                 var denotation: String? = null
                 var dimValue: Long? = null
                 var dimParam: String? = null

@@ -5,7 +5,43 @@ import io.kinference.ndarray.arrays.ArrayUsageMarker
 import kotlinx.atomicfu.atomic
 
 object ArrayDispatcher {
-    private const val INIT_SIZE_VALUE: Int = 2
+    private val modelDispatchers = mutableMapOf<String, ModelArrayDispatcher>()
+
+    fun addModelContext(modelContext: String) {
+        modelDispatchers[modelContext] = ModelArrayDispatcher()
+    }
+
+    fun beginOperatorMode(modelContext: String) {
+        modelDispatchers[modelContext]!!.beginOperatorMode()
+    }
+
+    fun endOperatorMode(modelContext: String) {
+        modelDispatchers[modelContext]!!.endOperatorMode()
+    }
+
+    fun getArraysAndMarkers(modelContext: String, type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
+        if (modelContext == "NoContext")
+            return Array(count) { ArrayContainer(type, size) }
+
+        val dispatcher = modelDispatchers[modelContext]!!
+        return dispatcher.getArraysAndMarkers(type, size, count)
+//        dispatcher?.let {
+//            return it.getArraysAndMarkers(type, size, count)
+//        }
+//
+//        return Array(count) { ArrayContainer(type, size) }
+    }
+
+    fun releaseAllOutputArrays(modelContext: String) {
+        modelDispatchers[modelContext]!!.releaseAllOutputArrays()
+    }
+}
+
+class ModelArrayDispatcher {
+    companion object {
+        private const val INIT_SIZE_VALUE: Int = 2
+    }
+
     private val typeSize: Int = ArrayTypes.entries.size
 
     private var operatorMode: Boolean = false

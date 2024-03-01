@@ -1,3 +1,5 @@
 package io.kinference.utils
 
-actual typealias Closeable = java.io.Closeable
+actual interface Closeable {
+    actual suspend fun close()
+}

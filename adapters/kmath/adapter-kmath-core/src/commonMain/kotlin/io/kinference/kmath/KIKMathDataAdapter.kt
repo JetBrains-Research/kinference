@@ -11,18 +11,19 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
+import io.kinference.utils.InlineInt
 import space.kscience.kmath.UnsafeKMathAPI
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 
 sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
     abstract override fun rename(name: String): KIKMathData<T>
-    abstract override fun clone(newName: String?): KIKMathData<T>
+    abstract override suspend fun clone(newName: String?): KIKMathData<T>
 
     class KMathTensor(name: String?, override val data: StructureND<*>) : KIKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): KMathTensor = KMathTensor(name, data)
-        override fun clone(newName: String?): KMathTensor {
+        override suspend fun clone(newName: String?): KMathTensor {
             return KMathTensor(newName, BufferND(data.shape) { data.get(it) })
         }
     }
@@ -30,7 +31,7 @@ sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
     class KMathMap(name: String?, override val data: Map<Any, KIKMathData<*>>) : KIKMathData<Map<Any, KIKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
         override fun rename(name: String): KMathMap = KMathMap(name, data)
-        override fun clone(newName: String?): KMathMap {
+        override suspend fun clone(newName: String?): KMathMap {
             val newMap = HashMap<Any, KIKMathData<*>>(data.size)
             for ((key, value) in data.entries) {
                 newMap[key] = value.clone()
@@ -42,7 +43,7 @@ sealed class KIKMathData<T>(override val name: String?) : BaseONNXData<T> {
     class KMathSequence(name: String?, override val data: List<KIKMathData<*>>) : KIKMathData<List<KIKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
         override fun rename(name: String): KMathSequence = KMathSequence(name, data)
-        override fun clone(newName: String?): KMathSequence {
+        override suspend fun clone(newName: String?): KMathSequence {
             return KMathSequence(newName, data.map { it.clone() })
         }
     }
@@ -102,21 +103,54 @@ object KIKMathTensorAdapter : ONNXDataAdapter<KIKMathData.KMathTensor, KITensor>
     }
 
     @OptIn(UnsafeKMathAPI::class)
-    override fun toONNXData(data: KIKMathData.KMathTensor): KITensor {
+    override suspend fun toONNXData(data: KIKMathData.KMathTensor): KITensor {
         val elements = data.data.elements().map { it.second!! }.iterator()
         val shape = data.data.shape.asArray()
         return when (val element = data.data.elements().first().second!!) {
-            is Byte -> ByteNDArray(shape) { elements.next() as Byte }
-            is Short -> ShortNDArray(shape) { elements.next() as Short }
-            is Int -> IntNDArray(shape) { elements.next() as Int }
-            is Long -> LongNDArray(shape) { elements.next() as Long }
-            is UByte -> UByteNDArray(shape) { elements.next() as UByte }
-            is UShort -> UShortNDArray(shape) { elements.next() as UShort }
-            is UInt -> UIntNDArray(shape) { elements.next() as UInt }
-            is ULong -> ULongNDArray(shape) { elements.next() as ULong }
-            is Float -> FloatNDArray(shape) { elements.next() as Float }
-            is Double -> DoubleNDArray(shape) { elements.next() as Double }
-            is Boolean -> BooleanNDArray(shape) { elements.next() as Boolean }
+            is Byte -> {
+                val typedLambda: (InlineInt) -> Byte = { elements.next() as Byte }
+                ByteNDArray(shape, typedLambda)
+            }
+            is Short -> {
+                val typedLambda: (InlineInt) -> Short = { elements.next() as Short }
+                ShortNDArray(shape, typedLambda)
+            }
+            is Int -> {
+                val typedLambda: (InlineInt) -> Int = { elements.next() as Int }
+                IntNDArray(shape, typedLambda)
+            }
+            is Long -> {
+                val typedLambda: (InlineInt) -> Long = { elements.next() as Long }
+                LongNDArray(shape, typedLambda)
+            }
+            is UByte -> {
+                val typedLambda: (InlineInt) -> UByte = { elements.next() as UByte }
+                UByteNDArray(shape, typedLambda)
+            }
+            is UShort -> {
+                val typedLambda: (InlineInt) -> UShort = { elements.next() as UShort }
+                UShortNDArray(shape, typedLambda)
+            }
+            is UInt -> {
+                val typedLambda: (InlineInt) -> UInt = { elements.next() as UInt }
+                UIntNDArray(shape, typedLambda)
+            }
+            is ULong -> {
+                val typedLambda: (InlineInt) -> ULong = { elements.next() as ULong }
+                ULongNDArray(shape, typedLambda)
+            }
+            is Float -> {
+                val typedLambda: (InlineInt) -> Float = { elements.next() as Float }
+                FloatNDArray(shape, typedLambda)
+            }
+            is Double -> {
+                val typedLambda: (InlineInt) -> Double = { elements.next() as Double }
+                DoubleNDArray(shape, typedLambda)
+            }
+            is Boolean -> {
+                val typedLambda: (InlineInt) -> Boolean = { elements.next() as Boolean }
+                BooleanNDArray(shape, typedLambda)
+            }
             else -> error("Cannot convert from StructureND of ${element::class} to ONNXTensor")
         }.asTensor(data.name)
     }
@@ -127,7 +161,7 @@ object KIKMathMapAdapter : ONNXDataAdapter<KIKMathData.KMathMap, KIONNXMap> {
         return KIKMathData.KMathMap(data.name, data.data.mapValues { it.value.toKIKMathData() })
     }
 
-    override fun toONNXData(data: KIKMathData.KMathMap): KIONNXMap {
+    override suspend fun toONNXData(data: KIKMathData.KMathMap): KIONNXMap {
         val typeInfo = data.extractTypeInfo()
         val mapData = data.data.mapValues { it.value.toKIONNXData() } as Map<Any, KIONNXData<*>>
         return KIONNXMap(data.name, mapData, typeInfo as ValueTypeInfo.MapTypeInfo)
@@ -139,14 +173,14 @@ object KIKMathSequenceAdapter : ONNXDataAdapter<KIKMathData.KMathSequence, KIONN
         return KIKMathData.KMathSequence(data.name, data.data.map { it.toKIKMathData() })
     }
 
-    override fun toONNXData(data: KIKMathData.KMathSequence): KIONNXSequence {
+    override suspend fun toONNXData(data: KIKMathData.KMathSequence): KIONNXSequence {
         val typeInfo = data.extractTypeInfo()
         val mapData = data.data.map { it.toKIONNXData() } as List<KIONNXData<*>>
         return KIONNXSequence(data.name, mapData, typeInfo as ValueTypeInfo.SequenceTypeInfo)
     }
 }
 
-fun KIKMathData<*>.toKIONNXData() = when (this.type) {
+suspend fun KIKMathData<*>.toKIONNXData() = when (this.type) {
     ONNXDataType.ONNX_TENSOR -> KIKMathTensorAdapter.toONNXData(this as KIKMathData.KMathTensor)
     ONNXDataType.ONNX_SEQUENCE -> KIKMathSequenceAdapter.toONNXData(this as KIKMathData.KMathSequence)
     ONNXDataType.ONNX_MAP -> KIKMathMapAdapter.toONNXData(this as KIKMathData.KMathMap)

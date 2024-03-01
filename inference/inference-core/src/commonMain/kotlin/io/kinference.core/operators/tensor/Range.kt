@@ -10,6 +10,7 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.resolveProtoDataType
+import io.kinference.utils.InlineInt
 import kotlin.math.ceil
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -42,32 +43,37 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
         internal val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
         private val INFO = OperatorInfo("Range", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
+        private suspend fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
             return when (type.resolveProtoDataType()) {
                 TensorProto.DataType.DOUBLE -> {
                     start as Double; limit as Double; delta as Double
                     val size = ceil((limit - start) / delta).toInt()
-                    DoubleNDArray(intArrayOf(size)) { start + (it.value * delta) }
+                    val typedLambda: (InlineInt) -> Double = { start + (it.value * delta) }
+                    DoubleNDArray(intArrayOf(size), typedLambda)
                 }
                 TensorProto.DataType.FLOAT-> {
                     start as Float; limit as Float; delta as Float
                     val size = ceil((limit - start) / delta).toInt()
-                    FloatNDArray(intArrayOf(size)) { start + (it.value * delta) }
+                    val typedLambda: (InlineInt) -> Float = { start + (it.value * delta) }
+                    FloatNDArray(intArrayOf(size), typedLambda)
                 }
                 TensorProto.DataType.INT16 -> {
                     start as Short; limit as Short; delta as Short
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    ShortNDArray(intArrayOf(size)) { (start + (it.value * delta)).toShort() }
+                    val typedLambda: (InlineInt) -> Short = { (start + (it.value * delta)).toShort() }
+                    ShortNDArray(intArrayOf(size), typedLambda)
                 }
                 TensorProto.DataType.INT32 -> {
                     start as Int; limit as Int; delta as Int
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    IntNDArray(intArrayOf(size)) { start + (it.value * delta) }
+                    val typedLambda: (InlineInt) -> Int = { start + (it.value * delta) }
+                    IntNDArray(intArrayOf(size), typedLambda)
                 }
                 TensorProto.DataType.INT64 -> {
                     start as Long; limit as Long; delta as Long
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    LongNDArray(intArrayOf(size)) { start + (it.value * delta) }
+                    val typedLambda: (InlineInt) -> Long = { start + (it.value * delta) }
+                    LongNDArray(intArrayOf(size), typedLambda)
                 }
                 else -> error("Unsupported data type: $type")
             }

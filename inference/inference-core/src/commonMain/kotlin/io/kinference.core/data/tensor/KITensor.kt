@@ -16,11 +16,11 @@ import io.kinference.types.ValueTypeInfo
 class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
-    override fun close() {
+    override suspend fun close() {
         data.close()
     }
 
-    override fun clone(newName: String?): KITensor {
+    override suspend fun clone(newName: String?): KITensor {
         return KITensor(newName, data.clone(), info)
     }
 
@@ -51,7 +51,7 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        fun create(proto: TensorProto): KITensor {
+        suspend fun create(proto: TensorProto): KITensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
 
@@ -81,8 +81,8 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
             }
         }
 
-        private fun parseArray(proto: TensorProto): Any {
-            val array = if (proto.isString()) proto.stringData.map { it.utf8() } else proto.arrayData
+        private suspend fun parseArray(proto: TensorProto): Any {
+            val array = if (proto.isString()) proto.stringData.map { it.utf8() } else proto.getArrayData()
             requireNotNull(array) { "Array value should be initialized" }
             return array
         }

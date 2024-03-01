@@ -37,7 +37,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         )
 
         apply(input, outputArray, gruState, gruGates, sequenceLength, 0, seqLength, batchSize, dataType)
-        return GRULayerOutput(outputArray, gruState.data)
+        return GRULayerOutput(outputArray, gruState.getStateData())
     }
 
     suspend fun apply(

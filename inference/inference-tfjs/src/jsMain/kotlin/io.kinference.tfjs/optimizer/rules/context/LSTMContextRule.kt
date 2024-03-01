@@ -79,7 +79,7 @@ object LSTMContextRule : PrepareContextRule<TFJSData<*>>(operatorName = "LSTM") 
 
     override suspend fun transform(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>) {
         graph as TFJSGraph
-        val initializers = graph.initializers as List<TFJSTensor>
+        val initializers = graph.getInitializers() as List<TFJSTensor>
 
         val weightsInit = initTensorByDefaultName("W", operator, initializers)
         val recurrentWeightsInit = initTensorByDefaultName("R", operator, initializers)

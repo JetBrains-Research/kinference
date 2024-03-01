@@ -7,7 +7,7 @@ class StringStringEntryProto(
     val value: String? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): StringStringEntryProto {
+        suspend fun decode(reader: ProtobufReader): StringStringEntryProto {
             var key: String? = null
             var value: String? = null
             reader.forEachTag { tag ->

@@ -26,7 +26,7 @@ class SequenceProto(
     }
 
     companion object {
-        fun decode(reader: ProtobufReader): SequenceProto {
+        suspend fun decode(reader: ProtobufReader): SequenceProto {
             val proto = SequenceProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

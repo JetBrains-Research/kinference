@@ -58,7 +58,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         return listOf(output.asTensor("C"))
     }
 
-    override fun close() {
+    override suspend fun close() {
         super.close()
         closeAll(SQRT2, scalarOne, scalarHalfOne)
     }

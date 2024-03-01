@@ -14,12 +14,12 @@ import java.nio.*
 
 sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
     abstract override fun rename(name: String): ORTKMathData<T>
-    abstract override fun clone(newName: String?): ORTKMathData<T>
+    abstract override suspend fun clone(newName: String?): ORTKMathData<T>
 
     class KMathTensor(name: String?, override val data: StructureND<*>) : ORTKMathData<StructureND<*>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): KMathTensor = KMathTensor(name, data)
-        override fun clone(newName: String?): KMathTensor {
+        override suspend fun clone(newName: String?): KMathTensor {
             return KMathTensor(newName, BufferND(data.shape) { data.get(it) })
         }
     }
@@ -27,7 +27,7 @@ sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
     class KMathMap(name: String?, override val data: Map<Any, ORTKMathData<*>>) : ORTKMathData<Map<Any, ORTKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
         override fun rename(name: String): KMathMap = KMathMap(name, data)
-        override fun clone(newName: String?): KMathMap {
+        override suspend fun clone(newName: String?): KMathMap {
             val newMap = HashMap<Any, ORTKMathData<*>>(data.size)
             for ((key, value) in data.entries) {
                 newMap[key] = value.clone()
@@ -39,7 +39,7 @@ sealed class ORTKMathData<T>(override val name: String?) : BaseONNXData<T> {
     class KMathSequence(name: String?, override val data: List<ORTKMathData<*>>) : ORTKMathData<List<ORTKMathData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
         override fun rename(name: String): KMathSequence = KMathSequence(name, data)
-        override fun clone(newName: String?): KMathSequence {
+        override suspend fun clone(newName: String?): KMathSequence {
             return KMathSequence(newName, data.map { it.clone() })
         }
     }
@@ -84,7 +84,7 @@ object ORTKMathTensorAdapter : ONNXDataAdapter<ORTKMathData.KMathTensor, ORTTens
     }
 
     @OptIn(UnsafeKMathAPI::class)
-    override fun toONNXData(data: ORTKMathData.KMathTensor): ORTTensor {
+    override suspend fun toONNXData(data: ORTKMathData.KMathTensor): ORTTensor {
         val env = OrtEnvironment.getEnvironment()
         val elements = data.data.elements().map { it.second!! }.iterator()
         val linSize = data.data.shape.linearSize
@@ -108,7 +108,7 @@ object ORTKMathMapAdapter : ONNXDataAdapter<ORTKMathData.KMathMap, ORTMap> {
         return ORTKMathData.KMathMap(data.name, data.data.value.mapValues { ORTKMathData.KMathTensor(null, it.toScalarBuffer()) })
     }
 
-    override fun toONNXData(data: ORTKMathData.KMathMap): ORTMap {
+    override suspend fun toONNXData(data: ORTKMathData.KMathMap): ORTMap {
         error("ONNXRuntime backend does not support map conversion")
     }
 }
@@ -126,7 +126,7 @@ object ORTKMathSequenceAdapter : ONNXDataAdapter<ORTKMathData.KMathSequence, ORT
         return ORTKMathData.KMathSequence(data.name, seq)
     }
 
-    override fun toONNXData(data: ORTKMathData.KMathSequence): ORTSequence {
+    override suspend fun toONNXData(data: ORTKMathData.KMathSequence): ORTSequence {
         error("ONNXRuntime backend does not support sequence conversion")
     }
 }

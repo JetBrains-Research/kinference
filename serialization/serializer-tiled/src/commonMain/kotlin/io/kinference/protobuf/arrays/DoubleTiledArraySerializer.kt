@@ -19,7 +19,7 @@ internal class DoubleTiledArrayBuilder(data: DoubleTiledArray) : ArrayBuilder<Do
 }
 
 internal object DoubleTiledArraySerializer : TiledArraySerializer<DoubleTiledArray, DoubleTiledArrayBuilder>() {
-    override fun empty(shape: IntArray): DoubleTiledArray = DoubleTiledArray(shape)
+    override suspend fun empty(shape: IntArray): DoubleTiledArray = DoubleTiledArray(shape)
     override fun DoubleTiledArray.toBuilder(): DoubleTiledArrayBuilder = DoubleTiledArrayBuilder(this)
 
     override fun readElement(reader: ProtobufReader, builder: DoubleTiledArrayBuilder) {

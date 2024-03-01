@@ -162,7 +162,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             return scores.softmax(axis = -1)
         }
 
-        private fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int, maskFilterValue: Float = -10_000f): FloatNDArray {
+        private suspend fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int, maskFilterValue: Float = -10_000f): FloatNDArray {
             val fullSeqLen = seqLen + pastSeqLen
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
             val mask = MutableFloatNDArray(Strides(maskDataShape))

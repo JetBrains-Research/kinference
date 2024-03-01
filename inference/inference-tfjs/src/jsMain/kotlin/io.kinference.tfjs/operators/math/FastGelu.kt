@@ -62,7 +62,7 @@ class FastGeluVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
         return listOf(output.asTensor("Y"))
     }
 
-    override fun close() {
+    override suspend fun close() {
         super.close()
         closeAll(COEF_1, COEF_2, COEF_3)
     }

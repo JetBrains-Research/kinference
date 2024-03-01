@@ -13,5 +13,5 @@ import io.kinference.ndarray.extensions.MAX_VALUE_FOR_MIN
 import kotlin.comparisons.minOf
 
 @MakePublic
-internal fun PrimitiveNDArray.reduceMin(axes: IntArray, keepDims: Boolean) =
+internal suspend fun PrimitiveNDArray.reduceMin(axes: IntArray, keepDims: Boolean) =
     reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveType.MAX_VALUE_FOR_MIN) { out: PrimitiveType, inp: PrimitiveType -> minOf(out, inp) }

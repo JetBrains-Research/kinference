@@ -17,8 +17,12 @@ class TensorProto internal constructor(
     internal var _arrayData: ArrayContainer? = null
 ) {
 
-    val arrayData: Any?
-        get() = _arrayData!!.get(dims)
+//    val arrayData: Any?
+//        get() = _arrayData!!.get(dims)
+
+    suspend fun getArrayData() : Any? {
+        return _arrayData!!.get(dims)
+    }
 
     fun isString(): Boolean = stringData.isNotEmpty()
 
@@ -96,7 +100,7 @@ class TensorProto internal constructor(
 
     data class Segment(val begin: Long? = null, val end: Long? = null) {
         companion object {
-            fun decode(reader: ProtobufReader): Segment {
+            suspend fun decode(reader: ProtobufReader): Segment {
                 var begin: Long? = null
                 var end: Long? = null
                 reader.forEachTag { tag ->

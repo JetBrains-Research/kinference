@@ -7,7 +7,7 @@ class TensorAnnotation(
     val quantParameterTensorNames: MutableList<StringStringEntryProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): TensorAnnotation {
+        suspend fun decode(reader: ProtobufReader): TensorAnnotation {
             val proto = TensorAnnotation()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

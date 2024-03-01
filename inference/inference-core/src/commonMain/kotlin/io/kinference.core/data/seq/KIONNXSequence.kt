@@ -14,11 +14,11 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     override val backend = CoreBackend
 
-    override fun close() {
+    override suspend fun close() {
         data.forEach { it.close() }
     }
 
-    override fun clone(newName: String?): KIONNXSequence {
+    override suspend fun clone(newName: String?): KIONNXSequence {
         return KIONNXSequence(newName, data.map { it.clone() }, info)
     }
 
@@ -31,7 +31,7 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
     val length: Int = data.size
 
     companion object {
-        fun create(proto: SequenceProto): KIONNXSequence {
+        suspend fun create(proto: SequenceProto): KIONNXSequence {
             val elementTypeInfo = proto.extractTypeInfo()
             val name = proto.name!!
             val data = when (proto.elementType) {

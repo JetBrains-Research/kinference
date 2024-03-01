@@ -5,7 +5,7 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.InlineInt
 
-inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (InlineInt) -> T): Any {
+suspend inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (InlineInt) -> T): Any {
     return when (type) {
         DataType.FLOAT -> FloatTiledArray(shape) { init(it) as Float }
         DataType.DOUBLE -> DoubleTiledArray(shape) { init(it) as Double }
@@ -39,7 +39,7 @@ inline fun <reified T> createPrimitiveArray(type: DataType, size: Int, noinline 
     }
 }
 
-fun tiledFromPrimitiveArray(shape: IntArray, array: Any): Any {
+suspend fun tiledFromPrimitiveArray(shape: IntArray, array: Any): Any {
     return when (array) {
         is DoubleArray -> DoubleTiledArray(shape) { array[it.value] }
         is FloatArray -> FloatTiledArray(shape) { array[it.value] }
@@ -105,7 +105,7 @@ fun createNDArray(type: DataType, value: Any, shape: IntArray): NDArrayCore {
     return createNDArray(type, value, Strides(shape))
 }
 
-fun createScalarNDArray(type: DataType, value: Any): NDArrayCore {
+suspend fun createScalarNDArray(type: DataType, value: Any): NDArrayCore {
     return when (type) {
         DataType.DOUBLE -> DoubleNDArray.scalar(value as Double)
         DataType.FLOAT -> FloatNDArray.scalar(value as Float)
@@ -120,7 +120,7 @@ fun createScalarNDArray(type: DataType, value: Any): NDArrayCore {
     }
 }
 
-fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
+suspend fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
     return when (type) {
         DataType.DOUBLE -> MutableDoubleNDArray(DoubleTiledArray(strides), strides)
         DataType.FLOAT -> MutableFloatNDArray(FloatTiledArray(strides), strides)
@@ -138,7 +138,7 @@ fun allocateNDArray(type: DataType, strides: Strides): MutableNDArrayCore {
     }
 }
 
-fun eyeLike(shape: IntArray, type: DataType, k: Int = 0): NDArrayCore {
+suspend fun eyeLike(shape: IntArray, type: DataType, k: Int = 0): NDArrayCore {
     require(shape.size == 2) { "EyeLike is only supported for tensors of rank=2, current shape rank: ${shape.size}" }
 
     return when (type) {
@@ -157,7 +157,7 @@ fun eyeLike(shape: IntArray, type: DataType, k: Int = 0): NDArrayCore {
     }
 }
 
-fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
+suspend fun allocateNDArray(type: DataType, shape: IntArray) = allocateNDArray(type, Strides(shape))
 
 val SUPPORTED_TYPES = setOf(DataType.DOUBLE, DataType.FLOAT, DataType.LONG, DataType.INT, DataType.SHORT)
 fun inferType(type1: DataType, type2: DataType): DataType {

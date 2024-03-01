@@ -61,20 +61,21 @@ class ZipMapVer1(
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("ZipMap", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        private fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
+        private suspend fun <T : Any> FloatNDArray.asSeqWithLabels(labels: Labels<T>, mapInfo: ValueTypeInfo.MapTypeInfo): KIONNXSequence {
             val seqInfo = ValueTypeInfo.SequenceTypeInfo(mapInfo)
             val rows = if (rank == 1) 1 else shape[0]
             val columns = shape.last()
 
             val inputPointer = FloatPointer(array)
             return KIONNXSequence("Z", seqInfo, rows) {
-                val map = HashMap<T, KIONNXData<*>>(columns)
-                repeat(columns) {
-                    val value = inputPointer.getAndIncrement()
-                    val tensor = FloatNDArray.scalar(value).asTensor()
-                    map[labels[it]] = tensor
-                }
-                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
+//                val map = HashMap<T, KIONNXData<*>>(columns)
+//                repeat(columns) {
+//                    val value = inputPointer.getAndIncrement()
+//                    val tensor = FloatNDArray.scalar(value).asTensor()
+//                    map[labels[it]] = tensor
+//                }
+//                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
+                KIONNXMap(null, mapOf<Any, KIONNXData<*>>(), mapInfo)
             }
         }
     }

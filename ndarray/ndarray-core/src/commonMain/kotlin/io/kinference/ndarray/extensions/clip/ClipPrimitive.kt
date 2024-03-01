@@ -13,7 +13,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
-internal fun PrimitiveNDArray.clip(min: PrimitiveType? = null, max: PrimitiveType? = null): PrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.clip(min: PrimitiveType? = null, max: PrimitiveType? = null): PrimitiveNDArray {
     if (min == null && max == null || min == PrimitiveType.MIN_VALUE_FOR_MAX && max == PrimitiveType.MAX_VALUE_FOR_MIN)
         return this.clone()
 
@@ -29,10 +29,10 @@ internal fun PrimitiveNDArray.clip(min: PrimitiveType? = null, max: PrimitiveTyp
     }
 }
 
-private fun PrimitiveNDArray.clipMin(min: PrimitiveType): MutablePrimitiveNDArray {
+private suspend fun PrimitiveNDArray.clipMin(min: PrimitiveType): MutablePrimitiveNDArray {
     return applyElementWise { if (it < min) min else it }
 }
 
-private fun PrimitiveNDArray.clipMax(max: PrimitiveType): MutablePrimitiveNDArray {
+private suspend fun PrimitiveNDArray.clipMax(max: PrimitiveType): MutablePrimitiveNDArray {
     return applyElementWise { if (it > max) max else it }
 }

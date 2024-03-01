@@ -8,11 +8,18 @@ class GRUDefaultGate internal constructor(
     private val weights: NumberNDArrayCore,
     private val recurrentWeights: NumberNDArrayCore,
     private val bias: NumberNDArrayCore?,
-    batchSize: Int,
-    hiddenSize: Int,
-    dataType: DataType
+    private val batchSize: Int,
+    private val hiddenSize: Int,
+    private val dataType: DataType
 ) {
-    private val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
+    private var gateData: MutableNumberNDArrayCore? = null
+
+    private suspend fun getGateData(): MutableNumberNDArrayCore {
+        if (gateData == null) {
+            gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
+        }
+        return gateData!!
+    }
 
     suspend fun compute(
         input: NumberNDArrayCore,
@@ -21,7 +28,7 @@ class GRUDefaultGate internal constructor(
         numDirection: Int,
         batchNum: Int
     ) {
-        val gateLocal = gateData.viewMutable(batchNum)
+        val gateLocal = getGateData().viewMutable(batchNum)
         gateLocal.clean()
 
         input.dot(weights, gateLocal)
@@ -30,7 +37,7 @@ class GRUDefaultGate internal constructor(
         gateLocal.mapMutable(activationFunction)
     }
 
-    fun getVector(batchNum: Int) = gateData.view(batchNum)
+    suspend fun getVector(batchNum: Int) = getGateData().view(batchNum)
 }
 
 class GRUHiddenGate private constructor(
@@ -171,19 +178,30 @@ data class GRUGates(val update: GRUDefaultGate, val reset: GRUDefaultGate, val h
 }
 
 class GRUHiddenState internal constructor(
-    initHiddenState: NumberNDArrayCore?,
+    private val initHiddenState: NumberNDArrayCore?,
     private val dataType: DataType,
-    numDirection: Int, batchSize: Int, hiddenSize: Int
+    private val numDirection: Int, private val batchSize: Int, private val hiddenSize: Int
 ) {
-    private val stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
-    private val tempData = allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+    private var stateData: MutableNumberNDArrayCore? = null
+    private var tempData: MutableNumberNDArrayCore? = null
 
-    val data: NumberNDArrayCore
-        get() = stateData
+    suspend fun getStateData(): MutableNumberNDArrayCore {
+        if (stateData == null) {
+            stateData = initHiddenState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+        }
+        return stateData!!
+    }
+
+    private suspend fun getTempData(): MutableNumberNDArrayCore {
+        if (tempData == null) {
+            tempData = allocateNDArray(dataType, intArrayOf(numDirection, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+        }
+        return tempData!!
+    }
 
     suspend fun compute(gates: GRUGates, numDirection: Int, batchNum: Int) {
-        val stateLocal = stateData.viewMutable(numDirection, batchNum)
-        val tempLocal = tempData.viewMutable(numDirection, batchNum)
+        val stateLocal = getStateData().viewMutable(numDirection, batchNum)
+        val tempLocal = getTempData().viewMutable(numDirection, batchNum)
 
         stateLocal.timesAssign(gates.update.getVector(batchNum))
 
@@ -212,7 +230,7 @@ class GRUHiddenState internal constructor(
     }
 
 
-    fun getVector(numDirection: Int, batchNum: Int) = stateData.view(numDirection, batchNum)
+    suspend fun getVector(numDirection: Int, batchNum: Int) = getStateData().view(numDirection, batchNum)
 }
 
 data class GRULayerOutput(

@@ -23,11 +23,11 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
 
     override fun rename(name: String) = TFJSMap(name, data, info)
 
-    override fun close() {
+    override suspend fun close() {
         data.values.forEach { it.close() }
     }
 
-    override fun clone(newName: String?): TFJSMap {
+    override suspend fun clone(newName: String?): TFJSMap {
         val newMap = HashMap<Any, TFJSData<*>>(data.size)
         for ((key, value) in data.entries) {
             newMap[key] = value.clone()
@@ -36,7 +36,7 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
     }
 
     companion object {
-        fun create(proto: MapProto): TFJSMap {
+        suspend fun create(proto: MapProto): TFJSMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
             val info = ValueInfo(elementType, proto.name!!)
             val map = HashMap<Any, TFJSData<*>>().apply {

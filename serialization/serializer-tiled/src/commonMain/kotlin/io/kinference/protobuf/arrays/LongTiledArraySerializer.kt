@@ -19,7 +19,7 @@ internal class LongTiledArrayBuilder(data: LongTiledArray) : ArrayBuilder<LongTi
 }
 
 internal object LongTiledArraySerializer : TiledArraySerializer<LongTiledArray, LongTiledArrayBuilder>() {
-    override fun empty(shape: IntArray): LongTiledArray = LongTiledArray(shape)
+    override suspend fun empty(shape: IntArray): LongTiledArray = LongTiledArray(shape)
     override fun LongTiledArray.toBuilder(): LongTiledArrayBuilder = LongTiledArrayBuilder(this)
 
     override fun readElement(reader: ProtobufReader, builder: LongTiledArrayBuilder) {
@@ -28,7 +28,7 @@ internal object LongTiledArraySerializer : TiledArraySerializer<LongTiledArray, 
 }
 
 internal object ULongTiledArraySerializer : TiledArraySerializer<LongTiledArray, LongTiledArrayBuilder>() {
-    override fun empty(shape: IntArray): LongTiledArray = LongTiledArray(shape)
+    override suspend fun empty(shape: IntArray): LongTiledArray = LongTiledArray(shape)
     override fun LongTiledArray.toBuilder(): LongTiledArrayBuilder = LongTiledArrayBuilder(this)
 
     override fun readElement(reader: ProtobufReader, builder: LongTiledArrayBuilder) {

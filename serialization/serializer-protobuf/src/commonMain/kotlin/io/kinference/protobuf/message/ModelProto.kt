@@ -14,7 +14,7 @@ class ModelProto(
     val trainingInfo: MutableList<TrainingInfoProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): ModelProto {
+        suspend fun decode(reader: ProtobufReader): ModelProto {
             val proto = ModelProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

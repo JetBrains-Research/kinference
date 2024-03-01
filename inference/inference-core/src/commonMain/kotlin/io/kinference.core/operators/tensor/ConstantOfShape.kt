@@ -27,9 +27,13 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
-        private val DEFAULT_TENSOR = FloatNDArray.scalar(0f).asTensor("value")
+//        private val DEFAULT_TENSOR = FloatNDArray.scalar(0f).asTensor("value")
+//        private val ATTRIBUTES_INFO = listOf(
+//            AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), default = DEFAULT_TENSOR, required = false)
+//        )
+
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), default = DEFAULT_TENSOR, required = false)
+            AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), required = false)
         )
 
         private val INPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "input", optional = false))

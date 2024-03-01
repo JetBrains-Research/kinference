@@ -13,7 +13,7 @@ abstract class PrepareContextRule<T : ONNXData<*, *>>(operatorName: String) : Op
         return initializers.find { it.name == tensorName }
     }
 
-    protected fun tryRemoveDefaultInitializer(graph: Graph<T>, name: String) {
+    protected suspend fun tryRemoveDefaultInitializer(graph: Graph<T>, name: String) {
         val numUsages = graph.countNumberOfInputUsages(name)
         if (numUsages != 1) return
 

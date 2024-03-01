@@ -18,7 +18,7 @@ class TFJSGraph(
     private val preparedTensorsContext: GraphContext<TFJSData<*>> = GraphContext()
 ) : Graph<TFJSData<*>>(proto, operators, valueOrderInfo) {
 
-    override fun close() {
+    override suspend fun close() {
         preparedTensorsContext.close()
         super.close()
     }
@@ -37,7 +37,7 @@ class TFJSGraph(
         return outputs.map { contexts.graph!!.getValue(it.name) }
     }
 
-    override fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+    override suspend fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
 
     fun addTensorToContext(tensor: TFJSTensor) {
         preparedTensorsContext.putValue(tensor.name!!, tensor)

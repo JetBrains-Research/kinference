@@ -9,6 +9,7 @@ import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 
 sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -68,7 +69,8 @@ class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         if (outputs.size == 1)
             return listOf(data.rename("output"))
 
-        val mask = BooleanNDArray(data.data.shape) { true }
+        val typedLambda: (InlineInt) -> Boolean = { true }
+        val mask = BooleanNDArray(data.data.shape, typedLambda)
         return listOf(data.rename("output"), mask.asTensor("mask"))
     }
 }

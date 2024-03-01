@@ -15,7 +15,7 @@ import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.optimizer.rules.context.PrepareContextRule
 
 object MatMulIntegerContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "MatMulInteger") {
-    private fun NumberNDArray.toIntNDArray(): IntNDArray {
+    private suspend fun NumberNDArray.toIntNDArray(): IntNDArray {
         val result = IntNDArray(IntTiledArray(this.strides), strides)
         when (this) {
             is UByteNDArray -> {
@@ -55,7 +55,7 @@ object MatMulIntegerContextRule : PrepareContextRule<KIONNXData<*>>(operatorName
 
     override suspend fun transform(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         graph as KIGraph
-        val initializers = graph.initializers as List<KITensor>
+        val initializers = graph.getInitializers() as List<KITensor>
 
         val leftTensor = initTensorByDefaultName("A", operator, initializers)
         val rightTensor = initTensorByDefaultName("B", operator, initializers)

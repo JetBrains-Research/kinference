@@ -7,7 +7,7 @@ class ValueInfoProto(
     val type: TypeProto? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): ValueInfoProto {
+        suspend fun decode(reader: ProtobufReader): ValueInfoProto {
             var name: String? = null
             var type: TypeProto? = null
             reader.forEachTag { tag ->

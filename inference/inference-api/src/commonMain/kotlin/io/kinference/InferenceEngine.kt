@@ -21,7 +21,7 @@ interface InferenceEngine<T : ONNXData<*, *>> {
     /**
      * Reads data of a given type. Data should be previously loaded as [ByteArray].
      */
-    fun loadData(bytes: ByteArray, type: ONNXDataType): T
+    suspend fun loadData(bytes: ByteArray, type: ONNXDataType): T
 
     /**
      * Reads model. Model should be previously loaded as [ByteArray].

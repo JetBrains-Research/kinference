@@ -27,7 +27,7 @@ import io.kinference.tfjs.operators.seq.*
 import io.kinference.tfjs.operators.tensor.*
 
 object TFJSAttributeFactory : AttributeFactory<TFJSData<*>> {
-    override fun createTensor(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+    override suspend fun createTensor(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
     override suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<TFJSData<*>> = TFJSGraph(proto, opSet)
 }
 

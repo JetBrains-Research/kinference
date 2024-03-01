@@ -17,5 +17,5 @@ import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
 
 @MakePublic
-internal fun PrimitiveNDArray.reduceProd(axes: IntArray, keepDims: Boolean) =
+internal suspend fun PrimitiveNDArray.reduceProd(axes: IntArray, keepDims: Boolean) =
     reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveConstants.ONE) { out: PrimitiveType, inp: PrimitiveType -> out * inp }

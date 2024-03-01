@@ -16,7 +16,7 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
     }
 
     // Scores shape should be [batchSize, 2]
-    private fun writeLabelsLongTwoClasses(scores: FloatNDArray): LongNDArray {
+    private suspend fun writeLabelsLongTwoClasses(scores: FloatNDArray): LongNDArray {
         val batchSize = scores.shape[0]
 
         val labels = (labelsInfo as LabelsInfo.LongLabelsInfo).labels
@@ -89,7 +89,7 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
     }
 
     //scores shape [batchSize, classCount]
-    private fun writeLabelsLong(scores: FloatNDArray): LongNDArray {
+    private suspend fun writeLabelsLong(scores: FloatNDArray): LongNDArray {
         val (batchSize, classCount) = scores.shape
         val labels = (labelsInfo as LabelsInfo.LongLabelsInfo).labels
 
@@ -166,7 +166,7 @@ internal class SvmLinear(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommo
         return futureOutput
     }
 
-    private fun writeLabels(scores: FloatNDArray): NDArrayCore {
+    private suspend fun writeLabels(scores: FloatNDArray): NDArrayCore {
         return when (labelsInfo) {
             is LabelsInfo.LongLabelsInfo -> writeLabelsLong(scores)
             is LabelsInfo.StringLabelsInfo -> writeLabelsString(scores)

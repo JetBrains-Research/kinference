@@ -13,6 +13,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.trees.TreeEnsembleInfo
+import io.kinference.utils.InlineInt
 
 sealed class TreeEnsembleClassifier(
     name: String,
@@ -84,9 +85,12 @@ class TreeEnsembleClassifierVer1(
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        private fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
+        private suspend fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
             return when (dataType) {
-                TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it.value) as Long }
+                TensorProto.DataType.INT64 -> {
+                    val typedLambda: (InlineInt) -> Long = { write(it.value) as Long }
+                    LongNDArray(shape, typedLambda)
+                }
                 TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
                 else -> error("Unsupported data type: $dataType")
             }

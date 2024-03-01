@@ -15,7 +15,7 @@ class FunctionProto(
     val opSetImport: MutableList<OperatorSetIdProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): FunctionProto {
+        suspend fun decode(reader: ProtobufReader): FunctionProto {
             val proto = FunctionProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

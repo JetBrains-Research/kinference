@@ -14,26 +14,26 @@ import io.kinference.primitives.types.DataType
 import kotlin.math.*
 
 @MakePublic
-internal fun PrimitiveNDArray.acos(): PrimitiveNDArray = applyElementWise { acos(it) }
+internal suspend fun PrimitiveNDArray.acos(): PrimitiveNDArray = applyElementWise { acos(it) }
 @MakePublic
-internal fun PrimitiveNDArray.acosh(): PrimitiveNDArray = applyElementWise { acosh(it) }
+internal suspend fun PrimitiveNDArray.acosh(): PrimitiveNDArray = applyElementWise { acosh(it) }
 @MakePublic
-internal fun PrimitiveNDArray.cos(): PrimitiveNDArray = applyElementWise { cos(it) }
+internal suspend fun PrimitiveNDArray.cos(): PrimitiveNDArray = applyElementWise { cos(it) }
 @MakePublic
-internal fun PrimitiveNDArray.cosh(): PrimitiveNDArray = applyElementWise { cosh(it) }
+internal suspend fun PrimitiveNDArray.cosh(): PrimitiveNDArray = applyElementWise { cosh(it) }
 
 @MakePublic
-internal fun PrimitiveNDArray.asin(): PrimitiveNDArray = applyElementWise { asin(it) }
+internal suspend fun PrimitiveNDArray.asin(): PrimitiveNDArray = applyElementWise { asin(it) }
 @MakePublic
-internal fun PrimitiveNDArray.asinh(): PrimitiveNDArray = applyElementWise { asinh(it) }
+internal suspend fun PrimitiveNDArray.asinh(): PrimitiveNDArray = applyElementWise { asinh(it) }
 @MakePublic
-internal fun PrimitiveNDArray.sinh(): PrimitiveNDArray = applyElementWise { sinh(it) }
+internal suspend fun PrimitiveNDArray.sinh(): PrimitiveNDArray = applyElementWise { sinh(it) }
 @MakePublic
-internal fun PrimitiveNDArray.sin(): PrimitiveNDArray = applyElementWise { sin(it) }
+internal suspend fun PrimitiveNDArray.sin(): PrimitiveNDArray = applyElementWise { sin(it) }
 
 @MakePublic
-internal fun PrimitiveNDArray.atan(): PrimitiveNDArray = applyElementWise { atan(it) }
+internal suspend fun PrimitiveNDArray.atan(): PrimitiveNDArray = applyElementWise { atan(it) }
 @MakePublic
-internal fun PrimitiveNDArray.atanh(): PrimitiveNDArray = applyElementWise { atanh(it) }
+internal suspend fun PrimitiveNDArray.atanh(): PrimitiveNDArray = applyElementWise { atanh(it) }
 @MakePublic
-internal fun PrimitiveNDArray.tan(): PrimitiveNDArray = applyElementWise { tan(it) }
+internal suspend fun PrimitiveNDArray.tan(): PrimitiveNDArray = applyElementWise { tan(it) }

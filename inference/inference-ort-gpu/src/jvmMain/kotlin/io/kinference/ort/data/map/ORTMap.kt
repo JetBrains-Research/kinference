@@ -11,11 +11,11 @@ class ORTMap(name: String?, override val data: OnnxMap) : ONNXMap<OnnxMap, ORTBa
     override val type: ONNXDataType = ONNXDataType.ONNX_MAP
     override fun rename(name: String): ORTMap = ORTMap(name, data)
 
-    override fun close() {
+    override suspend fun close() {
         data.close()
     }
 
-    override fun clone(newName: String?): ORTMap {
+    override suspend fun clone(newName: String?): ORTMap {
         error("Cloning is not supported for OnnxRuntime backends")
     }
 }
