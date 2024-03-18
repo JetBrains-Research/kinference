@@ -67,15 +67,21 @@ class ZipMapVer1(
             val columns = shape.last()
 
             val inputPointer = FloatPointer(array)
-            return KIONNXSequence("Z", seqInfo, rows) {
-//                val map = HashMap<T, KIONNXData<*>>(columns)
-//                repeat(columns) {
-//                    val value = inputPointer.getAndIncrement()
-//                    val tensor = FloatNDArray.scalar(value).asTensor()
-//                    map[labels[it]] = tensor
-//                }
-//                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
-                KIONNXMap(null, mapOf<Any, KIONNXData<*>>(), mapInfo)
+
+            // Prepare a list of KIONNXMap objects, one for each row
+            val maps = List(rows) {
+                val map = HashMap<T, KIONNXData<*>>(columns)
+                repeat(columns) { columnIndex ->
+                    val value = inputPointer.getAndIncrement()
+                    val tensor = FloatNDArray.scalar(value).asTensor()
+                    map[labels[columnIndex]] = tensor
+                }
+                KIONNXMap(null, map as Map<Any, KIONNXData<*>>, mapInfo)
+            }
+
+            // Return a KIONNXSequence where the lambda provides a KIONNXMap for a given index
+            return KIONNXSequence("Z", seqInfo, rows) { index ->
+                maps[index]
             }
         }
     }
