@@ -2,11 +2,12 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.extensions.dataInt
 import kotlin.test.Test
+import kotlinx.coroutines.test.runTest
 import kotlin.test.assertContentEquals
 
 class IntCreateTest {
     @Test
-    fun createFromIntArray() {
+    fun createFromIntArray() = runTest {
         val tensor = NDArrayTFJS.int(intArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -16,7 +17,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromIntArrayTyped() {
+    fun createFromIntArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<Int>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -26,7 +27,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromByteArray() {
+    fun createFromByteArray() = runTest {
         val tensor = NDArrayTFJS.int(byteArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -36,7 +37,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromByteArrayTyped() {
+    fun createFromByteArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<Byte>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -46,7 +47,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromShortArray() {
+    fun createFromShortArray() = runTest {
         val tensor = NDArrayTFJS.int(shortArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -56,7 +57,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromShortArrayTyped() {
+    fun createFromShortArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<Short>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -66,7 +67,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromLongArray() {
+    fun createFromLongArray() = runTest {
         val tensor = NDArrayTFJS.int(longArrayOf(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -76,7 +77,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromLongArrayTyped() {
+    fun createFromLongArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<Long>(1, 2, 3, 4), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -86,7 +87,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUIntArray() {
+    fun createFromUIntArray() = runTest {
         val tensor = NDArrayTFJS.int(uintArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -96,7 +97,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUIntArrayTyped() {
+    fun createFromUIntArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<UInt>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -106,7 +107,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUByteArray() {
+    fun createFromUByteArray() = runTest {
         val tensor = NDArrayTFJS.int(ubyteArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -116,7 +117,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUByteArrayTyped() {
+    fun createFromUByteArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<UByte>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -126,7 +127,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUShortArray() {
+    fun createFromUShortArray() = runTest {
         val tensor = NDArrayTFJS.int(ushortArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -136,7 +137,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromUShortArrayTyped() {
+    fun createFromUShortArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<UShort>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -146,7 +147,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromULongArray() {
+    fun createFromULongArray() = runTest {
         val tensor = NDArrayTFJS.int(ulongArrayOf(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
@@ -156,7 +157,7 @@ class IntCreateTest {
     }
 
     @Test
-    fun createFromULongArrayTyped() {
+    fun createFromULongArrayTyped() = runTest {
         val tensor = NDArrayTFJS.int(arrayOf<ULong>(1u, 2u, 3u, 4u), arrayOf(2, 2))
 
         val data = tensor.dataInt()
