@@ -4,23 +4,13 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
 
-class LSTMGate internal constructor(
+class LSTMGate private constructor(
     private val weights: AbstractLSTMWeights,
     private val recurrentWeights: AbstractLSTMWeights,
+    private val gateData: MutableNumberNDArrayCore,
     private val bias: NumberNDArrayCore?,
-    private val peephole: NumberNDArrayCore?,
-    private val batchSize: Int, private val hiddenSize: Int, private val dataType: DataType
+    private val peephole: NumberNDArrayCore?
 ) {
-    private var gateData: MutableNumberNDArrayCore? = null
-
-    private suspend fun getGateData(): MutableNumberNDArrayCore {
-        if (gateData == null) {
-            gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
-        }
-        return gateData!!
-    }
-
-//    private val gateData = suspend { allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore }
 
     suspend fun compute(
         input: AbstractLSTMInput,
@@ -29,7 +19,7 @@ class LSTMGate internal constructor(
         numDirection: Int,
         batchNum: Int
     ) {
-        val gateLocal = getGateData().viewMutable(batchNum)
+        val gateLocal = gateData.viewMutable(batchNum)
         gateLocal.clean()
 
         input.dot(weights, gateLocal)
@@ -39,7 +29,23 @@ class LSTMGate internal constructor(
         gateLocal.mapMutable(activationFunction)
     }
 
-    suspend fun getVector(batchNum: Int) = getGateData().view(batchNum)
+    fun getVector(batchNum: Int) = gateData.view(batchNum)
+
+    companion object {
+        internal suspend operator fun invoke(
+            weights: AbstractLSTMWeights,
+            recurrentWeights: AbstractLSTMWeights,
+            bias: NumberNDArrayCore?,
+            peephole: NumberNDArrayCore?,
+            batchSize: Int, hiddenSize: Int, dataType: DataType
+        ): LSTMGate {
+
+            val gateData = allocateNDArray(dataType, intArrayOf(batchSize, hiddenSize)) as MutableNumberNDArrayCore
+            val gate = LSTMGate(weights, recurrentWeights, gateData, bias, peephole)
+
+            return gate
+        }
+    }
 }
 
 data class LSTMGates(val input: LSTMGate, val output: LSTMGate, val forget: LSTMGate, val cell: LSTMGate) {
@@ -78,40 +84,38 @@ data class LSTMGates(val input: LSTMGate, val output: LSTMGate, val forget: LSTM
     }
 }
 
-class LSTMCellState internal constructor(
-    private val initCellState: NumberNDArrayCore?, private val dataType: DataType,
-    private val numDirections: Int, private val batchSize: Int, private val hiddenSize: Int
+class LSTMCellState private constructor(
+    private val stateData: MutableNumberNDArrayCore,
+    private val tempData: MutableNumberNDArrayCore
 ) {
-    private var stateData: MutableNumberNDArrayCore? = null
-    private var tempData: MutableNumberNDArrayCore? = null
 
-    suspend fun getStateData(): MutableNumberNDArrayCore {
-        if (stateData == null) {
-            stateData = initCellState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore
-        }
-        return stateData!!
-    }
-
-    private suspend fun getTempData(): MutableNumberNDArrayCore {
-        if (tempData == null) {
-            tempData = allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore
-        }
-        return tempData!!
-    }
-
-//    private val stateData = suspend { initCellState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore }
-//    private val tempData = suspend { allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore }
+    val data: NumberNDArrayCore
+        get() = stateData
 
     suspend fun compute(lstmGates: LSTMGates, numDirection: Int, batchNum: Int) {
-        val stateLocal = getStateData().viewMutable(numDirection, batchNum)
-        val tempLocal = getTempData().viewMutable(numDirection, batchNum)
+        val stateLocal = stateData.viewMutable(numDirection, batchNum)
+        val tempLocal = tempData.viewMutable(numDirection, batchNum)
 
         stateLocal.timesAssign(lstmGates.forget.getVector(batchNum))
         lstmGates.input.getVector(batchNum).times(lstmGates.cell.getVector(batchNum), tempLocal)
         stateLocal.plusAssign(tempLocal)
     }
 
-    suspend fun getVector(numDirection: Int, batchNum: Int) = getStateData().view(numDirection, batchNum)
+    fun getVector(numDirection: Int, batchNum: Int) = stateData.view(numDirection, batchNum)
+
+    companion object {
+        internal suspend operator fun invoke(
+            initCellState: NumberNDArrayCore?, dataType: DataType,
+            numDirections: Int, batchSize: Int, hiddenSize: Int
+        ): LSTMCellState {
+
+            val stateData = initCellState?.toMutable() ?: allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+            val tempData = allocateNDArray(dataType, intArrayOf(numDirections, batchSize, hiddenSize)) as MutableNumberNDArrayCore
+            val cellState = LSTMCellState(stateData, tempData)
+
+            return cellState
+        }
+    }
 }
 
 class LSTMHiddenState internal constructor(

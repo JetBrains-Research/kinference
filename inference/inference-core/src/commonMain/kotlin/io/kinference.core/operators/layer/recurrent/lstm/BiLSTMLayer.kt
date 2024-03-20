@@ -60,6 +60,6 @@ class BiLSTMLayer(hiddenSize: Int, activations: List<String>): LSTMLayerBase(hid
         forwardLayer.apply(input, outputArray, lstmStates, forwardLSTMGates, sequenceLens, 0, seqLength, batchSize, dataType)
         reverseLayer.apply(input, outputArray, lstmStates, reverseLSTMGates, sequenceLens, 1, seqLength, batchSize, dataType)
 
-        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.getStateData())
+        return LSTMLayerOutput(outputArray, lstmStates.hiddenState.data, lstmStates.cellState.data)
     }
 }

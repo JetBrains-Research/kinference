@@ -12,8 +12,13 @@ import kotlinx.coroutines.coroutineScope
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 
+interface CompanionInitializers<T : ONNXData<*, *>> {
+    suspend fun prepareInput(proto: TensorProto): T
+}
+
 abstract class Graph<T : ONNXData<*, *>> protected constructor(
-    private val proto: GraphProto,
+    proto: GraphProto,
+    private val _initializers: ArrayList<T>,
     private var _operators: ArrayList<Operator<T, T>>,
     private val valueOrderInfo: GraphValueOrderInfo
 ) : Closeable {
@@ -81,24 +86,8 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
 
-    private var initializers: ArrayList<T>? = null
-
-//    private val _initializers = ArrayList<T>(proto.initializer.size).apply {
-//        suspend {
-//            for (i in proto.initializer)
-//                this.add(prepareInput(i))
-//        }
-//    }
-
-    suspend fun getInitializers(): ArrayList<T> {
-        if (initializers == null) {
-            initializers = ArrayList<T>(proto.initializer.size).apply {
-                for (i in proto.initializer)
-                    this.add(prepareInput(i))
-            }
-        }
-        return initializers!!
-    }
+    val initializers: List<T>
+        get() = _initializers
 
     data class Node(val proto: NodeProto, var visited: Boolean = false) {
         private fun NodeProto.collectRequiredInputs(): Set<String> = HashSet<String>().apply {
@@ -133,11 +122,9 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         }
     }
 
-    abstract suspend fun prepareInput(proto: TensorProto): T
-
-    suspend fun addInitializer(initializer: T) {
-        require(!getInitializers().any { it.name == initializer.name }) { "Initializer with the name ${initializer.name} already exists" }
-        getInitializers().add(initializer)
+    fun addInitializer(initializer: T) {
+        require(!_initializers.any { it.name == initializer.name }) { "Initializer with the name ${initializer.name} already exists" }
+        _initializers.add(initializer)
         valueOrderInfo.putOrder(initializer.name!!, Int.MAX_VALUE)
     }
 
@@ -146,12 +133,12 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         requireNotNull(toRemove) { "Initializer with the name $name was not found" }
 
         valueOrderInfo.removeOrder(name)
-        getInitializers().remove(toRemove)
+        _initializers.remove(toRemove)
         toRemove.close()
     }
 
-    suspend fun findInitializer(name: String): T? {
-        return getInitializers().find { it.name == name }
+    fun findInitializer(name: String): T? {
+        return _initializers.find { it.name == name }
     }
 
     fun countNumberOfInputUsages(name: String): Int {
@@ -208,7 +195,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
     override suspend fun close() {
-        closeAll(getInitializers())
+        closeAll(_initializers)
         closeAll(operators)
     }
 
@@ -217,7 +204,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         //TODO: check that all inputs were set and not null
         val contexts = Contexts(makeContext(_contexts.graph), _contexts.profiling)
 
-        for (tensor in getInitializers()) {
+        for (tensor in _initializers) {
             contexts.graph!!.putValue(tensor.name!!, tensor)
         }
 

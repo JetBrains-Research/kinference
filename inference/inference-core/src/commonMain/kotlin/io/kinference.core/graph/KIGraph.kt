@@ -17,17 +17,16 @@ import kotlin.coroutines.coroutineContext
 
 class KIGraph private constructor(
     proto: GraphProto,
+    initializers: ArrayList<KIONNXData<*>>,
     operators: ArrayList<Operator<KIONNXData<*>, KIONNXData<*>>>,
     valueOrderInfo: GraphValueOrderInfo,
     private val preparedTensorsContext: GraphContext<KIONNXData<*>> = GraphContext()
-) : Graph<KIONNXData<*>>(proto, operators, valueOrderInfo) {
+) : Graph<KIONNXData<*>>(proto, initializers, operators, valueOrderInfo) {
     override fun makeContext(root: GraphContext<KIONNXData<*>>?): GraphContext<KIONNXData<*>> {
         val context = GraphContext(root)
         context.mergeContext(preparedTensorsContext)
         return context
     }
-
-    override suspend fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
 
     override suspend fun applyWithAllocationControl(
         contexts: Contexts<KIONNXData<*>>,
@@ -57,7 +56,7 @@ class KIGraph private constructor(
         preparedTensorsContext.putValue(tensor.name!!, tensor)
     }
 
-    companion object {
+    companion object : CompanionInitializers<KIONNXData<*>> {
         suspend operator fun invoke(proto: GraphProto, opSetRegistry: OperatorSetRegistry): KIGraph {
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<KIONNXData<*>>(valueOrderInfo)
@@ -67,7 +66,18 @@ class KIGraph private constructor(
                 }
             }
 
-            return KIGraph(proto, operators, valueOrderInfo)
+            val initializers = getInitializers(proto)
+            return KIGraph(proto, initializers, operators, valueOrderInfo)
         }
+
+        private suspend fun getInitializers(proto: GraphProto): ArrayList<KIONNXData<*>> {
+            val initializers = ArrayList<KIONNXData<*>>(proto.initializer.size).apply {
+                for (i in proto.initializer)
+                    this.add(prepareInput(i))
+            }
+            return initializers
+        }
+
+        override suspend fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
     }
 }

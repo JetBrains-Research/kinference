@@ -47,6 +47,6 @@ class BiGRULayer(hiddenSize: Int, activations: List<String>): GRULayerBase(hidde
         forwardLayer.apply(input, outputArray, gruHiddenState, forwardGRUGates, sequenceLength, 0, seqLength, batchSize, dataType)
         reverseLayer.apply(input, outputArray, gruHiddenState, reverseGRUGates, sequenceLength, 1, seqLength, batchSize, dataType)
 
-        return GRULayerOutput(outputArray, gruHiddenState.getStateData())
+        return GRULayerOutput(outputArray, gruHiddenState.data)
     }
 }

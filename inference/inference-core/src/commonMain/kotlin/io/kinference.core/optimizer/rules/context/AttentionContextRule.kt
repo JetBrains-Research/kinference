@@ -61,7 +61,7 @@ object AttentionContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "
 
     override suspend fun transform(graph: Graph<KIONNXData<*>>, operator: Operator<KIONNXData<*>, KIONNXData<*>>) {
         graph as KIGraph
-        val initializers = graph.getInitializers() as List<KITensor>
+        val initializers = graph.initializers as List<KITensor>
 
         val weightsInit = initTensorByDefaultName("weight", operator, initializers)
         val biasInit = initTensorByDefaultName("bias", operator, initializers)

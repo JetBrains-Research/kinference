@@ -10,6 +10,7 @@ import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
 import io.kinference.utils.ModelContext
 import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGraph) : Model<KIONNXData<*>>, Profilable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
@@ -28,6 +29,7 @@ class KIModel(val name: String, val opSet: OperatorSetRegistry, val graph: KIGra
 
     override suspend fun close() {
         graph.close()
+        ArrayDispatcher.removeModelContext(name)
     }
 
     companion object {

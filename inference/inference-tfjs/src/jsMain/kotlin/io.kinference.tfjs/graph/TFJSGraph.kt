@@ -11,12 +11,13 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.TFJSOperatorFactory
 import io.kinference.utils.closeAll
 
-class TFJSGraph(
+class TFJSGraph private constructor(
     proto: GraphProto,
+    initializers: ArrayList<TFJSData<*>>,
     operators: ArrayList<Operator<TFJSData<*>, TFJSData<*>>>,
     valueOrderInfo: GraphValueOrderInfo,
     private val preparedTensorsContext: GraphContext<TFJSData<*>> = GraphContext()
-) : Graph<TFJSData<*>>(proto, operators, valueOrderInfo) {
+) : Graph<TFJSData<*>>(proto, initializers, operators, valueOrderInfo) {
 
     override suspend fun close() {
         preparedTensorsContext.close()
@@ -37,8 +38,6 @@ class TFJSGraph(
         return outputs.map { contexts.graph!!.getValue(it.name) }
     }
 
-    override suspend fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
-
     fun addTensorToContext(tensor: TFJSTensor) {
         preparedTensorsContext.putValue(tensor.name!!, tensor)
     }
@@ -49,7 +48,7 @@ class TFJSGraph(
         return context
     }
 
-    companion object {
+    companion object: CompanionInitializers<TFJSData<*>> {
         suspend operator fun invoke(proto: GraphProto, opSetRegistry: OperatorSetRegistry): TFJSGraph {
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<TFJSData<*>>(valueOrderInfo)
@@ -64,7 +63,18 @@ class TFJSGraph(
                 }
             }
 
-            return TFJSGraph(proto, operators, valueOrderInfo)
+            val initializers = getInitializers(proto)
+            return TFJSGraph(proto, initializers, operators, valueOrderInfo)
         }
+
+        private suspend fun getInitializers(proto: GraphProto): ArrayList<TFJSData<*>> {
+            val initializers = ArrayList<TFJSData<*>>(proto.initializer.size).apply {
+                for (i in proto.initializer)
+                    this.add(prepareInput(i))
+            }
+            return initializers
+        }
+
+        override suspend fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
     }
 }

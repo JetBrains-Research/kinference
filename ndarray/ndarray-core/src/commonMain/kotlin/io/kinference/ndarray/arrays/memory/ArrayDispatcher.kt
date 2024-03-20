@@ -11,6 +11,10 @@ object ArrayDispatcher {
         modelDispatchers[modelContext] = ModelArrayDispatcher()
     }
 
+    fun removeModelContext(modelContext: String) {
+        modelDispatchers.remove(modelContext)?.close()
+    }
+
     fun beginOperatorMode(modelContext: String) {
         modelDispatchers[modelContext]!!.beginOperatorMode()
     }
@@ -25,11 +29,6 @@ object ArrayDispatcher {
 
         val dispatcher = modelDispatchers[modelContext]!!
         return dispatcher.getArraysAndMarkers(type, size, count)
-//        dispatcher?.let {
-//            return it.getArraysAndMarkers(type, size, count)
-//        }
-//
-//        return Array(count) { ArrayContainer(type, size) }
     }
 
     fun releaseAllOutputArrays(modelContext: String) {
@@ -56,8 +55,14 @@ class ModelArrayDispatcher {
         // Initialize the head with the emptyContainer sentinel node
         private val head = atomic(ArrayContainer.emptyContainer())
         private val tail = atomic(head.value)
+        private val isClosed = atomic(false)
 
         fun addLast(container: ArrayContainer) {
+            // Check if the queue is closed
+            if (isClosed.value) {
+                throw IllegalStateException("Cannot add to a closed queue.")
+            }
+
             while (true) {
                 val curTail = tail.value
                 val tailNext = curTail.next.value
@@ -78,6 +83,11 @@ class ModelArrayDispatcher {
         }
 
         fun removeFirstOrNull(): ArrayContainer? {
+            // Check if the queue is closed
+            if (isClosed.value) {
+                throw IllegalStateException("Cannot add to a closed queue.")
+            }
+
             while (true) {
                 val curHead = head.value
                 val headNext = curHead.next.value
@@ -99,6 +109,36 @@ class ModelArrayDispatcher {
                 } else {
                     // The queue is empty (besides the sentinel)
                     return null
+                }
+            }
+        }
+
+        fun close() {
+            isClosed.value = true
+
+            while (true) {
+                val currentHead = head.value
+                val currentTail = tail.value
+
+                // If the queue is already empty, return.
+                if (currentHead.next.value == null) {
+                    return
+                }
+
+                // Attempt to update the head to point to the tail, effectively clearing the queue.
+                if (head.compareAndSet(currentHead, currentTail)) {
+                    // Clear the 'next' references from the removed elements.
+                    var container = currentHead
+                    while (container != currentTail) {
+                        val nextContainer = container.next.value
+                        container.next.value = null  // Nullify the 'next' reference.
+                        container = nextContainer ?: break
+                    }
+
+                    // Check if the tail has moved due to concurrent additions.
+                    if (tail.value == currentTail) {
+                        return  // The queue is successfully cleared.
+                    }
                 }
             }
         }
@@ -145,6 +185,7 @@ class ModelArrayDispatcher {
     }
 
     fun getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
+//        return Array(count) { ArrayContainer(type, size) }
         return Array(count) { getArray(type, size) }
     }
 
@@ -170,6 +211,24 @@ class ModelArrayDispatcher {
                 }
             }
         }
+    }
+
+    fun close() {
+        // Iterate through all contexts, types and sizes
+        for (i in 0 until typeSize) {
+            for (j in 0 until sizes[i].size) {
+                val usedArrays = contextUsedArrays[i, j]
+                val unusedArrays = contextUnusedArrays[i, j]
+
+                usedArrays.close()
+                unusedArrays.close()
+            }
+        }
+
+        contextUsedArrays = ArrayStorage(typeSize, INIT_SIZE_VALUE)
+        contextUnusedArrays = ArrayStorage(typeSize, INIT_SIZE_VALUE)
+        sizeIndices = IntArray(typeSize)
+        sizes = Array(typeSize) { IntArray(INIT_SIZE_VALUE) }
     }
 
     private fun getArray(type: ArrayTypes, size: Int): ArrayContainer {

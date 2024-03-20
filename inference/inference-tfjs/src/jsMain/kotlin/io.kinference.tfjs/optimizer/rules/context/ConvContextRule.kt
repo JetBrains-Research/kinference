@@ -47,7 +47,7 @@ object ConvContextRule : PrepareContextRule<TFJSData<*>>(operatorName = "Conv") 
     override suspend fun transform(graph: Graph<TFJSData<*>>, operator: Operator<TFJSData<*>, TFJSData<*>>) {
         graph as TFJSGraph
 
-        val initializers = graph.getInitializers() as List<TFJSTensor>
+        val initializers = graph.initializers as List<TFJSTensor>
         val weightsInit = ConvContextRule.initTensorByDefaultName("W", operator, initializers)
 
         appendWeights(weightsInit, graph, operator)
