@@ -7,7 +7,7 @@ import io.kinference.protobuf.message.NodeProto
 
 interface OperatorFactory<T : ONNXData<*, *>> {
     fun attributeFactory(): AttributeFactory<T>
-    fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Operator<T, T>
+    suspend fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Operator<T, T>
 
     suspend fun create(proto: NodeProto, opSetRegistry: OperatorSetRegistry): Operator<T, T> {
         val version = opSetRegistry.getVersion(proto.domain)

@@ -185,7 +185,6 @@ class ModelArrayDispatcher {
     }
 
     fun getArraysAndMarkers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
-//        return Array(count) { ArrayContainer(type, size) }
         return Array(count) { getArray(type, size) }
     }
 

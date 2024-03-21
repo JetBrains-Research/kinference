@@ -39,7 +39,7 @@ object KIOperatorFactory : OperatorFactory<KIONNXData<*>> {
     override fun attributeFactory(): AttributeFactory<KIONNXData<*>> = KIAttributeFactory
 
     @Suppress("UNCHECKED_CAST")
-    override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
+    override suspend fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)

@@ -1,4 +1,4 @@
-package io.kinference.models
+package io.kinference.models.bert
 
 import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.KITestEngine.KIPerformanceRunner

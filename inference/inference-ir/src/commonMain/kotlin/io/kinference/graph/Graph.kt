@@ -12,10 +12,6 @@ import kotlinx.coroutines.coroutineScope
 //TODO: check i/o tensor shapes explicitly
 //TODO: graph optimizations (i.e. remove "Identity" nodes, fuse "MatMul" with "Add" etc)
 
-interface CompanionInitializers<T : ONNXData<*, *>> {
-    suspend fun prepareInput(proto: TensorProto): T
-}
-
 abstract class Graph<T : ONNXData<*, *>> protected constructor(
     proto: GraphProto,
     private val _initializers: ArrayList<T>,
@@ -77,6 +73,17 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             }
 
             return sortedNodes
+        }
+
+        suspend fun <T> getInitializers(
+            proto: GraphProto,
+            prepareInput: suspend (TensorProto) -> T
+        ): ArrayList<T> {
+            return ArrayList<T>(proto.initializer.size).apply {
+                for (i in proto.initializer) {
+                    this.add(prepareInput(i))
+                }
+            }
         }
     }
     val operators: List<Operator<T, T>>

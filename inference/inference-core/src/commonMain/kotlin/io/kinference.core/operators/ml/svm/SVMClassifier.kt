@@ -25,7 +25,7 @@ sealed class SVMClassifier(
     companion object {
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): SVMClassifier {
+        suspend operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): SVMClassifier {
             return when (version ?: DEFAULT_VERSION.sinceVersion) {
                 in SVMClassifierVer1.VERSION.asRange() -> SVMClassifierVer1(name, attributes, inputs, outputs)
                 else -> error("Unsupported version of SVMClassifier operator: $version")
@@ -34,7 +34,7 @@ sealed class SVMClassifier(
     }
 }
 
-class SVMClassifierVer1 internal constructor(
+class SVMClassifierVer1 private constructor(
     name: String,
     attributes: Map<String, Attribute<Any>>,
     inputs: List<String>,
@@ -76,6 +76,20 @@ class SVMClassifierVer1 internal constructor(
 
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("SVMClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
+
+        internal suspend operator fun invoke(
+            name: String,
+            attributes: Map<String, Attribute<Any>>,
+            inputs: List<String>,
+            outputs: List<String>
+        ): SVMClassifierVer1 {
+            val op = SVMClassifierVer1(name, attributes, inputs, outputs)
+            val svmInfo: SvmInfo = op.getSvmInfo()
+            val svm: SvmCommon = op.getSvm(svmInfo)
+            op.svm = svm
+
+            return op
+        }
     }
 
     private val labels = getLabelsInfo(
@@ -83,33 +97,25 @@ class SVMClassifierVer1 internal constructor(
         stringLabelsName = labelsStringAttributeInfo.name
     )
 
-    private var svmInfo: SvmInfo? = null
+    private lateinit var svm: SvmCommon
 
     private suspend fun getSvmInfo(): SvmInfo {
-        if (svmInfo == null) {
-            svmInfo = SvmInfo(
-                getAttribute("coefficients"),
-                getAttributeOrNull("kernel_params"),
-                getAttributeOrNull("kernel_type"),
-                getAttributeOrNull("post_transform"),
-                getAttribute("prob_a"),
-                getAttribute("prob_b"),
-                getAttribute("rho"),
-                getAttribute("support_vectors"),
-                getAttribute("vectors_per_class"),
-                labels.size
-            )
-        }
-        return svmInfo!!
+        return SvmInfo(
+            getAttribute("coefficients"),
+            getAttributeOrNull("kernel_params"),
+            getAttributeOrNull("kernel_type"),
+            getAttributeOrNull("post_transform"),
+            getAttribute("prob_a"),
+            getAttribute("prob_b"),
+            getAttribute("rho"),
+            getAttribute("support_vectors"),
+            getAttribute("vectors_per_class"),
+            labels.size
+        )
     }
 
-    private var svm: SvmCommon? = null
-
-    private suspend fun getSvm(): SvmCommon {
-        if (svm == null) {
-            svm = SvmCommon.fromInfo(getSvmInfo(), labels)
-        }
-        return svm!!
+    private fun getSvm(svmInfo: SvmInfo): SvmCommon {
+        return SvmCommon.fromInfo(svmInfo, labels)
     }
 
     private suspend fun NumberNDArrayCore.toFloatTensor(): FloatNDArray {
@@ -166,7 +172,7 @@ class SVMClassifierVer1 internal constructor(
             if (it.rank == 1) it.reshape(intArrayOf(1, it.shape[0])) else it
         }.toFloatTensor()
 
-        val (labels, scores) = getSvm().run(input)
+        val (labels, scores) = svm.run(input)
 
 
         return listOf(labels.asTensor("Y"), scores.asTensor("Z"))

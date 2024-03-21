@@ -56,7 +56,7 @@ class KIGraph private constructor(
         preparedTensorsContext.putValue(tensor.name!!, tensor)
     }
 
-    companion object : CompanionInitializers<KIONNXData<*>> {
+    companion object {
         suspend operator fun invoke(proto: GraphProto, opSetRegistry: OperatorSetRegistry): KIGraph {
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<KIONNXData<*>>(valueOrderInfo)
@@ -66,18 +66,10 @@ class KIGraph private constructor(
                 }
             }
 
-            val initializers = getInitializers(proto)
+            val initializers = getInitializers(proto) { tensorProto ->
+                KITensor.create(tensorProto) as KIONNXData<*>
+            }
             return KIGraph(proto, initializers, operators, valueOrderInfo)
         }
-
-        private suspend fun getInitializers(proto: GraphProto): ArrayList<KIONNXData<*>> {
-            val initializers = ArrayList<KIONNXData<*>>(proto.initializer.size).apply {
-                for (i in proto.initializer)
-                    this.add(prepareInput(i))
-            }
-            return initializers
-        }
-
-        override suspend fun prepareInput(proto: TensorProto): KIONNXData<*> = KITensor.create(proto)
     }
 }

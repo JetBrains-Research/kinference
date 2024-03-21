@@ -48,7 +48,7 @@ class TFJSGraph private constructor(
         return context
     }
 
-    companion object: CompanionInitializers<TFJSData<*>> {
+    companion object {
         suspend operator fun invoke(proto: GraphProto, opSetRegistry: OperatorSetRegistry): TFJSGraph {
             val valueOrderInfo = GraphValueOrderInfo()
             val nodes = proto.collectOperators<TFJSData<*>>(valueOrderInfo)
@@ -63,18 +63,10 @@ class TFJSGraph private constructor(
                 }
             }
 
-            val initializers = getInitializers(proto)
+            val initializers = getInitializers(proto) { tensorProto ->
+                TFJSTensor.create(tensorProto) as TFJSData<*>
+            }
             return TFJSGraph(proto, initializers, operators, valueOrderInfo)
         }
-
-        private suspend fun getInitializers(proto: GraphProto): ArrayList<TFJSData<*>> {
-            val initializers = ArrayList<TFJSData<*>>(proto.initializer.size).apply {
-                for (i in proto.initializer)
-                    this.add(prepareInput(i))
-            }
-            return initializers
-        }
-
-        override suspend fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
     }
 }
