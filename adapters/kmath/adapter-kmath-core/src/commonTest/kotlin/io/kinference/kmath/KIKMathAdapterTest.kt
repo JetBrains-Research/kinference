@@ -84,7 +84,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_inference() = TestRunner.runTest {
+    fun test_kmath_adapter_inference() = runTest {
         val inOutTensorType = TypeProto.Tensor(TensorProto.DataType.FLOAT, TensorShapeProto(listOf(TensorShapeProto.Dimension(dimValue = 6L))))
         val modelProto = ModelProto(
             graph = GraphProto(

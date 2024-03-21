@@ -1,7 +1,7 @@
 package io.kinference.operators.activations
 
 import io.kinference.KITestEngine.KIAccuracyRunner
-import io.kinference.utils.TestRunner
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class LeakyReluTest {
@@ -9,17 +9,17 @@ class LeakyReluTest {
 
     @Test
     fun test_leaky_relu() =
-        TestRunner.runTest {
+        runTest {
             KIAccuracyRunner.runFromResources(getTargetPath("test_leakyrelu"))
         }
 
     @Test
-    fun test_leaky_relu_default() = TestRunner.runTest {
+    fun test_leaky_relu_default() = runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_leakyrelu_default"))
     }
 
     @Test
-    fun test_leaky_relu_example() = TestRunner.runTest {
+    fun test_leaky_relu_example() = runTest {
         KIAccuracyRunner.runFromResources(getTargetPath("test_leakyrelu_example"))
     }
 }

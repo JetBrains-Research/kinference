@@ -1,19 +1,19 @@
 package io.kinference.tfjs.operators.seq
 
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
-import io.kinference.utils.TestRunner
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class SequenceAtTest {
     private fun getTargetPath(dirName: String) = "sequence_at/$dirName/"
 
     @Test
-    fun test_sequence_at_positive() = TestRunner.runTest {
+    fun test_sequence_at_positive() = runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_sequence_at_positive"))
     }
 
     @Test
-    fun test_sequence_at_negative() = TestRunner.runTest {
+    fun test_sequence_at_negative() = runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_sequence_at_negative"))
     }
 }

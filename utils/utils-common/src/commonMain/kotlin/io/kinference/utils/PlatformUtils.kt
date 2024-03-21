@@ -5,6 +5,8 @@ enum class Platform {
     JVM
 }
 
+val platformNotSupportedMessage = "Platform ${PlatformUtils.platform} is not supported"
+
 /**
  * Provides data regarding the current platform, such as the number of actual CPU cores
  * and other platform-related properties.

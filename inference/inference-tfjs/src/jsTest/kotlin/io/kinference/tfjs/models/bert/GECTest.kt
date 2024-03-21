@@ -2,12 +2,12 @@ package io.kinference.tfjs.models.bert
 
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSPerformanceRunner
-import io.kinference.utils.TestRunner
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class GECTest {
     @Test
-    fun heavy_test_gec_model() = TestRunner.runTest {
+    fun heavy_test_gec_model() = runTest {
         TFJSAccuracyRunner.runFromS3("bert:gec:en:standard:v2", disableTests = listOf(
             "test_data_set_batch_32_seqLen_32",
             "test_data_set_batch_32_seqLen_64",
@@ -19,7 +19,7 @@ class GECTest {
     }
 
     @Test
-    fun benchmark_test_gec_performance() = TestRunner.runTest {
+    fun benchmark_test_gec_performance() = runTest {
         TFJSPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 100)
     }
 }

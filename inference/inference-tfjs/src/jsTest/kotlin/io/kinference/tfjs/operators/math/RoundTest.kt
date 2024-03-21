@@ -1,14 +1,14 @@
 package io.kinference.tfjs.operators.math
 
 import io.kinference.tfjs.runners.TFJSTestEngine
-import io.kinference.utils.TestRunner
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class RoundTest {
     private fun getTargetPath(dirName: String) = "round/$dirName/"
 
     @Test
-    fun test_round() = TestRunner.runTest {
+    fun test_round() = runTest {
         TFJSTestEngine.TFJSAccuracyRunner.runFromResources(getTargetPath("test_round"))
     }
 }
