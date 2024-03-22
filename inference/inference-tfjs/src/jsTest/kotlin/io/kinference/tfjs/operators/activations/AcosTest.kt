@@ -1,19 +1,19 @@
 package io.kinference.tfjs.operators.activations
 
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class AcosTest {
     private fun getTargetPath(dirName: String) = "acos/$dirName/"
 
     @Test
-    fun test_acos() = runTest {
+    fun test_acos() = TestRunner.runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_acos"))
     }
 
     @Test
-    fun test_acos_example() = runTest {
+    fun test_acos_example() = TestRunner.runTest {
         TFJSAccuracyRunner.runFromResources(getTargetPath("test_acos_example"))
     }
 }

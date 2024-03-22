@@ -64,7 +64,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
         return if (rules.isNotEmpty()) {
             val newGraph = GraphOptimizer(model.graph).run(rules) as KIGraph
-            KIModel(model.name, model.opSet, newGraph)
+            KIModel(model.id, model.name, model.opSet, newGraph)
         } else {
             model
         }

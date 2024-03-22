@@ -2,9 +2,7 @@ package io.kinference.kmath
 
 import ai.onnxruntime.*
 import io.kinference.ort.data.tensor.ORTTensor
-import io.kinference.utils.ArrayAssertions
-import io.kinference.utils.toLongArray
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.*
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import java.nio.ByteBuffer
@@ -15,7 +13,7 @@ import kotlin.test.assertEquals
 
 class ORTKMathAdapterTest {
     @Test
-    fun test_kmath_adapter_convert_to_onnx_data() = runTest {
+    fun test_kmath_adapter_convert_to_onnx_data() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
@@ -26,7 +24,7 @@ class ORTKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_to_onnx_data_ubyte() = runTest {
+    fun test_kmath_adapter_convert_to_onnx_data_ubyte() = TestRunner.runTest {
         val array = UByteArray(4) { it.toUByte() }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })

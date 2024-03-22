@@ -21,7 +21,7 @@ kotlin {
                 api(project(":ndarray:ndarray-api"))
                 api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                implementation("org.jetbrains.kotlinx:atomicfu:0.23.2")
+                implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicfu}")
             }
         }
 

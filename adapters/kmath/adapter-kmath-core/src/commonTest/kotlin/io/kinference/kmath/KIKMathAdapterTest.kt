@@ -16,7 +16,6 @@ import io.kinference.protobuf.message.*
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
 import io.kinference.utils.*
-import kotlinx.coroutines.test.runTest
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import kotlin.math.abs
@@ -25,7 +24,7 @@ import kotlin.test.assertEquals
 
 class KIKMathAdapterTest {
     @Test
-    fun test_kmath_adapter_convert_to_onnx_tensor() = runTest {
+    fun test_kmath_adapter_convert_to_onnx_tensor() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
@@ -35,7 +34,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_to_onnx_map() = runTest {
+    fun test_kmath_adapter_convert_to_onnx_map() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
 
@@ -58,7 +57,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_to_onnx_sequence() = runTest {
+    fun test_kmath_adapter_convert_to_onnx_sequence() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = KMathTensor("", BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
@@ -74,7 +73,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_from_onnx_tensor() = runTest {
+    fun test_kmath_adapter_convert_from_onnx_tensor() = TestRunner.runTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, tiledFromPrimitiveArray(shape, array), shape).asTensor()
@@ -84,7 +83,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_inference() = runTest {
+    fun test_kmath_adapter_inference() = TestRunner.runTest {
         val inOutTensorType = TypeProto.Tensor(TensorProto.DataType.FLOAT, TensorShapeProto(listOf(TensorShapeProto.Dimension(dimValue = 6L))))
         val modelProto = ModelProto(
             graph = GraphProto(

@@ -7,7 +7,7 @@ import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
 import io.kinference.utils.ArrayAssertions
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import multik.KIMultikData
 import multik.KIMultikTensorAdapter
 import org.jetbrains.kotlinx.multik.ndarray.data.*
@@ -16,7 +16,7 @@ import kotlin.test.*
 
 class KIMultikAdapterTest {
     @Test
-    fun test_multik_adapter_convert_to_onnx_data() = runTest {
+    fun test_multik_adapter_convert_to_onnx_data() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Int, D3>(MemoryViewIntArray(array), shape = shape/*, dtype = MultikDataType.IntDataType*/, dim = D3)
@@ -26,7 +26,7 @@ class KIMultikAdapterTest {
     }
 
     @Test
-    fun test_multik_adapter_convert_from_onnx_data() = runTest {
+    fun test_multik_adapter_convert_from_onnx_data() = TestRunner.runTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, tiledFromPrimitiveArray(shape, array), shape).asTensor()

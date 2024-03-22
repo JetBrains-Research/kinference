@@ -14,7 +14,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.coroutines}")
                 implementation("com.squareup.okio:okio:${Versions.okio}")
 
                 api(project(":ndarray:ndarray-api"))

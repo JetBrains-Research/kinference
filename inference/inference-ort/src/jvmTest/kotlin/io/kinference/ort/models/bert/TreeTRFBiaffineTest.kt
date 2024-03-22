@@ -1,17 +1,17 @@
 package io.kinference.ort.models.bert
 
 import io.kinference.ort.ORTTestEngine
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class TreeTRFBiaffineTest {
     @Test
-    fun heavy_test_tree_trf_biaffine_quantized() = runTest {
+    fun heavy_test_tree_trf_biaffine_quantized() = TestRunner.runTest {
         ORTTestEngine.ORTAccuracyRunner.runFromS3("bert:en_tree:quantized", delta = 4.9)
     }
 
     @Test
-    fun benchmark_test_tree_trf_biaffine_quantized() = runTest {
+    fun benchmark_test_tree_trf_biaffine_quantized() = TestRunner.runTest {
         ORTTestEngine.ORTPerformanceRunner.runFromS3("bert:en_tree:quantized")
     }
 }

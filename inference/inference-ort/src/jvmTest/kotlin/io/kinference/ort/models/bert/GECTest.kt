@@ -1,13 +1,13 @@
 package io.kinference.ort.models.bert
 
 import io.kinference.ort.ORTTestEngine
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 
 class GECTest {
     @Test
-    fun heavy_test_gec_model() = runTest {
+    fun heavy_test_gec_model() = TestRunner.runTest {
         ORTTestEngine.ORTAccuracyRunner.runFromS3(
             "bert:gec:en:standard:v2", disableTests = listOf(
                 "test_data_set_batch_32_seqLen_32",
@@ -21,7 +21,7 @@ class GECTest {
     }
 
     @Test
-    fun benchmark_test_gec_performance() = runTest {
+    fun benchmark_test_gec_performance() = TestRunner.runTest {
         ORTTestEngine.ORTPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 3)
     }
 }

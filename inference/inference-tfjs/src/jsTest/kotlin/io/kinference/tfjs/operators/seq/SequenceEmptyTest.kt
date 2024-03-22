@@ -1,14 +1,14 @@
 package io.kinference.tfjs.operators.seq
 
 import io.kinference.tfjs.runners.TFJSTestEngine
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SequenceEmptyTest {
     private fun getTargetPath(dirName: String) = "sequence_empty/$dirName/"
 
     @Test
-    fun test_sequence_empty() = runTest {
+    fun test_sequence_empty() = TestRunner.runTest {
         TFJSTestEngine.TFJSAccuracyRunner.runFromResources(getTargetPath("test_sequence_empty"))
     }
 }

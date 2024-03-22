@@ -1,12 +1,12 @@
 package io.kinference.tfjs.operators.activations
 
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
-import kotlinx.coroutines.test.runTest
+import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class ErfTest {
     @Test
-    fun test_erf() = runTest {
+    fun test_erf() = TestRunner.runTest {
         TFJSAccuracyRunner.runFromResources("erf/")
     }
 }
