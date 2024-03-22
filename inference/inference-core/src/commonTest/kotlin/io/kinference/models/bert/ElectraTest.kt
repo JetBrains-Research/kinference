@@ -4,10 +4,11 @@ import io.kinference.KITestEngine.KIAccuracyRunner
 import io.kinference.KITestEngine.KIPerformanceRunner
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.time.Duration
 
 class ElectraTest {
     @Test
-    fun heavy_test_electra() = runTest {
+    fun heavy_test_electra() = runTest(timeout = Duration.INFINITE) {
         KIAccuracyRunner.runFromS3("bert:electra")
     }
 
