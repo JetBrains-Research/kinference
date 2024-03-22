@@ -13,7 +13,7 @@ class ElectraTest {
     }
 
     @Test
-    fun benchmark_test_electra() = runTest {
+    fun benchmark_test_electra() = runTest(timeout = Duration.INFINITE) {
         KIPerformanceRunner.runFromS3("bert:electra", count = 5)
     }
 }

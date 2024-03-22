@@ -4,10 +4,11 @@ import io.kinference.tfjs.runners.TFJSTestEngine.TFJSAccuracyRunner
 import io.kinference.tfjs.runners.TFJSTestEngine.TFJSPerformanceRunner
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.time.Duration
 
 class GECTest {
     @Test
-    fun heavy_test_gec_model() = runTest {
+    fun heavy_test_gec_model() = runTest(timeout = Duration.INFINITE) {
         TFJSAccuracyRunner.runFromS3("bert:gec:en:standard:v2", disableTests = listOf(
             "test_data_set_batch_32_seqLen_32",
             "test_data_set_batch_32_seqLen_64",
@@ -19,7 +20,7 @@ class GECTest {
     }
 
     @Test
-    fun benchmark_test_gec_performance() = runTest {
+    fun benchmark_test_gec_performance() = runTest(timeout = Duration.INFINITE) {
         TFJSPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 100)
     }
 }

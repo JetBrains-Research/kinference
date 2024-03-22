@@ -5,10 +5,11 @@ import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.time.Duration
 
 class BERTTest {
     @Test
-    fun heavy_test_vanilla_bert_model() = runTest {
+    fun heavy_test_vanilla_bert_model() = runTest(timeout = Duration.INFINITE) {
         val disabledTests = when (PlatformUtils.platform) {
             Platform.JVM -> listOf()
             Platform.JS -> listOf(
@@ -20,7 +21,7 @@ class BERTTest {
     }
 
     @Test
-    fun benchmark_test_vanilla_bert_performance() = runTest {
+    fun benchmark_test_vanilla_bert_performance() = runTest(timeout = Duration.INFINITE) {
         KIPerformanceRunner.runFromS3("bert:standard:en:v1", count = 3)
     }
 }

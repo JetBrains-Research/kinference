@@ -6,11 +6,12 @@ import io.kinference.runners.AccuracyRunner
 import io.kinference.utils.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.time.Duration
 
 
 class GPTRTest {
     @Test
-    fun heavy_test_gpt_model() = runTest {
+    fun heavy_test_gpt_model() = runTest(timeout = Duration.INFINITE) {
         val disabledTests = when (PlatformUtils.platform) {
             Platform.JVM -> listOf()
             Platform.JS -> listOf(
@@ -26,13 +27,13 @@ class GPTRTest {
     }
 
     @Test
-    fun benchmark_test_gpt_performance() = runTest {
+    fun benchmark_test_gpt_performance() = runTest(timeout = Duration.INFINITE) {
         KIPerformanceRunner.runFromS3("gpt2:r-completion:standard:v1")
     }
 
 
     @Test
-    fun heavy_test_gpt_quantized_model() = runTest {
+    fun heavy_test_gpt_quantized_model() = runTest(timeout = Duration.INFINITE) {
         when (PlatformUtils.platform) {
             Platform.JVM -> KIAccuracyRunner.runFromS3("gpt2:r-completion:quantized:v1", delta = AccuracyRunner.QUANT_DELTA)
             else -> { }
@@ -40,7 +41,7 @@ class GPTRTest {
     }
 
     @Test
-    fun benchmark_test_gpt_quantized_performance() = runTest {
+    fun benchmark_test_gpt_quantized_performance() = runTest(timeout = Duration.INFINITE) {
         KIPerformanceRunner.runFromS3("gpt2:r-completion:quantized:v1")
     }
 }

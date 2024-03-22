@@ -5,10 +5,11 @@ import io.kinference.KITestEngine.KIPerformanceRunner
 import io.kinference.utils.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.time.Duration
 
 class GECTest {
     @Test
-    fun heavy_test_gec_model() = runTest {
+    fun heavy_test_gec_model() = runTest(timeout = Duration.INFINITE) {
         val disabledTests = when (PlatformUtils.platform) {
             Platform.JVM -> listOf(
                 "test_data_set_batch_32_seqLen_32",
@@ -35,7 +36,7 @@ class GECTest {
     }
 
     @Test
-    fun benchmark_test_gec_performance() = runTest {
+    fun benchmark_test_gec_performance() = runTest(timeout = Duration.INFINITE) {
         KIPerformanceRunner.runFromS3("bert:gec:en:standard:v2", count = 3)
     }
 }
