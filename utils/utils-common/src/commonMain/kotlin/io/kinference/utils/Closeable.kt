@@ -1,6 +1,6 @@
 package io.kinference.utils
 
-expect interface Closeable {
+interface Closeable {
     suspend fun close()
 }
 

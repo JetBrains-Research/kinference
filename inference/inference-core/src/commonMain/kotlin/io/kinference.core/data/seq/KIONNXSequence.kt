@@ -4,7 +4,6 @@ import io.kinference.core.*
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.data.ONNXSequence
-import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.protobuf.message.SequenceProto
 import io.kinference.types.*
 
@@ -24,8 +23,12 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        data.forEach { it.markOutput(marker) }
+    override fun markContextOutput() {
+        data.forEach { it.markContextOutput() }
+    }
+
+    override fun markGlobalOutput() {
+        data.forEach { it.markGlobalOutput() }
     }
 
     val length: Int = data.size

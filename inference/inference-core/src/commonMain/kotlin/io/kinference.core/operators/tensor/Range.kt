@@ -48,32 +48,27 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
                 TensorProto.DataType.DOUBLE -> {
                     start as Double; limit as Double; delta as Double
                     val size = ceil((limit - start) / delta).toInt()
-                    val typedLambda: (InlineInt) -> Double = { start + (it.value * delta) }
-                    DoubleNDArray(intArrayOf(size), typedLambda)
+                    DoubleNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.FLOAT-> {
                     start as Float; limit as Float; delta as Float
                     val size = ceil((limit - start) / delta).toInt()
-                    val typedLambda: (InlineInt) -> Float = { start + (it.value * delta) }
-                    FloatNDArray(intArrayOf(size), typedLambda)
+                    FloatNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.INT16 -> {
                     start as Short; limit as Short; delta as Short
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    val typedLambda: (InlineInt) -> Short = { (start + (it.value * delta)).toShort() }
-                    ShortNDArray(intArrayOf(size), typedLambda)
+                    ShortNDArray(intArrayOf(size)) { it: InlineInt -> (start + (it.value * delta)).toShort() }
                 }
                 TensorProto.DataType.INT32 -> {
                     start as Int; limit as Int; delta as Int
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    val typedLambda: (InlineInt) -> Int = { start + (it.value * delta) }
-                    IntNDArray(intArrayOf(size), typedLambda)
+                    IntNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.INT64 -> {
                     start as Long; limit as Long; delta as Long
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    val typedLambda: (InlineInt) -> Long = { start + (it.value * delta) }
-                    LongNDArray(intArrayOf(size), typedLambda)
+                    LongNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 else -> error("Unsupported data type: $type")
             }

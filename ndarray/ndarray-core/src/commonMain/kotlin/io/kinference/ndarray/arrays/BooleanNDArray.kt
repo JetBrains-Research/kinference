@@ -8,7 +8,6 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveType
 import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 import kotlin.math.abs
@@ -17,7 +16,7 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
-open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore {
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore, MemoryControlledArray {
     override val type: DataType = DataType.BOOLEAN
 
     final override var strides: Strides = strides
@@ -75,8 +74,12 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        array.marker.forEach { it.invoke(marker) }
+    override fun markContextOutput() {
+        array.marker.forEach { it.invoke(ArrayUsageMarker.ContextOutput) }
+    }
+
+    override fun markGlobalOutput() {
+        array.marker.forEach { it.invoke(ArrayUsageMarker.GlobalOutput) }
     }
 
     override suspend fun toMutable(): MutableBooleanNDArray {
@@ -204,10 +207,8 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             val value = singleValue()
             return if (value)
                 LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(1, 0)))
-            else {
-                val typedLambda: (InlineInt) -> Long = { 0L }
-                LongNDArray(Strides(intArrayOf(1, 1)), typedLambda)
-            }
+            else
+                LongNDArray(Strides(intArrayOf(1, 1))) { _: InlineInt -> 0L }
         }
         val ndIndexSize = shape.size
         var totalElements = 0
@@ -402,8 +403,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         @JvmName("invokeStridesIntArray")
         suspend operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): BooleanNDArray {
             val iterator = NDIndexer(strides)
-            val typedLambda: (InlineInt) -> Boolean = { init(iterator.next()) }
-            return BooleanNDArray(strides, typedLambda)
+            return BooleanNDArray(strides) { _: InlineInt -> init(iterator.next()) }
         }
 
         @JvmName("invokeStridesTiled")
@@ -414,8 +414,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
             }
             else {
                 val pointer = BooleanPointer(array)
-                val typedLambda: (InlineInt) -> Boolean = { pointer.getAndIncrement() }
-                BooleanNDArray(strides, typedLambda)
+                BooleanNDArray(strides) { _: InlineInt -> pointer.getAndIncrement() }
             }
         }
 
@@ -595,8 +594,7 @@ class MutableBooleanNDArray(array: BooleanTiledArray, strides: Strides = Strides
         @JvmName("invokeStridesIntArray")
         suspend operator fun invoke(strides: Strides, init: (IntArray) -> Boolean): MutableBooleanNDArray {
             val iterator = NDIndexer(strides)
-            val typedLambda: (InlineInt) -> Boolean = { init(iterator.next()) }
-            return MutableBooleanNDArray(strides, typedLambda)
+            return MutableBooleanNDArray(strides) { _: InlineInt -> init(iterator.next()) }
         }
 
         @JvmName("invokeShape")

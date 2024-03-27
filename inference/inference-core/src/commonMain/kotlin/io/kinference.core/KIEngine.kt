@@ -1,20 +1,15 @@
 package io.kinference.core
 
 import io.kinference.BackendInfo
-import io.kinference.OptimizableEngine
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.KIGraph
 import io.kinference.core.model.KIModel
 import io.kinference.core.optimizer.rules.OptimizerRuleSet
-import io.kinference.core.optimizer.rules.context.AttentionContextRule
-import io.kinference.core.optimizer.rules.context.DynamicQuantizeLSTMContextRule
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
-import io.kinference.model.Model
-import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
@@ -27,13 +22,19 @@ import okio.Path.Companion.toPath
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 
 // Define an interface for allocation control marking output
-interface KIONNXDataArraysReleaser {
-    fun markOutput(marker: ArrayUsageMarker)
+internal interface KIONNXDataArraysReleaser {
+    fun markContextOutput()
+    fun markGlobalOutput()
 }
 
-fun <T> KIONNXData<T>.markOutput(marker: ArrayUsageMarker) {
+internal fun <T> KIONNXData<T>.markContextOutput() {
     if (this is KIONNXDataArraysReleaser)
-        this.markOutput(marker)
+        this.markContextOutput()
+}
+
+internal fun <T> KIONNXData<T>.markGlobalOutput() {
+    if (this is KIONNXDataArraysReleaser)
+        this.markGlobalOutput()
 }
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")

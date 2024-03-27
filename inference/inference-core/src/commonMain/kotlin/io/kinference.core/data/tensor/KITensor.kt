@@ -24,8 +24,14 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
         return KITensor(newName, data.clone(), info)
     }
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        data.markOutput(marker)
+    override fun markContextOutput() {
+        if (this.data is MemoryControlledArray)
+            data.markContextOutput()
+    }
+
+    override fun markGlobalOutput() {
+        if (this.data is MemoryControlledArray)
+            data.markGlobalOutput()
     }
 
     suspend operator fun minus(other: KITensor): KITensor {

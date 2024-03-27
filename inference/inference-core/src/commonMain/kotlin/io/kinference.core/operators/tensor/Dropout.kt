@@ -69,8 +69,7 @@ class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         if (outputs.size == 1)
             return listOf(data.rename("output"))
 
-        val typedLambda: (InlineInt) -> Boolean = { true }
-        val mask = BooleanNDArray(data.data.shape, typedLambda)
+        val mask = BooleanNDArray(data.data.shape) { _: InlineInt -> true }
         return listOf(data.rename("output"), mask.asTensor("mask"))
     }
 }

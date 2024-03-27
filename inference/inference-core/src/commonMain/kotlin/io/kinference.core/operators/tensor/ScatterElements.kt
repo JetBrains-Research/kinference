@@ -6,7 +6,6 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.extensions.stack
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -65,8 +64,7 @@ class ScatterElementsVer11(
             } else {
                 indices as LongNDArray
                 val pointer = indices.array.pointer()
-                val typedLambda: (InlineInt) -> Int = { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
-                IntNDArray(indices.shape, typedLambda)
+                IntNDArray(indices.shape) { _: InlineInt -> checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
             }
         }
     }

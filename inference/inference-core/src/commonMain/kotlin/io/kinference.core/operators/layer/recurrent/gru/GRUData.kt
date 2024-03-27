@@ -7,7 +7,7 @@ import io.kinference.primitives.types.DataType
 class GRUDefaultGate private constructor(
     private val weights: NumberNDArrayCore,
     private val recurrentWeights: NumberNDArrayCore,
-    private var gateData: MutableNumberNDArrayCore,
+    private val gateData: MutableNumberNDArrayCore,
     private val bias: NumberNDArrayCore?,
 ) {
     suspend fun compute(

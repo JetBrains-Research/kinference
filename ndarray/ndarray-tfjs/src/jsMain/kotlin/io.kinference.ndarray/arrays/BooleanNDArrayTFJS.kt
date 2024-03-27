@@ -22,10 +22,6 @@ open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArr
         return value != 0
     }
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun reshape(strides: Strides): BooleanNDArrayTFJS {
         val result = tfjsArray.reshape(strides.shape.toTypedArray())
         return BooleanNDArrayTFJS(result)

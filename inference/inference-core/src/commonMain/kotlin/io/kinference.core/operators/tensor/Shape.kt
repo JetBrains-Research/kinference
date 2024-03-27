@@ -5,11 +5,9 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
-import io.kinference.ndarray.extensions.createNDArray
+import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.InlineInt
@@ -69,8 +67,7 @@ class ShapeVer1 internal constructor(
         val outputShape = shape.sliceArray(actualStart until actualEnd)
 
         val outputTensorShape = intArrayOf(outputShape.size)
-        val typedLambda: (InlineInt) -> Long = { outputShape[it.value].toLong() }
-        val data = LongNDArray(outputTensorShape, typedLambda)
+        val data = LongNDArray(outputTensorShape) { it: InlineInt -> outputShape[it.value].toLong() }
 
         return listOf(data.asTensor("shape"))
     }

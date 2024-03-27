@@ -3,7 +3,6 @@ package io.kinference.core.operators.tensor
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.activations.Log
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
@@ -57,14 +56,12 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
             "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                val typedLambda: (InlineInt) -> Float = { value[it.value] }
-                FloatNDArray(intArrayOf(value.size), typedLambda).asTensor()
+                FloatNDArray(intArrayOf(value.size)) { it: InlineInt -> value[it.value] }.asTensor()
             }
             "value_int" -> LongNDArray.scalar(value as Long).asTensor()
             "value_ints" -> {
                 value as LongArray
-                val typedLambda: (InlineInt) -> Long = { value[it.value] }
-                LongNDArray(intArrayOf(value.size), typedLambda).asTensor()
+                LongNDArray(intArrayOf(value.size)) { it: InlineInt -> value[it.value] }.asTensor()
             }
             "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
             "value_strings" -> {

@@ -78,8 +78,7 @@ class GatherElementsVer11(name: String, attributes: Map<String, Attribute<Any>>,
             } else {
                 indices as LongNDArray
                 val pointer = indices.array.pointer()
-                val typedLambda: (InlineInt) -> Int = { checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
-                IntNDArray(indices.shape, typedLambda)
+                IntNDArray(indices.shape) { _: InlineInt -> checkIndex(pointer.getAndIncrement().toInt(), axisLimit) }
             }
         }
     }

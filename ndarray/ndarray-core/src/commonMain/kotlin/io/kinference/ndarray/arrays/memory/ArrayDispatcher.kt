@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays.memory
 
-import io.kinference.ndarray.arrays.ArrayTypes
-import io.kinference.ndarray.arrays.ArrayUsageMarker
+import io.kinference.ndarray.arrays.*
 import kotlinx.atomicfu.atomic
 
 object ArrayDispatcher {
@@ -23,8 +22,8 @@ object ArrayDispatcher {
         modelDispatchers[modelContext]!!.endOperatorMode()
     }
 
-    fun getArraysAndMarkers(modelContext: String, type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
-        if (modelContext == "NoContext")
+    internal fun getArraysAndMarkers(modelContext: String, type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
+        if (modelContext == NO_CONTEXT)
             return Array(count) { ArrayContainer(type, size) }
 
         val dispatcher = modelDispatchers[modelContext]!!
@@ -36,7 +35,7 @@ object ArrayDispatcher {
     }
 }
 
-class ModelArrayDispatcher {
+private class ModelArrayDispatcher {
     companion object {
         private const val INIT_SIZE_VALUE: Int = 2
     }
@@ -51,7 +50,7 @@ class ModelArrayDispatcher {
     private var sizeIndices: IntArray = IntArray(typeSize)
     private var sizes: Array<IntArray> = Array(typeSize) { IntArray(INIT_SIZE_VALUE) }
 
-    class LockFreeArrayContainerQueue {
+    private class LockFreeArrayContainerQueue {
         // Initialize the head with the emptyContainer sentinel node
         private val head = atomic(ArrayContainer.emptyContainer())
         private val tail = atomic(head.value)

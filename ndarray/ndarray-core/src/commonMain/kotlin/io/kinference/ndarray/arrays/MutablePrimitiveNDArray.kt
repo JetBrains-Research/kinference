@@ -224,8 +224,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         @JvmName("invokeStridesIntArray")
         suspend operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
             val iterator = NDIndexer(strides)
-            val typedLambda: (InlineInt) -> PrimitiveType = { init(iterator.next()) }
-            return MutablePrimitiveNDArray(strides, typedLambda)
+            return MutablePrimitiveNDArray(strides) { _: InlineInt -> init(iterator.next()) }
         }
 
         @JvmName("invokeShape")

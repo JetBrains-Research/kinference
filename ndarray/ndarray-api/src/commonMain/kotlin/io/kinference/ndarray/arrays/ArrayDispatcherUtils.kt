@@ -2,6 +2,8 @@ package io.kinference.ndarray.arrays
 
 typealias StateMarker = (ArrayUsageMarker) -> Unit
 
+const val NO_CONTEXT = "NoContext"
+
 enum class ArrayUsageMarker {
     Unused,
     Used,
@@ -21,4 +23,9 @@ enum class ArrayTypes(val index: Int) {
     FloatArray(8),
     DoubleArray(9),
     BooleanArray(10);
+}
+
+interface MemoryControlledArray {
+    fun markContextOutput()
+    fun markGlobalOutput()
 }

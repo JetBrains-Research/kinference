@@ -17,9 +17,6 @@ class TensorProto internal constructor(
     internal var _arrayData: ArrayContainer? = null
 ) {
 
-//    val arrayData: Any?
-//        get() = _arrayData!!.get(dims)
-
     suspend fun getArrayData() : Any? {
         return _arrayData!!.get(dims)
     }

@@ -246,7 +246,4 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
     override suspend fun abs(): NumberNDArrayTFJS = NumberNDArrayTFJS(tfjsArray.abs())
 
     override fun asMutable() = MutableNumberNDArrayTFJS(tfjsArray)
-    override fun markOutput(marker: ArrayUsageMarker) {
-        TODO("Not yet implemented")
-    }
 }

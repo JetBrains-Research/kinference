@@ -3,7 +3,6 @@
 package io.kinference.ndarray.extensions.onehot
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
@@ -20,8 +19,7 @@ internal suspend fun PrimitiveNDArray.Companion.oneHot(axis: Int, indices: Numbe
     val actualAxis = if (axis < 0) (indices.rank + 1) + axis else axis
 
     val arrayIndicesShape = IntArray(indices.rank + 1) { if (it != actualAxis) 1 else depth }
-    val typedLambda: (InlineInt) -> Int = { it.value }
-    val arrayIndices = IntNDArray(arrayIndicesShape, typedLambda)
+    val arrayIndices = IntNDArray(arrayIndicesShape) { it: InlineInt -> it.value }
 
     val oneHotIndices = (indices.unsqueeze(actualAxis) as NumberNDArrayCore).getOneHotIndices(depth)
 

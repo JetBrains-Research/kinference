@@ -3,8 +3,7 @@ package io.kinference.core.operators.ml
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.ml.trees.*
-import io.kinference.core.operators.ml.utils.LabelsInfo
+import io.kinference.core.operators.ml.trees.KICoreTreeEnsemble
 import io.kinference.core.operators.ml.utils.LabelsInfo.Companion.getLabelsInfo
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
@@ -87,10 +86,7 @@ class TreeEnsembleClassifierVer1(
 
         private suspend fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
             return when (dataType) {
-                TensorProto.DataType.INT64 -> {
-                    val typedLambda: (InlineInt) -> Long = { write(it.value) as Long }
-                    LongNDArray(shape, typedLambda)
-                }
+                TensorProto.DataType.INT64 -> LongNDArray(shape) { it: InlineInt -> write(it.value) as Long }
                 TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
                 else -> error("Unsupported data type: $dataType")
             }

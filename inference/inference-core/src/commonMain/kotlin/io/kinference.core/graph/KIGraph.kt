@@ -4,13 +4,11 @@ import io.kinference.core.*
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.operators.KIOperatorFactory
 import io.kinference.graph.*
-import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.GraphProto
-import io.kinference.protobuf.message.TensorProto
 import io.kinference.utils.ModelContext
 import kotlin.coroutines.coroutineContext
 
@@ -38,7 +36,7 @@ class KIGraph private constructor(
         val outputs = operator.applyWithCheck(
             Contexts(contexts.graph, profilingContext),
             operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
-        outputs.forEach { it?.markOutput(ArrayUsageMarker.ContextOutput) }
+        outputs.forEach { it?.markContextOutput() }
         ArrayDispatcher.endOperatorMode(modelName)
 
         return outputs
@@ -47,7 +45,7 @@ class KIGraph private constructor(
     override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<KIONNXData<*>>): List<KIONNXData<*>> {
         val modelName = coroutineContext[ModelContext.Key]!!.modelName
         val result = outputs.map { contexts.graph!!.getValue(it.name) }
-        result.forEach { it.markOutput(ArrayUsageMarker.GlobalOutput) }
+        result.forEach { it.markGlobalOutput() }
         ArrayDispatcher.releaseAllOutputArrays(modelName)
         return result
     }

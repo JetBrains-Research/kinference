@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.*
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 
-sealed class ArrayContainer(var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
+internal sealed class ArrayContainer(var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
     val markAsOutput: StateMarker = {
         marker = it
     }

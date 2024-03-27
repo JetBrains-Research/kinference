@@ -18,12 +18,14 @@ import kotlin.math.min
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal class PrimitiveTiledArray {
+internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker: Array<StateMarker> = emptyMarker) {
     val size: Int
-    val blockSize: Int
-    val blocksNum: Int
-    val blocks: Array<PrimitiveArray>
-    val marker: Array<StateMarker>
+    val blockSize: Int = if (blocks.isEmpty()) 0 else blocks.first().size
+    val blocksNum: Int = blocks.size
+
+    init {
+        this.size = this.blocksNum * this.blockSize
+    }
 
     companion object {
         val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
@@ -60,7 +62,7 @@ internal class PrimitiveTiledArray {
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
 
-            val modelName = coroutineContext[ModelContext.Key]?.modelName ?: "NoContext"
+            val modelName = coroutineContext[ModelContext.Key]?.modelName ?: NO_CONTEXT
 
             // With array dispatcher
             val containerArray = ArrayDispatcher.getArraysAndMarkers(modelName, type, blockSize, blocksNum)
@@ -97,37 +99,6 @@ internal class PrimitiveTiledArray {
             return PrimitiveTiledArray(blocks)
         }
     }
-
-//    constructor(size: Int, blockSize: Int) {
-//        if (blockSize != 0)
-//            require(size % blockSize == 0) { "Size must divide blockSize" }
-//
-//        this.blocksNum = if (blockSize == 0) 0 else size / blockSize
-//        this.blockSize = blockSize
-//        this.size = size
-//
-//        // With array dispatcher
-//        val containerArray = ArrayDispatcher.getArraysAndMarkers("", type, this.blockSize, this.blocksNum)
-//        this.blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
-//        this.marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
-//    }
-
-    constructor(blocks: Array<PrimitiveArray>, markers: Array<(ArrayUsageMarker) -> Unit> = emptyMarker) {
-        this.blocks = blocks
-        this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
-        this.blocksNum = blocks.size
-        this.size = this.blocksNum * this.blockSize
-        this.marker = markers
-    }
-
-//    constructor(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : this(size, blockSize) {
-//        var count = 0
-//        for (block in blocks) {
-//            for (idx in 0 until blockSize) {
-//                block[idx] = init(InlineInt(count++))
-//            }
-//        }
-//    }
 
     fun pointer(startIndex: Int = 0) = PrimitivePointer(this, startIndex)
 

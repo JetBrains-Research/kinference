@@ -45,8 +45,6 @@ interface NDArray : Closeable {
      */
     fun singleValue(): Any
 
-    fun markOutput(marker: ArrayUsageMarker)
-
     /**
      * Creates an array containing the same data with the new strides.
      */

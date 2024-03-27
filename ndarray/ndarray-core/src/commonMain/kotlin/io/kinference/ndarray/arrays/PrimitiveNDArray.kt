@@ -30,7 +30,7 @@ import kotlin.math.*
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore {
+internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore, MemoryControlledArray {
     var array: PrimitiveTiledArray = array
         protected set
 
@@ -85,8 +85,12 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return array.blocks[0][0]
     }
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        array.marker.forEach { it.invoke(marker) }
+    override fun markContextOutput() {
+        array.marker.forEach { it.invoke(ArrayUsageMarker.ContextOutput) }
+    }
+
+    override fun markGlobalOutput() {
+        array.marker.forEach { it.invoke(ArrayUsageMarker.GlobalOutput) }
     }
 
     override suspend fun clone(): PrimitiveNDArray {
@@ -842,8 +846,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             return if (value == (0).toPrimitive())
                 LongNDArray(LongTiledArray(emptyArray()), Strides(intArrayOf(0, 1)))
             else {
-                val typedLambda: (InlineInt) -> Long = { 0L }
-                LongNDArray(Strides(intArrayOf(0, 1)), typedLambda)
+                LongNDArray(Strides(intArrayOf(0, 1))) { _: InlineInt -> 0L }
             }
 
         }
@@ -1263,8 +1266,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         suspend fun zeros(shape: IntArray): MutablePrimitiveNDArray = MutablePrimitiveNDArray(shape)
 
         suspend fun ones(shape: IntArray): MutablePrimitiveNDArray {
-            val typedLambda: (InlineInt) -> PrimitiveType = { 1.toPrimitive() }
-            return MutablePrimitiveNDArray(shape, typedLambda)
+            return MutablePrimitiveNDArray(shape) { _: InlineInt -> 1.toPrimitive() }
         }
 
         suspend fun scalar(value: PrimitiveType): PrimitiveNDArray {
@@ -1298,8 +1300,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         @JvmName("invokeStridesIntArray")
         suspend operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
             val iterator = NDIndexer(strides)
-            val typedLambda: (InlineInt) -> PrimitiveType = { init(iterator.next()) }
-            return PrimitiveNDArray(strides, typedLambda)
+            return PrimitiveNDArray(strides) { _: InlineInt -> init(iterator.next()) }
         }
 
         @JvmName("invokeShape")

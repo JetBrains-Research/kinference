@@ -1,15 +1,14 @@
 package io.kinference.graph
 
+import io.kinference.utils.InlineInt
+
 class GraphValueOrderInfo {
-    // By storing IntArray with 1 element instead of Int
-    // we prevent boxing operations in getOrder() function
-    private val orders: LinkedHashMap<String, IntArray> = linkedMapOf()
+    // By storing InlineInt we prevent boxing operations in getOrder() function
+    private val orders: LinkedHashMap<String, InlineInt> = linkedMapOf()
 
     fun putOrder(name: String, order: Int) {
-        if (!orders.containsKey(name))
-            orders[name] = intArrayOf(order)
-        else if (orders[name]!![0] < order)
-            orders[name]!![0] = order
+        if (!orders.containsKey(name) || orders[name]!!.value < order)
+            orders[name] = InlineInt(order)
     }
 
     fun putOrder(names: Collection<String>, order: Int) {
@@ -24,7 +23,7 @@ class GraphValueOrderInfo {
     }
 
     fun getOrder(name: String): Int {
-        return orders[name]?.get(0) ?: Int.MAX_VALUE
+        return orders[name]?.value ?: Int.MAX_VALUE
     }
 
     fun names(): Set<String> {

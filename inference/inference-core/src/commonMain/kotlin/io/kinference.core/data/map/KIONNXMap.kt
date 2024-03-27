@@ -4,7 +4,6 @@ import io.kinference.core.*
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
 import io.kinference.data.ONNXMap
-import io.kinference.ndarray.arrays.ArrayUsageMarker
 import io.kinference.protobuf.message.MapProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
@@ -27,8 +26,12 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
 
-    override fun markOutput(marker: ArrayUsageMarker) {
-        data.values.forEach { it.markOutput(marker) }
+    override fun markContextOutput() {
+        data.values.forEach { it.markContextOutput() }
+    }
+
+    override fun markGlobalOutput() {
+        data.values.forEach { it.markGlobalOutput() }
     }
 
     override suspend fun clone(newName: String?): KIONNXMap {

@@ -10,44 +10,37 @@ internal fun Long.pow(x: Double): Long = this.toDouble().pow(x).toLong()
 
 private suspend fun FloatNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) { _: InlineInt -> pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun IntNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun UIntNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun ByteNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun UByteNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun ShortNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 private suspend fun UShortNDArray.toDoubleNDArray(): DoubleNDArray {
     val pointer = array.pointer()
-    val typedLambda: (InlineInt) -> Double = { pointer.getAndIncrement().toDouble() }
-    return DoubleNDArray(shape, typedLambda)
+    return DoubleNDArray(shape) {_: InlineInt ->  pointer.getAndIncrement().toDouble() }
 }
 
 internal suspend fun NumberNDArrayCore.toDoubleNDArray(): DoubleNDArray {

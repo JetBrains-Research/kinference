@@ -3,6 +3,7 @@
 
 package io.kinference.ndarray.extensions.gelu
 
+import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.memory.ArrayDispatcher
@@ -29,15 +30,13 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
     val blockSize = input.array.blockSize
 
     val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val containerArray = ArrayDispatcher.getArraysAndMarkers("NoContext", PrimitiveTiledArray.type, blockSize, coroutineCount)
+    val containerArray = ArrayDispatcher.getArraysAndMarkers(NO_CONTEXT, PrimitiveTiledArray.type, blockSize, coroutineCount)
     val temporaryBlockExpArrays = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
 
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, coroutineIndex ->
-//        val containerTemporaryBlockExpArrays = ArraysDispatcher.getArrays<PrimitiveArray>(PrimitiveTiledArray.type, blockSize, coroutineCount)
-//        val temporaryBlockExpArrays = Array(coroutineCount) { i -> containerTemporaryBlockExpArrays[i] }
         val temporaryBlockExp = temporaryBlockExpArrays[coroutineIndex]
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]

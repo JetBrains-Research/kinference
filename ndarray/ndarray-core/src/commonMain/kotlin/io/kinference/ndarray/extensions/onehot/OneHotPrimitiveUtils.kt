@@ -10,9 +10,8 @@ import io.kinference.utils.InlineInt
 @GenerateNameFromPrimitives
 internal suspend fun getOneHotIndices(indices: PrimitiveNDArray, depth: Int): IntNDArray {
     val pointer = indices.array.pointer()
-    val typedLambda: (InlineInt) -> Int = {
+    return IntNDArray(indices.shape) { _: InlineInt ->
         val intIndex = pointer.getAndIncrement().toInt()
         if (intIndex < 0) intIndex + depth else intIndex
     }
-    return IntNDArray(indices.shape, typedLambda)
 }

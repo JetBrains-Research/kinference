@@ -107,50 +107,17 @@ object KIKMathTensorAdapter : ONNXDataAdapter<KIKMathData.KMathTensor, KITensor>
         val elements = data.data.elements().map { it.second!! }.iterator()
         val shape = data.data.shape.asArray()
         return when (val element = data.data.elements().first().second!!) {
-            is Byte -> {
-                val typedLambda: (InlineInt) -> Byte = { elements.next() as Byte }
-                ByteNDArray(shape, typedLambda)
-            }
-            is Short -> {
-                val typedLambda: (InlineInt) -> Short = { elements.next() as Short }
-                ShortNDArray(shape, typedLambda)
-            }
-            is Int -> {
-                val typedLambda: (InlineInt) -> Int = { elements.next() as Int }
-                IntNDArray(shape, typedLambda)
-            }
-            is Long -> {
-                val typedLambda: (InlineInt) -> Long = { elements.next() as Long }
-                LongNDArray(shape, typedLambda)
-            }
-            is UByte -> {
-                val typedLambda: (InlineInt) -> UByte = { elements.next() as UByte }
-                UByteNDArray(shape, typedLambda)
-            }
-            is UShort -> {
-                val typedLambda: (InlineInt) -> UShort = { elements.next() as UShort }
-                UShortNDArray(shape, typedLambda)
-            }
-            is UInt -> {
-                val typedLambda: (InlineInt) -> UInt = { elements.next() as UInt }
-                UIntNDArray(shape, typedLambda)
-            }
-            is ULong -> {
-                val typedLambda: (InlineInt) -> ULong = { elements.next() as ULong }
-                ULongNDArray(shape, typedLambda)
-            }
-            is Float -> {
-                val typedLambda: (InlineInt) -> Float = { elements.next() as Float }
-                FloatNDArray(shape, typedLambda)
-            }
-            is Double -> {
-                val typedLambda: (InlineInt) -> Double = { elements.next() as Double }
-                DoubleNDArray(shape, typedLambda)
-            }
-            is Boolean -> {
-                val typedLambda: (InlineInt) -> Boolean = { elements.next() as Boolean }
-                BooleanNDArray(shape, typedLambda)
-            }
+            is Byte -> ByteNDArray(shape) { _: InlineInt -> elements.next() as Byte }
+            is Short -> ShortNDArray(shape) { _: InlineInt -> elements.next() as Short }
+            is Int -> IntNDArray(shape) { _: InlineInt -> elements.next() as Int }
+            is Long -> LongNDArray(shape) { _: InlineInt -> elements.next() as Long }
+            is UByte -> UByteNDArray(shape) { _: InlineInt -> elements.next() as UByte }
+            is UShort -> UShortNDArray(shape) { _: InlineInt -> elements.next() as UShort }
+            is UInt -> UIntNDArray(shape) { _: InlineInt -> elements.next() as UInt }
+            is ULong -> ULongNDArray(shape) { _: InlineInt -> elements.next() as ULong }
+            is Float -> FloatNDArray(shape) { _: InlineInt -> elements.next() as Float }
+            is Double -> DoubleNDArray(shape) { _: InlineInt -> elements.next() as Double }
+            is Boolean -> BooleanNDArray(shape) { _: InlineInt -> elements.next() as Boolean }
             else -> error("Cannot convert from StructureND of ${element::class} to ONNXTensor")
         }.asTensor(data.name)
     }
