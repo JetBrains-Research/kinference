@@ -6,7 +6,7 @@ import io.kinference.ndarray.core.versionWebgl
 import io.kinference.ndarray.extensions.unstack
 import io.kinference.primitives.types.DataType
 
-fun <T : NDArrayTFJS> Array<T>.update(i: Int, element: T) {
+suspend fun <T : NDArrayTFJS> Array<T>.update(i: Int, element: T) {
     this[i].close()
     this[i] = element
 }

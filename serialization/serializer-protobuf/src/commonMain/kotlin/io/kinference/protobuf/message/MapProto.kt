@@ -23,7 +23,7 @@ class MapProto(
     }
 
     companion object {
-        fun decode(reader: ProtobufReader): MapProto {
+        suspend fun decode(reader: ProtobufReader): MapProto {
             val proto = MapProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

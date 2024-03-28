@@ -21,7 +21,7 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
 
     override val type: DataType = tfjsArray.dtype.resolveTFJSDataType()
 
-    override fun close() {
+    override suspend fun close() {
         tfjsArray.dispose()
     }
 
@@ -142,7 +142,7 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
 
     abstract fun asMutable(): MutableNDArray
 
-    override fun clone() = tfjsArray.clone().toNDArray()
+    override suspend fun clone() = tfjsArray.clone().toNDArray()
 
     companion object {
         private var isActivated = false

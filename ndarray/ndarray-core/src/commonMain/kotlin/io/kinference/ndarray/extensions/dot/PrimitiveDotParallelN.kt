@@ -27,7 +27,7 @@ internal suspend fun dotParallelN(left: PrimitiveNDArray, right: PrimitiveNDArra
     // Constant 261120 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByRows(nRowFlop, n, DotUtils.MIN_DATA_PER_LAUNCH) { nStart, nEnd ->
+    parallelizeByRows(nRowFlop, n, DotUtils.MIN_DATA_PER_LAUNCH) { nStart, nEnd, _ ->
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lBlocksInRow
             val destBlockOffset = i * rdBlocksInRow

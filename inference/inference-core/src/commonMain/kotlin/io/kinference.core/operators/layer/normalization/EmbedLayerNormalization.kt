@@ -73,7 +73,7 @@ class EmbedLayerNormalizationVer1(
 
         private data class NormalizeResult(val output: FloatNDArray, val embeddingSum: FloatNDArray)
 
-        internal fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArrayCore {
+        internal suspend fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArrayCore {
             val maskIndices = MutableIntNDArray(shape = intArrayOf(batchSize))
             if (mask == null) return maskIndices
 
@@ -93,7 +93,7 @@ class EmbedLayerNormalizationVer1(
             return maskIndices
         }
 
-        private fun normalize(
+        private suspend fun normalize(
             epsilon: Float, inputIds: IntNDArray, segmentIds: IntNDArray?, wordEmbed: FloatNDArray, posEmbed: FloatNDArray,
             segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray, positionIds: IntNDArray?
         ): NormalizeResult {

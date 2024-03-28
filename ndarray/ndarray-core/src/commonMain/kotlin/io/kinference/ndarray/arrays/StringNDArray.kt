@@ -34,17 +34,17 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         TODO("Not yet implemented")
     }
 
-    override fun clone(): StringNDArray {
+    override suspend fun clone(): StringNDArray {
         return StringNDArray(array.copyOf(), Strides(shape))
     }
 
-    override fun close() = Unit
+    override suspend fun close() = Unit
 
-    override fun toMutable(): MutableStringNDArray {
+    override suspend fun toMutable(): MutableStringNDArray {
         return MutableStringNDArray(array.copyOf(), strides)
     }
 
-    override fun copyIfNotMutable(): MutableStringNDArray {
+    override suspend fun copyIfNotMutable(): MutableStringNDArray {
         return MutableStringNDArray(array, strides)
     }
 

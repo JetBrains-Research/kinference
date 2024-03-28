@@ -6,17 +6,12 @@ import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
 @MakePublic
 internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
-    constructor(shape: IntArray) : this(PrimitiveTiledArray(shape), Strides(shape))
-    constructor(shape: IntArray, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(shape, init), Strides(shape))
-
-    constructor(strides: Strides) : this(PrimitiveTiledArray(strides), strides)
-    constructor(strides: Strides, init: (Int) -> PrimitiveType) : this(PrimitiveTiledArray(strides, init), strides)
-
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.offset(index)
@@ -42,7 +37,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    override fun copyIfNotMutable(): MutablePrimitiveNDArray {
+    override suspend fun copyIfNotMutable(): MutablePrimitiveNDArray {
         return MutablePrimitiveNDArray(array, strides)
     }
 
@@ -212,31 +207,54 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
     }
 
     companion object {
-        fun scalar(value: PrimitiveType): MutablePrimitiveNDArray {
+        suspend fun scalar(value: PrimitiveType): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(1, 1) { value }, Strides.EMPTY)
         }
 
-        operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+        @JvmName("invokeStrides")
+        suspend operator fun invoke(strides: Strides): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+        }
+
+        @JvmName("invokeStridesInlineInt")
+        suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(strides, init), strides)
+        }
+
+        @JvmName("invokeStridesIntArray")
+        suspend operator fun invoke(strides: Strides, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
             val iterator = NDIndexer(strides)
-            return MutablePrimitiveNDArray(strides) { init(iterator.next()) }
+            return MutablePrimitiveNDArray(strides) { _: InlineInt -> init(iterator.next()) }
         }
 
-        operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
-            return invoke(Strides(shape), init)
-        }
-
-        operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
+        @JvmName("invokeShape")
+        suspend operator fun invoke(shape: IntArray): MutablePrimitiveNDArray {
             return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
         }
 
-        @JvmName("invokeNDVarArg")
-        operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+        @JvmName("invokeShapeVarArg")
+        suspend operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+        }
+
+        @JvmName("invokeShapeInlineInt")
+        suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeShapeVarArgInlineInt")
+        suspend operator fun invoke(vararg shape: Int, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
+            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+        }
+
+        @JvmName("invokeShapeIntArray")
+        suspend operator fun invoke(shape: IntArray, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
             return invoke(Strides(shape), init)
         }
 
-        @JvmName("invokeVarArg")
-        operator fun invoke(vararg shape: Int, init: (Int) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+        @JvmName("invokeShapeVarArgIntArray")
+        suspend operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
+            return invoke(Strides(shape), init)
         }
     }
 }

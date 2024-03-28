@@ -58,7 +58,7 @@ interface NDArray : Closeable {
     /**
      * Copies current array data to a new instance of [MutableNDArray].
      */
-    fun toMutable(): MutableNDArray
+    suspend fun toMutable(): MutableNDArray
 
     /**
      * Removes single-dimensional entries from the array shape on specified in [axes] positions.
@@ -103,9 +103,9 @@ interface NDArray : Closeable {
      * If a current array is not an instance of [MutableNDArray], creates [MutableNDArray] with deep copy of array data.
      * In any other case it just creates a new instance of [MutableNDArray] with the same data.
      */
-    fun copyIfNotMutable(): MutableNDArray
+    suspend fun copyIfNotMutable(): MutableNDArray
 
-    fun clone(): NDArray
+    suspend fun clone(): NDArray
 
     /**
      * Makes a slice of an array along multiple axes with elements from [starts] to [ends] with [steps].
@@ -210,7 +210,7 @@ interface MutableNDArray : NDArray {
  * This interface defines base operations available for NDArrays containing numeric data.
  */
 interface NumberNDArray : NDArray {
-    override fun toMutable(): MutableNumberNDArray
+    override suspend fun toMutable(): MutableNumberNDArray
 
     override suspend fun slice(starts: IntArray, ends: IntArray, steps: IntArray): MutableNumberNDArray
 

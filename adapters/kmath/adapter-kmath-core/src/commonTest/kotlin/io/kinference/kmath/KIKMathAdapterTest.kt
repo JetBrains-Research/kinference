@@ -15,8 +15,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.*
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
-import io.kinference.utils.ArrayAssertions
-import io.kinference.utils.TestRunner
+import io.kinference.utils.*
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import kotlin.math.abs
@@ -25,7 +24,7 @@ import kotlin.test.assertEquals
 
 class KIKMathAdapterTest {
     @Test
-    fun test_kmath_adapter_convert_to_onnx_tensor() {
+    fun test_kmath_adapter_convert_to_onnx_tensor() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] })
@@ -35,7 +34,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_to_onnx_map() {
+    fun test_kmath_adapter_convert_to_onnx_map() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
 
@@ -45,7 +44,7 @@ class KIKMathAdapterTest {
         val convertedMap = KIKMathMapAdapter.toONNXData(KMathMap("test", kmathMap as Map<Any, KIKMathData<*>>))
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
-        val tensor = KITensor(null, IntNDArray(shape) { it }, tensorInfo)
+        val tensor = KITensor(null, IntNDArray(shape) { it: InlineInt -> it.value }, tensorInfo)
         val expectedValueInfo = ValueTypeInfo.MapTypeInfo(TensorProto.DataType.INT32, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
         val expectedMapData = mapOf(
             0 to KIONNXSequence(null, listOf(tensor), ValueTypeInfo.SequenceTypeInfo(tensorInfo)),
@@ -57,7 +56,7 @@ class KIKMathAdapterTest {
     }
 
     @Test
-    fun test_kmath_adapter_convert_to_onnx_sequence() {
+    fun test_kmath_adapter_convert_to_onnx_sequence() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val kmathArray = KMathTensor("", BufferND(Strides(ShapeND(shape)), Buffer.auto(shape.reduce(Int::times)) { array[it] }))
@@ -66,13 +65,13 @@ class KIKMathAdapterTest {
 
         val tensorInfo = ValueTypeInfo.TensorTypeInfo(TensorShape(shape), TensorProto.DataType.INT32)
         val expectedValueInfo = ValueTypeInfo.SequenceTypeInfo(ValueTypeInfo.SequenceTypeInfo(tensorInfo))
-        val expectedSeqData = KIONNXSequence("", List(1) { KITensor("", IntNDArray(shape) { it }, tensorInfo) }, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
+        val expectedSeqData = KIONNXSequence("", List(1) { KITensor("", IntNDArray(shape) { it: InlineInt -> it.value }, tensorInfo) }, ValueTypeInfo.SequenceTypeInfo(tensorInfo))
         val expectedSeq = KIONNXSequence("test", List(4) { expectedSeqData }, expectedValueInfo)
         assertKIEquals(expectedSeq, convertedSeq)
     }
 
     @Test
-    fun test_kmath_adapter_convert_from_onnx_tensor() {
+    fun test_kmath_adapter_convert_from_onnx_tensor() = TestRunner.runTest {
         val array = IntArray(6) { it }
         val shape = intArrayOf(2, 3)
         val tensor = createNDArray(DataType.INT, tiledFromPrimitiveArray(shape, array), shape).asTensor()

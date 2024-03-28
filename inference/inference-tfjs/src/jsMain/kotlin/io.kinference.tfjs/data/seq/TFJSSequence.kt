@@ -16,18 +16,18 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
 
     override fun rename(name: String) = TFJSSequence(name, data, info)
 
-    override fun close() {
+    override suspend fun close() {
         data.forEach { it.close() }
     }
 
-    override fun clone(newName: String?): TFJSSequence {
+    override suspend fun clone(newName: String?): TFJSSequence {
         return TFJSSequence(newName, data.map { it.clone() }, info)
     }
 
     val length: Int = data.size
 
     companion object {
-        fun create(proto: SequenceProto): TFJSSequence {
+        suspend fun create(proto: SequenceProto): TFJSSequence {
             val elementTypeInfo = proto.extractTypeInfo()
             val name = proto.name!!
             val data = when (proto.elementType) {

@@ -15,7 +15,7 @@ private val greaterOrEqual = { a: PrimitiveType, b: PrimitiveType -> a >= b  }
 private val greater = { a: PrimitiveType, b: PrimitiveType -> a > b  }
 
 @GenerateNameFromPrimitives
-internal fun argMinMaxPrimitive(input: PrimitiveNDArray, axis: Int, keepDims: Boolean, selectLastIndex: Boolean, mode: ArgMinMaxMode = ArgMinMaxMode.MAX): IntNDArray {
+internal suspend fun argMinMaxPrimitive(input: PrimitiveNDArray, axis: Int, keepDims: Boolean, selectLastIndex: Boolean, mode: ArgMinMaxMode = ArgMinMaxMode.MAX): IntNDArray {
     val actualAxis = input.indexAxis(axis)
 
     val iterations = input.computeBlockSize(toDim = actualAxis)
@@ -76,7 +76,7 @@ private fun argMinMaxAlongLastAxis(
     return output
 }
 
-private fun argMinMaxDefault(
+private suspend fun argMinMaxDefault(
     input: PrimitiveNDArray,
     output: MutableIntNDArray,
     iterations: Int,

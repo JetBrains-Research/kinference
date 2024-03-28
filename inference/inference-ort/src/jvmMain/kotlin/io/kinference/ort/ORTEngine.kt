@@ -108,7 +108,7 @@ object ORTEngine : OptimizableEngine<ORTData<*>> {
         return loadModel(path.toPath(), optimize)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> {
+    override suspend fun loadData(bytes: ByteArray, type: ONNXDataType): ORTData<*> {
         return when (type) {
             ONNXDataType.ONNX_TENSOR -> ORTTensor.create(protoReader(bytes).readTensor())
             else -> error("$type construction is not supported in OnnxRuntime Java API")

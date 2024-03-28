@@ -18,17 +18,17 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         return TFJSTensor(name, data, info)
     }
 
-    override fun close() {
+    override suspend fun close() {
         data.close()
     }
 
-    override fun clone(newName: String?): TFJSTensor {
+    override suspend fun clone(newName: String?): TFJSTensor {
         return TFJSTensor(newName, data.clone(), info)
     }
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        fun create(proto: TensorProto): TFJSTensor {
+        suspend fun create(proto: TensorProto): TFJSTensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
 
@@ -55,12 +55,12 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
             }.asTensor(nameNotNull)
         }
 
-        private fun parseArray(proto: TensorProto): Any {
+        private suspend fun parseArray(proto: TensorProto): Any {
             val array = if (proto.isString()) {
                 val data = proto.stringData
                 Array(data.size) { data[it].utf8() }
             } else {
-                proto.arrayData
+                proto.getArrayData()
             }
             requireNotNull(array) { "Array value should be initialized" }
             return array

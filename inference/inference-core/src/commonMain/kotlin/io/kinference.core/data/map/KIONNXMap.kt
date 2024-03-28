@@ -1,7 +1,6 @@
 package io.kinference.core.data.map
 
-import io.kinference.core.CoreBackend
-import io.kinference.core.KIONNXData
+import io.kinference.core.*
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.seq.KIONNXSequence.Companion.extractTypeInfo
 import io.kinference.data.ONNXMap
@@ -10,7 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 
-class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data) {
+class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(data: Map<Any, KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
 
     override val backend = CoreBackend
@@ -21,13 +20,21 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     val valueType: ValueTypeInfo?
         get() = info.valueType
 
-    override fun close() {
+    override suspend fun close() {
         data.values.forEach { it.close() }
     }
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
 
-    override fun clone(newName: String?): KIONNXMap {
+    override fun markContextOutput() {
+        data.values.forEach { it.markContextOutput() }
+    }
+
+    override fun markGlobalOutput() {
+        data.values.forEach { it.markGlobalOutput() }
+    }
+
+    override suspend fun clone(newName: String?): KIONNXMap {
         val newMap = HashMap<Any, KIONNXData<*>>(data.size)
         for ((key, value) in data.entries) {
             newMap[key] = value.clone()
@@ -36,7 +43,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     }
 
     companion object {
-        fun create(proto: MapProto): KIONNXMap {
+        suspend fun create(proto: MapProto): KIONNXMap {
             val elementType = ValueTypeInfo.MapTypeInfo(proto.keyType, proto.values!!.extractTypeInfo())
             val name = proto.name!!
             val map = HashMap<Any, KIONNXData<*>>().apply {

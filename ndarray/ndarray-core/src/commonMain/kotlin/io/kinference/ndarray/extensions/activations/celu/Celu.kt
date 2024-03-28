@@ -29,7 +29,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
             }
         }
     } else {
-        parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
+        parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd, _ ->
             for (blockIdx in blockStart until blockEnd) {
                 val inputBlock = inputBlocks[blockIdx]
                 val outputBlock = outputBlocks[blockIdx]
@@ -41,7 +41,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
         }
     }
 
-    parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, blocksNum, 2048) { blockStart, blockEnd, _ ->
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]
 
@@ -51,7 +51,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
         }
     }
 
-    parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd, _ ->
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]
 
@@ -62,7 +62,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
     }
 
     if (alpha != 1f) {
-        parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
+        parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd, _ ->
             for (blockIdx in blockStart until blockEnd) {
                 val outputBlock = outputBlocks[blockIdx]
 
@@ -73,7 +73,7 @@ suspend fun FloatNDArray.celu(alpha: Float = 1f): FloatNDArray {
         }
     }
 
-    parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, blocksNum, 1048576) { blockStart, blockEnd, _ ->
         for (blockIdx in blockStart until blockEnd) {
             val inputBlock = inputBlocks[blockIdx]
             val outputBlock = outputBlocks[blockIdx]

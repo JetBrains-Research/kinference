@@ -1,8 +1,7 @@
 package io.kinference.operator
 
 import io.kinference.attribute.Attribute
-import io.kinference.data.ONNXData
-import io.kinference.data.ONNXDataType
+import io.kinference.data.*
 import io.kinference.graph.Contexts
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
@@ -15,7 +14,7 @@ class AttributeInfo(val name: String, val types: Set<AttributeProto.AttributeTyp
         require(types.isNotEmpty()) { "Attribute info must have at least one type constraint!" }
     }
 
-    override fun close() {
+    override suspend fun close() {
         if (default is Closeable) return default.close()
 
         if (default is List<*>) {
@@ -234,7 +233,7 @@ abstract class Operator<in T : ONNXData<*, *>, out U : ONNXData<*, *>>(
     abstract suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<T?>): List<U?>
     open suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, vararg inputs: T?): Collection<U?> = apply(contexts, inputs.toList())
 
-    override fun close() {
+    override suspend fun close() {
         for (attribute in attributes.values) {
             attribute.close()
         }

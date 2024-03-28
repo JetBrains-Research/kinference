@@ -10,7 +10,7 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 
 @GenerateNameFromPrimitives
-internal fun PrimitiveNDArray.reduceOperationPrimitive(
+internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
     axes: IntArray,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,

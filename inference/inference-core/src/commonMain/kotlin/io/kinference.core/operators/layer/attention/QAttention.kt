@@ -31,7 +31,6 @@ class QAttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, inpu
     companion object {
         private val FLOATS = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16)
         private val BYTES = setOf(TensorProto.DataType.INT8, TensorProto.DataType.UINT8)
-        private val DEFAULT_SCALE = FloatNDArray.scalar(1f)
 
         private val ATTRIBUTES_INFO = listOf(
             AttributeInfo("num_heads", setOf(AttributeProto.AttributeType.INT), true),

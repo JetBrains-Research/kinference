@@ -27,7 +27,7 @@ import io.kinference.tfjs.operators.seq.*
 import io.kinference.tfjs.operators.tensor.*
 
 object TFJSAttributeFactory : AttributeFactory<TFJSData<*>> {
-    override fun createTensor(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+    override suspend fun createTensor(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
     override suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<TFJSData<*>> = TFJSGraph(proto, opSet)
 }
 
@@ -35,7 +35,7 @@ object TFJSOperatorFactory : OperatorFactory<TFJSData<*>> {
     override fun attributeFactory(): AttributeFactory<TFJSData<*>> = TFJSAttributeFactory
 
     @Suppress("UNCHECKED_CAST")
-    override fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
+    override suspend fun create(name: String, opType: String?, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (opType) {
         "Abs" -> Abs(name, version, attributes, inputs, outputs)
         "Acos" -> Acos(name, version, attributes, inputs, outputs)
         "Acosh" -> Acosh(name, version, attributes, inputs, outputs)

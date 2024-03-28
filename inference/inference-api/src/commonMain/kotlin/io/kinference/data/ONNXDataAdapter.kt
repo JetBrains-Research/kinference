@@ -10,7 +10,7 @@ import io.kinference.model.Model
  * @param TargetType wrapper class type for target data. Target data must be supported by one of the KInference backends.
  */
 interface ONNXDataAdapter<SourceType : BaseONNXData<*>, TargetType : ONNXData<*, *>> {
-    fun toONNXData(data: SourceType): TargetType
+    suspend fun toONNXData(data: SourceType): TargetType
     fun fromONNXData(data: TargetType): SourceType
 }
 

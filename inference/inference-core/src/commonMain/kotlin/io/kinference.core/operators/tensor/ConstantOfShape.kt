@@ -8,6 +8,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
+import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
 
@@ -27,9 +28,8 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
     companion object {
         private val TYPE_CONSTRAINTS = PRIMITIVE_DATA_TYPES
 
-        private val DEFAULT_TENSOR = FloatNDArray.scalar(0f).asTensor("value")
         private val ATTRIBUTES_INFO = listOf(
-            AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), default = DEFAULT_TENSOR, required = false)
+            AttributeInfo("value", setOf(AttributeProto.AttributeType.TENSOR), required = false)
         )
 
         private val INPUTS_INFO = listOf(IOInfo(0, setOf(TensorProto.DataType.INT64), "input", optional = false))
@@ -40,14 +40,18 @@ class ConstantOfShapeVer9(name: String, attributes: Map<String, Attribute<Any>>,
         private val INFO = OperatorInfo("ConstantOfShape", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
-    private val value: KITensor by attribute()
+    private val value: KITensor? by attributeOrNull()
 
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val array = inputs[0]!!.data as LongNDArray
         val pointer = array.array.pointer()
         val shape = IntArray(array.linearSize) { pointer.getAndIncrement().toInt() }
-        val result = allocateNDArray(value.data.type, Strides(shape)).apply { fill(value.data.singleValue()) }
+
+        val type = value?.data?.type ?: DataType.FLOAT
+        val fillValue = value?.data?.singleValue() ?: 0f
+
+        val result = allocateNDArray(type, Strides(shape)).apply { fill(fillValue) }
         return listOf(result.asTensor("output"))
     }
 }

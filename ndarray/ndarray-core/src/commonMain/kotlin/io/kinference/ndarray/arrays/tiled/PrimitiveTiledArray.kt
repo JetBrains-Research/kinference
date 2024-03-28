@@ -3,37 +3,47 @@
 
 package io.kinference.ndarray.arrays.tiled
 
-import io.kinference.ndarray.arrays.Strides
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.memory.ArrayDispatcher
+import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.InlineInt
+import io.kinference.utils.ModelContext
+import kotlin.coroutines.coroutineContext
 import kotlin.math.min
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal class PrimitiveTiledArray {
+internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker: Array<StateMarker> = emptyMarker) {
     val size: Int
-    val blockSize: Int
-    val blocksNum: Int
-    val blocks: Array<PrimitiveArray>
+    val blockSize: Int = if (blocks.isEmpty()) 0 else blocks.first().size
+    val blocksNum: Int = blocks.size
+
+    init {
+        this.size = this.blocksNum * this.blockSize
+    }
 
     companion object {
+        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
+        private val emptyMarker: Array<StateMarker> = arrayOf()
 
-        operator fun invoke(strides: Strides): PrimitiveTiledArray {
+        suspend operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
             return PrimitiveTiledArray(strides.linearSize, blockSize)
         }
 
-        operator fun invoke(strides: Strides, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
+        suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
             return PrimitiveTiledArray(strides.linearSize, blockSize, init)
         }
 
-        operator fun invoke(shape: IntArray) = invoke(Strides(shape))
+        suspend operator fun invoke(shape: IntArray) = invoke(Strides(shape))
 
-        operator fun invoke(shape: IntArray, init: (Int) -> PrimitiveType) = invoke(Strides(shape), init)
+        suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType) = invoke(Strides(shape), init)
 
         operator fun invoke(strides: Strides, array: PrimitiveArray): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -44,6 +54,34 @@ internal class PrimitiveTiledArray {
             }
 
             return PrimitiveTiledArray(blocksArray)
+        }
+
+        suspend operator fun invoke(size: Int, blockSize: Int): PrimitiveTiledArray {
+            if (blockSize != 0)
+                require(size % blockSize == 0) { "Size must divide blockSize" }
+
+            val blocksNum = if (blockSize == 0) 0 else size / blockSize
+
+            val modelName = coroutineContext[ModelContext.Key]?.modelName ?: NO_CONTEXT
+
+            // With array dispatcher
+            val containerArray = ArrayDispatcher.getArraysAndMarkers(modelName, type, blockSize, blocksNum)
+            val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
+            val marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
+
+            return PrimitiveTiledArray(blocks, marker)
+        }
+
+        suspend operator fun invoke(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : PrimitiveTiledArray {
+            val tiledArray = PrimitiveTiledArray(size, blockSize)
+            var count = 0
+            for (block in tiledArray.blocks) {
+                for (idx in 0 until blockSize) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+
+            return tiledArray
         }
 
         fun matrixLike(shape: IntArray, init: (Int) -> PrimitiveType): PrimitiveTiledArray {
@@ -59,32 +97,6 @@ internal class PrimitiveTiledArray {
                 }
             }
             return PrimitiveTiledArray(blocks)
-        }
-    }
-
-    constructor(size: Int, blockSize: Int) {
-        if (blockSize != 0)
-            require(size % blockSize == 0) { "Size must divide blockSize" }
-
-        this.blocksNum = if (blockSize == 0) 0 else size / blockSize
-        this.blocks = Array(blocksNum) { PrimitiveArray(blockSize) }
-        this.blockSize = blockSize
-        this.size = size
-    }
-
-    constructor(blocks: Array<PrimitiveArray>) {
-        this.blocks = blocks
-        this.blockSize = if (blocks.isEmpty()) 0 else blocks.first().size
-        this.blocksNum = blocks.size
-        this.size = this.blocksNum * this.blockSize
-    }
-
-    constructor(size: Int, blockSize: Int, init: (Int) -> PrimitiveType) : this(size, blockSize) {
-        var count = 0
-        for (block in blocks) {
-            for (idx in 0 until blockSize) {
-                block[idx] = init(count++)
-            }
         }
     }
 
@@ -122,7 +134,7 @@ internal class PrimitiveTiledArray {
         blocks[blockIdx][blockOff] = value
     }
 
-    fun copyOf(): PrimitiveTiledArray {
+    suspend fun copyOf(): PrimitiveTiledArray {
         val copyArray = PrimitiveTiledArray(size, blockSize)
 
         for (blockNum in 0 until blocksNum) {

@@ -14,7 +14,7 @@ class GraphProto(
     val quantizationAnnotation: MutableList<TensorAnnotation> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): GraphProto {
+        suspend fun decode(reader: ProtobufReader): GraphProto {
             val proto = GraphProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

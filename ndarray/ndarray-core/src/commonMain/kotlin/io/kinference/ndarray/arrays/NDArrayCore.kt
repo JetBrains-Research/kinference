@@ -3,8 +3,8 @@ package io.kinference.ndarray.arrays
 import io.kinference.ndarray.extensions.*
 
 interface NDArrayCore : NDArray {
-    override fun clone(): NDArrayCore
-    override fun close() = Unit
+    override suspend fun clone(): NDArrayCore
+    override suspend fun close() = Unit
 
     suspend fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore
     suspend fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore
@@ -14,7 +14,7 @@ interface NDArrayCore : NDArray {
     override suspend fun reshape(strides: Strides): NDArrayCore
     override suspend fun reshape(shape: IntArray): NDArrayCore = reshape(Strides(shape))
 
-    override fun toMutable(): MutableNDArrayCore
+    override suspend fun toMutable(): MutableNDArrayCore
 
     override suspend fun transpose(permutations: IntArray): NDArrayCore
 
@@ -57,7 +57,7 @@ interface NumberNDArrayCore : NDArrayCore, NumberNDArray {
         transposeB: Boolean
     ): MutableNDArrayCore
 
-    override fun toMutable(): MutableNumberNDArrayCore
+    override suspend fun toMutable(): MutableNumberNDArrayCore
 
     override suspend fun reshape(strides: Strides): NumberNDArrayCore
     override suspend fun reshape(shape: IntArray): NumberNDArrayCore = reshape(Strides(shape))

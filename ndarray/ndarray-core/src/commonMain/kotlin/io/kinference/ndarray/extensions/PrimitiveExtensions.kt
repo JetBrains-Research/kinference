@@ -72,7 +72,7 @@ internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 P
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE, DataType.INT])
 @MakePublic
-internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
+internal suspend fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDArray {
     return if (zeroPoint.linearSize == 1) {
         val zero = zeroPoint.array.blocks[0][0].toInt()
         val arr = IntTiledArray(this.strides)
@@ -87,7 +87,7 @@ internal fun PrimitiveNDArray.withZeroPoint(zeroPoint: PrimitiveNDArray): IntNDA
 
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
 @MakePublic
-internal fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
+internal suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, scale: FloatNDArray, axis: Int?): FloatNDArray {
     val zeros = zeroPoint?.array
     val output = MutableFloatNDArray(FloatTiledArray(this.array.size, this.array.blockSize), this.strides)
 
@@ -143,10 +143,24 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     val rowFlop = t * m
     val zero = (0).toPrimitive()
 
+
+    /* TODO: (dmitriyb) this is temporary commented. On GEC performance test we have large inputs that cause out of memory exceptions
+        We need to implement controlling mechanism which will prevent ArrayDispatcher of enormous grow*/
+
+    // This approach when arrays acquired before parallelizeByBlocks() is faster
+//    val coroutineCount = countCoroutinesByData(rowFlop, n, 262144)
+//    val containerArray = ArrayDispatcher.getArraysAndMarkers(PrimitiveTiledArray.type, lrBlockSize, m * coroutineCount)
+//    val mSumsArrays = Array(coroutineCount) { index ->
+//        Array(m) { mIndex ->
+//            (containerArray[index * m + mIndex] as PrimitiveArrayContainer).array
+//        }
+//    }
+
     // Constant 262144 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int ->
+    // TODO: (dmitriyb) Implement concurrent array retrieve with a separate structure from ArraysDispatcher
+    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, _ ->
         val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow

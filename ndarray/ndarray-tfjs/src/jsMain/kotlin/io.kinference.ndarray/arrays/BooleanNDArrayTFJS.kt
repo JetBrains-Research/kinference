@@ -27,16 +27,16 @@ open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArr
         return BooleanNDArrayTFJS(result)
     }
 
-    override fun toMutable(): MutableBooleanNDArrayTFJS {
+    override suspend fun toMutable(): MutableBooleanNDArrayTFJS {
         val tensor = tfjsArray.clone()
         return MutableBooleanNDArrayTFJS(tensor)
     }
 
-    override fun copyIfNotMutable(): MutableBooleanNDArrayTFJS{
+    override suspend fun copyIfNotMutable(): MutableBooleanNDArrayTFJS{
         return this as? MutableBooleanNDArrayTFJS ?: MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun clone(): BooleanNDArrayTFJS {
+    override suspend fun clone(): BooleanNDArrayTFJS {
         return BooleanNDArrayTFJS(tfjsArray.clone())
     }
 
@@ -78,7 +78,7 @@ open class BooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArr
 }
 
 class MutableBooleanNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : BooleanNDArrayTFJS(tfjsArray), MutableNDArray {
-    override fun clone(): MutableBooleanNDArrayTFJS {
+    override suspend fun clone(): MutableBooleanNDArrayTFJS {
         return MutableBooleanNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {

@@ -2,8 +2,7 @@ package io.kinference.multik
 
 import ai.onnxruntime.*
 import io.kinference.ort.data.tensor.ORTTensor
-import io.kinference.utils.ArrayAssertions
-import io.kinference.utils.toLongArray
+import io.kinference.utils.*
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.junit.jupiter.api.Test
 import java.nio.IntBuffer
@@ -13,7 +12,7 @@ import kotlin.test.assertTrue
 
 class ORTMultikAdapterTest {
     @Test
-    fun gpu_test_multik_adapter_convert_to_onnx_data() {
+    fun gpu_test_multik_adapter_convert_to_onnx_data() = TestRunner.runTest {
         val array = IntArray(4) { it }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Int, D3>(MemoryViewIntArray(array), shape = shape/*, dtype = DataType.IntDataType*/, dim = D3)
@@ -35,7 +34,7 @@ class ORTMultikAdapterTest {
     }
 
     @Test
-    fun gpu_test_multik_adapter_convert_to_onnx_data_bool() {
+    fun gpu_test_multik_adapter_convert_to_onnx_data_bool() = TestRunner.runTest {
         val array = BooleanArray(4) { it <= 1 }
         val shape = intArrayOf(1, 2, 2)
         val multikArray = NDArray<Byte, D3>(MemoryViewByteArray(array.map { if (it) (1).toByte() else (0).toByte() }.toByteArray()), shape = shape, dim = D3)

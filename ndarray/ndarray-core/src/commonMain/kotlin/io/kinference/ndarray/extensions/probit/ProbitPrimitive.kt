@@ -24,7 +24,7 @@ internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimi
     val outputBlocks = dest.array.blocks
     val blockSize = input.array.blockSize
 
-    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd ->
+    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         val temporaryBlockOne = PrimitiveArray(blockSize)
         val temporaryBlockTwo = PrimitiveArray(blockSize)
 

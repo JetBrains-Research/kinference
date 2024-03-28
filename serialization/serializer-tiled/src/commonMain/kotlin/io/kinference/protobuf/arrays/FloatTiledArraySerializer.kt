@@ -19,7 +19,7 @@ internal class FloatTiledArrayBuilder(data: FloatTiledArray) : ArrayBuilder<Floa
 }
 
 internal object FloatTiledArraySerializer : TiledArraySerializer<FloatTiledArray, FloatTiledArrayBuilder>() {
-    override fun empty(shape: IntArray): FloatTiledArray = FloatTiledArray(shape)
+    override suspend fun empty(shape: IntArray): FloatTiledArray = FloatTiledArray(shape)
     override fun FloatTiledArray.toBuilder(): FloatTiledArrayBuilder = FloatTiledArrayBuilder(this)
 
     override fun readElement(reader: ProtobufReader, builder: FloatTiledArrayBuilder) {

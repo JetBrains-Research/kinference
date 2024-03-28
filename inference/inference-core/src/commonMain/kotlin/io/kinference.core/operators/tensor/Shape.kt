@@ -5,13 +5,12 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.LongTiledArray
-import io.kinference.ndarray.extensions.createNDArray
+import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
-import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.InlineInt
 import kotlin.math.max
 import kotlin.math.min
 
@@ -68,7 +67,7 @@ class ShapeVer1 internal constructor(
         val outputShape = shape.sliceArray(actualStart until actualEnd)
 
         val outputTensorShape = intArrayOf(outputShape.size)
-        val data = LongNDArray(outputTensorShape) { outputShape[it].toLong() }
+        val data = LongNDArray(outputTensorShape) { it: InlineInt -> outputShape[it.value].toLong() }
 
         return listOf(data.asTensor("shape"))
     }

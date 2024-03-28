@@ -7,7 +7,7 @@ class OperatorSetIdProto(
     val version: Long? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): OperatorSetIdProto {
+        suspend fun decode(reader: ProtobufReader): OperatorSetIdProto {
             var domain: String? = null
             var version: Long? = null
             reader.forEachTag { tag ->

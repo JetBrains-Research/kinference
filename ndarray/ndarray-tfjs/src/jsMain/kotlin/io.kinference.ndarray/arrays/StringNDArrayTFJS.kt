@@ -27,16 +27,16 @@ open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return StringNDArrayTFJS(result)
     }
 
-    override fun toMutable(): MutableStringNDArrayTFJS {
+    override suspend fun toMutable(): MutableStringNDArrayTFJS {
         val tensor = tfjsArray.clone()
         return MutableStringNDArrayTFJS(tensor)
     }
 
-    override fun copyIfNotMutable(): MutableStringNDArrayTFJS {
+    override suspend fun copyIfNotMutable(): MutableStringNDArrayTFJS {
         return this as? MutableStringNDArrayTFJS ?: MutableStringNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun clone(): StringNDArrayTFJS {
+    override suspend fun clone(): StringNDArrayTFJS {
         return StringNDArrayTFJS(tfjsArray.clone())
     }
 
@@ -62,7 +62,7 @@ open class StringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
 }
 
 class MutableStringNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : StringNDArrayTFJS(tfjsArray), MutableNDArray {
-    override fun clone(): MutableStringNDArrayTFJS {
+    override suspend fun clone(): MutableStringNDArrayTFJS {
         return MutableStringNDArrayTFJS(tfjsArray.clone())
     }
     override fun set(index: IntArray, value: Any) {

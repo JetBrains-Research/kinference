@@ -12,12 +12,12 @@ import java.nio.*
 
 sealed class ORTMultikData<T>(override val name: String?) : BaseONNXData<T> {
     abstract override fun rename(name: String): ORTMultikData<T>
-    abstract override fun clone(newName: String?): ORTMultikData<T>
+    abstract override suspend fun clone(newName: String?): ORTMultikData<T>
 
     class MultikTensor(name: String?, override val data: MultiArray<Number, Dimension>, val dataType: OnnxJavaType) : ORTMultikData<MultiArray<Number, Dimension>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
         override fun rename(name: String): MultikTensor = MultikTensor(name, data, dataType)
-        override fun clone(newName: String?): MultikTensor {
+        override suspend fun clone(newName: String?): MultikTensor {
             return MultikTensor(newName, data.deepCopy(), dataType)
         }
     }
@@ -25,7 +25,7 @@ sealed class ORTMultikData<T>(override val name: String?) : BaseONNXData<T> {
     class MultikMap(name: String?, override val data: Map<Any, ORTMultikData<*>>) : ORTMultikData<Map<Any, ORTMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_MAP
         override fun rename(name: String): MultikMap = MultikMap(name, data)
-        override fun clone(newName: String?): MultikMap {
+        override suspend fun clone(newName: String?): MultikMap {
             val newMap = HashMap<Any, ORTMultikData<*>>(data.size)
             for ((key, value) in data.entries) {
                 newMap[key] = value.clone()
@@ -37,7 +37,7 @@ sealed class ORTMultikData<T>(override val name: String?) : BaseONNXData<T> {
     class MultikSequence(name: String?, override val data: List<ORTMultikData<*>>) : ORTMultikData<List<ORTMultikData<*>>>(name) {
         override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
         override fun rename(name: String): MultikSequence =MultikSequence(name, data)
-        override fun clone(newName: String?): MultikSequence {
+        override suspend fun clone(newName: String?): MultikSequence {
             return MultikSequence(newName, data.map { it.clone() })
         }
     }
@@ -61,7 +61,7 @@ object ORTMultikTensorAdapter : ONNXDataAdapter<ORTMultikData.MultikTensor, ORTT
         return ORTMultikData.MultikTensor(data.name, ndArray, dtype)
     }
 
-    override fun toONNXData(data: ORTMultikData.MultikTensor): ORTTensor {
+    override suspend fun toONNXData(data: ORTMultikData.MultikTensor): ORTTensor {
         val arrayData = data.data.data
         val env = OrtEnvironment.getEnvironment()
         val shapeLong = data.data.shape.toLongArray()
@@ -94,7 +94,7 @@ object ORTMultikMapAdapter : ONNXDataAdapter<ORTMultikData.MultikMap, ORTMap> {
         return ORTMultikData.MultikMap(data.name, mapValues)
     }
 
-    override fun toONNXData(data: ORTMultikData.MultikMap): ORTMap {
+    override suspend fun toONNXData(data: ORTMultikData.MultikMap): ORTMap {
         error("ONNXRuntime backend does not support map conversion")
     }
 }
@@ -114,7 +114,7 @@ object ORTMultikSequenceAdapter : ONNXDataAdapter<ORTMultikData.MultikSequence, 
         return ORTMultikData.MultikSequence(data.name, seq)
     }
 
-    override fun toONNXData(data: ORTMultikData.MultikSequence): ORTSequence {
+    override suspend fun toONNXData(data: ORTMultikData.MultikSequence): ORTSequence {
         error("ONNXRuntime backend does not support sequence conversion")
     }
 }

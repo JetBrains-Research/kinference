@@ -10,7 +10,7 @@ abstract class TestEngine<T : ONNXData<*, *>>(private val engine: InferenceEngin
     abstract fun checkEquals(expected: T, actual: T, delta: Double)
     abstract fun getInMemorySize(data: T): Int
 
-    fun loadData(bytes: ByteArray, type: ONNXDataType): T = engine.loadData(bytes, type)
+    suspend fun loadData(bytes: ByteArray, type: ONNXDataType): T = engine.loadData(bytes, type)
     suspend fun loadModel(bytes: ByteArray): Model<T> = engine.loadModel(bytes)
 
     suspend fun loadModel(path: Path): Model<T> = engine.loadModel(path)

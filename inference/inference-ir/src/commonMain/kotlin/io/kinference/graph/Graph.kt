@@ -2,6 +2,7 @@ package io.kinference.graph
 
 import io.kinference.data.ONNXData
 import io.kinference.operator.Operator
+import io.kinference.profiler.ProfilingContext
 import io.kinference.profiler.profile
 import io.kinference.protobuf.message.*
 import io.kinference.types.ValueInfo
@@ -13,6 +14,7 @@ import kotlinx.coroutines.coroutineScope
 
 abstract class Graph<T : ONNXData<*, *>> protected constructor(
     proto: GraphProto,
+    private val _initializers: ArrayList<T>,
     private var _operators: ArrayList<Operator<T, T>>,
     private val valueOrderInfo: GraphValueOrderInfo
 ) : Closeable {
@@ -72,6 +74,17 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
             return sortedNodes
         }
+
+        suspend fun <T> getInitializers(
+            proto: GraphProto,
+            prepareInput: suspend (TensorProto) -> T
+        ): ArrayList<T> {
+            return ArrayList<T>(proto.initializer.size).apply {
+                for (i in proto.initializer) {
+                    this.add(prepareInput(i))
+                }
+            }
+        }
     }
     val operators: List<Operator<T, T>>
         get() = _operators
@@ -79,11 +92,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
     val inputs = proto.input.map { ValueInfo.create(it) }
     val outputs = proto.output.map { ValueInfo.create(it) }
     val info = proto.valueInfo.map { ValueInfo.create(it) }
-
-    private val _initializers = ArrayList<T>(proto.initializer.size).apply {
-        for (i in proto.initializer)
-            this.add(prepareInput(i))
-    }
 
     val initializers: List<T>
         get() = _initializers
@@ -121,15 +129,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
         }
     }
 
-    abstract fun prepareInput(proto: TensorProto): T
-
     fun addInitializer(initializer: T) {
         require(!_initializers.any { it.name == initializer.name }) { "Initializer with the name ${initializer.name} already exists" }
         _initializers.add(initializer)
         valueOrderInfo.putOrder(initializer.name!!, Int.MAX_VALUE)
     }
 
-    fun removeInitializer(name: String) {
+    suspend fun removeInitializer(name: String) {
         val toRemove = findInitializer(name)
         requireNotNull(toRemove) { "Initializer with the name $name was not found" }
 
@@ -189,13 +195,13 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
     val availableInputs: List<String> = inputs.map { it.name }
 
-    private fun cleanupUntilOrder(context: GraphContext<T>, order: Int) {
+    private suspend fun cleanupUntilOrder(context: GraphContext<T>, order: Int) {
         context.removeValues { it !in availableInputs && valueOrderInfo.getOrder(it) <= order }
     }
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
-    override fun close() {
+    override suspend fun close() {
         closeAll(_initializers)
         closeAll(operators)
     }
@@ -221,9 +227,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>
                 contexts.profiling.profile(operator.info.type) { profilingContext ->
-                    outputs = operator.applyWithCheck(
-                        Contexts(contexts.graph, profilingContext),
-                        operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+                    outputs = applyWithAllocationControl(contexts, profilingContext, operator)
                 }
 
                 contexts.profiling.profile("${operator.info.type}:cleanup") {
@@ -242,6 +246,10 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                 }
             }
         }
-        return outputs.map { contexts.graph!!.getValue(it.name) }
+        return returnOutputsWithAllocationControl(contexts)
     }
+
+    protected abstract suspend fun applyWithAllocationControl(contexts: Contexts<T>, profilingContext: ProfilingContext?, operator: Operator<T, T>): List<T?>
+
+    protected abstract suspend fun returnOutputsWithAllocationControl(contexts: Contexts<T>): List<T>
 }
