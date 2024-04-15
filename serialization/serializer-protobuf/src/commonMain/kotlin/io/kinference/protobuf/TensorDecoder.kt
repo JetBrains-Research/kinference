@@ -6,7 +6,7 @@ import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.message.StringStringEntryProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.message.TensorProto.Companion.hasData
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.InlineInt
 import io.kinference.utils.toIntArray
 import okio.Buffer
 import okio.ByteString

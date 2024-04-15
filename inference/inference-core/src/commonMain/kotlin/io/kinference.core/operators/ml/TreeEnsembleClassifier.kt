@@ -12,7 +12,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.trees.TreeEnsembleInfo
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.InlineInt
 
 sealed class TreeEnsembleClassifier(
     name: String,

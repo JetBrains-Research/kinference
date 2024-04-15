@@ -24,7 +24,7 @@ import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.*
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -302,7 +302,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> (left + right).toPrimitive() }
+        ) { left: InlinePrimitive, right: InlinePrimitive -> (left + right) }
 
     override suspend fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -314,7 +314,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> (left - right).toPrimitive() }
+        ) { left: InlinePrimitive, right: InlinePrimitive -> (left - right) }
 
     override suspend fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -326,7 +326,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> (left * right).toPrimitive() }
+        ) { left: InlinePrimitive, right: InlinePrimitive -> (left * right) }
 
     override suspend fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -338,7 +338,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: PrimitiveType, right: PrimitiveType -> (left / right).toPrimitive() }
+        ) { left: InlinePrimitive, right: InlinePrimitive -> (left / right) }
 
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray

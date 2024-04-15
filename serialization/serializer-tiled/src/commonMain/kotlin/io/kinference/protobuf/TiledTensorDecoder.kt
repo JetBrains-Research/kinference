@@ -5,7 +5,7 @@ import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.TiledArrayContainer
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.InlineInt
 
 object TiledTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = TiledArrayContainer()

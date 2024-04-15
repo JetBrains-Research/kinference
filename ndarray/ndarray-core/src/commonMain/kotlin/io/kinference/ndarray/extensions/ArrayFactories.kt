@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.InlineInt
 
 suspend inline fun <reified T> createTiledArray(type: DataType, shape: IntArray, noinline init: (InlineInt) -> T): Any {
     return when (type) {
