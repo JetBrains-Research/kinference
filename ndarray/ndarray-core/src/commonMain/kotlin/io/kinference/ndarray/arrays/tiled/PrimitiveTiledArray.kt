@@ -11,7 +11,7 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.inlines.InlineInt
+import io.kinference.ndarray.inlines.*
 import io.kinference.utils.ModelContext
 import kotlin.coroutines.coroutineContext
 import kotlin.math.min

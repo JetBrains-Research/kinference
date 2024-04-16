@@ -8,6 +8,7 @@ package io.kinference.ndarray.extensions.bitwise.shift
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
+import io.kinference.ndarray.inlines.InlinePrimitive
 import io.kinference.ndarray.stubs.shl
 import io.kinference.ndarray.stubs.shr
 import io.kinference.primitives.annotations.GeneratePrimitives
@@ -29,8 +30,8 @@ internal suspend fun PrimitiveNDArray.bitShift(amountsOfShift: PrimitiveNDArray,
             BitShiftDirection.RIGHT -> PrimitiveType::shr
         }
 
-    return broadcastTwoTensorsPrimitive(this, amountsOfShift, destination) { left: PrimitiveType, right: PrimitiveType ->
-        left.shiftFunction(right.toInt())
+    return broadcastTwoTensorsPrimitive(this, amountsOfShift, destination) { left: InlinePrimitive, right: InlinePrimitive ->
+        InlinePrimitive(left.value.shiftFunction(right.value.toInt()))
     }
 }
 
