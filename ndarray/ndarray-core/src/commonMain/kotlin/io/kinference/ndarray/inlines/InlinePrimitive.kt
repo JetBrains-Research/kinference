@@ -23,20 +23,20 @@ import kotlin.jvm.JvmInline
 @MakePublic
 @JvmInline
 internal value class InlinePrimitive(val value: PrimitiveType) {
-    operator fun plus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value + other.value).toPrimitive())
+    inline operator fun plus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value + other.value).toPrimitive())
 
-    operator fun minus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value - other.value).toPrimitive())
+    inline operator fun minus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value - other.value).toPrimitive())
 
-    operator fun times(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value * other.value).toPrimitive())
+    inline operator fun times(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value * other.value).toPrimitive())
 
-    operator fun div(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value / other.value).toPrimitive())
+    inline operator fun div(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value / other.value).toPrimitive())
 
-    operator fun rem(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value % other.value).toPrimitive())
+    inline operator fun rem(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value % other.value).toPrimitive())
 
     @FilterPrimitives(exclude = [DataType.FLOAT, DataType.DOUBLE])
-    infix fun and(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value and other.value).toPrimitive())
+    inline infix fun and(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value and other.value).toPrimitive())
     @FilterPrimitives(exclude = [DataType.FLOAT, DataType.DOUBLE])
-    infix fun or(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value or other.value).toPrimitive())
+    inline infix fun or(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value or other.value).toPrimitive())
     @FilterPrimitives(exclude = [DataType.FLOAT, DataType.DOUBLE])
-    infix fun xor(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value xor other.value).toPrimitive())
+    inline infix fun xor(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value xor other.value).toPrimitive())
 }
