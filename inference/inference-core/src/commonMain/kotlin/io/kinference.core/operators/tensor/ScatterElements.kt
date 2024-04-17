@@ -9,7 +9,7 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.InlineInt
+import io.kinference.ndarray.inlines.InlineInt
 
 sealed class ScatterElements(
     name: String,

@@ -7,8 +7,9 @@ import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
+import io.kinference.ndarray.inlines.InlineBoolean
+import io.kinference.ndarray.inlines.InlineInt
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.InlineInt
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -144,7 +145,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-            left: Boolean, right: Boolean -> left || right
+            left: InlineBoolean, right: InlineBoolean -> left or right
         }
     }
 
@@ -152,7 +153,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun and(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-            left: Boolean, right: Boolean -> left && right
+            left: InlineBoolean, right: InlineBoolean -> left and right
         }
     }
 
@@ -160,7 +161,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun xor(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-            left: Boolean, right: Boolean -> left xor right
+            left: InlineBoolean, right: InlineBoolean -> left xor right
         }
     }
 

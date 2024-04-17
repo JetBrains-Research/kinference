@@ -3,7 +3,7 @@ package io.kinference.protobuf
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.PrimitiveArrayContainer
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.InlineInt
+import io.kinference.ndarray.inlines.InlineInt
 
 object FlatTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = PrimitiveArrayContainer()

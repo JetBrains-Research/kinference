@@ -5,7 +5,7 @@ package io.kinference.ndarray.extensions.onehot
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.InlineInt
+import io.kinference.ndarray.inlines.InlineInt
 
 @GenerateNameFromPrimitives
 internal suspend fun getOneHotIndices(indices: PrimitiveNDArray, depth: Int): IntNDArray {

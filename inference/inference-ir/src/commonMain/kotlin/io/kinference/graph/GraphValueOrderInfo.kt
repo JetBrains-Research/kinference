@@ -1,6 +1,6 @@
 package io.kinference.graph
 
-import io.kinference.utils.InlineInt
+import io.kinference.ndarray.inlines.InlineInt
 
 class GraphValueOrderInfo {
     // By storing InlineInt we prevent boxing operations in getOrder() function
