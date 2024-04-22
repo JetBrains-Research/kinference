@@ -16,8 +16,8 @@ import io.kinference.primitives.types.DataType
 
 @GenerateNameFromPrimitives
 @SpecifyPrimitives(include = [DataType.INT, DataType.LONG,DataType.FLOAT, DataType.DOUBLE])
-internal fun negPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { -it }
+internal suspend fun negPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { -it }
 
 @GenerateNameFromPrimitives
 @SpecifyPrimitives(include = [DataType.SHORT, DataType.BYTE])
-internal fun negIntegerPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { (-it).toPrimitive() }
+internal suspend fun negIntegerPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise { (-it).toPrimitive() }

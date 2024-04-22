@@ -10,13 +10,13 @@ fun ProtobufReader.readIntArray(tag: Int) = IntArraySerializer.decode(this, tag)
 fun ProtobufReader.readLongArray(tag: Int) = LongArraySerializer.decode(this, tag)
 fun ProtobufReader.readULongArray(tag: Int) = ULongArraySerializer.decode(this, tag)
 
-internal fun ProtobufReader.readFloatArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.FLOAT, dims)
-internal fun ProtobufReader.readDoubleArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.DOUBLE, dims)
-internal fun ProtobufReader.readIntArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT32, dims)
-internal fun ProtobufReader.readLongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT64, dims)
-internal fun ProtobufReader.readULongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.UINT64, dims)
+internal suspend fun ProtobufReader.readFloatArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.FLOAT, dims)
+internal suspend fun ProtobufReader.readDoubleArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.DOUBLE, dims)
+internal suspend fun ProtobufReader.readIntArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT32, dims)
+internal suspend fun ProtobufReader.readLongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.INT64, dims)
+internal suspend fun ProtobufReader.readULongArray(tag: Int, dims: IntArray?, dest: ArrayContainer) = dest.decode(this, tag, TensorProto.DataType.UINT64, dims)
 
-fun ProtobufReader.readTensor() = config.tensorDecoder.decode(this)
+suspend fun ProtobufReader.readTensor() = config.tensorDecoder.decode(this)
 
 val FLOAT_TENSOR_TYPES = setOf(TensorProto.DataType.FLOAT, TensorProto.DataType.FLOAT16, TensorProto.DataType.BFLOAT16)
 

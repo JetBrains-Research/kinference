@@ -12,4 +12,5 @@ fun S3Dependency.Context.defaultS3Deps() {
     s3Test("catboost:license-detector:v1")
     s3Test("custom:comment_updater")
     s3Test("bert:en_tree:quantized")
+    s3Test("bert:electra")
 }

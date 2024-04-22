@@ -63,7 +63,7 @@ class BatchNormalizationVer9 internal constructor(
         private val INFO = OperatorInfo("BatchNormalization", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.DEFAULT_DOMAIN)
 
 
-        private fun NumberNDArray.toFloatNDArray() = when (this) {
+        private suspend fun NumberNDArray.toFloatNDArray() = when (this) {
             is FloatNDArray -> this
             is DoubleNDArray-> {
                 val result = FloatNDArray(FloatTiledArray(strides), strides)
@@ -73,7 +73,7 @@ class BatchNormalizationVer9 internal constructor(
             else -> error("Unsupported data type: $type")
         }
 
-        private fun NumberNDArray.toDoubleNDArray() = when (this) {
+        private suspend fun NumberNDArray.toDoubleNDArray() = when (this) {
             is DoubleNDArray -> this
             is FloatNDArray-> {
                 val result = DoubleNDArray(DoubleTiledArray(strides), strides)

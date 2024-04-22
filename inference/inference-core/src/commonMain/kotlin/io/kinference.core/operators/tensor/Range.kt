@@ -10,15 +10,18 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.protobuf.resolveProtoDataType
+import io.kinference.utils.inlines.InlineInt
 import kotlin.math.ceil
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
+        private val DEFAULT_VERSION = RangeVer11.VERSION
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in RangeVer11.VERSION.asRange() -> RangeVer11(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Range {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in RangeVer11.VERSION.asRange() -> RangeVer11(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Range operator: $version")
+            }
         }
     }
 }
@@ -39,35 +42,35 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        internal val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("Range", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
+        private suspend fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
             return when (type.resolveProtoDataType()) {
                 TensorProto.DataType.DOUBLE -> {
                     start as Double; limit as Double; delta as Double
                     val size = ceil((limit - start) / delta).toInt()
-                    DoubleNDArray(intArrayOf(size)) { start + (it * delta) }
+                    DoubleNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.FLOAT-> {
                     start as Float; limit as Float; delta as Float
                     val size = ceil((limit - start) / delta).toInt()
-                    FloatNDArray(intArrayOf(size)) { start + (it * delta) }
+                    FloatNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.INT16 -> {
                     start as Short; limit as Short; delta as Short
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    ShortNDArray(intArrayOf(size)) { (start + (it * delta)).toShort() }
+                    ShortNDArray(intArrayOf(size)) { it: InlineInt -> (start + (it.value * delta)).toShort() }
                 }
                 TensorProto.DataType.INT32 -> {
                     start as Int; limit as Int; delta as Int
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    IntNDArray(intArrayOf(size)) { start + (it * delta) }
+                    IntNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 TensorProto.DataType.INT64 -> {
                     start as Long; limit as Long; delta as Long
                     val size = ceil((limit - start).toDouble() / delta).toInt()
-                    LongNDArray(intArrayOf(size)) { start + (it * delta) }
+                    LongNDArray(intArrayOf(size)) { it: InlineInt -> start + (it.value * delta) }
                 }
                 else -> error("Unsupported data type: $type")
             }

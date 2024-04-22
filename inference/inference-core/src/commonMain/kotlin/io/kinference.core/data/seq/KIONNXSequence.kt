@@ -1,33 +1,40 @@
 package io.kinference.core.data.seq
 
-import io.kinference.core.CoreBackend
-import io.kinference.core.KIONNXData
+import io.kinference.core.*
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.data.ONNXSequence
 import io.kinference.protobuf.message.SequenceProto
 import io.kinference.types.*
 
-class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data) {
+class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> KIONNXData<*>) : this(name, List(size, init), info)
     constructor(data: List<KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
 
     override val backend = CoreBackend
 
-    override fun close() {
+    override suspend fun close() {
         data.forEach { it.close() }
     }
 
-    override fun clone(newName: String?): KIONNXSequence {
+    override suspend fun clone(newName: String?): KIONNXSequence {
         return KIONNXSequence(newName, data.map { it.clone() }, info)
     }
 
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
+    override fun markContextOutput() {
+        data.forEach { it.markContextOutput() }
+    }
+
+    override fun markGlobalOutput() {
+        data.forEach { it.markGlobalOutput() }
+    }
+
     val length: Int = data.size
 
     companion object {
-        fun create(proto: SequenceProto): KIONNXSequence {
+        suspend fun create(proto: SequenceProto): KIONNXSequence {
             val elementTypeInfo = proto.extractTypeInfo()
             val name = proto.name!!
             val data = when (proto.elementType) {

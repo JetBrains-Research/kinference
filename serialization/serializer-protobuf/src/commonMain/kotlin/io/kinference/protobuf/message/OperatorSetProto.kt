@@ -13,7 +13,7 @@ class OperatorSetProto(
     val functions: MutableList<FunctionProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): OperatorSetProto {
+        suspend fun decode(reader: ProtobufReader): OperatorSetProto {
             val proto = OperatorSetProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

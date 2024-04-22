@@ -9,7 +9,7 @@ class TrainingInfoProto(
     val updateBinding: MutableList<StringStringEntryProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): TrainingInfoProto {
+        suspend fun decode(reader: ProtobufReader): TrainingInfoProto {
             val proto = TrainingInfoProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

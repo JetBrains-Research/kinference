@@ -16,5 +16,5 @@ import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
 
 @MakePublic
-internal fun PrimitiveNDArray.reduceSumSquare(axes: IntArray, keepDims: Boolean) =
+internal suspend fun PrimitiveNDArray.reduceSumSquare(axes: IntArray, keepDims: Boolean) =
     reduceOperationPrimitive(axes, keepDims) { out: PrimitiveType, inp: PrimitiveType -> out + inp * inp }

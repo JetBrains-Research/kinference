@@ -12,7 +12,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) : Closeable {
 
     val refAttrName: String? = proto.refAttrName
 
-    override fun close() {
+    override suspend fun close() {
         if (value is Closeable) return value.close()
 
         if (value is List<*>) {
@@ -24,7 +24,7 @@ class Attribute<T>(proto: AttributeProto, val value: T) : Closeable {
 }
 
 interface AttributeFactory<T : ONNXData<*, *>> {
-    fun createTensor(proto: TensorProto): T
+    suspend fun createTensor(proto: TensorProto): T
     suspend fun createGraph(proto: GraphProto, opSet: OperatorSetRegistry): Graph<T>
 
     

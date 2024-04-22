@@ -13,12 +13,10 @@ package io.kinference.ndarray.extensions.bitwise.or
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
-import io.kinference.ndarray.stubs.or
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveType
-import kotlin.experimental.or
+import io.kinference.utils.inlines.InlinePrimitive
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray): MutablePrimitiveNDArray {
@@ -28,4 +26,4 @@ internal suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray): MutablePri
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.bitOr(other: PrimitiveNDArray, dest: MutablePrimitiveNDArray) =
-    broadcastTwoTensorsPrimitive(this, other, dest) { left: PrimitiveType, right: PrimitiveType -> left or right }
+    broadcastTwoTensorsPrimitive(this, other, dest) { left: InlinePrimitive, right: InlinePrimitive -> left or right }

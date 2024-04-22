@@ -1,6 +1,7 @@
 package io.kinference.core.data.tensor
 
 import io.kinference.core.CoreBackend
+import io.kinference.core.KIONNXDataArraysReleaser
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
@@ -12,15 +13,25 @@ import io.kinference.types.ValueTypeInfo
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
+class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data), KIONNXDataArraysReleaser {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
-    override fun close() {
+    override suspend fun close() {
         data.close()
     }
 
-    override fun clone(newName: String?): KITensor {
+    override suspend fun clone(newName: String?): KITensor {
         return KITensor(newName, data.clone(), info)
+    }
+
+    override fun markContextOutput() {
+        if (this.data is MemoryControlledArray)
+            data.markContextOutput()
+    }
+
+    override fun markGlobalOutput() {
+        if (this.data is MemoryControlledArray)
+            data.markGlobalOutput()
     }
 
     suspend operator fun minus(other: KITensor): KITensor {
@@ -46,7 +57,7 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
 
     companion object {
         //TODO: complex, uint32/64 tensors
-        fun create(proto: TensorProto): KITensor {
+        suspend fun create(proto: TensorProto): KITensor {
             val type = proto.dataType ?: DataType.UNDEFINED
             val array = parseArray(proto)
 
@@ -76,8 +87,8 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
             }
         }
 
-        private fun parseArray(proto: TensorProto): Any {
-            val array = if (proto.isString()) proto.stringData.map { it.utf8() } else proto.arrayData
+        private suspend fun parseArray(proto: TensorProto): Any {
+            val array = if (proto.isString()) proto.stringData.map { it.utf8() } else proto.getArrayData()
             requireNotNull(array) { "Array value should be initialized" }
             return array
         }

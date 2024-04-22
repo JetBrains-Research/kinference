@@ -33,7 +33,7 @@ class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null
         shapes[name] = shape
     }
 
-    fun removeValues(predicate: (String) -> Boolean) {
+    suspend fun removeValues(predicate: (String) -> Boolean) {
         val allToRemove = values.entries.filter { predicate(it.key) }
         allToRemove.forEach { it.value.close() }
         values.entries.removeAll(allToRemove)
@@ -43,7 +43,7 @@ class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null
         return shapes[name] ?: base?.getShape(name) ?: error("'$name' not found in context shapes")
     }
 
-    fun clear() {
+    suspend fun clear() {
         for (value in values) {
             value.value.close()
         }
@@ -52,7 +52,7 @@ class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null
         shapes.clear()
     }
 
-    override fun close() {
+    override suspend fun close() {
         for (value in values) {
             value.value.close()
         }

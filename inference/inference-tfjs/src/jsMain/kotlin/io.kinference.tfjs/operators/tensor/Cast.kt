@@ -38,7 +38,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
         internal val VERSION = VersionInfo(sinceVersion = 6)
         private val INFO = OperatorInfo("Cast", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        internal fun castTo(input: NDArrayTFJS, toType: TensorProto.DataType): NDArrayTFJS {
+        internal suspend fun castTo(input: NDArrayTFJS, toType: TensorProto.DataType): NDArrayTFJS {
             val tfjsType = when(toType) {
                 in (INT_DATA_TYPES + UINT_DATA_TYPES) -> DataType.INT
 

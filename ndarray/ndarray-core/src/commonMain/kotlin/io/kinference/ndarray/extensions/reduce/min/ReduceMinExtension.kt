@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.reduce.min
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
-fun NumberNDArrayCore.reduceMin(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
+suspend fun NumberNDArrayCore.reduceMin(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
     return when(type) {
         DataType.FLOAT -> (this as FloatNDArray).reduceMin(axes, keepDims)
         DataType.DOUBLE -> (this as DoubleNDArray).reduceMin(axes, keepDims)

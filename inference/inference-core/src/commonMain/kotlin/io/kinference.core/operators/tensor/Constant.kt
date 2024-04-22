@@ -8,6 +8,7 @@ import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
+import io.kinference.utils.inlines.InlineInt
 
 sealed class Constant(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -55,12 +56,12 @@ class ConstantVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs
             "value_float" -> FloatNDArray.scalar(value as Float).asTensor()
             "value_floats" -> {
                 value as FloatArray
-                FloatNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+                FloatNDArray(intArrayOf(value.size)) { it: InlineInt -> value[it.value] }.asTensor()
             }
             "value_int" -> LongNDArray.scalar(value as Long).asTensor()
             "value_ints" -> {
                 value as LongArray
-                LongNDArray(intArrayOf(value.size)) { value[it] }.asTensor()
+                LongNDArray(intArrayOf(value.size)) { it: InlineInt -> value[it.value] }.asTensor()
             }
             "value_string" -> StringNDArray.scalar(value!! as String).asTensor()
             "value_strings" -> {

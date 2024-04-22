@@ -15,7 +15,7 @@ import io.kinference.optimizer.GraphOptimizer.Companion.optName
 import io.kinference.optimizer.rules.context.PrepareContextRule
 
 object MatMulIntegerContextRule : PrepareContextRule<KIONNXData<*>>(operatorName = "MatMulInteger") {
-    private fun NumberNDArray.toIntNDArray(): IntNDArray {
+    private suspend fun NumberNDArray.toIntNDArray(): IntNDArray {
         val result = IntNDArray(IntTiledArray(this.strides), strides)
         when (this) {
             is UByteNDArray -> {

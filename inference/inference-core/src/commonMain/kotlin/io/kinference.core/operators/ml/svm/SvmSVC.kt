@@ -19,7 +19,7 @@ internal class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(i
     )
 
     // kernel shape is [batchSize, vectorCount]
-    private fun calculateScoresAndVotes(kernel: FloatNDArray): ScoresAndVotes {
+    private suspend fun calculateScoresAndVotes(kernel: FloatNDArray): ScoresAndVotes {
         val (batchSize, vectorsCount) = kernel.shape
 
         val scoresPerBatch = if (!svmInfo.haveProba && svmInfo.classCount <= 2) 2 else svmInfo.numClassifier
@@ -119,14 +119,14 @@ internal class SvmSVC(info: SvmInfo, val labelsInfo: LabelsInfo<*>): SvmCommon(i
     }
 
     // votes shape: [batchSize, classCount]
-    private fun writeLabels(votes: Array<IntArray>): NDArrayCore {
+    private suspend fun writeLabels(votes: Array<IntArray>): NDArrayCore {
         return when (labelsInfo) {
             is LabelsInfo.LongLabelsInfo -> writeLabelsLong(votes)
             is LabelsInfo.StringLabelsInfo -> writeLabelsString(votes)
         }
     }
 
-    private fun writeLabelsLong(votes: Array<IntArray>): LongNDArray {
+    private suspend fun writeLabelsLong(votes: Array<IntArray>): LongNDArray {
         val labels = (labelsInfo as LabelsInfo.LongLabelsInfo).labels
         val batchSize = votes.size
         val futureOutput = MutableLongNDArray(batchSize)

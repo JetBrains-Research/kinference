@@ -3,8 +3,7 @@ package io.kinference.core.operators.ml
 import io.kinference.attribute.Attribute
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
-import io.kinference.core.operators.ml.trees.*
-import io.kinference.core.operators.ml.utils.LabelsInfo
+import io.kinference.core.operators.ml.trees.KICoreTreeEnsemble
 import io.kinference.core.operators.ml.utils.LabelsInfo.Companion.getLabelsInfo
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
@@ -13,6 +12,7 @@ import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.trees.TreeEnsembleInfo
+import io.kinference.utils.inlines.InlineInt
 
 sealed class TreeEnsembleClassifier(
     name: String,
@@ -84,9 +84,9 @@ class TreeEnsembleClassifierVer1(
         internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("TreeEnsembleClassifier", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, domain = OperatorInfo.ML_DOMAIN)
 
-        private fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
+        private suspend fun writeLabels(dataType: TensorProto.DataType, shape: IntArray, write: (Int) -> Any): NDArray {
             return when (dataType) {
-                TensorProto.DataType.INT64 -> LongNDArray(shape) { write(it) as Long }
+                TensorProto.DataType.INT64 -> LongNDArray(shape) { it: InlineInt -> write(it.value) as Long }
                 TensorProto.DataType.STRING -> StringNDArray(shape) { write(it) as String }
                 else -> error("Unsupported data type: $dataType")
             }

@@ -10,16 +10,17 @@ import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
+import io.kinference.utils.inlines.InlinePrimitive
 
 @GenerateNameFromPrimitives
 internal suspend fun broadcastTwoTensorsPrimitive(
     left: PrimitiveNDArray,
     right: PrimitiveNDArray,
     dest: MutablePrimitiveNDArray,
-    op: (PrimitiveType, PrimitiveType) -> PrimitiveType
+    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
 ): MutablePrimitiveNDArray {
     when {
-        left.isScalar() && right.isScalar() -> dest.array.blocks[0][0] = op(left.singleValue(), right.singleValue())
+        left.isScalar() && right.isScalar() -> dest.array.blocks[0][0] = op(InlinePrimitive(left.singleValue()), InlinePrimitive(right.singleValue())).value
         right.isScalar() -> broadcastRightScalar(left.array, right.singleValue(), dest.array, op)
         left.isScalar() -> broadcastLeftScalar(left.singleValue(), right.array, dest.array, op)
         else -> left.applyWithBroadcast(right, dest) { left, right, dest ->
@@ -31,7 +32,7 @@ internal suspend fun broadcastTwoTensorsPrimitive(
                 val destBlock = dest.array.blocks[blockNum]
 
                 for (idx in destBlock.indices) {
-                    destBlock[idx] = op(leftBlock[idx], rightBlock[idx])
+                    destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
                 }
             }
         }
@@ -43,7 +44,7 @@ private fun broadcastRightScalar(
     left: PrimitiveTiledArray,
     rightScalar: PrimitiveType,
     dest: PrimitiveTiledArray,
-    op: (PrimitiveType, PrimitiveType) -> PrimitiveType
+    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
 ) {
     require(left.blocksNum == dest.blocksNum && left.blockSize == dest.blockSize)
 
@@ -52,7 +53,7 @@ private fun broadcastRightScalar(
         val destBlock = dest.blocks[blockNum]
 
         for (idx in destBlock.indices) {
-            destBlock[idx] = op(leftBlock[idx], rightScalar)
+            destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightScalar)).value
         }
     }
 }
@@ -61,7 +62,7 @@ private fun broadcastLeftScalar(
     leftScalar: PrimitiveType,
     right: PrimitiveTiledArray,
     dest: PrimitiveTiledArray,
-    op: (PrimitiveType, PrimitiveType) -> PrimitiveType
+    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
 ) {
     require(right.blocksNum == dest.blocksNum && right.blockSize == dest.blockSize)
 
@@ -70,7 +71,7 @@ private fun broadcastLeftScalar(
         val destBlock = dest.blocks[blockNum]
 
         for (idx in destBlock.indices) {
-            destBlock[idx] = op(leftScalar, rightBlock[idx])
+            destBlock[idx] = op(InlinePrimitive(leftScalar), InlinePrimitive(rightBlock[idx])).value
         }
     }
 }

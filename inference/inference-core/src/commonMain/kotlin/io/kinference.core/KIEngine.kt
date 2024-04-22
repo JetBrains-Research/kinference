@@ -1,19 +1,15 @@
 package io.kinference.core
 
 import io.kinference.BackendInfo
-import io.kinference.OptimizableEngine
 import io.kinference.core.data.map.KIONNXMap
 import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.graph.KIGraph
 import io.kinference.core.model.KIModel
 import io.kinference.core.optimizer.rules.OptimizerRuleSet
-import io.kinference.core.optimizer.rules.context.AttentionContextRule
-import io.kinference.core.optimizer.rules.context.DynamicQuantizeLSTMContextRule
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
-import io.kinference.model.Model
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
@@ -24,6 +20,22 @@ import okio.Path
 import okio.Path.Companion.toPath
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
+
+// Define an interface for allocation control marking output
+internal interface KIONNXDataArraysReleaser {
+    fun markContextOutput()
+    fun markGlobalOutput()
+}
+
+internal fun <T> KIONNXData<T>.markContextOutput() {
+    if (this is KIONNXDataArraysReleaser)
+        this.markContextOutput()
+}
+
+internal fun <T> KIONNXData<T>.markGlobalOutput() {
+    if (this is KIONNXDataArraysReleaser)
+        this.markGlobalOutput()
+}
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
@@ -53,7 +65,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
         return if (rules.isNotEmpty()) {
             val newGraph = GraphOptimizer(model.graph).run(rules) as KIGraph
-            KIModel(model.name, model.opSet, newGraph)
+            KIModel(model.id, model.name, model.opSet, newGraph)
         } else {
             model
         }
@@ -81,7 +93,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
         return loadModel(CommonDataLoader.bytes(path.toPath()), rules)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> {
+    override suspend fun loadData(bytes: ByteArray, type: ONNXDataType): KIONNXData<*> {
         return when (type) {
             ONNXDataType.ONNX_TENSOR -> KITensor.create(protoReader(bytes).readTensor())
             ONNXDataType.ONNX_SEQUENCE -> KIONNXSequence.create(SequenceProto.decode(protoReader(bytes)))

@@ -19,12 +19,12 @@ private fun signNotNaNPrimitive(x: PrimitiveType) = when {
 
 @GenerateNameFromPrimitives
 @FilterPrimitives(exclude = [DataType.FLOAT, DataType.DOUBLE])
-internal fun signIntegerPrimitive(array: PrimitiveNDArray): PrimitiveNDArray {
+internal suspend fun signIntegerPrimitive(array: PrimitiveNDArray): PrimitiveNDArray {
     return array.applyElementWise { signNotNaNPrimitive(it) }
 }
 
 @GenerateNameFromPrimitives
 @SpecifyPrimitives(include = [DataType.FLOAT, DataType.DOUBLE])
-internal fun signFPPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise {
+internal suspend fun signFPPrimitive(array: PrimitiveNDArray): PrimitiveNDArray = array.applyElementWise {
     if (it.isNaN()) PrimitiveConstants.ZERO else signNotNaNPrimitive(it)
 }

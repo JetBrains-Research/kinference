@@ -4,6 +4,7 @@ import io.kinference.core.operators.ml.utils.PostTransform
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.extensions.all.all
 import io.kinference.trees.*
+import io.kinference.utils.inlines.InlineInt
 import io.kinference.utils.toIntArray
 
 internal data class SvmInfo(
@@ -48,7 +49,7 @@ internal data class SvmInfo(
         private const val DEFAULT_POST_TRANSFORM = "NONE"
         private const val DEFAULT_KERNEL_TYPE = "LINEAR"
 
-        operator fun invoke(
+        suspend operator fun invoke(
             coefficients: FloatArray,
             kernelParams: FloatArray?,
             kernelTypeStr: String?,
@@ -124,27 +125,27 @@ internal data class SvmInfo(
             val coefficients: FloatNDArray
         )
 
-        private fun configureSvcInfo(supportVectors: FloatArray, coefficients: FloatArray, vectorCount: Int, numClasses: Int, kernelType: KernelType): SupportVectorsAndCoefficients {
+        private suspend fun configureSvcInfo(supportVectors: FloatArray, coefficients: FloatArray, vectorCount: Int, numClasses: Int, kernelType: KernelType): SupportVectorsAndCoefficients {
             val featuresCount = supportVectors.size / vectorCount
             val supportVectorsTensor = if (kernelType == KernelType.RBF) {
                 // Linear read with RBF
-                FloatNDArray(vectorCount, featuresCount) { idx: Int -> supportVectors[idx] }
+                FloatNDArray(vectorCount, featuresCount) { idx: InlineInt -> supportVectors[idx.value] }
             } else {
                 // Transpose read
                 FloatNDArray(featuresCount, vectorCount) { (i, j): IntArray -> supportVectors[j * featuresCount + i] }
             }
 
-            val coefficientsTensor = FloatNDArray(numClasses - 1, vectorCount) { idx: Int -> coefficients[idx] }
+            val coefficientsTensor = FloatNDArray(numClasses - 1, vectorCount) { idx: InlineInt -> coefficients[idx.value] }
 
             return SupportVectorsAndCoefficients(supportVectorsTensor, coefficientsTensor)
         }
 
-        private fun configureLinearInfo(coefficients: FloatArray, numClasses: Int, kernelType: KernelType): FloatNDArray {
+        private suspend fun configureLinearInfo(coefficients: FloatArray, numClasses: Int, kernelType: KernelType): FloatNDArray {
             val featuresCount = coefficients.size / numClasses
 
             return if (kernelType == KernelType.RBF) {
                 // Linear read with RBF
-                FloatNDArray(numClasses, featuresCount) { idx: Int -> coefficients[idx] }
+                FloatNDArray(numClasses, featuresCount) { idx: InlineInt -> coefficients[idx.value] }
             } else {
                 // Transpose read
                 FloatNDArray(featuresCount, numClasses) { (i, j): IntArray -> coefficients[j * featuresCount + i] }

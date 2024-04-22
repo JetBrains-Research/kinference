@@ -9,7 +9,7 @@ class TypeProto(
     val mapType: Map? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): TypeProto {
+        suspend fun decode(reader: ProtobufReader): TypeProto {
             var denotation: String? = null
             var tensorType: Tensor? = null
             var sequenceType: Sequence? = null
@@ -40,7 +40,7 @@ class TypeProto(
 
     class Tensor(val elem_type: TensorProto.DataType? = null, val shape: TensorShapeProto? = null) {
         companion object {
-            fun decode(reader: ProtobufReader): Tensor {
+            suspend fun decode(reader: ProtobufReader): Tensor {
                 var elemType: TensorProto.DataType? = null
                 var shape: TensorShapeProto? = null
                 reader.forEachTag { tag ->
@@ -66,7 +66,7 @@ class TypeProto(
 
     class Sequence(val elem_type: TypeProto? = null) {
         companion object {
-            fun decode(reader: ProtobufReader): Sequence {
+            suspend fun decode(reader: ProtobufReader): Sequence {
                 var elemType: TypeProto? = null
                 reader.forEachTag { tag ->
                     if (tag == 1)
@@ -81,7 +81,7 @@ class TypeProto(
 
     class Map(val key_type: Int? = null, val value_type: TypeProto? = null) {
         companion object {
-            fun decode(reader: ProtobufReader): Map {
+            suspend fun decode(reader: ProtobufReader): Map {
                 var keyType: Int? = null
                 var valueType: TypeProto? = null
                 reader.forEachTag { tag ->

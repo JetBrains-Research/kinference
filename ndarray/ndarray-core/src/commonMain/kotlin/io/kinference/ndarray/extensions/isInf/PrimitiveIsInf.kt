@@ -28,7 +28,7 @@ private val ONLY_POSITIVE = { x: PrimitiveType -> x == PrimitiveType.POSITIVE_IN
  *         indicates whether the corresponding element in the current NDArray is infinite or not.
  */
 @MakePublic
-internal fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArray {
+internal suspend fun PrimitiveNDArray.isInf(detectNegative: Boolean = true, detectPositive: Boolean = true): BooleanNDArray {
     val detector = when {
         detectNegative && detectPositive -> PrimitiveType::isInfinite
         detectNegative -> ONLY_NEGATIVE

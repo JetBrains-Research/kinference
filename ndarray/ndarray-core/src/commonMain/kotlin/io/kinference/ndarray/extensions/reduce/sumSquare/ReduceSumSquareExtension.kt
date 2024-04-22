@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.reduce.sumSquare
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
-fun NumberNDArrayCore.reduceSumSquare(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
+suspend fun NumberNDArrayCore.reduceSumSquare(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
     return when(type) {
         DataType.FLOAT -> (this as FloatNDArray).reduceSumSquare(axes, keepDims)
         DataType.DOUBLE -> (this as DoubleNDArray).reduceSumSquare(axes, keepDims)

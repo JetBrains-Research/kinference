@@ -11,7 +11,7 @@ class NodeProto(
     val attribute: MutableList<AttributeProto> = ArrayList()
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): NodeProto {
+        suspend fun decode(reader: ProtobufReader): NodeProto {
             val proto = NodeProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

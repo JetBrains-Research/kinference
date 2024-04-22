@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.reduce.l1
 import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.types.DataType
 
-fun NumberNDArrayCore.reduceL1(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
+suspend fun NumberNDArrayCore.reduceL1(axes: IntArray, keepDims: Boolean): NumberNDArrayCore {
     return when(type) {
         DataType.FLOAT -> (this as FloatNDArray).reduceL1(axes, keepDims)
         DataType.DOUBLE -> (this as DoubleNDArray).reduceL1(axes, keepDims)

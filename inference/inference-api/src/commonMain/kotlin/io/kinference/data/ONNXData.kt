@@ -14,7 +14,7 @@ interface BaseONNXData<T> {
     val data: T
 
     fun rename(name: String): BaseONNXData<T>
-    fun clone(newName: String? = name): BaseONNXData<T>
+    suspend fun clone(newName: String? = name): BaseONNXData<T>
 }
 
 /**
@@ -27,7 +27,7 @@ interface BaseONNXData<T> {
 interface ONNXData<T, B : BackendInfo> : BaseONNXData<T>, Closeable {
     val backend: B
     override fun rename(name: String): ONNXData<T, B>
-    override fun clone(newName: String?): ONNXData<T, B>
+    override suspend fun clone(newName: String?): ONNXData<T, B>
 }
 
 /**
@@ -35,7 +35,7 @@ interface ONNXData<T, B : BackendInfo> : BaseONNXData<T>, Closeable {
  */
 abstract class ONNXTensor<T, B : BackendInfo>(override val name: String?, override val data: T) : ONNXData<T, B> {
     override val type: ONNXDataType = ONNXDataType.ONNX_TENSOR
-    abstract override fun clone(newName: String?): ONNXTensor<T, B>
+    abstract override suspend fun clone(newName: String?): ONNXTensor<T, B>
 }
 
 /**
@@ -43,7 +43,7 @@ abstract class ONNXTensor<T, B : BackendInfo>(override val name: String?, overri
  */
 abstract class ONNXSequence<T, B : BackendInfo>(override val name: String?, override val data: T) : ONNXData<T, B> {
     override val type: ONNXDataType = ONNXDataType.ONNX_SEQUENCE
-    abstract override fun clone(newName: String?): ONNXSequence<T, B>
+    abstract override suspend fun clone(newName: String?): ONNXSequence<T, B>
 }
 
 /**
@@ -51,5 +51,5 @@ abstract class ONNXSequence<T, B : BackendInfo>(override val name: String?, over
  */
 abstract class ONNXMap<T, B : BackendInfo>(override val name: String?, override val data: T) : ONNXData<T, B> {
     override val type: ONNXDataType = ONNXDataType.ONNX_MAP
-    abstract override fun clone(newName: String?): ONNXMap<T, B>
+    abstract override suspend fun clone(newName: String?): ONNXMap<T, B>
 }

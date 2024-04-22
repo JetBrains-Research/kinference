@@ -3,6 +3,7 @@ package io.kinference.tfjs.graph
 import io.kinference.graph.*
 import io.kinference.operator.Operator
 import io.kinference.operator.OperatorSetRegistry
+import io.kinference.profiler.ProfilingContext
 import io.kinference.protobuf.message.GraphProto
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.tfjs.TFJSData
@@ -10,19 +11,32 @@ import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.tfjs.operators.TFJSOperatorFactory
 import io.kinference.utils.closeAll
 
-class TFJSGraph(
+class TFJSGraph private constructor(
     proto: GraphProto,
+    initializers: ArrayList<TFJSData<*>>,
     operators: ArrayList<Operator<TFJSData<*>, TFJSData<*>>>,
     valueOrderInfo: GraphValueOrderInfo,
     private val preparedTensorsContext: GraphContext<TFJSData<*>> = GraphContext()
-) : Graph<TFJSData<*>>(proto, operators, valueOrderInfo) {
+) : Graph<TFJSData<*>>(proto, initializers, operators, valueOrderInfo) {
 
-    override fun close() {
+    override suspend fun close() {
         preparedTensorsContext.close()
         super.close()
     }
 
-    override fun prepareInput(proto: TensorProto): TFJSData<*> = TFJSTensor.create(proto)
+    override suspend fun applyWithAllocationControl(
+        contexts: Contexts<TFJSData<*>>,
+        profilingContext: ProfilingContext?,
+        operator: Operator<TFJSData<*>, TFJSData<*>>
+    ): List<TFJSData<*>?> {
+        return operator.applyWithCheck(
+            Contexts(contexts.graph, profilingContext),
+            operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
+    }
+
+    override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<TFJSData<*>>): List<TFJSData<*>> {
+        return outputs.map { contexts.graph!!.getValue(it.name) }
+    }
 
     fun addTensorToContext(tensor: TFJSTensor) {
         preparedTensorsContext.putValue(tensor.name!!, tensor)
@@ -49,7 +63,10 @@ class TFJSGraph(
                 }
             }
 
-            return TFJSGraph(proto, operators, valueOrderInfo)
+            val initializers = getInitializers(proto) { tensorProto ->
+                TFJSTensor.create(tensorProto) as TFJSData<*>
+            }
+            return TFJSGraph(proto, initializers, operators, valueOrderInfo)
         }
     }
 }

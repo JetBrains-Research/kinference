@@ -2,7 +2,7 @@ package io.kinference.ndarray.extensions.onehot
 
 import io.kinference.ndarray.arrays.*
 
-internal fun NumberNDArrayCore.getOneHotIndices(depth: Int) = when (this) {
+internal suspend fun NumberNDArrayCore.getOneHotIndices(depth: Int) = when (this) {
     is IntNDArray -> getOneHotIndices(this, depth)
     is FloatNDArray -> getOneHotIndices(this, depth)
     is DoubleNDArray -> getOneHotIndices(this, depth)

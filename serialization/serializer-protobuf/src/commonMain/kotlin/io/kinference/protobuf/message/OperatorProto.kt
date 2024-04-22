@@ -10,7 +10,7 @@ class OperatorProto(
     var status: OperatorStatus? = null
 ) {
     companion object {
-        fun decode(reader: ProtobufReader): OperatorProto {
+        suspend fun decode(reader: ProtobufReader): OperatorProto {
             val proto = OperatorProto()
             reader.forEachTag { tag ->
                 when (ReaderTag.fromInt(tag)) {

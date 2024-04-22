@@ -2,7 +2,7 @@ package io.kinference.ndarray.extensions.neg
 
 import io.kinference.ndarray.arrays.*
 
-fun NumberNDArrayCore.neg(): NumberNDArrayCore {
+suspend fun NumberNDArrayCore.neg(): NumberNDArrayCore {
     return when (this) {
         is FloatNDArray -> negFloat(this)
         is DoubleNDArray -> negDouble(this)
@@ -14,4 +14,4 @@ fun NumberNDArrayCore.neg(): NumberNDArrayCore {
     }
 }
 
-operator fun NumberNDArrayCore.unaryMinus() = this.neg()
+suspend operator fun NumberNDArrayCore.unaryMinus() = this.neg()

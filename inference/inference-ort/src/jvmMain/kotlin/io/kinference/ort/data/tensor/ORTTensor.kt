@@ -16,11 +16,11 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         get() = data.info.shape
     override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
-    override fun close() {
+    override suspend fun close() {
         data.close()
     }
 
-    override fun clone(newName: String?): ORTTensor {
+    override suspend fun clone(newName: String?): ORTTensor {
         return when(data.info.type) {
             OnnxJavaType.DOUBLE -> invoke(toDoubleArray(), shape, newName)
             OnnxJavaType.FLOAT -> invoke(toFloatArray(), shape, newName)
@@ -132,9 +132,9 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
             return ORTTensor(name, onnxTensor)
         }
 
-        fun create(proto: TensorProto): ORTTensor {
+        suspend fun create(proto: TensorProto): ORTTensor {
             val type = proto.dataType ?: TensorProto.DataType.UNDEFINED
-            val array = if (proto.isString()) proto.stringData else proto.arrayData
+            val array = if (proto.isString()) proto.stringData else proto.getArrayData()
             requireNotNull(array) { "Array value should be initialized" }
 
             return ORTTensor(array, type, proto.dims.toLongArray(), proto.name)

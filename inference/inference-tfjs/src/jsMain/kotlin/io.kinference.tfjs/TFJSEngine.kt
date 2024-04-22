@@ -83,7 +83,7 @@ object TFJSEngine : IrOptimizableEngine<TFJSData<*>> {
         return loadModel(path, optimize = true)
     }
 
-    override fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> {
+    override suspend fun loadData(bytes: ByteArray, type: ONNXDataType): TFJSData<*> {
         return when (type) {
             ONNXDataType.ONNX_TENSOR -> TFJSTensor.create(protoReader(bytes).readTensor())
             ONNXDataType.ONNX_SEQUENCE -> TFJSSequence.create(SequenceProto.decode(protoReader(bytes)))

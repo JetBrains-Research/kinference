@@ -21,7 +21,7 @@ internal class TiledArrayContainer : ArrayContainer {
         tiledInitialized = true
     }
 
-    override fun decode(reader: ProtobufReader, tag: Int, dataType: TensorProto.DataType, shape: IntArray?) {
+    override suspend fun decode(reader: ProtobufReader, tag: Int, dataType: TensorProto.DataType, shape: IntArray?) {
         if (shape != null) {
             tiled = dataType.tiledSerializer().decode(reader, shape, tag)
             tiledInitialized = true
@@ -30,7 +30,7 @@ internal class TiledArrayContainer : ArrayContainer {
         }
     }
 
-    override fun get(shape: IntArray): Any? {
+    override suspend fun get(shape: IntArray): Any? {
         if (!hasData()) return null
 
         if (!tiledInitialized) {

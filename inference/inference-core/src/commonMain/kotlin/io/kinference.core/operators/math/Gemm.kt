@@ -63,7 +63,7 @@ class GemmVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
         internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("Gemm", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
-        private fun getDest(array: NDArrayCore?, type: DataType, targetShape: IntArray): MutableNDArrayCore {
+        private suspend fun getDest(array: NDArrayCore?, type: DataType, targetShape: IntArray): MutableNDArrayCore {
             if (array == null) return allocateNDArray(type, Strides(targetShape))
             if (array.shape.contentEquals(targetShape)) return array.toMutable()
 

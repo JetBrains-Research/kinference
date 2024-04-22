@@ -5,15 +5,16 @@ import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.TiledArrayContainer
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.inlines.InlineInt
 
 object TiledTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = TiledArrayContainer()
-    override fun hasIntArray(proto: TensorProto): Boolean {
-        return proto.arrayData is IntTiledArray
+    override suspend fun hasIntArray(proto: TensorProto): Boolean {
+        return proto.getArrayData() is IntTiledArray
     }
 
-    override fun parseInt32Data(proto: TensorProto): Any {
-        val data = proto.arrayData as IntTiledArray
+    override suspend fun parseInt32Data(proto: TensorProto): Any {
+        val data = proto.getArrayData() as IntTiledArray
         val pointer = data.pointer()
 
         return when (val type = proto.dataType) {
@@ -29,7 +30,7 @@ object TiledTensorDecoder : TensorDecoder() {
     }
 
 
-    override fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (Int) -> Any): Any {
+    override suspend fun makeArray(type: TensorProto.DataType, shape: IntArray, init: (InlineInt) -> Any): Any {
         return createTiledArray(type.resolveLocalDataType(), shape, init)
     }
 }

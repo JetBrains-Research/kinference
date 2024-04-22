@@ -13,7 +13,7 @@ class MutableNumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : Numb
         tfjsArray.bufferSync().set(value, *strides.index(index))
     }
 
-    override fun clone(): MutableNumberNDArrayTFJS {
+    override suspend fun clone(): MutableNumberNDArrayTFJS {
         return MutableNumberNDArrayTFJS(tfjsArray.clone())
     }
 

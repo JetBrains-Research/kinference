@@ -30,15 +30,15 @@ suspend fun List<KITensor>.concatenate(axis: Int): KITensor {
     return this.map { it.data }.concat(axis).asTensor()
 }
 
-fun KITensor.split(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+suspend fun KITensor.split(parts: Int, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     return data.splitWithAxis(parts, axis, keepDims).map { it.asTensor() }
 }
 
-fun KITensor.split(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+suspend fun KITensor.split(split: IntArray, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     return data.splitWithAxis(split, axis, keepDims).map { it.asTensor() }
 }
 
-fun KITensor.split(splitTensor: KITensor, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
+suspend fun KITensor.split(splitTensor: KITensor, axis: Int = 0, keepDims: Boolean = true): List<KITensor> {
     val splitArray = when (splitTensor.data.type) {
         DataType.INT -> {
             val array = splitTensor.data as IntNDArray

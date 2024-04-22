@@ -20,4 +20,4 @@ import io.kinference.primitives.types.DataType
 import kotlin.experimental.inv
 
 @MakePublic
-internal fun PrimitiveNDArray.bitNot(): PrimitiveNDArray = applyElementWise { it.inv() }
+internal suspend fun PrimitiveNDArray.bitNot(): PrimitiveNDArray = applyElementWise { it.inv() }

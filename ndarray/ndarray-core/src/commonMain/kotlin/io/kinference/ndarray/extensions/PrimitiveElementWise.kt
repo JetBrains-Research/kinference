@@ -9,7 +9,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 
 @MakePublic
-internal fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): MutablePrimitiveNDArray {
+internal suspend fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> PrimitiveType): MutablePrimitiveNDArray {
     val output = MutablePrimitiveNDArray(strides)
 
     val inputBlockIter = array.blocks.iterator()
@@ -29,7 +29,7 @@ internal fun PrimitiveNDArray.applyElementWise(func: (PrimitiveType) -> Primitiv
 }
 
 @MakePublic
-internal fun PrimitiveNDArray.predicateElementWise(predicate: (PrimitiveType) -> Boolean): BooleanNDArray {
+internal suspend fun PrimitiveNDArray.predicateElementWise(predicate: (PrimitiveType) -> Boolean): BooleanNDArray {
     val output = MutableBooleanNDArray(strides)
 
     val inputBlockIter = array.blocks.iterator()

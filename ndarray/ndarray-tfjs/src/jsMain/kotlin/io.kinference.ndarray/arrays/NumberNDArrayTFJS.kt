@@ -16,11 +16,11 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return tfjsArray.dataSync()[0] as Number
     }
 
-    override fun copyIfNotMutable(): MutableNumberNDArrayTFJS {
+    override suspend fun copyIfNotMutable(): MutableNumberNDArrayTFJS {
         return this as? MutableNumberNDArrayTFJS ?: MutableNumberNDArrayTFJS(tfjsArray.clone())
     }
 
-    override fun clone(): NumberNDArrayTFJS {
+    override suspend fun clone(): NumberNDArrayTFJS {
         return NumberNDArrayTFJS(tfjsArray.clone())
     }
 
@@ -28,7 +28,7 @@ open class NumberNDArrayTFJS internal constructor(tfjsArray: ArrayTFJS) : NDArra
         return MutableNumberNDArrayTFJS(tfjsArray.broadcastTo(shape.toTypedArray()))
     }
 
-    override fun toMutable(): MutableNumberNDArrayTFJS {
+    override suspend fun toMutable(): MutableNumberNDArrayTFJS {
         val tensor = tfjsArray.clone()
         return MutableNumberNDArrayTFJS(tensor)
     }

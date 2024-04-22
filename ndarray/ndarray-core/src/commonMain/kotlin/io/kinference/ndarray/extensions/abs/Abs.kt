@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.abs
 import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.kinference.ndarray.arrays.*
 
-fun abs(x: NumberNDArrayCore): NumberNDArrayCore {
+suspend fun abs(x: NumberNDArrayCore): NumberNDArrayCore {
     return when (x) {
         is UIntNDArray, is UShortNDArray, is UByteNDArray, is ULongNDArray -> x
         is FloatNDArray -> absFloat(x)

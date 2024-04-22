@@ -6,6 +6,10 @@ import io.kinference.gradle.configureTests
 group = rootProject.group
 version = rootProject.version
 
+plugins {
+    id("org.jetbrains.kotlin.plugin.atomicfu") version "2.0.0-Beta3"
+}
+
 kotlin {
     js(IR) {
         browser()
@@ -25,6 +29,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+                implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicfu}")
                 implementation("com.squareup.okio:okio:${Versions.okio}")
 
                 api(project(":ndarray:ndarray-api"))

@@ -5,7 +5,7 @@ object Versions {
     const val wire = "4.8.1"
 
     // Don't forget change version for plugin
-    const val primitives = "0.1.24"
+    const val primitives = "0.1.26-kotlin18"
 
     const val coroutines = "1.7.3"
     const val slf4j = "2.0.9"
@@ -16,4 +16,6 @@ object Versions {
 
     const val kmath = "0.3.1"
     const val multik = "0.2.2"
+
+    const val atomicfu = "0.23.2"
 }
