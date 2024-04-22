@@ -19,7 +19,7 @@ import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.reduce.primitive.reduceOperationPrimitive
 import io.kinference.ndarray.extensions.softmax.softmax
-import io.kinference.ndarray.inlines.*
+import io.kinference.utils.inlines.*
 import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith

@@ -16,7 +16,7 @@ import io.kinference.protobuf.message.*
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
 import io.kinference.utils.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.inlines.InlineInt
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import kotlin.math.abs

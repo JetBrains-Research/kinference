@@ -10,7 +10,7 @@ import io.kinference.ndarray.arrays.indexAxis
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.inlines.InlineInt
 import kotlin.math.max
 import kotlin.math.min
 

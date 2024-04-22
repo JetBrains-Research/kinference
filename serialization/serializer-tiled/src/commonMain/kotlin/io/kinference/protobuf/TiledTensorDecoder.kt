@@ -1,11 +1,11 @@
 package io.kinference.protobuf
 
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.inlines.InlineInt
 import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.TiledArrayContainer
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.inlines.InlineInt
 
 object TiledTensorDecoder : TensorDecoder() {
     override fun initContainer(): ArrayContainer = TiledArrayContainer()

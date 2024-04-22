@@ -4,7 +4,7 @@ import io.kinference.core.operators.ml.utils.PostTransform
 import io.kinference.ndarray.arrays.FloatNDArray
 import io.kinference.ndarray.extensions.all.all
 import io.kinference.trees.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.inlines.InlineInt
 import io.kinference.utils.toIntArray
 
 internal data class SvmInfo(
