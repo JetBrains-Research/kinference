@@ -13,10 +13,11 @@ package io.kinference.ndarray.extensions.bitwise.and
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsPrimitive
-import io.kinference.ndarray.inlines.InlinePrimitive
+import io.kinference.ndarray.inlines.*
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.InlineInt
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.bitAnd(other: PrimitiveNDArray): MutablePrimitiveNDArray {

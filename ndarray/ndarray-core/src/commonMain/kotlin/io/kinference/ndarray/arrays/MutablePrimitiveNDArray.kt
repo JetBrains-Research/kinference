@@ -4,7 +4,7 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import kotlin.jvm.JvmName

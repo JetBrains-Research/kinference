@@ -8,7 +8,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.broadcasting.broadcastTwoTensorsBoolean
 import io.kinference.ndarray.extensions.isTransposeReshape
 import io.kinference.ndarray.inlines.InlineBoolean
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 import io.kinference.primitives.types.DataType
 import kotlin.jvm.JvmName
 import kotlin.math.abs

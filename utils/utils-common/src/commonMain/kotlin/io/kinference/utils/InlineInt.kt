@@ -1,4 +1,4 @@
-package io.kinference.ndarray.inlines
+package io.kinference.utils
 
 import kotlin.jvm.JvmInline
 

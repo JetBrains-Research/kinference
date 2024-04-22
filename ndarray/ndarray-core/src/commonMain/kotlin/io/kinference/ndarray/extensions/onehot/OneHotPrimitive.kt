@@ -7,7 +7,7 @@ import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 
 private inline fun getValue(left: Int, right: Int, offValue: PrimitiveType, onValue: PrimitiveType): PrimitiveType {
     return if (left == right) onValue else offValue

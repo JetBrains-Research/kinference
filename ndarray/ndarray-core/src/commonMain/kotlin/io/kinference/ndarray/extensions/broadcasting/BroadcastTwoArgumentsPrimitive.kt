@@ -11,6 +11,7 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import io.kinference.ndarray.inlines.*
+import io.kinference.utils.InlineInt
 
 @GenerateNameFromPrimitives
 internal suspend fun broadcastTwoTensorsPrimitive(

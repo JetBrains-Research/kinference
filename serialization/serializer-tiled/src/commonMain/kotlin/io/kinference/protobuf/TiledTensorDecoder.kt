@@ -1,7 +1,7 @@
 package io.kinference.protobuf
 
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 import io.kinference.ndarray.extensions.createTiledArray
 import io.kinference.protobuf.arrays.ArrayContainer
 import io.kinference.protobuf.arrays.TiledArrayContainer

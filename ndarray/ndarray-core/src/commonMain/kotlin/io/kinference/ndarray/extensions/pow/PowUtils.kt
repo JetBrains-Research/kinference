@@ -1,7 +1,7 @@
 package io.kinference.ndarray.extensions.pow
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 import kotlin.math.pow
 
 internal fun Float.pow(x: Double): Float = this.toDouble().pow(x).toFloat()

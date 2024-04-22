@@ -10,7 +10,7 @@ import io.kinference.ndarray.extensions.utils.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 
 
 @MakePublic

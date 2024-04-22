@@ -11,7 +11,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.TensorShape
 import io.kinference.types.ValueTypeInfo
-import io.kinference.ndarray.inlines.InlineInt
+import io.kinference.utils.InlineInt
 import space.kscience.kmath.UnsafeKMathAPI
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
