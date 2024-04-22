@@ -4,12 +4,12 @@ import io.kinference.ndarray.arrays.*
 
 abstract class SingleModeTreeEnsemble<T : NumberNDArray>(
     private val aggregator: Aggregator,
-    private val treeDepths: IntArray,
     private val treeSizes: IntArray,
     featureIds: IntArray,
     nodeFloatSplits: FloatArray,
-    private val nonLeafValuesCount: IntArray,
+    private val nextNodeIds: IntArray,
     private val leafValues: FloatArray,
+    private val leafCounter: IntArray,
     private val biases: FloatArray,
     val numTargets: Int,
     splitMode: TreeSplitType
@@ -19,16 +19,17 @@ abstract class SingleModeTreeEnsemble<T : NumberNDArray>(
     protected fun applyEntry(array: FloatArray, output: FloatArray, srcIdx: Int = 0, dstIdx: Int = 0) {
         var score = FloatArray(numTargets)
         var treeOffset = 0
-        var off = 0
-        for ((i, depth) in treeDepths.withIndex()) {
+        for (treeSize in treeSizes) {
             var index = 0
-            for (j in 1 until depth) {
-                index = 2 * index + 1 + treeSplitter.split(array, srcIdx, index + treeOffset)
+            while (nextNodeIds[2 * (treeOffset + index)] != 0) {
+                val split = treeSplitter.split(array, srcIdx, treeOffset + index)
+                index = nextNodeIds[2 * (treeOffset + index) + split]
             }
-            off += nonLeafValuesCount[i]
-            val treeIndex = (treeOffset + index - off) * numTargets
-            score = aggregator.accept(score, leafValues, treeIndex)
-            treeOffset += treeSizes[i]
+
+            val leafValueIdx = leafCounter[treeOffset + index] * numTargets
+            score = aggregator.accept(score, leafValues, leafValueIdx)
+
+            treeOffset += treeSize
         }
         aggregator.finalize(biases, output, score, dstPosition = dstIdx, numTargets = numTargets)
     }

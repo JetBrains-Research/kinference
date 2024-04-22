@@ -12,7 +12,7 @@ enum class AggregatorType {
 
 sealed class Aggregator {
     abstract fun accept(score: FloatArray, value: FloatArray, startIdx: Int = 0): FloatArray
-    abstract fun finalize(base: FloatArray, dst: FloatArray, score: FloatArray, dstPosition: Int = 0, numTargets: Int = 1): FloatArray
+    abstract fun finalize(base: FloatArray?, dst: FloatArray, score: FloatArray, dstPosition: Int = 0, numTargets: Int = 1): FloatArray
 
     companion object {
         operator fun get(name: AggregatorType) = when (name) {
@@ -28,10 +28,16 @@ object Sum : Aggregator() {
         return score
     }
 
-    override fun finalize(base: FloatArray, dst: FloatArray, score: FloatArray, dstPosition: Int, numTargets: Int): FloatArray {
-        for (i in 0 until numTargets) {
-            score[i] += base[i]
-            dst[dstPosition + i] = score[i]
+    override fun finalize(base: FloatArray?, dst: FloatArray, score: FloatArray, dstPosition: Int, numTargets: Int): FloatArray {
+        if (base != null) {
+            for (i in 0 until numTargets) {
+                score[i] += base[i]
+                dst[dstPosition + i] = score[i]
+            }
+        } else {
+            for (i in 0 until numTargets) {
+                dst[dstPosition + i] = score[i]
+            }
         }
         return score
     }

@@ -1,17 +1,16 @@
 package io.kinference.trees
 
-import kotlin.math.ceil
-import kotlin.math.log2
+import io.kinference.utils.toIntArray
 
 data class TreeEnsembleInfo(
     val aggregator: Aggregator,
     val transformType: PostTransformType,
-    val treeDepths: IntArray,
     val treeSizes: IntArray,
     val featureIds: IntArray,
     val nodeFloatSplits: FloatArray,
-    val nonLeafValuesCount: IntArray,
+    val nextNodeIds: IntArray,
     val leafValues: FloatArray,
+    val leafCounter: IntArray,
     val biases: FloatArray,
     val numTargets: Int,
     val splitMode: TreeSplitType
@@ -21,8 +20,6 @@ data class TreeEnsembleInfo(
 
         private const val DEFAULT_AGGREGATOR = "SUM"
         private const val DEFAULT_POST_TRANSFORM = "NONE"
-
-        private fun treeDepthFromNodesNum(n: Int) = ceil(log2(n.toDouble())).toInt()
 
         operator fun invoke(
             baseValues: FloatArray?, featureIds: LongArray, nodeModes: List<String>, nodeIds: LongArray,
@@ -42,9 +39,7 @@ data class TreeEnsembleInfo(
             val splitMode = (distinctModes - "LEAF").single()
 
             val numTrees = treeIds.distinct().size
-            val treeDepths = IntArray(numTrees)
             val treeSizes = IntArray(numTrees)
-            val nonLeafValuesCount = IntArray(numTrees)
 
             //count the number of nodes and compute the depth of each tree
             val trees2nodes = treeIds.zip(nodeIds).groupBy { it.first }
@@ -52,29 +47,35 @@ data class TreeEnsembleInfo(
                 val treeId = entry.key.toInt()
                 val currentNumNodes = entry.value.size
                 treeSizes[treeId] = currentNumNodes
-                treeDepths[treeId] = treeDepthFromNodesNum(currentNumNodes)
             }
 
-            //count non-leaf nodes of each tree
-            for (entry in trees2nodes) {
-                val treeId = entry.key.toInt()
-                //skip first previous trees
-                val treeOffset = treeSizes.take(treeId).fold(0, Int::plus)
-                for (tree2node in entry.value) {
-                    val nodeOffset = tree2node.second.toInt() + treeOffset
-                    if (nodeModes[nodeOffset] != "LEAF") nonLeafValuesCount[treeId]++
+            val prevLeavesCounter = IntArray(nodeIds.size)
+            var counter = 0; var treeOffset = 0
+
+            for (treeSize in treeSizes) {
+                for (i in 0 until treeSize) {
+                    val currentIdx = treeOffset + i
+                    prevLeavesCounter[currentIdx] = counter
+                    if (nodeModes[currentIdx] == "LEAF") counter++
                 }
+                treeOffset += treeSize
+            }
+
+            val nextNodeIds = IntArray(falseNodeIds.size + trueNodeIds.size)
+            for (i in falseNodeIds.indices) {
+                nextNodeIds[2 * i] = falseNodeIds[i].toInt()
+                nextNodeIds[2 * i + 1] = trueNodeIds[i].toInt()
             }
 
             return TreeEnsembleInfo(
                 aggregator = Aggregator[aggregatorType],
                 transformType = postTransformType,
-                treeDepths = treeDepths,
                 treeSizes = treeSizes,
-                featureIds = IntArray(featureIds.size) { featureIds[it].toInt() },
+                featureIds = featureIds.toIntArray(),
                 nodeFloatSplits = nodeValues,
-                nonLeafValuesCount = nonLeafValuesCount,
+                nextNodeIds = nextNodeIds,
                 leafValues = targetWeights,
+                leafCounter = prevLeavesCounter,
                 biases = baseValues ?: FloatArray(numTargets),
                 numTargets = numTargets,
                 splitMode = TreeSplitType.valueOf(splitMode)
