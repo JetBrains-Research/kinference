@@ -40,7 +40,7 @@ private class ModelArrayDispatcher {
         private const val INIT_SIZE_VALUE: Int = 2
     }
 
-    private val typeSize: Int = ArrayTypes.entries.size
+    private val typeSize: Int = ArrayTypes.values().size
 
     private var operatorMode: Boolean = false
 

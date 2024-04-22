@@ -17,5 +17,5 @@ object Versions {
     const val kmath = "0.3.1"
     const val multik = "0.2.2"
 
-    const val atomicfu = "0.23.2"
+    const val atomicfu = "0.21.0"
 }
