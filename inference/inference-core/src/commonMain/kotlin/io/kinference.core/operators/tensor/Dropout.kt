@@ -9,7 +9,7 @@ import io.kinference.ndarray.arrays.BooleanNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.InlineInt
+import io.kinference.utils.inlines.InlineInt
 
 sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {

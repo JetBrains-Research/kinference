@@ -4,9 +4,9 @@ package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
-import io.kinference.utils.InlineInt
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.inlines.InlineInt
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives

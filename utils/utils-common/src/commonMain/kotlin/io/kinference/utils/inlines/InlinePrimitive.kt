@@ -1,28 +1,18 @@
 @file:GeneratePrimitives(
-    DataType.BYTE,
-    DataType.SHORT,
-    DataType.LONG,
-    DataType.UBYTE,
-    DataType.USHORT,
-    DataType.UINT,
-    DataType.ULONG,
-    DataType.FLOAT,
-    DataType.DOUBLE
+    DataType.NUMBER
 )
 
-package io.kinference.ndarray.inlines
+package io.kinference.utils.inlines
 
-import io.kinference.ndarray.stubs.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
-import kotlin.experimental.*
 import kotlin.jvm.JvmInline
+import kotlin.experimental.*
 
 @GenerateNameFromPrimitives
-@MakePublic
 @JvmInline
-internal value class InlinePrimitive(val value: PrimitiveType) {
+value class InlinePrimitive(val value: PrimitiveType) {
     inline operator fun plus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value + other.value).toPrimitive())
 
     inline operator fun minus(other: InlinePrimitive): InlinePrimitive = InlinePrimitive((this.value - other.value).toPrimitive())
