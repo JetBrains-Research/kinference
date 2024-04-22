@@ -9,18 +9,18 @@ import io.kinference.trees.*
 class TFJSTreeEnsemble(
     aggregator: Aggregator,
     private val transform: PostTransform,
-    treeDepths: IntArray,
     treeSizes: IntArray,
     featureIds: IntArray,
     nodeFloatSplits: FloatArray,
-    nonLeafValuesCount: IntArray,
+    nextNodeIds: IntArray,
     leafValues: FloatArray,
+    leafCounter: IntArray,
     biases: FloatArray,
     numTargets: Int,
     splitMode: TreeSplitType
 ) : SingleModeTreeEnsemble<NumberNDArrayTFJS>(
-    aggregator, treeDepths, treeSizes, featureIds, nodeFloatSplits,
-    nonLeafValuesCount, leafValues, biases, numTargets, splitMode
+    aggregator, treeSizes, featureIds, nodeFloatSplits, nextNodeIds,
+    leafValues, leafCounter, biases, numTargets, splitMode
 ) {
     override suspend fun execute(input: NumberNDArrayTFJS): NumberNDArrayTFJS {
         require(input.type == DataType.DOUBLE || input.type == DataType.FLOAT) { "Integer inputs are not supported yet" }
@@ -49,12 +49,12 @@ class TFJSTreeEnsemble(
             return TFJSTreeEnsemble(
                 aggregator = info.aggregator,
                 transform = PostTransform[info.transformType],
-                treeDepths = info.treeDepths,
                 treeSizes = info.treeSizes,
                 featureIds = info.featureIds,
                 nodeFloatSplits = info.nodeFloatSplits,
-                nonLeafValuesCount = info.nonLeafValuesCount,
+                nextNodeIds = info.nextNodeIds,
                 leafValues = info.leafValues,
+                leafCounter = info.leafCounter,
                 biases = info.biases,
                 numTargets = info.numTargets,
                 splitMode = info.splitMode
