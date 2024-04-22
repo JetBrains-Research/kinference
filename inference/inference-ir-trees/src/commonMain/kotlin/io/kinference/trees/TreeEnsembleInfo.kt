@@ -21,8 +21,6 @@ data class TreeEnsembleInfo(
         private const val DEFAULT_AGGREGATOR = "SUM"
         private const val DEFAULT_POST_TRANSFORM = "NONE"
 
-        //private fun treeDepthFromNodesNum(n: Int) = ceil(log2(n.toDouble())).toInt()
-
         operator fun invoke(
             baseValues: FloatArray?, featureIds: LongArray, nodeModes: List<String>, nodeIds: LongArray,
             treeIds: LongArray, falseNodeIds: LongArray, trueNodeIds: LongArray, nodeValues: FloatArray,
