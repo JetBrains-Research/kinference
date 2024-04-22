@@ -15,11 +15,13 @@ import kotlin.math.ceil
 
 sealed class Range(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 11)
+        private val DEFAULT_VERSION = RangeVer11.VERSION
 
-        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
-            in RangeVer11.VERSION.asRange() -> RangeVer11(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+        operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>): Range {
+            return when (version ?: DEFAULT_VERSION.sinceVersion) {
+                in RangeVer11.VERSION.asRange() -> RangeVer11(name, attributes, inputs, outputs)
+                else -> error("Unsupported version of Range operator: $version")
+            }
         }
     }
 }
@@ -40,7 +42,7 @@ class RangeVer11(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
 
         private val OUTPUTS_INFO = listOf(IOInfo(0, TYPE_CONSTRAINTS, "output", optional = false))
 
-        internal val VERSION = VersionInfo(sinceVersion = 5, untilVersion = 14)
+        internal val VERSION = VersionInfo(sinceVersion = 11)
         private val INFO = OperatorInfo("Range", emptyMap(), INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
 
         private suspend fun <T> range(type: DataType, start: T, limit: T, delta: T): NumberNDArrayCore {
