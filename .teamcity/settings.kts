@@ -30,7 +30,7 @@ project {
 
     fun ParametrizedWithType.spacePackagesAccessRW() {
         // https://jetbrains.team/extensions/installedApplications/KInference%20Publisher-46Fkb34YGV6Z/authentication
-        password("env.JB_SPACE_CLIENT_ID", "47a35986-aea3-4d2f-8c1f-a5237169899e", display = HIDDEN)
+        password("env.JB_SPACE_CLIENT_ID", "", display = HIDDEN)
         password("env.JB_SPACE_CLIENT_SECRET", "", display = HIDDEN)
     }
 
