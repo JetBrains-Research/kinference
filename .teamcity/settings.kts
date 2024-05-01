@@ -28,8 +28,8 @@ project {
 
     fun ParametrizedWithType.spacePackagesAccessRW() {
         // https://jetbrains.team/extensions/installedApplications/KInference%20Publisher-46Fkb34YGV6Z/authentication
-        password("env.JB_SPACE_CLIENT_ID", "", display = HIDDEN)
-        password("env.JB_SPACE_CLIENT_SECRET", "", display = HIDDEN)
+        password("env.JB_SPACE_CLIENT_ID", "credentialsJSON:8622b3eb-ba4f-49aa-ad6c-5aa8b4bc0a3a", display = HIDDEN)
+        password("env.JB_SPACE_CLIENT_SECRET", "credentialsJSON:24881bbf-10db-4f8f-943a-05310a0ba714", display = HIDDEN)
     }
 
     fun BuildFeatures.defaultSwabra() {
