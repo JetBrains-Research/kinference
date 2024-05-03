@@ -15,6 +15,7 @@ project {
         id = RelativeId(name.toId())
         url = "https://github.com/JetBrains-Research/kinference-primitives.git"
         branch = "master"
+        branchSpec = "+:refs/heads/*"
     }
 
     fun BuildSteps.release(gradleParams: String = "") {
