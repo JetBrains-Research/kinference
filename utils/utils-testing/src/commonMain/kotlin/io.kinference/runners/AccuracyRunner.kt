@@ -92,11 +92,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                     model.close()
                     throw e
                 } finally {
-                    inputs.forEach { it.close() }
-                    expectedOutputs.forEach { it.close() }
                     actualOutputs.values.forEach { it.close() }
                 }
             }
+            inputs.forEach { it.close() }
+            expectedOutputs.forEach { it.close() }
         }
         model.close()
         if (testEngine is MemoryProfileable) {
