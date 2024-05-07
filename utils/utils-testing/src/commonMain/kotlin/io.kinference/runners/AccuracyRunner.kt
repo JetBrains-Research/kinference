@@ -5,13 +5,16 @@ import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.utils.*
 import io.kinference.utils.Assertions.assertLessOrEquals
+import kotlinx.coroutines.*
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.math.pow
 import kotlin.test.*
 
 class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) {
-    private data class ONNXTestData<T : ONNXData<*, *>> (val name: String, val actual: Map<String, T>, val expected: Map<String, T>)
+    private data class ONNXTestData<T : ONNXData<*, *>>(val name: String, val actual: Map<String, T>, val expected: Map<String, T>)
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     data class ONNXTestDataInfo(val path: String, val type: ONNXDataType) {
         companion object {
@@ -30,15 +33,20 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
 
     suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
         val toFolder = name.replace(":", "/").toPath()
-        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta)
+        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta, coroutinesCount = 3)
     }
 
     suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
-        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta)
+        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta, coroutinesCount = 3)
     }
 
-    private suspend fun runTestsFromFolder(loader: TestDataLoader, testPath: Path, disableTests: List<String> = emptyList(), delta: Double = DELTA) {
-
+    private suspend fun runTestsFromFolder(
+        loader: TestDataLoader,
+        testPath: Path,
+        disableTests: List<String> = emptyList(),
+        delta: Double = DELTA,
+        coroutinesCount: Int = 3
+    ) {
         val model = testEngine.loadModel(loader.getFullPath(testPath) / "model.onnx")
 
         logger.info { "Predict: $testPath" }
@@ -52,11 +60,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val inputFiles = files.filter { file -> "input" in file.path }
             val inputs = inputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
-            val outputFiles =  files.filter { file -> "output" in file.path }
+            val outputFiles = files.filter { file -> "output" in file.path }
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
             logger.info { "Start predicting: $group" }
-            val actualOutputs: Map<String, T> = if (testEngine is MemoryProfileable) {
+            val actualOutputsList: List<Map<String, T>> = if (testEngine is MemoryProfileable) {
                 val memoryBeforeTest = testEngine.allocatedMemory()
                 logger.info { "Memory before predict: $memoryBeforeTest" }
                 val outputs = model.predict(inputs)
@@ -67,22 +75,27 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                     expected = outputsInMemorySize, actual = memoryAfterTest - memoryBeforeTest,
                     message = "Memory leak found. Expected memory usage: ${memoryBeforeTest + outputsInMemorySize}, actual: $memoryAfterTest"
                 )
-                outputs
+                listOf(outputs)
             } else {
-                model.predict(inputs)
+                val predictions: List<Deferred<Map<String, T>>> = List(coroutinesCount) {
+                    scope.async {
+                        model.predict(inputs)
+                    }
+                }
+                predictions.map { it.await() }
             }
 
-            try {
-                check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
-            }
-            catch (e: Exception) {
-                model.close()
-                throw e
-            }
-            finally {
-                inputs.forEach { it.close() }
-                expectedOutputs.forEach { it.close() }
-                actualOutputs.values.forEach { it.close() }
+            actualOutputsList.forEach { actualOutputs ->
+                try {
+                    check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
+                } catch (e: Exception) {
+                    model.close()
+                    throw e
+                } finally {
+                    inputs.forEach { it.close() }
+                    expectedOutputs.forEach { it.close() }
+                    actualOutputs.values.forEach { it.close() }
+                }
             }
         }
         model.close()

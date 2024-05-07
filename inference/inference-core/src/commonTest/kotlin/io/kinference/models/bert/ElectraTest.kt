@@ -16,4 +16,9 @@ class ElectraTest {
     fun benchmark_test_electra_performance() = TestRunner.runTest {
         KIPerformanceRunner.runFromS3("bert:electra", count = 5)
     }
+
+    @Test
+    fun benchmark_test_electra_coroutines() = TestRunner.runTest {
+        KIPerformanceRunner.runFromS3("bert:electra", count = 5, warmup = 0, parallelLoad = true)
+    }
 }

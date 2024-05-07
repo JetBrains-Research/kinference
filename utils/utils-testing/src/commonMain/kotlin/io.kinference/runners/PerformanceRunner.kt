@@ -8,19 +8,20 @@ import io.kinference.model.Model
 import io.kinference.profiler.Profilable
 import io.kinference.utils.*
 import io.kinference.utils.time.Timer
+import kotlinx.coroutines.*
 import okio.Path
 import okio.Path.Companion.toPath
 
 class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
     data class PerformanceResults(val name: String, val avg: Double, val min: Long, val max: Long)
 
-    private suspend fun runPerformanceFromS3(name: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false): List<PerformanceResults> {
+    private suspend fun runPerformanceFromS3(name: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false, parallelLoad: Boolean = false): List<PerformanceResults> {
         val toFolder = name.replace(":", "/").toPath()
-        return runPerformanceFromFolder(S3TestDataLoader, toFolder, count, warmup, withProfiling)
+        return runPerformanceFromFolder(S3TestDataLoader, toFolder, count, warmup, withProfiling, parallelLoad)
     }
 
-    private suspend fun runPerformanceFromResources(testPath: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false): List<PerformanceResults> {
-        return runPerformanceFromFolder(ResourcesTestDataLoader, testPath.toPath(), count, warmup, withProfiling)
+    private suspend fun runPerformanceFromResources(testPath: String, count: Int = 10, warmup: Int = 3, withProfiling: Boolean = false, parallelLoad: Boolean = false): List<PerformanceResults> {
+        return runPerformanceFromFolder(ResourcesTestDataLoader, testPath.toPath(), count, warmup, withProfiling, parallelLoad)
     }
 
 //    data class ONNXDataWithName(val data: Map<String, ONNXData<*>>, val test: String)
@@ -31,7 +32,8 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
         path: Path,
         count: Int = 10,
         warmup: Int = 3,
-        withProfiling: Boolean = false
+        withProfiling: Boolean = false,
+        parallelLoad: Boolean = false
     ): List<PerformanceResults> {
         logger.info { "Predict: $path" }
 
@@ -59,15 +61,36 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
             }
 
             val times = LongArray(count)
-            for (i in (0 until count)) {
-                lateinit var outputs: Map<String, T>
-                val time = Timer.measure {
-                    outputs = model.predict(inputs, withProfiling)
-                }.millis
-                times[i] = time
 
-                outputs.values.forEach { it.close() }
+            if (parallelLoad) {
+                val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+                val predictions: List<Deferred<Map<String, T>>> = List(count) { i ->
+                    scope.async {
+                        lateinit var outputs: Map<String, T>
+                        val time = Timer.measure {
+                            outputs = model.predict(inputs, withProfiling)
+                        }.millis
+                        times[i] = time
+                        outputs
+                    }
+                }
+
+                val res = predictions.map { it.await() }
+                res.forEach { output ->
+                    output.values.forEach { it.close() }
+                }
+            } else {
+                for (i in (0 until count)) {
+                    lateinit var outputs: Map<String, T>
+                    val time = Timer.measure {
+                        outputs = model.predict(inputs, withProfiling)
+                    }.millis
+                    times[i] = time
+
+                    outputs.values.forEach { it.close() }
+                }
             }
+
             results.add(PerformanceResults(dataset.test, times.average(), times.minOrNull()!!, times.maxOrNull()!!))
 
             if (withProfiling && model is Profilable) {
@@ -86,12 +109,12 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
         return results
     }
 
-    suspend fun runFromS3(name: String, count: Int = 20, warmup: Int = 3, withProfiling: Boolean = false) {
-        output(runPerformanceFromS3(name, count, warmup, withProfiling))
+    suspend fun runFromS3(name: String, count: Int = 20, warmup: Int = 3, withProfiling: Boolean = false, parallelLoad: Boolean = false) {
+        output(runPerformanceFromS3(name, count, warmup, withProfiling, parallelLoad))
     }
 
-    suspend fun runFromResources(testPath: String, count: Int = 20, warmup: Int = 3, withProfiling: Boolean = false) {
-        output(runPerformanceFromResources(testPath, count, warmup, withProfiling))
+    suspend fun runFromResources(testPath: String, count: Int = 20, warmup: Int = 3, withProfiling: Boolean = false, parallelLoad: Boolean = false) {
+        output(runPerformanceFromResources(testPath, count, warmup, withProfiling, parallelLoad))
     }
 
     private fun output(results: List<PerformanceResults>) {
