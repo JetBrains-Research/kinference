@@ -14,6 +14,8 @@ import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import kotlin.math.*
+import io.kinference.utils.ModelContext
+import kotlin.coroutines.coroutineContext
 
 @GenerateNameFromPrimitives
 internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray): MutablePrimitiveNDArray {
@@ -25,11 +27,14 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
 
     val blockSize = input.array.blockSize
 
-
     // This approach when arrays acquired before parallelizeByBlocks() is faster
+    val coroutineContext = coroutineContext[ModelContext.Key]!!
+    val modelName = coroutineContext.modelName
+    val inferenceCycle = coroutineContext.cycleId
+
     val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val containerTemporaryBlockArrays =ArrayDispatcher.getArraysAndMarkers(NO_CONTEXT, PrimitiveTiledArray.type, blockSize, coroutineCount)
-    val containerTemporaryBlockAbsArrays = ArrayDispatcher.getArraysAndMarkers(NO_CONTEXT, PrimitiveTiledArray.type, blockSize, coroutineCount)
+    val containerTemporaryBlockArrays = ArrayDispatcher.getArrayContainers(PrimitiveTiledArray.type, blockSize, coroutineCount, modelName, inferenceCycle)
+    val containerTemporaryBlockAbsArrays = ArrayDispatcher.getArrayContainers(PrimitiveTiledArray.type, blockSize, coroutineCount, modelName, inferenceCycle)
     val temporaryBlockArrays = Array(containerTemporaryBlockArrays.size) { i -> (containerTemporaryBlockArrays[i] as PrimitiveArrayContainer).array }
     val temporaryBlockAbsArrays = Array(containerTemporaryBlockAbsArrays.size) { i -> (containerTemporaryBlockAbsArrays[i] as PrimitiveArrayContainer).array }
 

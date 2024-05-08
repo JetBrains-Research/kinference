@@ -75,12 +75,8 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return array.blocks[0][0]
     }
 
-    override fun markContextOutput() {
-        array.marker.forEach { it.invoke(ArrayUsageMarker.ContextOutput) }
-    }
-
-    override fun markGlobalOutput() {
-        array.marker.forEach { it.invoke(ArrayUsageMarker.GlobalOutput) }
+    override fun markOutput() {
+        array.marker.forEach { it.invoke(ArrayUsageMarker.Output) }
     }
 
     override suspend fun toMutable(): MutableBooleanNDArray {

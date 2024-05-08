@@ -1,35 +1,38 @@
 package io.kinference.ndarray.arrays.memory
 
 import io.kinference.ndarray.arrays.*
-import kotlinx.atomicfu.AtomicRef
-import kotlinx.atomicfu.atomic
 
-internal sealed class ArrayContainer(var marker: ArrayUsageMarker = ArrayUsageMarker.Used) {
+internal sealed class ArrayContainer(
+    val arrayTypeIndex: Int,
+    val arraySizeIndex: Int,
+    var marker: ArrayUsageMarker = ArrayUsageMarker.Used,
+) {
     val markAsOutput: StateMarker = {
         marker = it
     }
 
-    // Atomic reference to the next node, initialized to a special instance of empty container
-    val next: AtomicRef<ArrayContainer?> = atomic(null)
+    var next: ArrayContainer? = null
 
-    private class EmptyArrayContainer: ArrayContainer()
+    private class EmptyArrayContainer : ArrayContainer(EMPTY_INDEX, EMPTY_INDEX)
 
     companion object {
+        private const val EMPTY_INDEX = -1
+
         fun emptyContainer(): ArrayContainer = EmptyArrayContainer()
 
-        operator fun invoke(type: ArrayTypes, size: Int): ArrayContainer {
+        operator fun invoke(type: ArrayTypes, size: Int, sizeIndex: Int = EMPTY_INDEX): ArrayContainer {
             return when (type) {
-                ArrayTypes.ByteArray -> ByteArrayContainer(ByteArray(size))         // 8-bit signed
-                ArrayTypes.UByteArray -> UByteArrayContainer(UByteArray(size))      // 8-bit unsigned
-                ArrayTypes.ShortArray -> ShortArrayContainer(ShortArray(size))      // 16-bit signed
-                ArrayTypes.UShortArray -> UShortArrayContainer(UShortArray(size))   // 16-bit unsigned
-                ArrayTypes.IntArray -> IntArrayContainer(IntArray(size))            // 32-bit signed
-                ArrayTypes.UIntArray -> UIntArrayContainer(UIntArray(size))         // 32-bit unsigned
-                ArrayTypes.LongArray -> LongArrayContainer(LongArray(size))         // 64-bit signed
-                ArrayTypes.ULongArray -> ULongArrayContainer(ULongArray(size))      // 64-bit unsigned
-                ArrayTypes.FloatArray -> FloatArrayContainer(FloatArray(size))
-                ArrayTypes.DoubleArray -> DoubleArrayContainer(DoubleArray(size))
-                ArrayTypes.BooleanArray -> BooleanArrayContainer(BooleanArray(size))
+                ArrayTypes.ByteArray -> ByteArrayContainer(type.index, sizeIndex, ByteArray(size))         // 8-bit signed
+                ArrayTypes.UByteArray -> UByteArrayContainer(type.index, sizeIndex, UByteArray(size))      // 8-bit unsigned
+                ArrayTypes.ShortArray -> ShortArrayContainer(type.index, sizeIndex, ShortArray(size))      // 16-bit signed
+                ArrayTypes.UShortArray -> UShortArrayContainer(type.index, sizeIndex, UShortArray(size))   // 16-bit unsigned
+                ArrayTypes.IntArray -> IntArrayContainer(type.index, sizeIndex, IntArray(size))            // 32-bit signed
+                ArrayTypes.UIntArray -> UIntArrayContainer(type.index, sizeIndex, UIntArray(size))         // 32-bit unsigned
+                ArrayTypes.LongArray -> LongArrayContainer(type.index, sizeIndex, LongArray(size))         // 64-bit signed
+                ArrayTypes.ULongArray -> ULongArrayContainer(type.index, sizeIndex, ULongArray(size))      // 64-bit unsigned
+                ArrayTypes.FloatArray -> FloatArrayContainer(type.index, sizeIndex, FloatArray(size))
+                ArrayTypes.DoubleArray -> DoubleArrayContainer(type.index, sizeIndex, DoubleArray(size))
+                ArrayTypes.BooleanArray -> BooleanArrayContainer(type.index, sizeIndex, BooleanArray(size))
                 else -> throw IllegalArgumentException("Unsupported array type")
             }
         }

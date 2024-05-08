@@ -24,20 +24,6 @@ class TFJSGraph private constructor(
         super.close()
     }
 
-    override suspend fun applyWithAllocationControl(
-        contexts: Contexts<TFJSData<*>>,
-        profilingContext: ProfilingContext?,
-        operator: Operator<TFJSData<*>, TFJSData<*>>
-    ): List<TFJSData<*>?> {
-        return operator.applyWithCheck(
-            Contexts(contexts.graph, profilingContext),
-            operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
-    }
-
-    override suspend fun returnOutputsWithAllocationControl(contexts: Contexts<TFJSData<*>>): List<TFJSData<*>> {
-        return outputs.map { contexts.graph!!.getValue(it.name) }
-    }
-
     fun addTensorToContext(tensor: TFJSTensor) {
         preparedTensorsContext.putValue(tensor.name!!, tensor)
     }

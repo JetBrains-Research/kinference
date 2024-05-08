@@ -62,10 +62,12 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
 
-            val modelName = coroutineContext[ModelContext.Key]?.modelName ?: NO_CONTEXT
+            val coroutineContext = coroutineContext[ModelContext.Key]
+            val modelName = coroutineContext?.modelName ?: NO_MODEL_CONTEXT
+            val inferenceCycle = coroutineContext?.cycleId ?: NO_INFERENCE_CONTEXT
 
             // With array dispatcher
-            val containerArray = ArrayDispatcher.getArraysAndMarkers(modelName, type, blockSize, blocksNum)
+            val containerArray = ArrayDispatcher.getArrayContainers(type, blockSize, blocksNum, modelName, inferenceCycle)
             val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
             val marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
 

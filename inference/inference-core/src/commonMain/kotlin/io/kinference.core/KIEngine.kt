@@ -23,18 +23,12 @@ typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 
 // Define an interface for allocation control marking output
 internal interface KIONNXDataArraysReleaser {
-    fun markContextOutput()
-    fun markGlobalOutput()
+    fun markOutput()
 }
 
-internal fun <T> KIONNXData<T>.markContextOutput() {
+internal fun <T> KIONNXData<T>.markOutput() {
     if (this is KIONNXDataArraysReleaser)
-        this.markContextOutput()
-}
-
-internal fun <T> KIONNXData<T>.markGlobalOutput() {
-    if (this is KIONNXDataArraysReleaser)
-        this.markGlobalOutput()
+        this.markOutput()
 }
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")

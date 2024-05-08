@@ -227,7 +227,9 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
             for ((i, operator) in operators.withIndex()) {
                 lateinit var outputs: List<T?>
                 contexts.profiling.profile(operator.info.type) { profilingContext ->
-                    outputs = applyWithAllocationControl(contexts, profilingContext, operator)
+                    outputs = operator.applyWithCheck(
+                        Contexts(contexts.graph, profilingContext),
+                        operator.inputs.map { input -> if (input.isEmpty()) null else contexts.graph!!.getValue(input) })
                 }
 
                 contexts.profiling.profile("${operator.info.type}:cleanup") {
@@ -246,10 +248,6 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
                 }
             }
         }
-        return returnOutputsWithAllocationControl(contexts)
+        return outputs.map { contexts.graph!!.getValue(it.name) }
     }
-
-    protected abstract suspend fun applyWithAllocationControl(contexts: Contexts<T>, profilingContext: ProfilingContext?, operator: Operator<T, T>): List<T?>
-
-    protected abstract suspend fun returnOutputsWithAllocationControl(contexts: Contexts<T>): List<T>
 }
