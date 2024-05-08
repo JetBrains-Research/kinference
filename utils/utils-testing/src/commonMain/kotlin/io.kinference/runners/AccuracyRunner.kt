@@ -82,7 +82,7 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
                         model.predict(inputs)
                     }
                 }
-                predictions.map { it.await() }
+                predictions.awaitAll()
             }
 
             actualOutputsList.forEach { actualOutputs ->

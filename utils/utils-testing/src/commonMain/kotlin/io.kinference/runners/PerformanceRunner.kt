@@ -75,7 +75,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
                     }
                 }
 
-                val res = predictions.map { it.await() }
+                val res = predictions.awaitAll()
                 res.forEach { output ->
                     output.values.forEach { it.close() }
                 }
