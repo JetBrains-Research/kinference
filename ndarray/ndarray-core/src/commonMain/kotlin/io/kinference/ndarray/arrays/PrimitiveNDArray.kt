@@ -540,7 +540,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray =
-        reduceOperationPrimitive(axes, keepDims) { output: PrimitiveType, input: PrimitiveType -> (output + input).toPrimitive() }
+        reduceOperationPrimitive(axes, keepDims) { output: InlinePrimitive, input: InlinePrimitive -> InlinePrimitive((output + input).value.toPrimitive()) }
 
     override suspend fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
         val actualAxis = indexAxis(axis)

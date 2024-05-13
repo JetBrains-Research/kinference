@@ -23,7 +23,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     final override var strides: Strides = strides
         protected set
 
-    protected val blocksInRow: Int
+    internal val blocksInRow: Int
         get() = when {
             strides.linearSize == 0 -> 0
             strides.shape.isEmpty() -> 1
