@@ -4,11 +4,13 @@ import io.kinference.ndarray.arrays.*
 
 internal sealed class ArrayContainer(
     val arrayTypeIndex: Int,
-    val arraySizeIndex: Int,
-    var marker: ArrayUsageMarker = ArrayUsageMarker.Used,
+    val arraySizeIndex: Int
 ) {
-    val markAsOutput: StateMarker = {
-        marker = it
+    var isOutput: Boolean = false
+        private set
+
+    val markAsOutput = {
+        isOutput = true
     }
 
     var next: ArrayContainer? = null

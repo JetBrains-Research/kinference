@@ -1,7 +1,6 @@
 package io.kinference.ndarray.arrays.memory
 
 import io.kinference.ndarray.arrays.ArrayTypes
-import io.kinference.ndarray.arrays.ArrayUsageMarker
 
 internal class ArrayStorage(typeLength: Int, sizeLength: Int) {
     /**
@@ -29,7 +28,6 @@ internal class ArrayStorage(typeLength: Int, sizeLength: Int) {
         val idx = if (sIndex != -1) {
             val array = storage[tIndex][sIndex].removeFirstOrNull()
             array?.let {
-                it.marker = ArrayUsageMarker.Used
                 ArrayContainer.resetArray(it)
                 return it
             }

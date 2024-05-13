@@ -65,7 +65,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val vMarker = v.array.marker
 
             val resultBlocks: Array<FloatArray>
-            val resultMarker: Array<StateMarker>
+            val resultMarker: Array<() -> Unit>
 
             if (past == null || past.linearSize == 0) {
                 resultBlocks = kBlocks.plus(vBlocks)
@@ -84,7 +84,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
                 val rowsSize = batchSize * numHeads
                 val futureRes = arrayOfNulls<FloatArray>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
-                val futureResMarker = arrayOfNulls<StateMarker>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
+                val futureResMarker = arrayOfNulls<() -> Unit>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
 
                 var resBlockIdx = 0
                 var pastBlocIdx = 0
@@ -109,7 +109,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     }
                 }
                 resultBlocks = futureRes as Array<FloatArray>
-                resultMarker = futureResMarker as Array<StateMarker>
+                resultMarker = futureResMarker as Array<() -> Unit>
             }
 
             return FloatNDArray(FloatTiledArray(resultBlocks, resultMarker), Strides(presentDims))

@@ -86,7 +86,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override fun markOutput() {
-        array.marker.forEach { it.invoke(ArrayUsageMarker.Output) }
+        array.marker.forEach { it.invoke() }
     }
 
     override suspend fun clone(): PrimitiveNDArray {

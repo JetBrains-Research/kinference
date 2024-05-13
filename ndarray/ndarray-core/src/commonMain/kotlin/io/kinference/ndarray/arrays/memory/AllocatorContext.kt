@@ -19,8 +19,7 @@ data class AllocatorContext(val modelName: String, val cycleId: Long) : Coroutin
 
     fun closeAllocated() {
         usedContainers.forEach {
-            if (it.marker != ArrayUsageMarker.Output) {
-                it.marker = ArrayUsageMarker.Unused
+            if (!it.isOutput) {
                 unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
             }
         }
