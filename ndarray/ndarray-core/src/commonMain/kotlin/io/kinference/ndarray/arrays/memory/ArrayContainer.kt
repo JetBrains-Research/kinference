@@ -13,12 +13,8 @@ internal sealed class ArrayContainer(
 
     var next: ArrayContainer? = null
 
-    private class EmptyArrayContainer : ArrayContainer(EMPTY_INDEX, EMPTY_INDEX)
-
     companion object {
         private const val EMPTY_INDEX = -1
-
-        fun emptyContainer(): ArrayContainer = EmptyArrayContainer()
 
         operator fun invoke(type: ArrayTypes, size: Int, sizeIndex: Int = EMPTY_INDEX): ArrayContainer {
             return when (type) {

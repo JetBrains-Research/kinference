@@ -5,11 +5,10 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.core.markOutput
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
-import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
-import io.kinference.utils.ModelContext
+import io.kinference.ndarray.arrays.memory.AllocatorContext
 import kotlinx.coroutines.withContext
 import kotlinx.atomicfu.atomic
 
@@ -20,23 +19,21 @@ class KIModel(val id: String, val name: String, val opSet: OperatorSetRegistry, 
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
 
-    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>> = withContext(ModelContext(id, getInferenceCycleId().toString())) {
-        val contexts = Contexts<KIONNXData<*>>(
-            null,
-            if (profile) addProfilingContext("Model $name") else null
-        )
-        val modelName = coroutineContext[ModelContext.Key]!!.modelName
-        val inferenceCycle = coroutineContext[ModelContext.Key]!!.cycleId
-        ArrayDispatcher.addInferenceContext(modelName, inferenceCycle)
-        val execResult = graph.execute(input, contexts)
-        execResult.forEach { it.markOutput() }
-        ArrayDispatcher.closeInferenceContext(modelName, inferenceCycle)
-        execResult.associateBy { it.name!! }
-    }
+    override suspend fun predict(input: List<KIONNXData<*>>, profile: Boolean): Map<String, KIONNXData<*>> =
+        withContext(AllocatorContext(id, getInferenceCycleId())) {
+            val contexts = Contexts<KIONNXData<*>>(
+                null,
+                if (profile) addProfilingContext("Model $name") else null
+            )
+            val coroutineContext = coroutineContext[AllocatorContext.Key]!!
+            val execResult = graph.execute(input, contexts)
+            execResult.forEach { it.markOutput() }
+            coroutineContext.closeAllocated()
+            execResult.associateBy { it.name!! }
+        }
 
     override suspend fun close() {
         graph.close()
-        ArrayDispatcher.removeModelContext(id)
     }
 
     private fun getInferenceCycleId(): Long = inferenceCycleCounter.incrementAndGet()
@@ -51,7 +48,6 @@ class KIModel(val id: String, val name: String, val opSet: OperatorSetRegistry, 
             val id = "$name:${generateModelId()}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
-            ArrayDispatcher.addModelContext(id)
             return KIModel(id, name, opSet, graph)
         }
     }
