@@ -4,74 +4,149 @@
 package io.kinference.ndarray.extensions.broadcasting
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.extensions.applyWithBroadcast
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveType
 import io.kinference.utils.inlines.InlinePrimitive
 
 @GenerateNameFromPrimitives
-internal suspend fun broadcastTwoTensorsPrimitive(
+internal fun broadcastTwoTensorsPrimitive(
     left: PrimitiveNDArray,
     right: PrimitiveNDArray,
     dest: MutablePrimitiveNDArray,
     op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
 ): MutablePrimitiveNDArray {
-    when {
-        left.isScalar() && right.isScalar() -> dest.array.blocks[0][0] = op(InlinePrimitive(left.singleValue()), InlinePrimitive(right.singleValue())).value
-        right.isScalar() -> broadcastRightScalar(left.array, right.singleValue(), dest.array, op)
-        left.isScalar() -> broadcastLeftScalar(left.singleValue(), right.array, dest.array, op)
-        else -> left.applyWithBroadcast(right, dest) { left, right, dest ->
-            left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
+    val broadcastingInfo = BroadcastingInfo.create(listOf(left, right))
+    require(dest.shape.contentEquals(broadcastingInfo.destShape)) { "Destination has incorrect shape, expected: ${broadcastingInfo.destShape.joinToString()}, actual ${dest.shape.joinToString()}" }
 
-            for (blockNum in 0 until dest.array.blocksNum) {
-                val leftBlock = left.array.blocks[blockNum]
-                val rightBlock = right.array.blocks[blockNum]
-                val destBlock = dest.array.blocks[blockNum]
+    if (broadcastingInfo.broadcastingAxes.isEmpty()) {
+        return executeWithoutBroadcasting(left, right, dest, op)
+    }
+
+    val totalAxesToBroadcast = if (broadcastingInfo.broadcastAlongLastAxis)
+        broadcastingInfo.broadcastingAxes.size - 1
+    else
+        broadcastingInfo.broadcastingAxes.size
+
+    val (leftBroadcastingShape, rightBroadcastingShape) = broadcastingInfo.broadcastingShapes
+    val destBroadcastingShape = broadcastingInfo.broadcastingDestShape
+
+    val destBlocksInRow = destBroadcastingShape.last() / dest.array.blockSize
+
+    val leftOffsets = makeOffsets(leftBroadcastingShape, leftBroadcastingShape.last() / left.array.blockSize)
+    val rightOffsets = makeOffsets(rightBroadcastingShape, rightBroadcastingShape.last() / right.array.blockSize)
+    val destOffsets = makeOffsets(destBroadcastingShape, destBlocksInRow)
+
+    val leftIsScalar = broadcastingInfo.broadcastAlongLastAxis && leftBroadcastingShape.last() == 1
+    val rightIsScalar = broadcastingInfo.broadcastAlongLastAxis && rightBroadcastingShape.last() == 1
+
+    val leftBlocks = left.array.blocks
+    val rightBlocks = right.array.blocks
+    val destBlocks = dest.array.blocks
+
+    val leftIsScalarFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
+        val shapeIdx = axisToBroadcastIdx * 2
+        val batchSize = destBroadcastingShape[shapeIdx]
+
+        for (batchIdx in 0 until batchSize) {
+            val leftScalar = InlinePrimitive(leftBlocks[leftOffset][0])
+
+            for (blockIdx in 0 until destBlocksInRow) {
+                val destBlock = destBlocks[destOffset + blockIdx]
+                val rightBlock = rightBlocks[rightOffset + blockIdx]
 
                 for (idx in destBlock.indices) {
-                    destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
+                    destBlock[idx] = op(leftScalar, InlinePrimitive(rightBlock[idx])).value
                 }
             }
         }
     }
+
+    val rightIsScalarFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
+        val shapeIdx = axisToBroadcastIdx * 2
+        val batchSize = destBroadcastingShape[shapeIdx]
+
+        for (batchIdx in 0 until batchSize) {
+            val rightScalar = InlinePrimitive(rightBlocks[rightOffset][0])
+
+            for (blockIdx in 0 until destBlocksInRow) {
+                val destBlock = destBlocks[destOffset + blockIdx]
+                val leftBlock = leftBlocks[leftOffset + blockIdx]
+
+                for (idx in destBlock.indices) {
+                    destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), rightScalar).value
+                }
+            }
+        }
+    }
+
+    val defaultFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
+        for (blockIdx in 0 until destBlocksInRow) {
+            val leftBlock = leftBlocks[leftOffset + blockIdx]
+            val rightBlock = rightBlocks[rightOffset + blockIdx]
+            val destBlock = destBlocks[destOffset + blockIdx]
+
+            for (idx in destBlock.indices) {
+                destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
+            }
+        }
+    }
+
+    val broadcastingFun = when {
+        leftIsScalar -> leftIsScalarFun
+        rightIsScalar -> rightIsScalarFun
+        else -> defaultFun
+    }
+
+    fun broadcast(leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int) {
+        if (axisToBroadcastIdx == totalAxesToBroadcast) {
+            broadcastingFun(leftOffset, rightOffset, destOffset, axisToBroadcastIdx)
+        } else {
+            val shapeIdx = axisToBroadcastIdx * 2
+
+            val batchSize = destBroadcastingShape[shapeIdx]
+            val dimSize = destBroadcastingShape[shapeIdx + 1]
+
+            for (batchIdx in 0 until batchSize) {
+                val leftBatchOffset = leftOffset + leftOffsets[shapeIdx] * batchIdx
+                val rightBatchOffset = rightOffset + rightOffsets[shapeIdx] * batchIdx
+                val destBatchOffset = destOffset + destOffsets[shapeIdx] * batchIdx
+
+                for (dimIdx in 0 until dimSize) {
+                    val leftFullOffset = leftBatchOffset + (dimIdx % leftBroadcastingShape[shapeIdx + 1]) * leftOffsets[shapeIdx + 1]
+                    val rightFullOffset = rightBatchOffset + (dimIdx % rightBroadcastingShape[shapeIdx + 1]) * rightOffsets[shapeIdx + 1]
+                    val destFullOffset = destBatchOffset + dimIdx * destOffsets[shapeIdx + 1]
+
+                    broadcast(leftFullOffset, rightFullOffset, destFullOffset, axisToBroadcastIdx + 1)
+                }
+            }
+        }
+    }
+
+    broadcast(0, 0, 0, 0)
+
     return dest
 }
 
-private fun broadcastRightScalar(
-    left: PrimitiveTiledArray,
-    rightScalar: PrimitiveType,
-    dest: PrimitiveTiledArray,
+private fun executeWithoutBroadcasting(
+    left: PrimitiveNDArray,
+    right: PrimitiveNDArray,
+    dest: MutablePrimitiveNDArray,
     op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
-) {
-    require(left.blocksNum == dest.blocksNum && left.blockSize == dest.blockSize)
+): MutablePrimitiveNDArray {
+    val leftBlocks = left.array.blocks
+    val rightBlocks = right.array.blocks
+    val destBlocks = dest.array.blocks
 
-    for (blockNum in 0 until dest.blocksNum) {
-        val leftBlock = left.blocks[blockNum]
-        val destBlock = dest.blocks[blockNum]
+    for (blockIdx in destBlocks.indices) {
+        val destBlock = destBlocks[blockIdx]
+        val leftBlock = leftBlocks[blockIdx]
+        val rightBlock = rightBlocks[blockIdx]
 
         for (idx in destBlock.indices) {
-            destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightScalar)).value
+            destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
         }
     }
-}
 
-private fun broadcastLeftScalar(
-    leftScalar: PrimitiveType,
-    right: PrimitiveTiledArray,
-    dest: PrimitiveTiledArray,
-    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
-) {
-    require(right.blocksNum == dest.blocksNum && right.blockSize == dest.blockSize)
-
-    for (blockNum in 0 until dest.blocksNum) {
-        val rightBlock = right.blocks[blockNum]
-        val destBlock = dest.blocks[blockNum]
-
-        for (idx in destBlock.indices) {
-            destBlock[idx] = op(InlinePrimitive(leftScalar), InlinePrimitive(rightBlock[idx])).value
-        }
-    }
+    return dest
 }
