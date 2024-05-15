@@ -26,7 +26,7 @@ import kotlin.math.ln
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceLogSumExp(axes: IntArray, keepDims: Boolean): PrimitiveNDArray {
     val sumTensor = reduceOperationPrimitive(axes, keepDims)
-        { out: InlinePrimitive, inp: InlinePrimitive -> out + InlinePrimitive(FastMath.exp(inp.value)) } as MutablePrimitiveNDArray
+        { out: PrimitiveType, inp: PrimitiveType -> out + FastMath.exp(inp) } as MutablePrimitiveNDArray
 
     sumTensor.mapMutable(object : PrimitiveMap {
         override fun apply(value: PrimitiveType) = ln(value)

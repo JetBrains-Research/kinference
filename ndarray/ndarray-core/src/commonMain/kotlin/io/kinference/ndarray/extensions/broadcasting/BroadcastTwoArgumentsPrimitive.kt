@@ -7,14 +7,14 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.inlines.InlinePrimitive
+import io.kinference.primitives.types.PrimitiveType
 
 @GenerateNameFromPrimitives
 internal fun broadcastTwoTensorsPrimitive(
     left: PrimitiveNDArray,
     right: PrimitiveNDArray,
     dest: MutablePrimitiveNDArray,
-    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
+    op: PrimitiveBinaryOperation
 ): MutablePrimitiveNDArray {
     val broadcastingInfo = BroadcastingInfo.create(listOf(left, right))
     require(dest.shape.contentEquals(broadcastingInfo.destShape)) { "Destination has incorrect shape, expected: ${broadcastingInfo.destShape.joinToString()}, actual ${dest.shape.joinToString()}" }
@@ -49,14 +49,14 @@ internal fun broadcastTwoTensorsPrimitive(
         val batchSize = destBroadcastingShape[shapeIdx]
 
         for (batchIdx in 0 until batchSize) {
-            val leftScalar = InlinePrimitive(leftBlocks[leftOffset][0])
+            val leftScalar = leftBlocks[leftOffset][0]
 
             for (blockIdx in 0 until destBlocksInRow) {
                 val destBlock = destBlocks[destOffset + blockIdx]
                 val rightBlock = rightBlocks[rightOffset + blockIdx]
 
                 for (idx in destBlock.indices) {
-                    destBlock[idx] = op(leftScalar, InlinePrimitive(rightBlock[idx])).value
+                    destBlock[idx] = op(leftScalar, rightBlock[idx])
                 }
             }
         }
@@ -67,14 +67,14 @@ internal fun broadcastTwoTensorsPrimitive(
         val batchSize = destBroadcastingShape[shapeIdx]
 
         for (batchIdx in 0 until batchSize) {
-            val rightScalar = InlinePrimitive(rightBlocks[rightOffset][0])
+            val rightScalar = rightBlocks[rightOffset][0]
 
             for (blockIdx in 0 until destBlocksInRow) {
                 val destBlock = destBlocks[destOffset + blockIdx]
                 val leftBlock = leftBlocks[leftOffset + blockIdx]
 
                 for (idx in destBlock.indices) {
-                    destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), rightScalar).value
+                    destBlock[idx] = op(leftBlock[idx], rightScalar)
                 }
             }
         }
@@ -87,7 +87,7 @@ internal fun broadcastTwoTensorsPrimitive(
             val destBlock = destBlocks[destOffset + blockIdx]
 
             for (idx in destBlock.indices) {
-                destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
+                destBlock[idx] = op(leftBlock[idx], rightBlock[idx])
             }
         }
     }
@@ -132,7 +132,7 @@ private fun executeWithoutBroadcasting(
     left: PrimitiveNDArray,
     right: PrimitiveNDArray,
     dest: MutablePrimitiveNDArray,
-    op: (InlinePrimitive, InlinePrimitive) -> InlinePrimitive
+    op: PrimitiveBinaryOperation
 ): MutablePrimitiveNDArray {
     val leftBlocks = left.array.blocks
     val rightBlocks = right.array.blocks
@@ -144,7 +144,7 @@ private fun executeWithoutBroadcasting(
         val rightBlock = rightBlocks[blockIdx]
 
         for (idx in destBlock.indices) {
-            destBlock[idx] = op(InlinePrimitive(leftBlock[idx]), InlinePrimitive(rightBlock[idx])).value
+            destBlock[idx] = op(leftBlock[idx], rightBlock[idx])
         }
     }
 

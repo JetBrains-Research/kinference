@@ -19,4 +19,4 @@ import io.kinference.utils.inlines.InlinePrimitive
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceProd(axes: IntArray, keepDims: Boolean) =
-    reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveConstants.ONE) { out: InlinePrimitive, inp: InlinePrimitive -> out * inp }
+    reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveConstants.ONE) { out: PrimitiveType, inp: PrimitiveType -> out * inp }

@@ -19,7 +19,7 @@ internal suspend fun reduceOneAxisPrimitive(
     axis: Int,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,
-    operation: (output: InlinePrimitive, input: InlinePrimitive) -> InlinePrimitive
+    operation: PrimitiveBinaryOperation
 ): PrimitiveNDArray {
     val actualAxis = array.indexAxis(axis)
 
@@ -62,7 +62,7 @@ internal suspend fun reduceOneAxisPrimitive(
                 val outputBlock = outputBlocks[outputBatchBlockOffset + blockIdx]
 
                 for (idx in outputBlock.indices) {
-                    outputBlock[idx] = operation(InlinePrimitive(outputBlock[idx]), InlinePrimitive(inputBlock[idx])).value
+                    outputBlock[idx] = operation(outputBlock[idx], inputBlock[idx])
                 }
             }
         }
@@ -75,7 +75,7 @@ private suspend fun reduceAlongLastAxis(
     array: PrimitiveNDArray,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,
-    operation: (output: InlinePrimitive, input: InlinePrimitive) -> InlinePrimitive
+    operation: PrimitiveBinaryOperation
 ): PrimitiveNDArray {
     val outputShape = if (keepDims) {
         array.shape.copyOf().apply { this[lastIndex] = 1 }
@@ -104,7 +104,7 @@ private suspend fun reduceAlongLastAxis(
         for (blockIdx in blockOffset until blockOffset + blocksInRow) {
             val block = blocks[blockIdx]
             for (idx in 0 until blockSize) {
-                destValue = operation(InlinePrimitive(destValue), InlinePrimitive(block[idx])).value
+                destValue = operation(destValue, block[idx])
             }
         }
 

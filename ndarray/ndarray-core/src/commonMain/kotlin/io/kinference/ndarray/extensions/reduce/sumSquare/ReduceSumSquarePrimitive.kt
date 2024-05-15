@@ -18,4 +18,4 @@ import io.kinference.utils.inlines.InlinePrimitive
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceSumSquare(axes: IntArray, keepDims: Boolean) =
-    reduceOperationPrimitive(axes, keepDims) { out: InlinePrimitive, inp: InlinePrimitive -> out + inp * inp }
+    reduceOperationPrimitive(axes, keepDims) { out: PrimitiveType, inp: PrimitiveType -> out + inp * inp }

@@ -17,6 +17,10 @@ interface BooleanMap : PrimitiveToPrimitiveFunction {
     fun apply(value: Boolean): Boolean
 }
 
+fun interface BooleanBinaryOperation {
+    operator fun invoke(first: Boolean, second: Boolean): Boolean
+}
+
 open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore, MemoryControlledArray {
     override val type: DataType = DataType.BOOLEAN
 
@@ -141,7 +145,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun or(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-                left: InlineBoolean, right: InlineBoolean -> left or right
+                left: Boolean, right: Boolean -> left or right
         }
     }
 
@@ -149,7 +153,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun and(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-            left: InlineBoolean, right: InlineBoolean -> left and right
+            left: Boolean, right: Boolean -> left and right
         }
     }
 
@@ -157,7 +161,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
 
     suspend fun xor(other: BooleanNDArray, destination: MutableBooleanNDArray): BooleanNDArray {
         return broadcastTwoTensorsBoolean(this, other, destination) {
-            left: InlineBoolean, right: InlineBoolean -> left xor right
+            left: Boolean, right: Boolean -> left xor right
         }
     }
 

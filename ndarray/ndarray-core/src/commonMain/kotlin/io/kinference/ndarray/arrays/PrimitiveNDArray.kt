@@ -298,7 +298,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left + right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left + right).toPrimitive() }
 
     override suspend fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -310,7 +310,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left - right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left - right).toPrimitive() }
 
     override suspend fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -322,7 +322,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left * right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left * right).toPrimitive() }
 
     override suspend fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -334,7 +334,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left / right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left / right).toPrimitive() }
 
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
@@ -540,7 +540,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun reduceSum(axes: IntArray, keepDims: Boolean): PrimitiveNDArray =
-        reduceOperationPrimitive(axes, keepDims) { output: InlinePrimitive, input: InlinePrimitive -> InlinePrimitive((output + input).value.toPrimitive()) }
+        reduceOperationPrimitive(axes, keepDims) { output: PrimitiveType, input: PrimitiveType -> (output + input).toPrimitive() }
 
     override suspend fun topK(axis: Int, k: Int, largest: Boolean, sorted: Boolean): Pair<PrimitiveNDArray, LongNDArray> {
         val actualAxis = indexAxis(axis)
@@ -1335,4 +1335,9 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 @MakePublic
 internal interface PrimitiveMap : PrimitiveToPrimitiveFunction {
     fun apply(value: PrimitiveType): PrimitiveType
+}
+
+@GenerateNameFromPrimitives
+fun interface PrimitiveBinaryOperation {
+    operator fun invoke(first: PrimitiveType, second: PrimitiveType): PrimitiveType
 }
