@@ -15,6 +15,4 @@ import kotlin.comparisons.minOf
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceMin(axes: IntArray, keepDims: Boolean) =
-    reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveType.MAX_VALUE_FOR_MIN) {
-        out: InlinePrimitive, inp: InlinePrimitive -> InlinePrimitive(minOf(out.value, inp.value))
-    }
+    reduceOperationPrimitive(axes, keepDims, initOutputValue = PrimitiveType.MAX_VALUE_FOR_MIN) { out: InlinePrimitive, inp: InlinePrimitive -> InlinePrimitive(minOf(out.value, inp.value)) }

@@ -21,4 +21,4 @@ import kotlin.math.abs
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceL1(axes: IntArray, keepDims: Boolean) =
-    reduceOperationPrimitive(axes, keepDims) { out: InlinePrimitive, inp: InlinePrimitive -> InlinePrimitive(out.value + abs(inp.value)) }
+    reduceOperationPrimitive(axes, keepDims) { out: InlinePrimitive, inp: InlinePrimitive -> out + InlinePrimitive(abs(inp.value)) }
