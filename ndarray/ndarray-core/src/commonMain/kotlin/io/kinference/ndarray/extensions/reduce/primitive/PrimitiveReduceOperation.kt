@@ -8,13 +8,14 @@ import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
+import io.kinference.utils.inlines.InlinePrimitive
 
 @GenerateNameFromPrimitives
 internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
     axes: IntArray,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,
-    operation: (output: PrimitiveType, input: PrimitiveType) -> PrimitiveType
+    operation: (output: InlinePrimitive, input: InlinePrimitive) -> InlinePrimitive
 ): PrimitiveNDArray {
     if (axes.isEmpty()) return this
 
@@ -40,7 +41,7 @@ internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
                 val inputPointer = this.array.pointer(inputOffset)
                 val outputPointer = outputArray.array.pointer(outputOffset)
 
-                outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> operation(dst, src) }
+                outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> operation(InlinePrimitive(dst), InlinePrimitive(src)).value }
             }
             this.shape.lastIndex -> {
                 val dim = this.shape[axis]
@@ -48,7 +49,7 @@ internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
                 val outputPointer = outputArray.array.pointer(outputOffset)
 
                 var accumulator = outputPointer.get()
-                inputPointer.forEach(dim) { accumulator = operation(accumulator, it) }
+                inputPointer.forEach(dim) { accumulator = operation(InlinePrimitive(accumulator), InlinePrimitive(it)).value }
                 outputPointer.set(accumulator)
             }
             else -> {

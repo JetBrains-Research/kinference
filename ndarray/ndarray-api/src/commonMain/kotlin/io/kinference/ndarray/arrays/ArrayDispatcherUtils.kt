@@ -1,15 +1,6 @@
 package io.kinference.ndarray.arrays
 
-typealias StateMarker = (ArrayUsageMarker) -> Unit
-
-const val NO_MODEL_CONTEXT = "NoContext"
-const val NO_INFERENCE_CONTEXT = "NoInferenceContext"
-
-enum class ArrayUsageMarker {
-    Unused,
-    Used,
-    Output,
-}
+typealias StateMarker = () -> Unit
 
 enum class ArrayTypes(val index: Int) {
     ByteArray(0),
