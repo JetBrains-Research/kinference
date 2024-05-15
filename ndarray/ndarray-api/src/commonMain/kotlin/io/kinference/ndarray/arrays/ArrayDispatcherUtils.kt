@@ -1,5 +1,7 @@
 package io.kinference.ndarray.arrays
 
+typealias StateMarker = () -> Unit
+
 enum class ArrayTypes(val index: Int) {
     ByteArray(0),
     UByteArray(1),

@@ -1,6 +1,6 @@
 package io.kinference.utils
 
-expect class PlatformQueue<T>() {
+expect class ConcurrentQueue<T>() {
     fun removeFirstOrNull(): T?
     fun addLast(element: T)
 }

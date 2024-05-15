@@ -1,6 +1,6 @@
 package io.kinference.utils
 
-actual class PlatformQueue<T> actual constructor() {
+actual class ConcurrentQueue<T> actual constructor() {
     private val queue: ArrayDeque<T> = ArrayDeque()
 
     actual fun removeFirstOrNull(): T? {
