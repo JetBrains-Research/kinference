@@ -2,6 +2,7 @@ package io.kinference.ndarray.extensions
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.pointers.forEach
+import io.kinference.ndarray.extensions.gather.gatherByBlocks
 import io.kinference.primitives.types.DataType
 
 internal fun computeGatherShape(shape: IntArray, axis: Int, indices: NDArray): IntArray {
@@ -20,6 +21,9 @@ internal suspend fun createGatherDstArray(axis: Int, indices: NDArray, shape: In
 
 suspend fun gather(array: NDArrayCore, indices: NDArrayCore, axis: Int = 0): NDArrayCore {
     val actualAxis = array.indexAxis(axis)
+
+    if (axis < array.rank - 1) return array.gatherByBlocks(indices, axis)
+
     val dst = createGatherDstArray(actualAxis, indices, array.shape, array.type)
 
     return gather(array, indices, axis, dst)

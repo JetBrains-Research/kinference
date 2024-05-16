@@ -8,19 +8,21 @@ import io.kinference.ndarray.arrays.pointers.forEach
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
-import io.kinference.utils.inlines.InlinePrimitive
 
 @GenerateNameFromPrimitives
 internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
     axes: IntArray,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,
-    operation: (output: InlinePrimitive, input: InlinePrimitive) -> InlinePrimitive
+    operation: PrimitiveBinaryOperation
 ): PrimitiveNDArray {
     if (axes.isEmpty()) return this
 
     val axesToReduce = axes.map { indexAxis(it) }.toSet()
     require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-${rank}, ${rank - 1}]" }
+
+    if (axesToReduce.size == 1) return reduceOneAxisPrimitive(this, axesToReduce.first(), keepDims, initOutputValue, operation)
+
 
     val outputShapeWithKeepDims = this.shape.copyOf().apply { axesToReduce.forEach { set(it, 1) } }
     val stridesWithKeepDims = Strides(outputShapeWithKeepDims)
@@ -41,7 +43,7 @@ internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
                 val inputPointer = this.array.pointer(inputOffset)
                 val outputPointer = outputArray.array.pointer(outputOffset)
 
-                outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> operation(InlinePrimitive(dst), InlinePrimitive(src)).value }
+                outputPointer.accept(inputPointer, blockToApply) { dst: PrimitiveType, src: PrimitiveType -> operation(dst, src) }
             }
             this.shape.lastIndex -> {
                 val dim = this.shape[axis]
@@ -49,7 +51,7 @@ internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
                 val outputPointer = outputArray.array.pointer(outputOffset)
 
                 var accumulator = outputPointer.get()
-                inputPointer.forEach(dim) { accumulator = operation(InlinePrimitive(accumulator), InlinePrimitive(it)).value }
+                inputPointer.forEach(dim) { accumulator = operation(accumulator, it) }
                 outputPointer.set(accumulator)
             }
             else -> {
