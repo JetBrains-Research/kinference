@@ -6,6 +6,14 @@ package io.kinference.ndarray.extensions.utils
 internal fun IntArray.inferShapeSize(): Int {
     return this.fold(1) { size, i -> size * i }
 }
+internal fun IntArray.calculateBlock(fromIdx: Int = 0, toIdx: Int = size): Int {
+    var result = 1
+    for (idx in fromIdx until toIdx) {
+        result *= this[idx]
+    }
+
+    return result
+}
 
 /***
  * Equivalent to ceil(a.toFloat() / b) but only integers are used.

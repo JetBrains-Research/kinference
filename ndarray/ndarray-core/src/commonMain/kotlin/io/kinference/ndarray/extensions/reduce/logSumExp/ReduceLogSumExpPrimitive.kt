@@ -20,6 +20,7 @@ import io.kinference.primitives.annotations.MakePublic
 import io.kinference.ndarray.extensions.ln
 import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
+import io.kinference.utils.inlines.InlinePrimitive
 import kotlin.math.ln
 
 @MakePublic

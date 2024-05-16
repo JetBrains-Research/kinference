@@ -4,14 +4,13 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ArrayDispatcher
+import io.kinference.ndarray.arrays.memory.*
 import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
-import io.kinference.utils.ModelContext
 import io.kinference.utils.inlines.InlineInt
 import kotlin.coroutines.coroutineContext
 import kotlin.math.min
@@ -62,10 +61,10 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
 
-            val modelName = coroutineContext[ModelContext.Key]?.modelName ?: NO_CONTEXT
+            val coroutineContext = coroutineContext[AllocatorContext.Key]
 
             // With array dispatcher
-            val containerArray = ArrayDispatcher.getArraysAndMarkers(modelName, type, blockSize, blocksNum)
+            val containerArray = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { ArrayContainer(type, blockSize) }
             val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
             val marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
 

@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 group = "io.kinference"
-version = "0.2.19-kotlin18"
+version = "0.2.20-kotlin18"
 
 plugins {
     kotlin("multiplatform") apply false

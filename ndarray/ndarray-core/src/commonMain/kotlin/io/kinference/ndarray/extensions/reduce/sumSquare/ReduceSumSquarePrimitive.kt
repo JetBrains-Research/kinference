@@ -14,6 +14,7 @@ import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
+import io.kinference.utils.inlines.InlinePrimitive
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceSumSquare(axes: IntArray, keepDims: Boolean) =

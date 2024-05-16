@@ -23,12 +23,8 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
 
-    override fun markContextOutput() {
-        data.forEach { it.markContextOutput() }
-    }
-
-    override fun markGlobalOutput() {
-        data.forEach { it.markGlobalOutput() }
+    override fun markOutput() {
+        data.forEach { it.markOutput() }
     }
 
     val length: Int = data.size

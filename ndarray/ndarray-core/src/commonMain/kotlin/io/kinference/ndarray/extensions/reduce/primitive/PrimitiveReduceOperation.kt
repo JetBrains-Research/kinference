@@ -14,12 +14,15 @@ internal suspend fun PrimitiveNDArray.reduceOperationPrimitive(
     axes: IntArray,
     keepDims: Boolean,
     initOutputValue: PrimitiveType? = null,
-    operation: (output: PrimitiveType, input: PrimitiveType) -> PrimitiveType
+    operation: PrimitiveBinaryOperation
 ): PrimitiveNDArray {
     if (axes.isEmpty()) return this
 
     val axesToReduce = axes.map { indexAxis(it) }.toSet()
     require(axesToReduce.all { it in shape.indices }) { "Axes ${axes.joinToString()} must be in range [-${rank}, ${rank - 1}]" }
+
+    if (axesToReduce.size == 1) return reduceOneAxisPrimitive(this, axesToReduce.first(), keepDims, initOutputValue, operation)
+
 
     val outputShapeWithKeepDims = this.shape.copyOf().apply { axesToReduce.forEach { set(it, 1) } }
     val stridesWithKeepDims = Strides(outputShapeWithKeepDims)

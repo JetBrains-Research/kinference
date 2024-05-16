@@ -10,6 +10,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.ndarray.extensions.MAX_VALUE_FOR_MIN
+import io.kinference.utils.inlines.InlinePrimitive
 import kotlin.comparisons.minOf
 
 @MakePublic

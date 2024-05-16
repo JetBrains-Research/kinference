@@ -16,8 +16,9 @@ import io.kinference.primitives.types.PrimitiveType
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.ndarray.stubs.abs
 import io.kinference.ndarray.extensions.abs
+import io.kinference.utils.inlines.InlinePrimitive
 import kotlin.math.abs
 
 @MakePublic
 internal suspend fun PrimitiveNDArray.reduceL1(axes: IntArray, keepDims: Boolean) =
-    reduceOperationPrimitive(axes, keepDims) { out: PrimitiveType, inp: PrimitiveType -> out + abs(inp) }
+    reduceOperationPrimitive(axes, keepDims) { out: PrimitiveType, inp: PrimitiveType -> out + (abs(inp)) }

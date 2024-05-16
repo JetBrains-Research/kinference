@@ -85,12 +85,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return array.blocks[0][0]
     }
 
-    override fun markContextOutput() {
-        array.marker.forEach { it.invoke(ArrayUsageMarker.ContextOutput) }
-    }
-
-    override fun markGlobalOutput() {
-        array.marker.forEach { it.invoke(ArrayUsageMarker.GlobalOutput) }
+    override fun markOutput() {
+        array.marker.forEach { it.invoke() }
     }
 
     override suspend fun clone(): PrimitiveNDArray {
@@ -302,7 +298,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left + right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left + right).toPrimitive() }
 
     override suspend fun minus(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -314,7 +310,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left - right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left - right).toPrimitive() }
 
     override suspend fun times(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -326,7 +322,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left * right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left * right).toPrimitive() }
 
     override suspend fun div(other: NumberNDArray): MutablePrimitiveNDArray {
         val destShape = broadcastShape(listOf(this.shape, other.shape))
@@ -338,7 +334,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             this,
             other as PrimitiveNDArray,
             destination as MutablePrimitiveNDArray
-        ) { left: InlinePrimitive, right: InlinePrimitive -> (left / right) }
+        ) { left: PrimitiveType, right: PrimitiveType -> (left / right).toPrimitive() }
 
     override suspend fun dot(other: NumberNDArray, destination: MutableNumberNDArray): MutablePrimitiveNDArray {
         other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
@@ -1339,4 +1335,9 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 @MakePublic
 internal interface PrimitiveMap : PrimitiveToPrimitiveFunction {
     fun apply(value: PrimitiveType): PrimitiveType
+}
+
+@GenerateNameFromPrimitives
+fun interface PrimitiveBinaryOperation {
+    operator fun invoke(first: PrimitiveType, second: PrimitiveType): PrimitiveType
 }

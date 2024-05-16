@@ -26,12 +26,8 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
 
-    override fun markContextOutput() {
-        data.values.forEach { it.markContextOutput() }
-    }
-
-    override fun markGlobalOutput() {
-        data.values.forEach { it.markGlobalOutput() }
+    override fun markOutput() {
+        data.values.forEach { it.markOutput() }
     }
 
     override suspend fun clone(newName: String?): KIONNXMap {

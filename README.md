@@ -54,7 +54,7 @@ it is highly recommended to use KInference TensorFlow.js backend instead for mor
 KInference Core dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-core", "0.2.19")
+    api("io.kinference", "inference-core", "0.2.20")
 }
 ```
 
@@ -67,7 +67,7 @@ This backend is recommended for JavaScript projects.
 TensorFlow.js backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-tfjs", "0.2.19")
+    api("io.kinference", "inference-tfjs", "0.2.20")
 }
 ```
 
@@ -81,14 +81,14 @@ To check on the system requirements, visit the following [link](https://onnxrunt
 ONNXRuntime CPU backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-ort", "0.2.19")
+    api("io.kinference", "inference-ort", "0.2.20")
 }
 ```
 
 ONNXRuntime GPU backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-ort-gpu", "0.2.19")
+    api("io.kinference", "inference-ort-gpu", "0.2.20")
 }
 ```
 
@@ -104,7 +104,7 @@ Array adapter for the [kmath](https://github.com/SciProgCentre/kmath) library th
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adapter-kmath-{backend_name}", "0.2.19")
+    api("io.kinference", "adapter-kmath-{backend_name}", "0.2.20")
 }
 ```
 
@@ -114,12 +114,12 @@ Array adapter for the [multik](https://github.com/Kotlin/multik) library that wo
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adapter-multik-{backend_name}", "0.2.19")
+    api("io.kinference", "adapter-multik-{backend_name}", "0.2.20")
 }
 ```
 
 ## Getting started
-Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.19*
+Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.20*
 
 ### Setup dependencies repository
 
@@ -142,7 +142,7 @@ To enable the backend, you can add the chosen KInference runtime as a dependency
 
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-core", "0.2.19")
+    api("io.kinference", "inference-core", "0.2.20")
 }
 ```
 
@@ -160,20 +160,20 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.kinference:inference-api:0.2.19")
-                api("io.kinference:ndarray-api:0.2.19")
+                api("io.kinference:inference-api:0.2.20")
+                api("io.kinference:ndarray-api:0.2.20")
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api("io.kinference:inference-core:0.2.19")
+                api("io.kinference:inference-core:0.2.20")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                api("io.kinference:inference-tfjs:0.2.19")
+                api("io.kinference:inference-tfjs:0.2.20")
             }
         }
     }
