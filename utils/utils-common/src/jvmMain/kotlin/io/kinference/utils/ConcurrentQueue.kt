@@ -12,4 +12,8 @@ actual class ConcurrentQueue<T> actual constructor() {
     actual fun addLast(element: T) {
         queue.offer(element)
     }
+
+    actual fun clear() {
+        queue.clear()
+    }
 }
