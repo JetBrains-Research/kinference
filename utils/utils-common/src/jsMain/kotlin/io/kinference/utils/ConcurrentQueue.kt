@@ -10,4 +10,8 @@ actual class ConcurrentQueue<T> actual constructor() {
     actual fun addLast(element: T) {
         queue.addLast(element)
     }
+
+    actual fun clear() {
+        queue.clear()
+    }
 }

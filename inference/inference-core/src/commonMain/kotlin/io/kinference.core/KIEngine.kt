@@ -10,6 +10,7 @@ import io.kinference.core.optimizer.rules.OptimizerRuleSet
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
+import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
@@ -48,18 +49,24 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
+    suspend fun loadModel(bytes: ByteArray, optimize: Boolean, useAllocator: Boolean): KIModel {
         val rules = if (optimize) OptimizerRuleSet.DEFAULT_OPT_RULES else emptyList()
-        return loadModel(bytes, rules)
+        return loadModel(bytes, rules, useAllocator)
     }
 
-    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel {
+    override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
+        return loadModel(bytes, optimize, true)
+    }
+
+    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, true)
+
+    suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, useAllocator: Boolean): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        val model = KIModel(modelScheme)
+        val model = KIModel(modelScheme, useAllocator)
 
         return if (rules.isNotEmpty()) {
             val newGraph = GraphOptimizer(model.graph).run(rules) as KIGraph
-            KIModel(model.id, model.name, model.opSet, newGraph)
+            KIModel(model.id, model.name, model.opSet, newGraph, useAllocator)
         } else {
             model
         }
@@ -67,8 +74,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     override suspend fun loadModel(bytes: ByteArray): KIModel = loadModel(bytes, optimize = true)
 
+    suspend fun loadModel(path: Path, optimize: Boolean, useAllocator: Boolean): KIModel {
+        return loadModel(CommonDataLoader.bytes(path), optimize, useAllocator)
+    }
+
     override suspend fun loadModel(path: Path, optimize: Boolean): KIModel {
-        return loadModel(CommonDataLoader.bytes(path), optimize)
+        return loadModel(path, optimize, true)
     }
 
     override suspend fun loadModel(path: Path): KIModel = loadModel(path, optimize = true)
@@ -77,8 +88,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
         return loadModel(CommonDataLoader.bytes(path), rules)
     }
 
+    suspend fun loadModel(path: String, optimize: Boolean, useAllocator: Boolean): KIModel {
+        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize, useAllocator)
+    }
+
     override suspend fun loadModel(path: String, optimize: Boolean): KIModel {
-        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize)
+        return loadModel(path, optimize, true)
     }
 
     override suspend fun loadModel(path: String): KIModel = loadModel(path, optimize = true)
@@ -101,5 +116,9 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     override suspend fun loadData(path: String, type: ONNXDataType): KIONNXData<*> {
         return loadData(path.toPath(), type)
+    }
+
+    fun clearCache() {
+        ArrayDispatcher.clearCache()
     }
 }
