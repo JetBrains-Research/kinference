@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'corretto'
@@ -32,10 +32,10 @@ jobs:
       #          check-latest: true
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2.5.0
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Cache test data
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: test-data
           key: test-data-${{ hashFiles('buildSrc/src/main/**/DefaultS3Deps.kt') }}
@@ -47,7 +47,7 @@ jobs:
         run: ./gradlew jvmHeavyTest --console=plain -Pci --no-daemon
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: test-report
@@ -62,13 +62,13 @@ jobs:
       options: --user 1001
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Cache test data
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: test-data
           key: test-data-${{ hashFiles('buildSrc/src/main/**/DefaultS3Deps.kt') }}
@@ -80,7 +80,7 @@ jobs:
         run: xvfb-run --auto-servernum ./gradlew jsHeavyTest --console=plain -Pci --no-daemon
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: test-report
