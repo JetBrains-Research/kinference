@@ -58,7 +58,7 @@ class ORTMultikAdapterTest {
 
             when (expected.data.info.type) {
                 OnnxJavaType.INT32 -> ArrayAssertions.assertArrayEquals(expected.toIntArray(), actual.toIntArray(), delta = 0.0) { "Tensors ${expected.name} do not match" }
-                OnnxJavaType.INT8 -> ArrayAssertions.assertArrayEquals(expected.toByteArray(), actual.toByteArray(), delta = 0.0) { "Tensors ${expected.name} do not match"}
+                OnnxJavaType.BOOL -> ArrayAssertions.assertArrayEquals(expected.toBooleanArray(), actual.toBooleanArray(), delta = 0.0) { "Tensors ${expected.name} do not match"}
                 else -> error("Unsupported data type: ${expected.data.info.type}")
             }
         }
