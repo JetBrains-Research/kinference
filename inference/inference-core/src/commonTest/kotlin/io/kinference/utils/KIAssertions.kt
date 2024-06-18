@@ -9,98 +9,95 @@ import io.kinference.data.ONNXDataType
 import io.kinference.ndarray.arrays.*
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.ArrayAssertions.assertArrayEquals
 import kotlin.test.assertEquals
 
 object KIAssertions {
     private val logger = TestLoggerFactory.create("io.kinference.utils.KIAssertions")
 
-    @OptIn(ExperimentalUnsignedTypes::class)
     fun assertEquals(expected: KITensor, actual: KITensor, delta: Double) {
         assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.name} do not match")
-        assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray(), "Shapes are incorrect")
+        ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray()) { "Shapes of tensors ${expected.name} do not match" }
 
         val typeInfo = expected.info
-        logger.info { "Errors for ${expected.name}:" }
         when (typeInfo.type) {
             in FLOAT_TENSOR_TYPES -> {
-                val expectedArray = (expected.data as FloatNDArray).array
-                val actualArray = (actual.data as FloatNDArray).array
+                val expectedArray = (expected.data as FloatNDArray).array.blocks
+                val actualArray = (actual.data as FloatNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.DOUBLE -> {
-                val expectedArray = (expected.data as DoubleNDArray).array
-                val actualArray = (actual.data as DoubleNDArray).array
+                val expectedArray = (expected.data as DoubleNDArray).array.blocks
+                val actualArray = (actual.data as DoubleNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.INT64 -> {
-                val expectedArray = (expected.data as LongNDArray).array
-                val actualArray = (actual.data as LongNDArray).array
+                val expectedArray = (expected.data as LongNDArray).array.blocks
+                val actualArray = (actual.data as LongNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.INT32 -> {
-                val expectedArray = (expected.data as IntNDArray).array
-                val actualArray = (actual.data as IntNDArray).array
+                val expectedArray = (expected.data as IntNDArray).array.blocks
+                val actualArray = (actual.data as IntNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.INT16 -> {
-                val expectedArray = (expected.data as ShortNDArray).array
-                val actualArray = (actual.data as ShortNDArray).array
+                val expectedArray = (expected.data as ShortNDArray).array.blocks
+                val actualArray = (actual.data as ShortNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.INT8 -> {
-                val expectedArray = (expected.data as ByteNDArray).array
-                val actualArray = (actual.data as ByteNDArray).array
+                val expectedArray = (expected.data as ByteNDArray).array.blocks
+                val actualArray = (actual.data as ByteNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.BOOL -> {
-                val expectedArray = (expected.data as BooleanNDArray).array.toArray().toTypedArray()
-                val actualArray = (actual.data as BooleanNDArray).array.toArray().toTypedArray()
+                val expectedArray = (expected.data as BooleanNDArray).array.blocks
+                val actualArray = (actual.data as BooleanNDArray).array.blocks
 
-                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.name} does not match")
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
             TensorProto.DataType.UINT8 -> {
-                val expectedArray = (expected.data as UByteNDArray).array
-                val actualArray = (actual.data as UByteNDArray).array
+                val expectedArray = (expected.data as UByteNDArray).array.blocks
+                val actualArray = (actual.data as UByteNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
 
             TensorProto.DataType.UINT16 -> {
-                val expectedArray = (expected.data as UShortNDArray).array
-                val actualArray = (actual.data as UShortNDArray).array
+                val expectedArray = (expected.data as UShortNDArray).array.blocks
+                val actualArray = (actual.data as UShortNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
 
             TensorProto.DataType.UINT32 -> {
-                val expectedArray = (expected.data as UIntNDArray).array
-                val actualArray = (actual.data as UIntNDArray).array
+                val expectedArray = (expected.data as UIntNDArray).array.blocks
+                val actualArray = (actual.data as UIntNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
 
             TensorProto.DataType.UINT64 -> {
-                val expectedArray = (expected.data as ULongNDArray).array
-                val actualArray = (actual.data as ULongNDArray).array
+                val expectedArray = (expected.data as ULongNDArray).array.blocks
+                val actualArray = (actual.data as ULongNDArray).array.blocks
 
-                ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensors ${expected.name} do not match" }
             }
 
             TensorProto.DataType.STRING -> {
                 val expectedArray = (expected.data as StringNDArray).array
                 val actualArray = (actual.data as StringNDArray).array
 
-                assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.name} does not match")
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray) { "Tensors ${expected.name} do not match" }
             }
 
-            else -> assertEquals(expected, actual, "Tensor ${expected.name} does not match")
+            else -> assertEquals(expected, actual, "Tensors ${expected.name} do not match")
         }
     }
 

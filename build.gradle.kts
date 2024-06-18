@@ -11,6 +11,7 @@ plugins {
     kotlin("multiplatform") apply false
     idea apply true
     `maven-publish`
+    id("io.kinference.primitives") version "0.1.26" apply false
 }
 
 allprojects {
