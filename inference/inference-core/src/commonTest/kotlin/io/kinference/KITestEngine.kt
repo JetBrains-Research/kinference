@@ -7,11 +7,15 @@ import io.kinference.core.data.seq.KIONNXSequence
 import io.kinference.data.ONNXDataType
 import io.kinference.runners.AccuracyRunner
 import io.kinference.runners.PerformanceRunner
-import io.kinference.utils.KIAssertions
+import io.kinference.utils.*
 
 object KITestEngine : TestEngine<KIONNXData<*>>(KIEngine) {
     override fun checkEquals(expected: KIONNXData<*>, actual: KIONNXData<*>, delta: Double) {
         KIAssertions.assertEquals(expected, actual, delta)
+    }
+
+    override fun calculateErrors(expected: KIONNXData<*>, actual: KIONNXData<*>): List<Errors.ErrorsData> {
+        return KIErrors.calculateErrors(expected, actual)
     }
 
     override fun getInMemorySize(data: KIONNXData<*>): Int {

@@ -31,13 +31,13 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
 
     private fun List<T>.getInMemorySize() = sumOf { testEngine.getInMemorySize(it) }
 
-    suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
+    suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList(), errorsVerbose: Boolean = true) {
         val toFolder = name.replace(":", "/").toPath()
-        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta, coroutinesCount = 3)
+        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta, coroutinesCount = 1, errorsVerbose)
     }
 
-    suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList()) {
-        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta, coroutinesCount = 3)
+    suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList(), errorsVerbose: Boolean = true) {
+        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta, coroutinesCount = 1, errorsVerbose)
     }
 
     private suspend fun runTestsFromFolder(
@@ -45,7 +45,8 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
         testPath: Path,
         disableTests: List<String> = emptyList(),
         delta: Double = DELTA,
-        coroutinesCount: Int = 3
+        coroutinesCount: Int = 1,
+        errorsVerbose: Boolean = true
     ) {
         val model = testEngine.loadModel(loader.getFullPath(testPath) / "model.onnx")
 
@@ -63,13 +64,16 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             val outputFiles = files.filter { file -> "output" in file.path }
             val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
 
-            logger.info { "Start predicting: $group" }
+            if (errorsVerbose)
+                logger.info { "Start predicting: $group" }
+
             val actualOutputsList: List<Map<String, T>> = if (testEngine is MemoryProfileable) {
                 val memoryBeforeTest = testEngine.allocatedMemory()
-                logger.info { "Memory before predict: $memoryBeforeTest" }
                 val outputs = model.predict(inputs)
                 val memoryAfterTest = testEngine.allocatedMemory()
-                logger.info { "Memory after predict: $memoryAfterTest" }
+                if (errorsVerbose)
+                    logger.info { "Memory before predict: $memoryBeforeTest" }
+                    logger.info { "Memory after predict: $memoryAfterTest" }
                 val outputsInMemorySize = expectedOutputs.getInMemorySize()
                 assertLessOrEquals(
                     expected = outputsInMemorySize, actual = memoryAfterTest - memoryBeforeTest,
@@ -87,9 +91,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
 
             actualOutputsList.forEach { actualOutputs ->
                 try {
-                    check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta)
+                    check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta, errorsVerbose)
                 } catch (e: Exception) {
                     model.close()
+                    inputs.forEach { it.close() }
+                    expectedOutputs.forEach { it.close() }
                     throw e
                 } finally {
                     actualOutputs.values.forEach { it.close() }
@@ -104,14 +110,19 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
         }
     }
 
-    private fun check(dataset: ONNXTestData<T>, delta: Double = DELTA) {
-        logger.info { "Dataset: ${dataset.name}\n" }
+    private fun check(dataset: ONNXTestData<T>, delta: Double = DELTA, errorsVerbose: Boolean = true) {
+        if (errorsVerbose)
+            logger.info { "Dataset: ${dataset.name}\n" }
 
         val (_, expectedOutputs, actualOutputs) = dataset
 
         for ((outputName, outputData) in expectedOutputs) {
             val actualOutput = actualOutputs[outputName] ?: error("Required tensor not found")
             testEngine.checkEquals(outputData, actualOutput, delta)
+            if (errorsVerbose) {
+                val errors = testEngine.calculateErrors(outputData, actualOutput)
+                errors.forEach { it.print(outputName, logger) }
+            }
         }
     }
 

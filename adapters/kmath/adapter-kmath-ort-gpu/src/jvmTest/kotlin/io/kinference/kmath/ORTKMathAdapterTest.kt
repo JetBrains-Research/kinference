@@ -7,7 +7,6 @@ import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
-import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -49,27 +48,13 @@ class ORTKMathAdapterTest {
         fun assertTensorEquals(expected: ORTTensor, actual: ORTTensor) {
             assertEquals(expected.data.info.type, actual.data.info.type, "Types of tensors ${expected.name} do not match")
             assertEquals(expected.name, actual.name, "Names of tensors do not match")
-            ArrayAssertions.assertArrayEquals(expected.data.info.shape.toTypedArray(), actual.data.info.shape.toTypedArray(), "Shapes do not match")
-            when {
-                expected.data.intBuffer != null -> assertIntEquals(expected, actual)
-                expected.data.byteBuffer != null -> assertByteEquals(expected, actual)
+            ArrayAssertions.assertArrayEquals(expected.data.info.shape.toTypedArray(), actual.data.info.shape.toTypedArray()) { "Shapes of tensors ${expected.name} do not match" }
+
+            when (expected.data.info.type) {
+                OnnxJavaType.INT32 -> ArrayAssertions.assertArrayEquals(expected.toIntArray(), actual.toIntArray(), delta = 0.0) { "Tensors ${expected.name} do not match" }
+                OnnxJavaType.INT8 -> ArrayAssertions.assertArrayEquals(expected.toByteArray(), actual.toByteArray(), delta = 0.0) { "Tensors ${expected.name} do not match"}
+                else -> error("Unsupported data type: ${expected.data.info.type}")
             }
         }
-
-        fun assertIntEquals(expected: ORTTensor, actual: ORTTensor) = ArrayAssertions.assertArrayEquals(
-            expected.data.intBuffer.array(),
-            actual.data.intBuffer.array(),
-            { l, r -> abs(l - r).toDouble() },
-            delta = 0.0,
-            ""
-        )
-
-        fun assertByteEquals(expected: ORTTensor, actual: ORTTensor) = ArrayAssertions.assertArrayEquals(
-            expected.data.byteBuffer.array(),
-            actual.data.byteBuffer.array(),
-            { l, r -> abs(l - r).toDouble() },
-            delta = 0.0,
-            ""
-        )
     }
 }

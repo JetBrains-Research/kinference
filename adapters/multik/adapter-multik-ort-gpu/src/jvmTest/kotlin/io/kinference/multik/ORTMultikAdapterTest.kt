@@ -6,7 +6,6 @@ import io.kinference.utils.*
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.junit.jupiter.api.Test
 import java.nio.IntBuffer
-import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -57,25 +56,13 @@ class ORTMultikAdapterTest {
         fun assertTensorEquals(expected: ORTTensor, actual: ORTTensor) {
             assertEquals(expected.data.info.type, actual.data.info.type, "Types of tensors ${expected.name} do not match")
             assertEquals(expected.name, actual.name, "Names of tensors do not match")
-            ArrayAssertions.assertArrayEquals(expected.data.info.shape.toTypedArray(), actual.data.info.shape.toTypedArray(), "Shapes do not match")
-            if (expected.data.info.type == OnnxJavaType.BOOL) {
-                ArrayAssertions.assertArrayEquals(
-                    expected.data.byteBuffer.array(),
-                    actual.data.byteBuffer.array(),
-                    { l, r -> (l - r).toDouble() },
-                    delta = 0.0,
-                    message = ""
-                )
-            } else {
-                ArrayAssertions.assertArrayEquals(
-                    expected.data.intBuffer.array(),
-                    actual.data.intBuffer.array(),
-                    { l, r -> abs(l - r).toDouble() },
-                    delta = 0.0,
-                    ""
-                )
-            }
+            ArrayAssertions.assertArrayEquals(expected.data.info.shape.toTypedArray(), actual.data.info.shape.toTypedArray()) { "Shapes of tensors ${expected.name} do not match" }
 
+            when (expected.data.info.type) {
+                OnnxJavaType.INT32 -> ArrayAssertions.assertArrayEquals(expected.toIntArray(), actual.toIntArray(), delta = 0.0) { "Tensors ${expected.name} do not match" }
+                OnnxJavaType.INT8 -> ArrayAssertions.assertArrayEquals(expected.toByteArray(), actual.toByteArray(), delta = 0.0) { "Tensors ${expected.name} do not match"}
+                else -> error("Unsupported data type: ${expected.data.info.type}")
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") version "0.1.26" apply true
+    id("io.kinference.primitives") apply true
     id("org.jetbrains.kotlin.plugin.atomicfu") version "2.0.0-Beta3"
 }
 

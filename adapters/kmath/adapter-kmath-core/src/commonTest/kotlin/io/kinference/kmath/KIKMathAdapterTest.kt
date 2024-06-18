@@ -19,7 +19,6 @@ import io.kinference.utils.*
 import io.kinference.utils.inlines.InlineInt
 import space.kscience.kmath.nd.*
 import space.kscience.kmath.structures.Buffer
-import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -102,14 +101,12 @@ class KIKMathAdapterTest {
     companion object {
         fun assertEquals(expected: KITensor, actual: KITensor) {
             assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.name} do not match")
-            ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray(), "Shapes do not match")
-            ArrayAssertions.assertArrayEquals(
-                (expected.data as IntNDArray).array,
-                (actual.data as IntNDArray).array,
-                { l, r -> abs(l - r).toDouble() },
-                delta = 0.0,
-                ""
-            )
+            ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray()) { "Shapes of tensors ${expected.name} do not match" }
+
+            val expectedArray = (expected.data as IntNDArray).array.blocks
+            val actualArray = (actual.data as IntNDArray).array.blocks
+
+            ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta = 0.0) { "Tensors ${expected.name} do not match" }
         }
 
         fun assertEquals(expected: KIONNXMap, actual: KIONNXMap) {

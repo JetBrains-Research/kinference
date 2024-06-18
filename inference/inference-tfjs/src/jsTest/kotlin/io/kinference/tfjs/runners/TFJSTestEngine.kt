@@ -11,10 +11,16 @@ import io.kinference.tfjs.TFJSEngine
 import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.utils.TFJSAssertions
+import io.kinference.tfjs.utils.TFJSErrors
+import io.kinference.utils.Errors
 
 object TFJSTestEngine : TestEngine<TFJSData<*>>(TFJSEngine), MemoryProfileable {
     override fun checkEquals(expected: TFJSData<*>, actual: TFJSData<*>, delta: Double) {
         TFJSAssertions.assertEquals(expected, actual, delta)
+    }
+
+    override fun calculateErrors(expected: TFJSData<*>, actual: TFJSData<*>): List<Errors.ErrorsData> {
+        return TFJSErrors.calculateErrors(expected, actual)
     }
 
     override fun getInMemorySize(data: TFJSData<*>): Int {

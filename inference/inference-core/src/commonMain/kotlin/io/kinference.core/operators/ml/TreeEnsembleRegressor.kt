@@ -6,8 +6,8 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.core.operators.ml.trees.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArray
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.operator.*
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
@@ -100,6 +100,18 @@ class TreeEnsembleRegressorVer1(
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
         val inputData = inputs[0]!!.data as NumberNDArrayCore
-        return listOf(treeEnsemble.execute(inputData).asTensor("Y"))
+
+        val output = treeEnsemble.execute(inputData)
+
+        val outputBlockSize = blockSizeByStrides(output.strides)
+        val actualOutput = if (outputBlockSize != output.array.blockSize) {
+            val newOutput = FloatNDArray(output.strides)
+            output.array.copyInto(newOutput.array)
+            newOutput
+        } else {
+            output
+        }
+
+        return listOf(actualOutput.asTensor("Y"))
     }
 }
