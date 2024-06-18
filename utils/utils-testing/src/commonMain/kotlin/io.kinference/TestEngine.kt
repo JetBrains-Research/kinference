@@ -23,6 +23,10 @@ interface MemoryProfileable {
     fun allocatedMemory(): Int
 }
 
+interface Cacheable {
+    fun clearCache()
+}
+
 expect object TestLoggerFactory {
     fun create(name: String): KILogger
 }

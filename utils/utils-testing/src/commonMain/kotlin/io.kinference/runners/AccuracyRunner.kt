@@ -103,8 +103,13 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
             }
             inputs.forEach { it.close() }
             expectedOutputs.forEach { it.close() }
+
+            if (testEngine is Cacheable) {
+                testEngine.clearCache()
+            }
         }
         model.close()
+
         if (testEngine is MemoryProfileable) {
             assertEquals(0, testEngine.allocatedMemory(), "Memory leak found after model dispose")
         }
