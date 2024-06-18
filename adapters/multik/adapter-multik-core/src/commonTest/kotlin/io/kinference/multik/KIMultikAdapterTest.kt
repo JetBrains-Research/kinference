@@ -6,12 +6,10 @@ import io.kinference.ndarray.arrays.IntNDArray
 import io.kinference.ndarray.extensions.createNDArray
 import io.kinference.ndarray.extensions.tiledFromPrimitiveArray
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.ArrayAssertions
-import io.kinference.utils.TestRunner
+import io.kinference.utils.*
 import multik.KIMultikData
 import multik.KIMultikTensorAdapter
 import org.jetbrains.kotlinx.multik.ndarray.data.*
-import kotlin.math.abs
 import kotlin.test.*
 
 class KIMultikAdapterTest {
@@ -39,14 +37,12 @@ class KIMultikAdapterTest {
         fun assertTensorEquals(expected: KITensor, actual: KITensor) {
             assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.name} do not match")
             assertEquals(expected.name, actual.name, "Names of tensors do not match")
-            ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray(), "Shapes do not match")
-            ArrayAssertions.assertArrayEquals(
-                (expected.data as IntNDArray).array,
-                (actual.data as IntNDArray).array,
-                { l, r -> abs(l - r).toDouble() },
-                delta = 0.0,
-                ""
-            )
+            ArrayAssertions.assertArrayEquals(expected.data.shape.toTypedArray(), actual.data.shape.toTypedArray()) { "Shapes of tensors ${expected.name} do not match" }
+
+            val expectedArray = (expected.data as IntNDArray).array.blocks
+            val actualArray = (actual.data as IntNDArray).array.blocks
+
+            ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta = 0.0) { "Tensors ${expected.name} do not match" }
         }
     }
 }

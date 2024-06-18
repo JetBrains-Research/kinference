@@ -14,7 +14,7 @@ class ReverseSequenceTest {
 
     @Test
     fun test_reverse_sequence_string_batch() = TestRunner.runTest {
-        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_batch"))
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_batch"), errorsVerbose = false)
     }
 
     @Test
@@ -24,7 +24,7 @@ class ReverseSequenceTest {
 
     @Test
     fun test_reverse_sequence_string_batch_3d() = TestRunner.runTest {
-        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_batch_3d"))
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_batch_3d"), errorsVerbose = false)
     }
 
     @Test
@@ -39,7 +39,7 @@ class ReverseSequenceTest {
 
     @Test
     fun test_reverse_sequence_string_time() = TestRunner.runTest {
-        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_time"))
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_time"), errorsVerbose = false)
     }
 
     @Test
@@ -49,7 +49,7 @@ class ReverseSequenceTest {
 
     @Test
     fun test_reverse_sequence_string_time_3d() = TestRunner.runTest {
-        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_time_3d"))
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_reverse_sequence_string_time_3d"), errorsVerbose = false)
     }
 
     @Test

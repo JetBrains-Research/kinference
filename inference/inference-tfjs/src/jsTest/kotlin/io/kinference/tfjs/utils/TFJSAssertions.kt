@@ -9,16 +9,15 @@ import io.kinference.tfjs.data.map.TFJSMap
 import io.kinference.tfjs.data.seq.TFJSSequence
 import io.kinference.tfjs.data.tensors.TFJSTensor
 import io.kinference.utils.ArrayAssertions
-import kotlin.math.abs
-import kotlin.test.assertContentEquals
+import io.kinference.utils.assertArrayEquals
 import kotlin.test.assertEquals
 
 object TFJSAssertions {
     private val logger = TestLoggerFactory.create("Assertions")
 
-    fun assertEquals(expected: TFJSTensor, actual: TFJSTensor, delta: Double, verboseErrors: Boolean = true) {
+    fun assertEquals(expected: TFJSTensor, actual: TFJSTensor, delta: Double) {
         assertEquals(expected.data.type, actual.data.type, "Types of tensors ${expected.name} do not match")
-        ArrayAssertions.assertArrayEquals(expected.data.shapeArray, actual.data.shapeArray, "Shapes are incorrect")
+        ArrayAssertions.assertArrayEquals(expected.data.shapeArray, actual.data.shapeArray) { "Shapes of tensors ${expected.name} do not match" }
 
 
         when(expected.data.type) {
@@ -26,41 +25,23 @@ object TFJSAssertions {
                 val expectedArray = expected.data.dataFloat()
                 val actualArray = actual.data.dataFloat()
 
-                if (verboseErrors) {
-                    logger.info { "Errors for ${expected.name}:" }
-                    ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
-                } else {
-                    ArrayAssertions.assertArrayEquals(
-                        left = expectedArray,
-                        right = actualArray,
-                        diff = { l, r -> abs(l - r).toDouble() },
-                        delta = delta,
-                        message = "Tensor ${expected.name.orEmpty()} does not match")
-                }
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensor ${expected.name.orEmpty()} does not match" }
+
             }
 
             DataType.INT -> {
                 val expectedArray = expected.data.dataInt()
                 val actualArray = actual.data.dataInt()
 
-                if (verboseErrors) {
-                    logger.info { "Errors for ${expected.name}:" }
-                    ArrayAssertions.assertEquals(expectedArray, actualArray, delta, expected.name.orEmpty())
-                } else {
-                    ArrayAssertions.assertArrayEquals(
-                        left = expectedArray,
-                        right = actualArray,
-                        diff = { l, r -> abs(l - r).toDouble() },
-                        delta = delta,
-                        message = "Tensor ${expected.name.orEmpty()} does not match")
-                }
+
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, delta) { "Tensor ${expected.name.orEmpty()} does not match" }
             }
 
             DataType.BOOLEAN -> {
                 val expectedArray = expected.data.dataBool()
                 val actualArray = actual.data.dataBool()
 
-                ArrayAssertions.assertArrayEquals(expectedArray, actualArray, "Tensor ${expected.name} does not match")
+                ArrayAssertions.assertArrayEquals(expectedArray, actualArray) { "Tensor ${expected.name.orEmpty()} does not match" }
             }
 
             else -> error("Unsupported data type of ${expected.name} tensor")
@@ -72,7 +53,7 @@ object TFJSAssertions {
         assertEquals(expected.data.keys, actual.data.keys, "Map key sets are not equal")
 
         for (entry in expected.data.entries) {
-            assertEquals(entry.value, actual.data[entry.key]!!, delta, verboseErrors = false)
+            assertEquals(entry.value, actual.data[entry.key]!!, delta)
         }
     }
 
@@ -80,13 +61,13 @@ object TFJSAssertions {
         assertEquals(expected.length, actual.length, "Sequence lengths do not match")
 
         for (i in expected.data.indices) {
-            assertEquals(expected.data[i], actual.data[i], delta, verboseErrors = false)
+            assertEquals(expected.data[i], actual.data[i], delta)
         }
     }
 
-    fun assertEquals(expected: TFJSData<*>, actual: TFJSData<*>, delta: Double, verboseErrors: Boolean = true) {
+    fun assertEquals(expected: TFJSData<*>, actual: TFJSData<*>, delta: Double) {
         when (expected.type) {
-            ONNXDataType.ONNX_TENSOR -> assertEquals(expected as TFJSTensor, actual as TFJSTensor, delta, verboseErrors)
+            ONNXDataType.ONNX_TENSOR -> assertEquals(expected as TFJSTensor, actual as TFJSTensor, delta)
             ONNXDataType.ONNX_MAP -> assertEquals(expected as TFJSMap, actual as TFJSMap, delta)
             ONNXDataType.ONNX_SEQUENCE -> assertEquals(expected as TFJSSequence, actual as TFJSSequence, delta)
         }

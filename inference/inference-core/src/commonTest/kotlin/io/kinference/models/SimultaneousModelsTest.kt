@@ -11,11 +11,11 @@ class SimultaneousModelsTest {
     @Test
     fun heavy_test_jvm_simultaneous_bert_electra_models() = TestRunner.runTest(Platform.JVM) {
         val bertDeferred = async {
-            KIAccuracyRunner.runFromS3("bert:standard:en:v1")
+            KIAccuracyRunner.runFromS3("bert:standard:en:v1", errorsVerbose = false)
         }
 
         val electraDeferred = async {
-            KIAccuracyRunner.runFromS3("bert:electra")
+            KIAccuracyRunner.runFromS3("bert:electra", errorsVerbose = false)
         }
 
         bertDeferred.await()

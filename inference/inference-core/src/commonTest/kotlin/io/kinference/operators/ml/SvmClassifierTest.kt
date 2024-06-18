@@ -74,7 +74,7 @@ class SvmClassifierTest {
 
     @Test
     fun test_labels_string() = TestRunner.runTest {
-        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_labels_string"))
+        KITestEngine.KIAccuracyRunner.runFromResources(getTargetPath("test_labels_string"), errorsVerbose = false)
     }
 
     @Test
