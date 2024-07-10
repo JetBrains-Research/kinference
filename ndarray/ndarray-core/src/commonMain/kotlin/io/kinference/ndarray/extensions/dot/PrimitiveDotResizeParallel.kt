@@ -5,6 +5,7 @@ import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.*
 import kotlin.math.min
 
@@ -61,7 +62,7 @@ internal suspend fun dotResizeParallel(left: PrimitiveNDArray, right: PrimitiveN
 
         for (iStart in 0 until n step nBatchSize) {
             val iEnd = min(iStart + nBatchSize, n)
-            for (rdCol in 0 until rdBlocksInRow) launch {
+            for (rdCol in 0 until rdBlocksInRow) launchWithLimitOrDefault {
                 for (lCol in 0 until lBlocksInRow) {
                     val rightOffset = lCol * aBlockSize
                     for (i in iStart until iEnd) {

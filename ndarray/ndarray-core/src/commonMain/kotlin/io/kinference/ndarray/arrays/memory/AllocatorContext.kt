@@ -16,13 +16,13 @@ data class AllocatorContext(val modelName: String, val cycleId: Long) : Coroutin
         return arrayContainers
     }
 
-
     fun closeAllocated() {
         usedContainers.forEach {
             if (!it.isOutput) {
                 unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
             }
         }
+        usedContainers.clear()
         ArrayDispatcher.returnStorage(unusedContainers)
     }
 }

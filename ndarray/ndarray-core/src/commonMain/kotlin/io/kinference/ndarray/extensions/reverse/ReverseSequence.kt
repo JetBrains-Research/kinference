@@ -4,8 +4,8 @@ import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.arrays.computeBlockSize
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.utils.PlatformUtils
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -22,7 +22,7 @@ suspend fun <T : NDArrayCore> T.reverseSeq(mode: ReverseSeqMode, seqLens: IntArr
 
     coroutineScope {
         for (batchIdx in 0 until numBatches step numBatchesParallelize) {
-            launch {
+            launchWithLimitOrDefault {
                 for (batchIdxCoroutine in batchIdx until min(batchIdx + numBatchesParallelize, numBatches)) {
                     val seqLength = seqLens[batchIdxCoroutine]
                     require(seqLength in 0..maxSeqLen) { "Sequence length must be in range $[0, $maxSeqLen], current seq length=$seqLength" }

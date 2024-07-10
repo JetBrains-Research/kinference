@@ -5,10 +5,8 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray
 import io.kinference.primitives.types.DataType
 import io.kinference.trees.*
-import io.kinference.utils.LoggerFactory
-import io.kinference.utils.PlatformUtils
+import io.kinference.utils.*
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.*
 
 class KICoreTreeEnsemble(
@@ -43,7 +41,7 @@ class KICoreTreeEnsemble(
 
             coroutineScope {
                 for (i in 0 until leadDim step batchSize) {
-                    launch {
+                    launchWithLimitOrDefault {
                         for (j in i until min(i + batchSize, leadDim))
                             applyEntry(arrayBlocks[j], outputBlocks[j])
                     }
