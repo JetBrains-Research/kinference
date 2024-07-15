@@ -12,7 +12,7 @@ version = "0.2.21"
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
-    alias(libs.plugins.primitives) apply false
+    alias(libs.plugins.kinference.primitives) apply false
     `maven-publish`
     idea apply true
 }

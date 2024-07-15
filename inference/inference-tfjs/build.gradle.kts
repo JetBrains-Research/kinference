@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
@@ -31,7 +30,7 @@ kotlin {
                 api(project(":utils:utils-profiling"))
                 api(project(":utils:utils-common"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+                api(libs.kotlinx.coroutines.core)
             }
         }
 

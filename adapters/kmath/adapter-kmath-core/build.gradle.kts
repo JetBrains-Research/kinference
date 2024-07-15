@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
@@ -22,7 +21,7 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-core"))
 
-                api("space.kscience:kmath-core:${Versions.kmath}")
+                api(libs.kmath.core)
             }
         }
 
