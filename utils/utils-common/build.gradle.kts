@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") apply true
+    alias(libs.plugins.primitives) apply true
 }
 
 kotlin {
@@ -17,8 +17,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api(libs.primitives.annotations)
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
                 implementation("com.squareup.okio:okio:${Versions.okio}")
             }
         }

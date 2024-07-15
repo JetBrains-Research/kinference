@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") apply true
+    alias(libs.plugins.primitives) apply true
 }
 
 kotlin {
@@ -32,7 +32,7 @@ kotlin {
                 api(kotlin("test-common"))
                 api(kotlin("test-annotations-common"))
 
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
+                api(libs.primitives.annotations)
             }
         }
 

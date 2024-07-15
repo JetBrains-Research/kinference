@@ -1,0 +1,13 @@
+[versions]
+kotlin = "2.0.0"
+aws = "1.12.761"
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform" }
+primitives = { id = "io.kinference.primitives", version.ref = "kotlin" }
+
+[libraries]
+
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+aws-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version.ref = "aws" }
+primitives-annotations = { module = "io.kinference.primitives:primitives-annotations", version.ref = "kotlin" }

@@ -1,17 +1,20 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 group = "io.kinference"
 version = "0.2.21"
 
 plugins {
-    kotlin("multiplatform") apply false
-    idea apply true
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.primitives) apply false
     `maven-publish`
-    id("io.kinference.primitives") version "0.1.26" apply false
+    idea apply true
 }
 
 allprojects {
@@ -57,17 +60,25 @@ subprojects {
                 optIn("kotlin.RequiresOptIn")
                 optIn("kotlin.ExperimentalUnsignedTypes")
             }
+        }
+    }
 
-            languageSettings {
-                apiVersion = "1.9"
-                languageVersion = "1.9"
+    val kotlinVersion = KotlinVersion.KOTLIN_2_0
+    val jvmTargetVersion = JvmTarget.JVM_17
+
+    tasks.withType(KotlinCompilationTask::class.java) {
+        compilerOptions {
+            apiVersion.set(kotlinVersion)
+            languageVersion.set(kotlinVersion)
+
+            if (this is KotlinJvmCompilerOptions) {
+                jvmTarget.set(jvmTargetVersion)
             }
         }
+    }
 
-        tasks.withType<KotlinJvmCompile> {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
-        }
+    tasks.withType(JavaCompile::class.java) {
+        sourceCompatibility = jvmTargetVersion.toString()
+        targetCompatibility = jvmTargetVersion.toString()
     }
 }

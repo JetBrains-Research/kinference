@@ -4,7 +4,7 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") apply true
+    alias(libs.plugins.primitives) apply true
     id("org.jetbrains.kotlin.plugin.atomicfu") version "2.0.0-Beta3"
 }
 
@@ -19,7 +19,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
+                api(libs.primitives.annotations)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
                 implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicfu}")
             }
