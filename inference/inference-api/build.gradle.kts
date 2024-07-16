@@ -1,5 +1,3 @@
-import io.kinference.gradle.Versions
-
 group = rootProject.group
 version = rootProject.version
 
@@ -13,7 +11,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio:${Versions.okio}")
+                implementation(libs.okio)
                 api(project(":utils:utils-common"))
             }
         }

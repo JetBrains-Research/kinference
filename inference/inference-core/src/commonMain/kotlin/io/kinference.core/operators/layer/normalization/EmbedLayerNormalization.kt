@@ -74,7 +74,7 @@ class EmbedLayerNormalizationVer1(
         private data class NormalizeResult(val output: FloatNDArray, val embeddingSum: FloatNDArray)
 
         internal suspend fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArrayCore {
-            val maskIndices = MutableIntNDArray(shape = intArrayOf(batchSize))
+            val maskIndices = MutableIntNDArray(intArrayOf(batchSize))
             if (mask == null) return maskIndices
 
             val pointer = mask.array.pointer()
@@ -99,8 +99,8 @@ class EmbedLayerNormalizationVer1(
         ): NormalizeResult {
             val (batchSize, seqLen) = inputIds.shape
             val (_, hiddenSize) = wordEmbed.shape
-            val output = MutableFloatNDArray(shape = intArrayOf(batchSize, seqLen, hiddenSize))
-            val embeddingSum = MutableFloatNDArray(shape = intArrayOf(batchSize, seqLen, hiddenSize))
+            val output = MutableFloatNDArray(intArrayOf(batchSize, seqLen, hiddenSize))
+            val embeddingSum = MutableFloatNDArray(intArrayOf(batchSize, seqLen, hiddenSize))
 
             for (batch in 0 until batchSize) {
                 val blockIdx = batch * seqLen

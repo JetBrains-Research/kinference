@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureGpuTests
 
@@ -29,7 +28,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                api("com.microsoft.onnxruntime:onnxruntime_gpu:${Versions.ort}")
+                api(libs.onnxruntime.gpu)
             }
         }
     }

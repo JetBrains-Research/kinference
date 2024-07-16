@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureGpuTests
 
 group = rootProject.group
@@ -13,7 +12,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":inference:inference-api"))
-                api("org.jetbrains.kotlinx:multik-core:${Versions.multik}")
+                api(libs.multik.core)
             }
         }
 

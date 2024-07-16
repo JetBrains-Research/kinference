@@ -1,5 +1,3 @@
-import io.kinference.gradle.Versions
-
 group = rootProject.group
 version = rootProject.version
 
@@ -17,7 +15,7 @@ kotlin {
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
 
-                api("com.squareup.wire:wire-runtime:${Versions.wire}")
+                api(libs.wire.runtime)
             }
         }
     }

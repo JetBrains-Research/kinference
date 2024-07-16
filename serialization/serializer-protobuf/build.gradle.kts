@@ -1,5 +1,3 @@
-import io.kinference.gradle.Versions
-
 group = rootProject.group
 version = rootProject.version
 
@@ -14,8 +12,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":utils:utils-common"))
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
-                api("com.squareup.wire:wire-runtime:${Versions.wire}")
+                api(libs.kinference.primitives.annotations)
+                api(libs.wire.runtime)
             }
         }
     }

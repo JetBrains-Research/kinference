@@ -8,3 +8,4 @@ test-data
 credentials.conf
 venv
 .DS_Store
+.kotlin

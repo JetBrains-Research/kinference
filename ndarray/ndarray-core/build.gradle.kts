@@ -1,11 +1,9 @@
-import io.kinference.gradle.Versions
-
 group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("io.kinference.primitives") apply true
-    id("org.jetbrains.kotlin.plugin.atomicfu") version "2.0.0-Beta3"
+    alias(libs.plugins.kinference.primitives) apply true
+    alias(libs.plugins.kotlin.atomicfu)
 }
 
 kotlin {
@@ -19,15 +17,15 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicfu}")
+                api(libs.kinference.primitives.annotations)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api("org.apache.commons:commons-math4-core:4.0-beta1")
+                api(libs.apache.commons.math4.core)
             }
         }
     }
