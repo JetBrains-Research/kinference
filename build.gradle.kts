@@ -22,6 +22,7 @@ allprojects {
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
+        maven("https://repo.kotlin.link")
     }
 
     plugins.withType<YarnPlugin>() {

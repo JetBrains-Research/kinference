@@ -3,17 +3,13 @@ import io.kinference.gradle.configureTests
 group = rootProject.group
 version = rootProject.version
 
-repositories {
-    maven("https://repo.kotlin.link")
-}
-
 kotlin {
     jvm {
         configureTests()
     }
 
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
@@ -25,7 +21,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

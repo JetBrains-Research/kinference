@@ -9,22 +9,13 @@ plugins {
 kotlin {
     jvm()
 
-    js(IR) {
-        browser()
-    }
-
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
                 api(libs.kinference.primitives.annotations)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.atomicfu)
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
                 api(libs.apache.commons.math4.core)
             }
         }

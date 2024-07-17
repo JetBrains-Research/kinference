@@ -8,13 +8,8 @@ kotlin {
         configureTests()
     }
 
-    js(IR) {
-        browser()
-        configureTests()
-    }
-
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
@@ -26,7 +21,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

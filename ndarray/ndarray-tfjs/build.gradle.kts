@@ -10,7 +10,7 @@ kotlin {
     }
 
     sourceSets {
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 implementation(npm("@tensorflow/tfjs-core", libs.versions.tfjs.get()))
                 implementation(npm("@tensorflow/tfjs-backend-webgl", libs.versions.tfjs.get()))
@@ -21,7 +21,7 @@ kotlin {
             }
         }
 
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

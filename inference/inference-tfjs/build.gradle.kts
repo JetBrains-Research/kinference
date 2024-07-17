@@ -15,7 +15,7 @@ kotlin {
     }
 
     sourceSets {
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(project(":serialization:serializer-protobuf"))
 
@@ -34,7 +34,7 @@ kotlin {
             }
         }
 
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

@@ -13,7 +13,7 @@ kotlin {
     jvm()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(libs.kinference.primitives.annotations)
                 api(libs.kotlinx.coroutines.core)

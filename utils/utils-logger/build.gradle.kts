@@ -10,13 +10,13 @@ kotlin {
     }
 
     sourceSets {
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 api(libs.slf4j.api)
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(npm("loglevel", libs.versions.loglevel.get()))
             }
