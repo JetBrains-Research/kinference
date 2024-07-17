@@ -9,7 +9,7 @@ import kotlin.test.Test
 
 class GECTest {
     @Test
-    fun heavy_test_jvm_gec_model() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_gec_model() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3(
             "bert:gec:en:standard:v2", disableTests = listOf(
                 "test_data_set_batch_32_seqLen_32",
@@ -18,23 +18,6 @@ class GECTest {
                 "test_data_set_batch_32_seqLen_128",
                 "test_data_set_batch_32_seqLen_256",
                 "test_data_set_batch_32_seqLen_512",
-            )
-        )
-    }
-
-    @Test
-    fun heavy_test_js_gec_model() = TestRunner.runTest(Platform.JS) {
-        KIAccuracyRunner.runFromS3(
-            "bert:gec:en:standard:v2", disableTests = listOf(
-                "test_data_set_batch_32_seqLen_32",
-                "test_data_set_batch_32_seqLen_64",
-                "test_data_set_batch_32_seqLen_92",
-                "test_data_set_batch_32_seqLen_128",
-                "test_data_set_batch_32_seqLen_256",
-                "test_data_set_batch_32_seqLen_512",
-                "test_data_set_batch_1_seqLen_128",
-                "test_data_set_batch_1_seqLen_256",
-                "test_data_set_batch_1_seqLen_512"
             )
         )
     }
