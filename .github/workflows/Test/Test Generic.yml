@@ -1,0 +1,28 @@
+name: Tests
+
+on:
+  push:
+    paths:
+      - 'README.md'
+      - 'ci/**'
+      - 'docs-generator/**'
+      - '.editorconfig'
+      - 'LICENSE.txt'
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'ci/**'
+      - 'docs-generator/**'
+      - '.editorconfig'
+      - 'LICENSE.txt'
+
+jobs:
+  JVM:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
+
+  JS-IR:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
