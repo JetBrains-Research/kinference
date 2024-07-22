@@ -9,15 +9,8 @@ import kotlin.test.Test
 
 class BERTTest {
     @Test
-    fun heavy_test_jvm_vanilla_bert_model() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_vanilla_bert_model() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("bert:standard:en:v1")
-    }
-
-    @Test
-    fun heavy_test_js_vanilla_bert_model() = TestRunner.runTest(Platform.JS) {
-        KIAccuracyRunner.runFromS3("bert:standard:en:v1", disableTests = listOf(
-            "test_data_set_batch8_seq40"
-        ))
     }
 
     @Test

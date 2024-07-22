@@ -7,7 +7,6 @@ import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.math.FastMath
-import io.kinference.ndarray.math.copySign
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.ndarray.stubs.ln
 import io.kinference.ndarray.stubs.sqrt

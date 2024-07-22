@@ -9,7 +9,7 @@ kotlin {
     jvm()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(libs.okio)
                 api(project(":utils:utils-common"))

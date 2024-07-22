@@ -10,19 +10,8 @@ import kotlin.test.Test
 
 class GPTRTest {
     @Test
-    fun heavy_test_jvm_gpt_model() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_gpt_model() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("gpt2:r-completion:standard:v1")
-    }
-
-    @Test
-    fun heavy_test_js_gpt_model() = TestRunner.runTest(Platform.JS) {
-        KIAccuracyRunner.runFromS3("gpt2:r-completion:standard:v1", disableTests = listOf(
-            "test_data_set_0_200",
-            "test_data_set_0_50",
-            "test_data_set_0_512",
-            "test_data_set_1_200",
-            "test_data_set_1_512"
-        ))
     }
 
     @Test
@@ -30,9 +19,8 @@ class GPTRTest {
         KIPerformanceRunner.runFromS3("gpt2:r-completion:standard:v1")
     }
 
-
     @Test
-    fun heavy_test_jvm_gpt_quantized_model() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_gpt_quantized_model() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("gpt2:r-completion:quantized:v1", delta = AccuracyRunner.QUANT_DELTA)
     }
 

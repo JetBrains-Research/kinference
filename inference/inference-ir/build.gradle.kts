@@ -9,7 +9,7 @@ kotlin {
     jvm()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(project(":inference:inference-api"))
                 api(project(":utils:utils-logger"))

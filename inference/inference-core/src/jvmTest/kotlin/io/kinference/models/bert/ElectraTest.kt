@@ -8,7 +8,7 @@ import kotlin.test.Test
 
 class ElectraTest {
     @Test
-    fun heavy_test_jvm_electra() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_electra() = TestRunner.runTest {
         KIAccuracyRunner.runFromS3("bert:electra", errorsVerbose = false)
     }
 

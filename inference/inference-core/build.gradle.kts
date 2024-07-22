@@ -10,14 +10,6 @@ plugins {
 }
 
 kotlin {
-    js(IR) {
-        browser()
-
-        configureTests()
-        configureHeavyTests()
-        configureBenchmarkTests()
-    }
-
     jvm {
         configureTests()
         configureHeavyTests()
@@ -25,7 +17,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.atomicfu)
@@ -47,7 +39,7 @@ kotlin {
         }
 
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

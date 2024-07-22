@@ -13,7 +13,7 @@ kotlin {
     jvm()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(libs.kotlinx.coroutines.core)
                 implementation(libs.okio)
@@ -31,14 +31,14 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 api(libs.slf4j.simple)
                 api(kotlin("test-junit5"))
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(kotlin("test-js"))
             }

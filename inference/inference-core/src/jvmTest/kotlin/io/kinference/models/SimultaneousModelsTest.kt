@@ -9,7 +9,7 @@ import kotlin.test.Test
 
 class SimultaneousModelsTest {
     @Test
-    fun heavy_test_jvm_simultaneous_bert_electra_models() = TestRunner.runTest(Platform.JVM) {
+    fun heavy_test_simultaneous_bert_electra_models() = TestRunner.runTest {
         val bertDeferred = async {
             KIAccuracyRunner.runFromS3("bert:standard:en:v1", errorsVerbose = false)
         }
