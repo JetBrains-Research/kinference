@@ -18,7 +18,7 @@ def main():
     parser.add_argument(
         "--core_factory_file",
         help="Path to core operator factory",
-        default="inference/inference-core/src/commonMain/kotlin/io/kinference.core/operators/KIOperatorFactory.kt",
+        default="inference/inference-core/src/jvmMain/kotlin/io/kinference.core/operators/KIOperatorFactory.kt",
         required=False
     )
 
