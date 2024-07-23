@@ -1,4 +1,4 @@
-name: Heavy Tests
+name: Tests
 
 on:
   push:
@@ -9,12 +9,6 @@ on:
       - '.editorconfig'
       - 'LICENSE.txt'
   pull_request:
-    paths-ignore:
-      - 'README.md'
-      - 'ci/**'
-      - 'docs-generator/**'
-      - '.editorconfig'
-      - 'LICENSE.txt'
 
 jobs:
   JVM:
@@ -30,27 +24,17 @@ jobs:
           distribution: 'corretto'
       #          cache: 'gradle'
       #          check-latest: true
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Cache test data
-        uses: actions/cache@v4
-        with:
-          path: test-data
-          key: test-data-${{ hashFiles('buildSrc/src/main/**/DefaultS3Deps.kt') }}
-
-      - name: JVM Heavy Test
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: ./gradlew jvmHeavyTest --console=plain -Pci --no-daemon
+      - name: JVM Tests
+        run: ./gradlew jvmTest --parallel --console=plain --no-daemon -Pci
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: heavy-test-report-jvm
+          name: test-report-jvm
           path: |
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
@@ -67,23 +51,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Cache test data
-        uses: actions/cache@v4
-        with:
-          path: test-data
-          key: test-data-${{ hashFiles('buildSrc/src/main/**/DefaultS3Deps.kt') }}
-
-      - name: JS IR Heavy Test
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: xvfb-run --auto-servernum ./gradlew jsHeavyTest --console=plain -Pci --no-daemon
+      - name: JS IR Test
+        run: xvfb-run --auto-servernum ./gradlew jsTest --parallel --console=plain --no-daemon -Pci
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: heavy-test-report-js
+          name: test-report-js
           path: |
             **/build/**/test-results/**/* |
             **/build/**/reports/**/*
