@@ -20,14 +20,14 @@ class KIModel(
     val opSet: OperatorSetRegistry,
     val graph: KIGraph,
     private val useAllocator: Boolean = true,
-    limiterParallelismCounter: Int = PlatformUtils.cores
+    limiterParallelismCounter: Int = PlatformUtils.cores,
+    arrayStorageLimit: Long = Long.MAX_VALUE
 ) : Model<KIONNXData<*>>, Profilable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(limiterParallelismCounter)
-//    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(800 * 1024 * 1024)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage()
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(arrayStorageLimit)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -49,7 +49,7 @@ class KIModel(
                     coreReserved = true
                 }
 
-                val allocatorContext = modelArrayStorage.createAllocatorContext() // AllocatorContext(id, getInferenceCycleId())
+                val allocatorContext = modelArrayStorage.createAllocatorContext()
                 val mixedContext = allocatorContext + limiterContext
 
                 withContext(mixedContext) {
@@ -86,13 +86,14 @@ class KIModel(
         suspend operator fun invoke(
             proto: ModelProto,
             useAllocator: Boolean = true,
-            limiterParallelismCounter: Int = PlatformUtils.cores
+            limiterParallelismCounter: Int = PlatformUtils.cores,
+            arrayStorageLimit: Long = Long.MAX_VALUE
         ): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
             val id = "$name:${generateModelId()}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
-            return KIModel(id, name, opSet, graph, useAllocator, limiterParallelismCounter)
+            return KIModel(id, name, opSet, graph, useAllocator, limiterParallelismCounter, arrayStorageLimit)
         }
     }
 }

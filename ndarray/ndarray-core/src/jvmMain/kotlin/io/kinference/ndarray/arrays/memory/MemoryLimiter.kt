@@ -1,27 +1,12 @@
 package io.kinference.ndarray.arrays.memory
 
-import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.atomic
 
-interface MemoryLimiter {
-    fun checkMemoryLimitAndAdd(returned: Int): Boolean
-    fun freeMemory(deducted: Int)
-}
+class MemoryLimiter(private val memoryLimit: Long) {
+    private var usedMemory: AtomicLong = atomic(0L)
 
-object UnlimitedMemoryLimiter : MemoryLimiter {
-    override fun checkMemoryLimitAndAdd(returned: Int): Boolean {
-        return true
-    }
-
-    override fun freeMemory(deducted: Int) {
-
-    }
-}
-
-class LimitedMemoryLimiter(val memoryLimit: Int) : MemoryLimiter {
-    private var usedMemory: AtomicInt = atomic(0)
-
-    override fun checkMemoryLimitAndAdd(returned: Int): Boolean {
+    fun checkMemoryLimitAndAdd(returned: Long): Boolean {
         val currentMemory = usedMemory.addAndGet(returned)
         return if (currentMemory > memoryLimit) {
             usedMemory.addAndGet(-returned)
@@ -29,7 +14,7 @@ class LimitedMemoryLimiter(val memoryLimit: Int) : MemoryLimiter {
         } else true
     }
 
-    override fun freeMemory(deducted: Int) {
+    fun freeMemory(deducted: Long) {
         usedMemory.addAndGet(-deducted)
     }
 }

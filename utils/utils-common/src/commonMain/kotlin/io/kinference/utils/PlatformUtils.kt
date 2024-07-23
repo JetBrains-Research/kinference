@@ -21,6 +21,11 @@ expect object PlatformUtils {
      * Number of threads based on the number of cores (usually cores - 1)
      */
     val threads: Int
+
+    /**
+     * Maximum amount of heap memory that is available
+     */
+    val maxHeap: Long
 }
 
 fun <T> PlatformUtils.forPlatform(jsValue: T, jvmValue: T) = when (platform) {
