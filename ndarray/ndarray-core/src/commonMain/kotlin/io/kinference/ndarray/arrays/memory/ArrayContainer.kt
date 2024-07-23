@@ -2,40 +2,44 @@ package io.kinference.ndarray.arrays.memory
 
 import io.kinference.ndarray.arrays.*
 
-internal sealed class ArrayContainer(
+sealed class ArrayContainer(
     val arrayTypeIndex: Int,
-    val arraySizeIndex: Int
+    val arraySizeIndex: Int,
+    val size: Int
 ) {
     var isOutput: Boolean = false
+        private set
+
+    var isNewlyCreated: Boolean = true
         private set
 
     val markAsOutput = {
         isOutput = true
     }
 
-    var next: ArrayContainer? = null
-
     companion object {
         private const val EMPTY_INDEX = -1
 
         operator fun invoke(type: ArrayTypes, size: Int, sizeIndex: Int = EMPTY_INDEX): ArrayContainer {
+            val sizeBytes: Int = type.size * size
             return when (type) {
-                ArrayTypes.ByteArray -> ByteArrayContainer(type.index, sizeIndex, ByteArray(size))         // 8-bit signed
-                ArrayTypes.UByteArray -> UByteArrayContainer(type.index, sizeIndex, UByteArray(size))      // 8-bit unsigned
-                ArrayTypes.ShortArray -> ShortArrayContainer(type.index, sizeIndex, ShortArray(size))      // 16-bit signed
-                ArrayTypes.UShortArray -> UShortArrayContainer(type.index, sizeIndex, UShortArray(size))   // 16-bit unsigned
-                ArrayTypes.IntArray -> IntArrayContainer(type.index, sizeIndex, IntArray(size))            // 32-bit signed
-                ArrayTypes.UIntArray -> UIntArrayContainer(type.index, sizeIndex, UIntArray(size))         // 32-bit unsigned
-                ArrayTypes.LongArray -> LongArrayContainer(type.index, sizeIndex, LongArray(size))         // 64-bit signed
-                ArrayTypes.ULongArray -> ULongArrayContainer(type.index, sizeIndex, ULongArray(size))      // 64-bit unsigned
-                ArrayTypes.FloatArray -> FloatArrayContainer(type.index, sizeIndex, FloatArray(size))
-                ArrayTypes.DoubleArray -> DoubleArrayContainer(type.index, sizeIndex, DoubleArray(size))
-                ArrayTypes.BooleanArray -> BooleanArrayContainer(type.index, sizeIndex, BooleanArray(size))
+                ArrayTypes.ByteArray -> ByteArrayContainer(type.index, sizeIndex, sizeBytes, ByteArray(size))         // 8-bit signed
+                ArrayTypes.UByteArray -> UByteArrayContainer(type.index, sizeIndex, sizeBytes, UByteArray(size))      // 8-bit unsigned
+                ArrayTypes.ShortArray -> ShortArrayContainer(type.index, sizeIndex, sizeBytes, ShortArray(size))      // 16-bit signed
+                ArrayTypes.UShortArray -> UShortArrayContainer(type.index, sizeIndex, sizeBytes, UShortArray(size))   // 16-bit unsigned
+                ArrayTypes.IntArray -> IntArrayContainer(type.index, sizeIndex, sizeBytes, IntArray(size))            // 32-bit signed
+                ArrayTypes.UIntArray -> UIntArrayContainer(type.index, sizeIndex, sizeBytes, UIntArray(size))         // 32-bit unsigned
+                ArrayTypes.LongArray -> LongArrayContainer(type.index, sizeIndex, sizeBytes, LongArray(size))         // 64-bit signed
+                ArrayTypes.ULongArray -> ULongArrayContainer(type.index, sizeIndex, sizeBytes, ULongArray(size))      // 64-bit unsigned
+                ArrayTypes.FloatArray -> FloatArrayContainer(type.index, sizeIndex, sizeBytes, FloatArray(size))
+                ArrayTypes.DoubleArray -> DoubleArrayContainer(type.index, sizeIndex, sizeBytes, DoubleArray(size))
+                ArrayTypes.BooleanArray -> BooleanArrayContainer(type.index, sizeIndex, sizeBytes, BooleanArray(size))
                 else -> throw IllegalArgumentException("Unsupported array type")
             }
         }
 
         fun resetArray(arrayContainer: ArrayContainer) {
+            arrayContainer.isNewlyCreated = false
             when (arrayContainer) {
                 is ByteArrayContainer -> arrayContainer.array.fill(0)       // 8-bit signed
                 is UByteArrayContainer -> arrayContainer.array.fill(0u)     // 8-bit unsigned

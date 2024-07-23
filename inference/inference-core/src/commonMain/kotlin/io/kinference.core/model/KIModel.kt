@@ -9,6 +9,7 @@ import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
 import io.kinference.ndarray.arrays.memory.AllocatorContext
+import io.kinference.ndarray.arrays.memory.ModelArrayStorage
 import io.kinference.utils.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -21,11 +22,13 @@ class KIModel(
     private val useAllocator: Boolean = true,
     limiterParallelismCounter: Int = PlatformUtils.cores
 ) : Model<KIONNXData<*>>, Profilable {
-    private val inferenceCycleCounter = atomic(0L)
     private val profiles: MutableList<ProfilingContext> = ArrayList()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(limiterParallelismCounter)
+//    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(800 * 1024 * 1024)
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage()
+
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
     override fun resetProfiles() = profiles.clear()
@@ -46,7 +49,7 @@ class KIModel(
                     coreReserved = true
                 }
 
-                val allocatorContext = AllocatorContext(id, getInferenceCycleId())
+                val allocatorContext = modelArrayStorage.createAllocatorContext() // AllocatorContext(id, getInferenceCycleId())
                 val mixedContext = allocatorContext + limiterContext
 
                 withContext(mixedContext) {
@@ -72,9 +75,8 @@ class KIModel(
 
     override suspend fun close() {
         graph.close()
+        modelArrayStorage.close()
     }
-
-    private fun getInferenceCycleId(): Long = inferenceCycleCounter.incrementAndGet()
 
     companion object {
         private val modelCounter = atomic(0)

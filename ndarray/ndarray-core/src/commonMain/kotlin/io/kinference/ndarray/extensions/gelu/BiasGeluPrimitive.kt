@@ -3,7 +3,7 @@ package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ArrayDispatcher
+
 import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants

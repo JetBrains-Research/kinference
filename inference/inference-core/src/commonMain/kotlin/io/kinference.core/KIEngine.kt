@@ -10,7 +10,6 @@ import io.kinference.core.optimizer.rules.OptimizerRuleSet
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
-import io.kinference.ndarray.arrays.memory.ArrayDispatcher
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
@@ -119,6 +118,6 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
     }
 
     fun clearCache() {
-        ArrayDispatcher.clearCache()
+
     }
 }
