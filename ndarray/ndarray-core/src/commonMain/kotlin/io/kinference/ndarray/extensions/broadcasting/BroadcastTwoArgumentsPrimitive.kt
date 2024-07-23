@@ -8,6 +8,7 @@ import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveType
+import io.kinference.utils.inlines.InlineInt
 
 @GenerateNameFromPrimitives
 internal fun broadcastTwoTensorsPrimitive(
@@ -44,16 +45,16 @@ internal fun broadcastTwoTensorsPrimitive(
     val rightBlocks = right.array.blocks
     val destBlocks = dest.array.blocks
 
-    val leftIsScalarFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
-        val shapeIdx = axisToBroadcastIdx * 2
+    val leftIsScalarFun = { leftOffset: InlineInt, rightOffset: InlineInt, destOffset: InlineInt, axisToBroadcastIdx: InlineInt ->
+        val shapeIdx = axisToBroadcastIdx.value * 2
         val batchSize = destBroadcastingShape[shapeIdx]
 
         for (batchIdx in 0 until batchSize) {
-            val leftScalar = leftBlocks[leftOffset][0]
+            val leftScalar = leftBlocks[leftOffset.value][0]
 
             for (blockIdx in 0 until destBlocksInRow) {
-                val destBlock = destBlocks[destOffset + blockIdx]
-                val rightBlock = rightBlocks[rightOffset + blockIdx]
+                val destBlock = destBlocks[destOffset.value + blockIdx]
+                val rightBlock = rightBlocks[rightOffset.value + blockIdx]
 
                 for (idx in destBlock.indices) {
                     destBlock[idx] = op(leftScalar, rightBlock[idx])
@@ -62,16 +63,16 @@ internal fun broadcastTwoTensorsPrimitive(
         }
     }
 
-    val rightIsScalarFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
-        val shapeIdx = axisToBroadcastIdx * 2
+    val rightIsScalarFun = { leftOffset: InlineInt, rightOffset: InlineInt, destOffset: InlineInt, axisToBroadcastIdx: InlineInt ->
+        val shapeIdx = axisToBroadcastIdx.value * 2
         val batchSize = destBroadcastingShape[shapeIdx]
 
         for (batchIdx in 0 until batchSize) {
-            val rightScalar = rightBlocks[rightOffset][0]
+            val rightScalar = rightBlocks[rightOffset.value][0]
 
             for (blockIdx in 0 until destBlocksInRow) {
-                val destBlock = destBlocks[destOffset + blockIdx]
-                val leftBlock = leftBlocks[leftOffset + blockIdx]
+                val destBlock = destBlocks[destOffset.value + blockIdx]
+                val leftBlock = leftBlocks[leftOffset.value + blockIdx]
 
                 for (idx in destBlock.indices) {
                     destBlock[idx] = op(leftBlock[idx], rightScalar)
@@ -80,11 +81,11 @@ internal fun broadcastTwoTensorsPrimitive(
         }
     }
 
-    val defaultFun = { leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int ->
+    val defaultFun = { leftOffset: InlineInt, rightOffset: InlineInt, destOffset: InlineInt, axisToBroadcastIdx: InlineInt ->
         for (blockIdx in 0 until destBlocksInRow) {
-            val leftBlock = leftBlocks[leftOffset + blockIdx]
-            val rightBlock = rightBlocks[rightOffset + blockIdx]
-            val destBlock = destBlocks[destOffset + blockIdx]
+            val leftBlock = leftBlocks[leftOffset.value + blockIdx]
+            val rightBlock = rightBlocks[rightOffset.value + blockIdx]
+            val destBlock = destBlocks[destOffset.value + blockIdx]
 
             for (idx in destBlock.indices) {
                 destBlock[idx] = op(leftBlock[idx], rightBlock[idx])
@@ -100,7 +101,7 @@ internal fun broadcastTwoTensorsPrimitive(
 
     fun broadcast(leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int) {
         if (axisToBroadcastIdx == totalAxesToBroadcast) {
-            broadcastingFun(leftOffset, rightOffset, destOffset, axisToBroadcastIdx)
+            broadcastingFun(InlineInt(leftOffset), InlineInt(rightOffset), InlineInt(destOffset), InlineInt(axisToBroadcastIdx))
         } else {
             val shapeIdx = axisToBroadcastIdx * 2
 
