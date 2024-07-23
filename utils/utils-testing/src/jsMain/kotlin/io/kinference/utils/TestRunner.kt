@@ -3,13 +3,11 @@ package io.kinference.utils
 import kotlinx.coroutines.*
 
 actual object TestRunner {
-    actual fun runTest(platform: Platform?, block: suspend CoroutineScope.() -> Unit): dynamic {
+    actual fun runTest(platform: Platform?, block: suspend CoroutineScope.() -> Unit) {
         if (platform == null || platform == Platform.JS) {
-            return GlobalScope.promise {
+            GlobalScope.promise {
                 block()
             }
         }
-
-        return Unit
     }
 }

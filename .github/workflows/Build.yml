@@ -9,12 +9,6 @@ on:
       - '.editorconfig'
       - 'LICENSE.txt'
   pull_request:
-    paths-ignore:
-      - 'README.md'
-      - 'ci/**'
-      - 'docs-generator/**'
-      - '.editorconfig'
-      - 'LICENSE.txt'
 
 jobs:
   Build:

@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 
@@ -12,8 +11,9 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
+                api(libs.onnxruntime.cpu)
                 api(project(":inference:inference-api"))
                 api(project(":serialization:serializer-protobuf"))
                 api(project(":utils:utils-logger"))
@@ -21,15 +21,9 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                api("com.microsoft.onnxruntime:onnxruntime:${Versions.ort}")
             }
         }
     }

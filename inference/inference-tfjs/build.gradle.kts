@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
@@ -16,7 +15,7 @@ kotlin {
     }
 
     sourceSets {
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(project(":serialization:serializer-protobuf"))
 
@@ -31,11 +30,11 @@ kotlin {
                 api(project(":utils:utils-profiling"))
                 api(project(":utils:utils-common"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+                api(libs.kotlinx.coroutines.core)
             }
         }
 
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
@@ -11,19 +10,18 @@ kotlin {
     }
 
     sourceSets {
-        val jsMain by getting {
+        jsMain {
             dependencies {
-                implementation(npm("@tensorflow/tfjs-core", Versions.tfjs))
-                implementation(npm("@tensorflow/tfjs-backend-webgl", Versions.tfjs))
+                implementation(npm("@tensorflow/tfjs-core", libs.versions.tfjs.get()))
+                implementation(npm("@tensorflow/tfjs-backend-webgl", libs.versions.tfjs.get()))
 
                 api(project(":ndarray:ndarray-api"))
                 api(project(":utils:utils-common"))
-                api("io.kinference.primitives:primitives-annotations:${Versions.primitives}")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
 
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

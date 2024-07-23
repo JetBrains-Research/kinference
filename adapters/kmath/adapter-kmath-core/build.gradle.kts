@@ -1,12 +1,7 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
 version = rootProject.version
-
-repositories {
-    maven("https://repo.kotlin.link")
-}
 
 kotlin {
     jvm {
@@ -14,7 +9,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
@@ -22,11 +17,11 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-core"))
 
-                api("space.kscience:kmath-core:${Versions.kmath}")
+                api(libs.kmath.core)
             }
         }
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }
