@@ -20,7 +20,7 @@ class KIModel(
     val graph: KIGraph,
     memoryLimiter: MemoryLimiter = MemoryLimiters.Default,
     parallelismLimit: Int = PlatformUtils.cores,
-) : Model<KIONNXData<*>>, Profilable {
+) : Model<KIONNXData<*>>, Profilable, Cacheable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +67,10 @@ class KIModel(
     override suspend fun close() {
         graph.close()
         modelArrayStorage.close()
+    }
+
+    override fun clearCache() {
+        modelArrayStorage.clearCache()
     }
 
     companion object {

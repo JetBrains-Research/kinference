@@ -119,8 +119,4 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
     override suspend fun loadData(path: String, type: ONNXDataType): KIONNXData<*> {
         return loadData(path.toPath(), type)
     }
-
-    fun clearCache() {
-
-    }
 }
