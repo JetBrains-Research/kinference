@@ -10,11 +10,14 @@ import io.kinference.core.optimizer.rules.OptimizerRuleSet
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
+import io.kinference.ndarray.arrays.memory.MemoryLimiter
+import io.kinference.ndarray.arrays.memory.MemoryLimiters
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
 import io.kinference.protobuf.message.*
 import io.kinference.utils.CommonDataLoader
+import io.kinference.utils.PlatformUtils
 import okio.Buffer
 import okio.Path
 import okio.Path.Companion.toPath
@@ -48,24 +51,24 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    suspend fun loadModel(bytes: ByteArray, optimize: Boolean, useAllocator: Boolean): KIModel {
+    suspend fun loadModel(bytes: ByteArray, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
         val rules = if (optimize) OptimizerRuleSet.DEFAULT_OPT_RULES else emptyList()
-        return loadModel(bytes, rules, useAllocator)
+        return loadModel(bytes, rules, memoryLimiter, parallelismLimit)
     }
 
     override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
-        return loadModel(bytes, optimize, true)
+        return loadModel(bytes, optimize, MemoryLimiters.Default, PlatformUtils.cores)
     }
 
-    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, true)
+    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, MemoryLimiters.Default, PlatformUtils.cores)
 
-    suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, useAllocator: Boolean): KIModel {
+    suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        val model = KIModel(modelScheme, useAllocator)
+        val model = KIModel(modelScheme, memoryLimiter)
 
         return if (rules.isNotEmpty()) {
             val newGraph = GraphOptimizer(model.graph).run(rules) as KIGraph
-            KIModel(model.id, model.name, model.opSet, newGraph, useAllocator)
+            KIModel(model.id, model.name, model.opSet, newGraph, memoryLimiter, parallelismLimit)
         } else {
             model
         }
@@ -73,12 +76,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     override suspend fun loadModel(bytes: ByteArray): KIModel = loadModel(bytes, optimize = true)
 
-    suspend fun loadModel(path: Path, optimize: Boolean, useAllocator: Boolean): KIModel {
-        return loadModel(CommonDataLoader.bytes(path), optimize, useAllocator)
+    suspend fun loadModel(path: Path, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
+        return loadModel(CommonDataLoader.bytes(path), optimize, memoryLimiter, parallelismLimit)
     }
 
     override suspend fun loadModel(path: Path, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, true)
+        return loadModel(path, optimize, MemoryLimiters.Default, PlatformUtils.cores)
     }
 
     override suspend fun loadModel(path: Path): KIModel = loadModel(path, optimize = true)
@@ -87,12 +90,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
         return loadModel(CommonDataLoader.bytes(path), rules)
     }
 
-    suspend fun loadModel(path: String, optimize: Boolean, useAllocator: Boolean): KIModel {
-        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize, useAllocator)
+    suspend fun loadModel(path: String, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
+        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize, memoryLimiter, parallelismLimit)
     }
 
     override suspend fun loadModel(path: String, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, true)
+        return loadModel(path, optimize, MemoryLimiters.Default, PlatformUtils.cores)
     }
 
     override suspend fun loadModel(path: String): KIModel = loadModel(path, optimize = true)

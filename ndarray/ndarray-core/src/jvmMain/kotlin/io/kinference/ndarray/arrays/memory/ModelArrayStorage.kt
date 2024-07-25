@@ -5,8 +5,7 @@ import io.kinference.utils.Closeable
 
 import io.kinference.utils.ConcurrentQueue
 
-class ModelArrayStorage(memoryLimit: Long = Long.MAX_VALUE) : Closeable {
-    private val limiter: MemoryLimiter = MemoryLimiter(memoryLimit)
+class ModelArrayStorage(private val limiter: MemoryLimiter = MemoryLimiters.Default) : Closeable {
     private val unusedArrays: ConcurrentQueue<ArrayStorage> = ConcurrentQueue()
 
     companion object {

@@ -5,11 +5,10 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.core.markOutput
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
+import io.kinference.ndarray.arrays.memory.*
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
-import io.kinference.ndarray.arrays.memory.AllocatorContext
-import io.kinference.ndarray.arrays.memory.ModelArrayStorage
 import io.kinference.utils.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -19,15 +18,14 @@ class KIModel(
     val name: String,
     val opSet: OperatorSetRegistry,
     val graph: KIGraph,
-    private val useAllocator: Boolean = true,
-    limiterParallelismCounter: Int = PlatformUtils.cores,
-    arrayStorageLimit: Long = Long.MAX_VALUE
+    memoryLimiter: MemoryLimiter = MemoryLimiters.Default,
+    parallelismLimit: Int = PlatformUtils.cores,
 ) : Model<KIONNXData<*>>, Profilable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(limiterParallelismCounter)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(arrayStorageLimit)
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(parallelismLimit)
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(memoryLimiter)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -40,33 +38,26 @@ class KIModel(
         )
 
         val limiterContext = ParallelismLimiterContext(dispatcher)
-        val results = if (useAllocator) {
-            var coreReserved = false
-
-            try {
-                withContext(NonCancellable) {
-                    ResourcesDispatcher.reserveCore()
-                    coreReserved = true
-                }
-
-                val allocatorContext = modelArrayStorage.createAllocatorContext()
-                val mixedContext = allocatorContext + limiterContext
-
-                withContext(mixedContext) {
-                    val coroutineContext = coroutineContext[AllocatorContext.Key]!!
-                    val execResult = graph.execute(input, contexts)
-                    execResult.forEach { it.markOutput() }
-                    coroutineContext.closeAllocated()
-                    execResult
-                }
-            } finally {
-                if (coreReserved) {
-                    ResourcesDispatcher.releaseCore()
-                }
+        var coreReserved = false
+        val results = try {
+            withContext(NonCancellable) {
+                ResourcesDispatcher.reserveCore()
+                coreReserved = true
             }
-        } else {
-            withContext(limiterContext) {
-                graph.execute(input, contexts)
+
+            val allocatorContext = modelArrayStorage.createAllocatorContext()
+            val mixedContext = allocatorContext + limiterContext
+
+            withContext(mixedContext) {
+                val coroutineContext = coroutineContext[AllocatorContext.Key]!!
+                val execResult = graph.execute(input, contexts)
+                execResult.forEach { it.markOutput() }
+                coroutineContext.closeAllocated()
+                execResult
+            }
+        } finally {
+            if (coreReserved) {
+                ResourcesDispatcher.releaseCore()
             }
         }
 
@@ -85,15 +76,14 @@ class KIModel(
 
         suspend operator fun invoke(
             proto: ModelProto,
-            useAllocator: Boolean = true,
+            memoryLimiter: MemoryLimiter = MemoryLimiters.Default,
             limiterParallelismCounter: Int = PlatformUtils.cores,
-            arrayStorageLimit: Long = Long.MAX_VALUE
         ): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
             val id = "$name:${generateModelId()}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
-            return KIModel(id, name, opSet, graph, useAllocator, limiterParallelismCounter, arrayStorageLimit)
+            return KIModel(id, name, opSet, graph, memoryLimiter, limiterParallelismCounter)
         }
     }
 }
