@@ -22,7 +22,5 @@ class ParallelismLimiterContext(val dispatcher: CoroutineDispatcher) : Coroutine
 }
 
 fun CoroutineScope.launchWithLimitOrDefault(block: suspend CoroutineScope.() -> Unit) {
-    this.launch(coroutineContext[ParallelismLimiterContext.Key]?.dispatcher ?: Dispatchers.Default) {
-        block()
-    }
+    this.launch(coroutineContext[ParallelismLimiterContext.Key]?.dispatcher ?: Dispatchers.Default, block = block)
 }

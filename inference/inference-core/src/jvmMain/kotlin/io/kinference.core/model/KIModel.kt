@@ -18,7 +18,7 @@ class KIModel(
     val name: String,
     val opSet: OperatorSetRegistry,
     val graph: KIGraph,
-    memoryLimiter: MemoryLimiter = MemoryLimiters.Default,
+    memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
     parallelismLimit: Int = PlatformUtils.cores,
 ) : Model<KIONNXData<*>>, Profilable, Cacheable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
@@ -80,7 +80,7 @@ class KIModel(
 
         suspend operator fun invoke(
             proto: ModelProto,
-            memoryLimiter: MemoryLimiter = MemoryLimiters.Default,
+            memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
             limiterParallelismCounter: Int = PlatformUtils.cores,
         ): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"

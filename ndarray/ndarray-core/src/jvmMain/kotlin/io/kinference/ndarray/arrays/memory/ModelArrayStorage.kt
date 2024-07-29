@@ -4,7 +4,7 @@ import io.kinference.ndarray.arrays.ArrayTypes
 import io.kinference.utils.Closeable
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class ModelArrayStorage(private val limiter: MemoryLimiter = MemoryLimiters.Default) : Closeable {
+class ModelArrayStorage(private val limiter: MemoryLimiter = MemoryLimiters.NoAllocator) : Closeable {
     private val unusedArrays: ConcurrentLinkedQueue<ArrayStorage> = ConcurrentLinkedQueue()
 
     companion object {

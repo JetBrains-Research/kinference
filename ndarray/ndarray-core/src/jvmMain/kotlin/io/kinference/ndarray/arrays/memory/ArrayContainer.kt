@@ -5,7 +5,7 @@ import io.kinference.ndarray.arrays.*
 sealed class ArrayContainer(
     val arrayTypeIndex: Int,
     val arraySizeIndex: Int,
-    val size: Int
+    val sizeBytes: Int
 ) {
     var isOutput: Boolean = false
         private set

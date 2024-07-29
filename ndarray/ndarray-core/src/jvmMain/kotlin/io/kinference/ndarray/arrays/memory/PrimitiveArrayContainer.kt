@@ -12,6 +12,6 @@ import io.kinference.primitives.types.PrimitiveArray
 internal class PrimitiveArrayContainer(
     arrayTypeIndex: Int,
     arraySizeIndex: Int,
-    arraySize: Int,
+    sizeBytes: Int,
     val array: PrimitiveArray
-) : ArrayContainer(arrayTypeIndex, arraySizeIndex, arraySize)
+) : ArrayContainer(arrayTypeIndex, arraySizeIndex, sizeBytes)

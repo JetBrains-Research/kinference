@@ -57,10 +57,10 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
     }
 
     override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
-        return loadModel(bytes, optimize, MemoryLimiters.Default, PlatformUtils.cores)
+        return loadModel(bytes, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
     }
 
-    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, MemoryLimiters.Default, PlatformUtils.cores)
+    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, MemoryLimiters.NoAllocator, PlatformUtils.cores)
 
     suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
@@ -81,7 +81,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
     }
 
     override suspend fun loadModel(path: Path, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, MemoryLimiters.Default, PlatformUtils.cores)
+        return loadModel(path, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
     }
 
     override suspend fun loadModel(path: Path): KIModel = loadModel(path, optimize = true)
@@ -95,7 +95,7 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
     }
 
     override suspend fun loadModel(path: String, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, MemoryLimiters.Default, PlatformUtils.cores)
+        return loadModel(path, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
     }
 
     override suspend fun loadModel(path: String): KIModel = loadModel(path, optimize = true)

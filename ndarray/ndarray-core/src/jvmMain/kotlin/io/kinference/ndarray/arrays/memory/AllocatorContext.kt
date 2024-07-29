@@ -19,7 +19,7 @@ data class AllocatorContext internal constructor(
             for (i in 0 until count) {
                 val container = unusedContainers.getArrayContainer(type, size)
                 if (!container.isNewlyCreated)
-                    limiter.freeMemory(container.size.toLong())
+                    limiter.deductMemory(container.sizeBytes.toLong())
                 arrayContainers[i] = container
                 usedContainers.add(container)
             }
@@ -31,7 +31,7 @@ data class AllocatorContext internal constructor(
 
     fun closeAllocated() {
         usedContainers.forEach {
-            if (!it.isOutput && limiter.checkMemoryLimitAndAdd(it.size.toLong())) {
+            if (!it.isOutput && limiter.checkMemoryLimitAndAdd(it.sizeBytes.toLong())) {
                 unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
             }
         }
