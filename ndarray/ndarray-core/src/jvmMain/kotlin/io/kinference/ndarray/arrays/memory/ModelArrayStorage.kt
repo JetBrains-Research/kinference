@@ -25,7 +25,7 @@ class ModelArrayStorage(private val limiter: MemoryLimiter = MemoryLimiters.NoAl
     }
 
     private fun getStorage(): ArrayStorage {
-        return unusedArrays.poll() ?: ArrayStorage(typeSize, INIT_SIZE_VALUE)
+        return unusedArrays.poll() ?: ArrayStorage(typeSize, INIT_SIZE_VALUE, limiter)
     }
 
     private fun returnStorage(storage: ArrayStorage) {

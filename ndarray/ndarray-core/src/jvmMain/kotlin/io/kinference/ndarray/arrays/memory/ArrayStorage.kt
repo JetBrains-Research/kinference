@@ -2,7 +2,7 @@ package io.kinference.ndarray.arrays.memory
 
 import io.kinference.ndarray.arrays.ArrayTypes
 
-internal class ArrayStorage(typeLength: Int, sizeLength: Int) {
+internal class ArrayStorage(typeLength: Int, sizeLength: Int, private val limiter: MemoryLimiter) {
     /**
      * Structure is as follows:
      * 1. Array by predefined types (all types are known compiled time)
@@ -29,6 +29,7 @@ internal class ArrayStorage(typeLength: Int, sizeLength: Int) {
             val array = storage[tIndex][sIndex].removeFirstOrNull()
             array?.let {
                 ArrayContainer.resetArray(it)
+                limiter.deductMemory(it.sizeBytes.toLong())
                 return it
             }
             sIndex

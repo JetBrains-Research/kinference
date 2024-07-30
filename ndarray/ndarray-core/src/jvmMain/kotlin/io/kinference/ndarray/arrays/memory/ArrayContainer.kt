@@ -10,9 +10,6 @@ sealed class ArrayContainer(
     var isOutput: Boolean = false
         private set
 
-    var isNewlyCreated: Boolean = true
-        private set
-
     val markAsOutput = {
         isOutput = true
     }
@@ -39,7 +36,6 @@ sealed class ArrayContainer(
         }
 
         fun resetArray(arrayContainer: ArrayContainer) {
-            arrayContainer.isNewlyCreated = false
             when (arrayContainer) {
                 is ByteArrayContainer -> arrayContainer.array.fill(0)       // 8-bit signed
                 is UByteArrayContainer -> arrayContainer.array.fill(0u)     // 8-bit unsigned
