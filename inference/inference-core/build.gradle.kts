@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureBenchmarkTests
 import io.kinference.gradle.configureHeavyTests
 import io.kinference.gradle.configureTests
@@ -7,18 +6,10 @@ group = rootProject.group
 version = rootProject.version
 
 plugins {
-    id("org.jetbrains.kotlin.plugin.atomicfu") version "2.0.0-Beta3"
+    alias(libs.plugins.kotlin.atomicfu)
 }
 
 kotlin {
-    js(IR) {
-        browser()
-
-        configureTests()
-        configureHeavyTests()
-        configureBenchmarkTests()
-    }
-
     jvm {
         configureTests()
         configureHeavyTests()
@@ -26,11 +17,11 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicfu}")
-                implementation("com.squareup.okio:okio:${Versions.okio}")
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.atomicfu)
+                implementation(libs.okio)
 
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
@@ -48,7 +39,7 @@ kotlin {
         }
 
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

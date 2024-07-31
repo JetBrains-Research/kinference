@@ -1,9 +1,12 @@
 package io.kinference.ndarray.math
 
+import io.kinference.primitives.types.PrimitiveType
 import java.lang.Math
 
-actual object Math {
-    actual inline fun floorMod(x: Int, y: Int): Int = Math.floorMod(x, y)
-
-    actual inline fun floorMod(x: Long, y: Long): Long = Math.floorMod(x, y)
+object Math {
+    fun floorMod(x: Int, y: Int): Int = Math.floorMod(x, y)
+    fun floorMod(x: Long, y: Long): Long = Math.floorMod(x, y)
+    internal inline fun floorMod(x: PrimitiveType, y: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()
 }
+
+//internal inline fun Math.floorMod(x: PrimitiveType, y: PrimitiveType): PrimitiveType = throw UnsupportedOperationException()

@@ -1,0 +1,38 @@
+[versions]
+kotlin = "2.0.0"
+
+apache-commons = "4.0-beta1"
+aws = "1.12.761"
+kmath = "0.3.1"
+kotlin-atomicfu = "0.23.2"
+kotlin-coroutines = "1.8.0-RC"
+multik = "0.2.2"
+okio = "3.6.0"
+onnxruntime = "1.17.0.patched-1"
+slf4j = "2.0.9"
+wire = "4.9.3"
+
+# JS Dependencies
+loglevel = "1.8.1"
+tfjs = "4.14.0"
+
+[plugins]
+kinference-primitives = { id = "io.kinference.primitives", version.ref = "kotlin" }
+kotlin-atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform" }
+
+[libraries]
+apache-commons-math4-core = { module = "org.apache.commons:commons-math4-core", version.ref = "apache-commons" }
+aws-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version.ref = "aws" }
+kinference-primitives-annotations = { module = "io.kinference.primitives:primitives-annotations", version.ref = "kotlin" }
+kmath-core = { module = "space.kscience:kmath-core", version.ref = "kmath" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlin-atomicfu" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+multik-core = { module = "org.jetbrains.kotlinx:multik-core", version.ref = "multik" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+onnxruntime-cpu = { module = "com.microsoft.onnxruntime:onnxruntime", version.ref = "onnxruntime" }
+onnxruntime-gpu = { module = "com.microsoft.onnxruntime:onnxruntime_gpu", version.ref = "onnxruntime" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }

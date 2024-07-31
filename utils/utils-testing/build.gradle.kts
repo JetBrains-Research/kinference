@@ -1,7 +1,9 @@
-import io.kinference.gradle.Versions
-
 group = rootProject.group
 version = rootProject.version
+
+plugins {
+    alias(libs.plugins.kinference.primitives) apply true
+}
 
 kotlin {
     js(IR) {
@@ -11,13 +13,10 @@ kotlin {
     jvm()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-                implementation("com.squareup.okio:okio:${Versions.okio}")
-
-                api(project(":ndarray:ndarray-api"))
-                api(project(":ndarray:ndarray-core"))
+                api(libs.kotlinx.coroutines.core)
+                implementation(libs.okio)
 
                 api(project(":inference:inference-api"))
 
@@ -27,17 +26,19 @@ kotlin {
 
                 api(kotlin("test-common"))
                 api(kotlin("test-annotations-common"))
+
+                api(libs.kinference.primitives.annotations)
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
-                api("org.slf4j:slf4j-simple:${Versions.slf4j}")
+                api(libs.slf4j.simple)
                 api(kotlin("test-junit5"))
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(kotlin("test-js"))
             }

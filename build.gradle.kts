@@ -1,16 +1,20 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 group = "io.kinference"
-version = "0.2.21-kotlin18"
+version = "0.2.22-kotlin18"
 
 plugins {
-    kotlin("multiplatform") apply false
-    idea apply true
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kinference.primitives) apply false
     `maven-publish`
+    idea apply true
 }
 
 allprojects {
@@ -18,6 +22,7 @@ allprojects {
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
+        maven("https://repo.kotlin.link")
     }
 
     plugins.withType<YarnPlugin>() {
@@ -56,17 +61,25 @@ subprojects {
                 optIn("kotlin.RequiresOptIn")
                 optIn("kotlin.ExperimentalUnsignedTypes")
             }
+        }
+    }
 
-            languageSettings {
-                apiVersion = "1.8"
-                languageVersion = "1.8"
+    val kotlinVersion = KotlinVersion.KOTLIN_1_8
+    val jvmTargetVersion = JvmTarget.JVM_17
+
+    tasks.withType(KotlinCompilationTask::class.java) {
+        compilerOptions {
+            apiVersion.set(kotlinVersion)
+            languageVersion.set(kotlinVersion)
+
+            if (this is KotlinJvmCompilerOptions) {
+                jvmTarget.set(jvmTargetVersion)
             }
         }
+    }
 
-        tasks.withType<KotlinJvmCompile> {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
-        }
+    tasks.withType(JavaCompile::class.java) {
+        sourceCompatibility = jvmTargetVersion.toString()
+        targetCompatibility = jvmTargetVersion.toString()
     }
 }

@@ -1,7 +1,6 @@
 package io.kinference.runners
 
-import io.kinference.TestEngine
-import io.kinference.TestLoggerFactory
+import io.kinference.*
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.Model

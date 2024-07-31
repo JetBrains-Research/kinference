@@ -3,7 +3,6 @@ package io.kinference.gradle
 import io.kinference.gradle.s3.S3Dependency
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.targets.js.KotlinJsPlatformTestRun
-import org.jetbrains.kotlin.gradle.targets.js.KotlinJsTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 
 fun KotlinJsPlatformTestRun.configureBrowsers() {

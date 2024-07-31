@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
@@ -9,13 +8,8 @@ kotlin {
         configureTests()
     }
 
-    js(IR) {
-        browser()
-        configureTests()
-    }
-
     sourceSets {
-        val commonMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
@@ -23,11 +17,11 @@ kotlin {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-core"))
 
-                api("org.jetbrains.kotlinx:multik-core:${Versions.multik}")
+                api(libs.multik.core)
             }
         }
 
-        val commonTest by getting {
+        jvmTest {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }

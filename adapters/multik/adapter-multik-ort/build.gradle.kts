@@ -1,4 +1,3 @@
-import io.kinference.gradle.Versions
 import io.kinference.gradle.configureTests
 
 group = rootProject.group
@@ -10,22 +9,17 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(project(":inference:inference-api"))
-                api("org.jetbrains.kotlinx:multik-core:${Versions.multik}")
-            }
-        }
-
-        val commonTest by getting {
-            dependencies {
-                implementation(project(":utils:utils-testing"))
-            }
-        }
-
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 api(project(":inference:inference-ort"))
+                api(project(":inference:inference-api"))
+                api(libs.multik.core)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(project(":utils:utils-testing"))
             }
         }
     }
