@@ -3,8 +3,8 @@ package io.kinference.ndarray.extensions.trilu
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.utils.PlatformUtils
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.*
 
 suspend fun NDArray.trilu(k: Int = 0, upper: Boolean = true): MutableNDArrayCore {
@@ -24,7 +24,7 @@ suspend fun NDArray.trilu(k: Int = 0, upper: Boolean = true): MutableNDArrayCore
         }
         coroutineScope {
             for (i in 0 until matrixCount step batchSize) {
-                launch {
+                launchWithLimitOrDefault {
                     for (j in i until min(matrixCount, i + batchSize))
                         upperTrilu(j * matrixSize, k, height, width, output)
                 }
@@ -38,7 +38,7 @@ suspend fun NDArray.trilu(k: Int = 0, upper: Boolean = true): MutableNDArrayCore
         }
         coroutineScope {
             for (i in 0 until matrixCount step batchSize) {
-                launch {
+                launchWithLimitOrDefault {
                     for (j in i until min(matrixCount, i + batchSize))
                         lowerTrilu(j * matrixSize, k, height, width, output)
                 }

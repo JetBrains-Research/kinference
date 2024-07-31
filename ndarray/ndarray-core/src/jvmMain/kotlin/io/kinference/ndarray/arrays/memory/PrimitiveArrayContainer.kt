@@ -9,4 +9,9 @@ import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveArray
 
 @GenerateNameFromPrimitives
-internal class PrimitiveArrayContainer(arrayTypeIndex: Int, arraySizeIndex: Int, val array: PrimitiveArray) : ArrayContainer(arrayTypeIndex, arraySizeIndex)
+internal class PrimitiveArrayContainer(
+    arrayTypeIndex: Int,
+    arraySizeIndex: Int,
+    sizeBytes: Int,
+    val array: PrimitiveArray
+) : ArrayContainer(arrayTypeIndex, arraySizeIndex, sizeBytes)

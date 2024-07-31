@@ -1,8 +1,8 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.arrays.Strides
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
@@ -93,7 +93,7 @@ suspend fun parallelizeByBlocks(blockSize: Int,
     } else {
         coroutineScope {
             for ((index, blockStart) in (0 until countBlocks step batchSize).withIndex()) {
-                launch {
+                launchWithLimitOrDefault {
                     body(blockStart, min(blockStart + batchSize, countBlocks), index)
                 }
             }

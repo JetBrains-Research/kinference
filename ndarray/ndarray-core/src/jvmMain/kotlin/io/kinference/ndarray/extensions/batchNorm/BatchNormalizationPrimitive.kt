@@ -7,8 +7,8 @@ import io.kinference.ndarray.stubs.sqrt
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
 import io.kinference.primitives.types.*
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.*
 
 @MakePublic
@@ -45,7 +45,7 @@ internal suspend fun PrimitiveNDArray.batchNorm(
 
     coroutineScope {
         for (batchStartBlockIdx in 0 until numInputBlocks step blocksPerBatch) {
-            launch {
+            launchWithLimitOrDefault {
                 val blocksPerBatchLimit = min(numInputBlocks, batchStartBlockIdx + blocksPerBatch)
 
                 for (channelStartBlockIdx in batchStartBlockIdx until blocksPerBatchLimit step blocksPerChannel) {

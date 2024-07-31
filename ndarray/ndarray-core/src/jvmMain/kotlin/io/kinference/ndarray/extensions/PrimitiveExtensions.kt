@@ -10,8 +10,8 @@ import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.*
@@ -61,7 +61,7 @@ internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 P
     }
 
     if (other.blocksInRow > 1) {
-        coroutineScope { wrapper { launch { it() } } }
+        coroutineScope { wrapper { launchWithLimitOrDefault { it() } } }
     } else {
         wrapper()
     }

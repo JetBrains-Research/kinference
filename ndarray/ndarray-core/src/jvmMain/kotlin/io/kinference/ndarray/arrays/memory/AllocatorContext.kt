@@ -3,26 +3,33 @@ package io.kinference.ndarray.arrays.memory
 import io.kinference.ndarray.arrays.*
 import kotlin.coroutines.CoroutineContext
 
-data class AllocatorContext(val modelName: String, val cycleId: Long) : CoroutineContext.Element {
+data class AllocatorContext internal constructor(
+    private val unusedContainers: ArrayStorage,
+    private val limiter: MemoryLimiter,
+    private val returnStorageFn: (ArrayStorage) -> Unit
+) : CoroutineContext.Element {
     private val usedContainers: ArrayDeque<ArrayContainer> = ArrayDeque()
-    private val unusedContainers: ArrayStorage = ArrayDispatcher.getStorage()
 
     companion object Key : CoroutineContext.Key<AllocatorContext>
     override val key: CoroutineContext.Key<*> get() = Key
 
     internal fun getArrayContainers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
-        val arrayContainers = Array(count) { unusedContainers.getArrayContainer(type, size) }
-        usedContainers.addAll(arrayContainers)
-        return arrayContainers
+        return if (limiter !is NoAllocatorMemoryLimiter) {
+            val result = Array(count) { unusedContainers.getArrayContainer(type, size) }
+            usedContainers.addAll(result)
+            result
+        } else {
+            Array(count) { ArrayContainer(type, size) }
+        }
     }
-
 
     fun closeAllocated() {
         usedContainers.forEach {
-            if (!it.isOutput) {
+            if (!it.isOutput && limiter.checkMemoryLimitAndAdd(it.sizeBytes.toLong())) {
                 unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
             }
         }
-        ArrayDispatcher.returnStorage(unusedContainers)
+        usedContainers.clear()
+        returnStorageFn(unusedContainers)
     }
 }

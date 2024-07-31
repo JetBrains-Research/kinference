@@ -16,8 +16,8 @@ import io.kinference.operator.*
 import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -34,7 +34,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             coroutineScope {
                 for (batchNum in 0 until batchSize) {
                     for (numHead in 0 until numHeads) {
-                        launch {
+                        launchWithLimitOrDefault {
                             val tempScores = scores.view(batchNum, numHead) as NumberNDArrayCore
                             val tempOutput = output.viewMutable(batchNum, numHead) as MutableNumberNDArray
 
@@ -144,7 +144,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             coroutineScope {
                 for (batchNum in 0 until batchSize) {
                     for (numHead in 0 until numHeads) {
-                        launch {
+                        launchWithLimitOrDefault {
                             val queryMatrix = queries.view(batchNum, numHead)
                             val presentMatrix = present.view(0, batchNum, numHead) as NumberNDArray
                             val scoresMatrix = scores.viewMutable(batchNum, numHead) as MutableNumberNDArray
@@ -257,7 +257,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
                     val output = qkv[qkvIdx]
                     for (batchNum in 0 until batchSize) {
                         val inputMatrix = input.view(batchNum)
-                        for (numHead in 0 until numHeads) launch {
+                        for (numHead in 0 until numHeads) launchWithLimitOrDefault {
                             val weightsMatrix = weights.view(qkvIdx, numHead) as NumberNDArrayCore
                             val biasMatrix = bias.view(qkvIdx, numHead) as NumberNDArray
 

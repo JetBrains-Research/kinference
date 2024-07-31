@@ -5,8 +5,8 @@ import io.kinference.core.operators.layer.recurrent.LayerDirection
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirection): GRULayerBase(hiddenSize, activations, direction) {
     init {
@@ -75,7 +75,7 @@ class GRULayer(hiddenSize: Int, activations: List<String>, direction: LayerDirec
         //TODO: research optimal batchSize for run with coroutines
         for (seqNum in seqRange) {
             if (batchSize > 1) {
-                coroutineScope { wrapper(seqNum) { launch { it() } } }
+                coroutineScope { wrapper(seqNum) { launchWithLimitOrDefault { it() } } }
             } else {
                 wrapper(seqNum)
             }
