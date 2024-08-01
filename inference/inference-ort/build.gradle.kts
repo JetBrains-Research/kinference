@@ -1,5 +1,4 @@
-import io.kinference.gradle.configureBenchmarkTests
-import io.kinference.gradle.configureHeavyTests
+import io.kinference.gradle.*
 
 group = rootProject.group
 version = rootProject.version

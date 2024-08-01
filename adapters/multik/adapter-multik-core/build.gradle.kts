@@ -1,4 +1,4 @@
-import io.kinference.gradle.configureTests
+import io.kinference.gradle.*
 
 group = rootProject.group
 version = rootProject.version
