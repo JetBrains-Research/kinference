@@ -21,7 +21,7 @@ fun interface BooleanBinaryOperation {
     operator fun invoke(first: Boolean, second: Boolean): Boolean
 }
 
-open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore, MemoryControlledArray {
+open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDArrayCore {
     override val type: DataType = DataType.BOOLEAN
 
     final override var strides: Strides = strides
@@ -77,10 +77,6 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
     override fun singleValue(): Boolean {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
-    }
-
-    override fun markOutput() {
-        array.marker.forEach { it.invoke() }
     }
 
     override suspend fun toMutable(): MutableBooleanNDArray {

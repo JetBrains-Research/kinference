@@ -7,13 +7,6 @@ sealed class ArrayContainer(
     val arraySizeIndex: Int,
     val sizeBytes: Int
 ) {
-    var isOutput: Boolean = false
-        private set
-
-    val markAsOutput = {
-        isOutput = true
-    }
-
     companion object {
         private const val EMPTY_INDEX = -1
 

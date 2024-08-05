@@ -17,7 +17,7 @@ import kotlin.math.min
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker: Array<StateMarker> = emptyMarker) {
+internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
     val size: Int
     val blockSize: Int = if (blocks.isEmpty()) 0 else blocks.first().size
     val blocksNum: Int = blocks.size
@@ -28,7 +28,6 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
 
     companion object {
         val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
-        private val emptyMarker: Array<StateMarker> = arrayOf()
 
         suspend operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -66,9 +65,8 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
             // With array dispatcher
             val containerArray = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { ArrayContainer(type, blockSize) }
             val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
-            val marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
 
-            return PrimitiveTiledArray(blocks, marker)
+            return PrimitiveTiledArray(blocks)
         }
 
         suspend operator fun invoke(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : PrimitiveTiledArray {

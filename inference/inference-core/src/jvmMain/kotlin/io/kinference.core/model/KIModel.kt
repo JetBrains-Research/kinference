@@ -1,8 +1,7 @@
 package io.kinference.core.model
 
-import io.kinference.core.KIONNXData
+import io.kinference.core.*
 import io.kinference.core.graph.KIGraph
-import io.kinference.core.markOutput
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.memory.*
@@ -51,9 +50,9 @@ class KIModel(
             withContext(mixedContext) {
                 val coroutineContext = coroutineContext[AllocatorContext.Key]!!
                 val execResult = graph.execute(input, contexts)
-                execResult.forEach { it.markOutput() }
+                val copies = execResult.map { it.clone(it.name) }.toList()
                 coroutineContext.closeAllocated()
-                execResult
+                copies
             }
         } finally {
             if (coreReserved) {

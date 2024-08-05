@@ -25,7 +25,7 @@ data class AllocatorContext internal constructor(
 
     fun closeAllocated() {
         usedContainers.forEach {
-            if (!it.isOutput && limiter.checkMemoryLimitAndAdd(it.sizeBytes.toLong())) {
+            if (limiter.checkMemoryLimitAndAdd(it.sizeBytes.toLong())) {
                 unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
             }
         }

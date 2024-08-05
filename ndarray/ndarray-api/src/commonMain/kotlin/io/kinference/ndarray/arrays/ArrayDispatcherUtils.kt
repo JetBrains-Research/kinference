@@ -15,7 +15,3 @@ enum class ArrayTypes(val index: Int, val size: Int) {
     DoubleArray(9, Double.SIZE_BYTES),
     BooleanArray(10, 1);
 }
-
-interface MemoryControlledArray {
-    fun markOutput()
-}

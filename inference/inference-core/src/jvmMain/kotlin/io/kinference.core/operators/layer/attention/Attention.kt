@@ -61,21 +61,16 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val kBlocks = k.array.blocks
             val vBlocks = v.array.blocks
 
-            val kMarker = k.array.marker
-            val vMarker = v.array.marker
 
             val resultBlocks: Array<FloatArray>
-            val resultMarker: Array<StateMarker>
 
             if (past == null || past.linearSize == 0) {
                 resultBlocks = kBlocks.plus(vBlocks)
-                resultMarker = kMarker.plus(vMarker)
             } else {
                 val pastSeqLen = past.shape[3]
                 presentDims[3] += pastSeqLen
 
                 val pastBlocks = past.array.blocks
-                val pastMarker = past.array.marker
 
                 val blocksInRow = headSize / past.array.blockSize
 
@@ -84,35 +79,30 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
                 val rowsSize = batchSize * numHeads
                 val futureRes = arrayOfNulls<FloatArray>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
-                val futureResMarker = arrayOfNulls<StateMarker>(2 * batchSize * numHeads * presentDims[3] * blocksInRow)
 
                 var resBlockIdx = 0
                 var pastBlocIdx = 0
 
                 repeat(2) { presentKeyValueIdx ->
                     val kvBlocks = if (presentKeyValueIdx == 0) kBlocks else vBlocks
-                    val kvMarker = if (presentKeyValueIdx == 0) kMarker else vMarker
 
                     var kvBlockIdx = 0
 
                     repeat(rowsSize) {
                         pastBlocks.copyInto(futureRes, resBlockIdx, pastBlocIdx, pastBlocIdx + pastRowBlocksCount)
-                        pastMarker.copyInto(futureResMarker, resBlockIdx, pastBlocIdx, pastBlocIdx + pastRowBlocksCount)
 
                         resBlockIdx += pastRowBlocksCount
                         pastBlocIdx += pastRowBlocksCount
 
                         kvBlocks.copyInto(futureRes, resBlockIdx, kvBlockIdx, kvBlockIdx + kvRowBlocksCount)
-                        kvMarker.copyInto(futureResMarker, resBlockIdx, kvBlockIdx, kvBlockIdx + kvRowBlocksCount)
                         resBlockIdx += kvRowBlocksCount
                         kvBlockIdx += kvRowBlocksCount
                     }
                 }
                 resultBlocks = futureRes as Array<FloatArray>
-                resultMarker = futureResMarker as Array<StateMarker>
             }
 
-            return FloatNDArray(FloatTiledArray(resultBlocks, resultMarker), Strides(presentDims))
+            return FloatNDArray(FloatTiledArray(resultBlocks), Strides(presentDims))
         }
 
 

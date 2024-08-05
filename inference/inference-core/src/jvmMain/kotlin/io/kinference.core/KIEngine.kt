@@ -24,16 +24,6 @@ import okio.Path.Companion.toPath
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
 
-// Define an interface for allocation control marking output
-internal interface KIONNXDataArraysReleaser {
-    fun markOutput()
-}
-
-internal fun <T> KIONNXData<T>.markOutput() {
-    if (this is KIONNXDataArraysReleaser)
-        this.markOutput()
-}
-
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
 /**
