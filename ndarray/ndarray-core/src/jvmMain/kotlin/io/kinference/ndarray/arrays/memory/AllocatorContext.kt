@@ -8,28 +8,24 @@ data class AllocatorContext internal constructor(
     private val limiter: MemoryLimiter,
     private val returnStorageFn: (ArrayStorage) -> Unit
 ) : CoroutineContext.Element {
-    private val usedContainers: ArrayDeque<ArrayContainer> = ArrayDeque()
 
     companion object Key : CoroutineContext.Key<AllocatorContext>
     override val key: CoroutineContext.Key<*> get() = Key
 
-    internal fun getArrayContainers(type: ArrayTypes, size: Int, count: Int): Array<ArrayContainer> {
+    internal fun getArrayContainers(type: ArrayTypes, size: Int, count: Int): Array<Any> {
         return if (limiter !is NoAllocatorMemoryLimiter) {
-            val result = Array(count) { unusedContainers.getArrayContainer(type, size) }
-            usedContainers.addAll(result)
-            result
+            Array(count) { unusedContainers.getArrayContainer(type, size) }
         } else {
-            Array(count) { ArrayContainer(type, size) }
+            Array(count) { unusedContainers.create(type, size) }
         }
     }
 
+    fun closeOperator() {
+        unusedContainers.moveUsedArrays()
+    }
+
     fun closeAllocated() {
-        usedContainers.forEach {
-            if (limiter.checkMemoryLimitAndAdd(it.sizeBytes.toLong())) {
-                unusedContainers[it.arrayTypeIndex, it.arraySizeIndex].addLast(it)
-            }
-        }
-        usedContainers.clear()
+        unusedContainers.moveUsedArrays()
         returnStorageFn(unusedContainers)
     }
 }

@@ -120,6 +120,7 @@ class PerformanceRunner<T : ONNXData<*, *>>(private val engine: TestEngine<T>) {
         for (result in results.sortedBy { it.name }) {
             logger.info { "Test ${result.name}: avg ${result.avg}, min ${result.min}, max ${result.max}" }
         }
+        logger.info { "Average between inputs: avg ${results.map { it.avg }.average()}, min ${results.minOfOrNull { it.min }}, max ${results.maxOfOrNull { it.max }}" }
     }
 
     companion object {

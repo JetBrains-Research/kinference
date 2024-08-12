@@ -5,7 +5,6 @@ package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.memory.*
-import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
@@ -61,12 +60,9 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
 
             val coroutineContext = coroutineContext[AllocatorContext.Key]
+            val blocks = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
-            // With array dispatcher
-            val containerArray = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { ArrayContainer(type, blockSize) }
-            val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
-
-            return PrimitiveTiledArray(blocks)
+            return PrimitiveTiledArray(blocks.map { it as PrimitiveArray }.toTypedArray())
         }
 
         suspend operator fun invoke(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : PrimitiveTiledArray {
@@ -132,16 +128,19 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
     }
 
     suspend fun copyOf(): PrimitiveTiledArray {
-        val copyArray = PrimitiveTiledArray(size, blockSize)
+//        val copyArray = PrimitiveTiledArray(size, blockSize)
+        val copyBlocks = Array(blocksNum) { PrimitiveArray(blockSize) }
 
         for (blockNum in 0 until blocksNum) {
             val thisBlock = this.blocks[blockNum]
-            val destBlock = copyArray.blocks[blockNum]
+//            val destBlock = copyArray.blocks[blockNum]
+            val destBlock = copyBlocks[blockNum]
 
             thisBlock.copyInto(destBlock)
         }
 
-        return copyArray
+//        return copyArray
+        return PrimitiveTiledArray(copyBlocks)
     }
 
     fun copyInto(dest: PrimitiveTiledArray, destOffset: Int = 0, srcStart: Int = 0, srcEnd: Int = size) {
