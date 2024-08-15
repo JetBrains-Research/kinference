@@ -13,15 +13,7 @@ data class AllocatorContext internal constructor(
     override val key: CoroutineContext.Key<*> get() = Key
 
     internal fun getArrayContainers(type: ArrayTypes, size: Int, count: Int): Array<Any> {
-        return if (limiter !is NoAllocatorMemoryLimiter) {
-            Array(count) { unusedContainers.getArrayContainer(type, size) }
-        } else {
-            Array(count) { unusedContainers.create(type, size) }
-        }
-    }
-
-    fun closeOperator() {
-        unusedContainers.moveUsedArrays()
+        return Array(count) { unusedContainers.getArrayContainer(type, size) }
     }
 
     fun closeAllocated() {

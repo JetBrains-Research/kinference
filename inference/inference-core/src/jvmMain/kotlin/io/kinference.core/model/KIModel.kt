@@ -17,14 +17,14 @@ class KIModel(
     val name: String,
     val opSet: OperatorSetRegistry,
     val graph: KIGraph,
-    memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
+    private val memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
     parallelismLimit: Int = PlatformUtils.cores,
 ) : Model<KIONNXData<*>>, Profilable, Cacheable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(parallelismLimit)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(memoryLimiter)
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(MemoryLimiters.Default)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -44,15 +44,21 @@ class KIModel(
                 coreReserved = true
             }
 
-            val allocatorContext = modelArrayStorage.createAllocatorContext()
-            val mixedContext = allocatorContext + limiterContext
+            if (memoryLimiter == MemoryLimiters.NoAllocator) {
+                withContext(limiterContext) {
+                    return@withContext graph.execute(input, contexts)
+                }
+            } else {
+                val allocatorContext = modelArrayStorage.createAllocatorContext()
+                val mixedContext = allocatorContext + limiterContext
 
-            withContext(mixedContext) {
-                val coroutineContext = coroutineContext[AllocatorContext.Key]!!
-                val execResult = graph.execute(input, contexts)
-                val copies = execResult.map { it.clone(it.name) }.toList()
-                coroutineContext.closeAllocated()
-                copies
+                withContext(mixedContext) {
+                    val coroutineContext = coroutineContext[AllocatorContext.Key]!!
+                    val execResult = graph.execute(input, contexts)
+                    val copies = execResult.map { it.clone(it.name) }.toList()
+                    coroutineContext.closeAllocated()
+                    return@withContext copies
+                }
             }
         } finally {
             if (coreReserved) {

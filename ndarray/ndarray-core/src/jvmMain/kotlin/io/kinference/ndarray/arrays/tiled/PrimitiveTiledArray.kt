@@ -26,7 +26,7 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
     }
 
     companion object {
-        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
+        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!! + "Type")
 
         suspend operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -127,19 +127,16 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
         blocks[blockIdx][blockOff] = value
     }
 
-    suspend fun copyOf(): PrimitiveTiledArray {
-//        val copyArray = PrimitiveTiledArray(size, blockSize)
+    fun copyOf(): PrimitiveTiledArray {
         val copyBlocks = Array(blocksNum) { PrimitiveArray(blockSize) }
 
         for (blockNum in 0 until blocksNum) {
             val thisBlock = this.blocks[blockNum]
-//            val destBlock = copyArray.blocks[blockNum]
             val destBlock = copyBlocks[blockNum]
 
             thisBlock.copyInto(destBlock)
         }
 
-//        return copyArray
         return PrimitiveTiledArray(copyBlocks)
     }
 
