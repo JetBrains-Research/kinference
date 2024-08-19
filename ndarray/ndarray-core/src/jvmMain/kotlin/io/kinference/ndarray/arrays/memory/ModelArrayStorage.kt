@@ -1,34 +1,39 @@
 package io.kinference.ndarray.arrays.memory
 
-import io.kinference.ndarray.arrays.ArrayTypes
+import io.kinference.primitives.types.DataType
 import io.kinference.utils.Closeable
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class ModelArrayStorage(private val limiter: MemoryLimiter = MemoryLimiters.NoAllocator) : Closeable {
-    private val unusedArrays: ConcurrentLinkedQueue<ArrayStorage> = ConcurrentLinkedQueue()
+    private val autoStorageQueue: ConcurrentLinkedQueue<ArrayStorage> = ConcurrentLinkedQueue()
 
     companion object {
         private const val INIT_SIZE_VALUE: Int = 2
-        private val typeSize: Int = ArrayTypes.entries.size
+        private val typeSize: Int = DataType.entries.size
     }
 
-    fun createAllocatorContext(): AllocatorContext {
-        return AllocatorContext(getStorage(), limiter, ::returnStorage)
+    fun createAutoAllocatorContext(): AutoAllocatorContext {
+        return AutoAllocatorContext(getStorage(autoStorageQueue), ::returnStorage)
+    }
+
+    fun createManualAllocatorContext(): ManualAllocatorContext {
+        limiter.resetLimit()
+        return ManualAllocatorContext(SingleArrayStorage(typeSize, INIT_SIZE_VALUE, limiter))
     }
 
     fun clearCache() {
-        unusedArrays.clear()
+        autoStorageQueue.clear()
     }
 
     override suspend fun close() {
         clearCache()
     }
 
-    private fun getStorage(): ArrayStorage {
-        return unusedArrays.poll() ?: ArrayStorage(typeSize, INIT_SIZE_VALUE, limiter)
+    private fun getStorage(queue: ConcurrentLinkedQueue<ArrayStorage>): ArrayStorage {
+        return queue.poll() ?: ArrayStorage(typeSize, INIT_SIZE_VALUE, limiter)
     }
 
     private fun returnStorage(storage: ArrayStorage) {
-        unusedArrays.offer(storage)
+        autoStorageQueue.offer(storage)
     }
 }

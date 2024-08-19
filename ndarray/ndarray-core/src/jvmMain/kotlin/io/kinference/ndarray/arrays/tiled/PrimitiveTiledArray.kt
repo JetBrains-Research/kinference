@@ -26,7 +26,7 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
     }
 
     companion object {
-        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!! + "Type")
+        val type: DataType = DataType.CurrentPrimitive
 
         suspend operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -59,8 +59,8 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
 
-            val coroutineContext = coroutineContext[AllocatorContext.Key]
-            val blocks = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
+            val coroutineContext = coroutineContext[AutoAllocatorContext.Key]
+            val blocks = coroutineContext?.getArrays(type, blockSize, blocksNum) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
             return PrimitiveTiledArray(blocks.map { it as PrimitiveArray }.toTypedArray())
         }

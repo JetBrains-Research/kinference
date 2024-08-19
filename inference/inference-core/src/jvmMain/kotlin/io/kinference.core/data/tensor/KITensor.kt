@@ -3,6 +3,7 @@ package io.kinference.core.data.tensor
 import io.kinference.core.*
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto
@@ -12,10 +13,11 @@ import io.kinference.types.ValueTypeInfo
 
 //TODO: support segments
 //TODO: support external data
-class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
+class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo, private var context: ManualAllocatorContext? = null) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
     override suspend fun close() {
+        context?.returnNDArray(data)
         data.close()
     }
 
@@ -41,7 +43,7 @@ class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTyp
     override val backend = CoreBackend
 
     override fun rename(name: String): KITensor {
-        return KITensor(name, data, info)
+        return KITensor(name, data, info, context)
     }
 
     companion object {

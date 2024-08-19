@@ -24,7 +24,7 @@ class KIModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(parallelismLimit)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(MemoryLimiters.Default)
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(memoryLimiter)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -44,20 +44,31 @@ class KIModel(
                 coreReserved = true
             }
 
-            if (memoryLimiter == MemoryLimiters.NoAllocator) {
-                withContext(limiterContext) {
-                    return@withContext graph.execute(input, contexts)
+            when (memoryLimiter) {
+                MemoryLimiters.NoAllocator -> {
+                    withContext(limiterContext) {
+                        return@withContext graph.execute(input, contexts)
+                    }
                 }
-            } else {
-                val allocatorContext = modelArrayStorage.createAllocatorContext()
-                val mixedContext = allocatorContext + limiterContext
+                MemoryLimiters.DefaultManualAllocator -> {
+                    val allocatorContext = modelArrayStorage.createManualAllocatorContext()
+                    val mixedContext = allocatorContext + limiterContext
 
-                withContext(mixedContext) {
-                    val coroutineContext = coroutineContext[AllocatorContext.Key]!!
-                    val execResult = graph.execute(input, contexts)
-                    val copies = execResult.map { it.clone(it.name) }.toList()
-                    coroutineContext.closeAllocated()
-                    return@withContext copies
+                    withContext(mixedContext) {
+                        return@withContext graph.execute(input, contexts)
+                    }
+                }
+                else -> {
+                    val allocatorContext = modelArrayStorage.createAutoAllocatorContext()
+                    val mixedContext = allocatorContext + limiterContext
+
+                    withContext(mixedContext) {
+                        val coroutineContext = coroutineContext[AutoAllocatorContext.Key]!!
+                        val execResult = graph.execute(input, contexts)
+                        val copies = execResult.map { it.clone(it.name) }.toList()
+                        coroutineContext.returnUsedArrays()
+                        return@withContext copies
+                    }
                 }
             }
         } finally {
