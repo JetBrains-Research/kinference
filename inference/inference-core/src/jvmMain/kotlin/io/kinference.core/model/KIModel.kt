@@ -24,7 +24,7 @@ class KIModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(parallelismLimit)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(memoryLimiter)
+    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(MemoryLimiters.DefaultManualAllocator)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -44,7 +44,7 @@ class KIModel(
                 coreReserved = true
             }
 
-            when (memoryLimiter) {
+            when (MemoryLimiters.DefaultManualAllocator) {
                 MemoryLimiters.NoAllocator -> {
                     withContext(limiterContext) {
                         return@withContext graph.execute(input, contexts)

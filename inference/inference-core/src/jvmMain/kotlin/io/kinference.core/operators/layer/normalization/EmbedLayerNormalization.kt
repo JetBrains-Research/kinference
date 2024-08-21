@@ -1,15 +1,17 @@
 package io.kinference.core.operators.layer.normalization
 
 import io.kinference.attribute.Attribute
-import io.kinference.core.data.tensor.KITensor
-import io.kinference.core.data.tensor.asONNXTensors
+import io.kinference.core.data.tensor.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.operator.*
+import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto.AttributeType
 import io.kinference.protobuf.message.TensorProto
+import kotlin.coroutines.coroutineContext
 import kotlin.math.sqrt
 
 sealed class EmbedLayerNormalization(
@@ -73,9 +75,12 @@ class EmbedLayerNormalizationVer1(
 
         private data class NormalizeResult(val output: FloatNDArray, val embeddingSum: FloatNDArray)
 
-        internal suspend fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int): NumberNDArrayCore {
-            val maskIndices = MutableIntNDArray(intArrayOf(batchSize))
-            if (mask == null) return maskIndices
+        internal suspend fun createMaskIndices(mask: IntNDArray?, batchSize: Int, seqLen: Int, context: ManualAllocatorContext? = null): NumberNDArrayCore {
+            val strides = Strides(intArrayOf(batchSize))
+            val maskIndices = (context?.getNDArray(DataType.INT, strides) ?: MutableIntNDArray(strides)) as MutableIntNDArray
+
+            if (mask == null)
+                return maskIndices.also { it.fill(0) }
 
             val pointer = mask.array.pointer()
             val maskIndicesPointer = maskIndices.array.pointer()
@@ -95,12 +100,15 @@ class EmbedLayerNormalizationVer1(
 
         private suspend fun normalize(
             epsilon: Float, inputIds: IntNDArray, segmentIds: IntNDArray?, wordEmbed: FloatNDArray, posEmbed: FloatNDArray,
-            segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray, positionIds: IntNDArray?
+            segmentEmbed: FloatNDArray?, gamma: FloatNDArray, beta: FloatNDArray, positionIds: IntNDArray?, context: ManualAllocatorContext? = null
         ): NormalizeResult {
             val (batchSize, seqLen) = inputIds.shape
             val (_, hiddenSize) = wordEmbed.shape
-            val output = MutableFloatNDArray(intArrayOf(batchSize, seqLen, hiddenSize))
-            val embeddingSum = MutableFloatNDArray(intArrayOf(batchSize, seqLen, hiddenSize))
+
+            val outputStrides = Strides(intArrayOf(batchSize, seqLen, hiddenSize))
+
+            val output = (context?.getNDArray(DataType.FLOAT, outputStrides, fillZeros = false) ?: MutableFloatNDArray(outputStrides)) as MutableFloatNDArray
+            val embeddingSum = (context?.getNDArray(DataType.FLOAT, outputStrides, fillZeros = false) ?: MutableFloatNDArray(outputStrides)) as MutableFloatNDArray
 
             for (batch in 0 until batchSize) {
                 val blockIdx = batch * seqLen
@@ -167,6 +175,8 @@ class EmbedLayerNormalizationVer1(
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+        val manualContext = coroutineContext[ManualAllocatorContext.Key]
+
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs[1]?.data as IntNDArray?
         val wordEmbed = inputs[2]!!.data as FloatNDArray
@@ -177,8 +187,12 @@ class EmbedLayerNormalizationVer1(
         val mask = inputs.getOrNull(7)?.data as IntNDArray?
         val positionIds = inputs.getOrNull(8)?.data as IntNDArray?
 
-        val (normalized, embedSum) = normalize(epsilon, inputIds, segmentIds, wordEmbed, posEmbed, segmentEmbed, gamma, beta, positionIds)
+        val (normalized, embedSum) = normalize(epsilon, inputIds, segmentIds, wordEmbed, posEmbed, segmentEmbed, gamma, beta, positionIds, manualContext)
         val maskIndices = createMaskIndices(mask, inputIds.shape[0], inputIds.shape[1])
-        return listOf(normalized, maskIndices, embedSum).asONNXTensors(outputs)
+        return listOf(
+            normalized.asTensor(context = manualContext),
+            maskIndices.asTensor(context = manualContext),
+            embedSum.asTensor(context = manualContext)
+        )
     }
 }
