@@ -1,10 +1,15 @@
 package io.kinference.ndarray.arrays.memory
 
 import io.kinference.primitives.types.DataType
-import io.kinference.utils.PlatformUtils
 import kotlinx.atomicfu.*
+import kotlinx.coroutines.*
 
-interface MemoryLimiter {
+internal class MemoryManager internal constructor(private val memoryLimit: Long, private val cacheClearingInterval: Long, private val onCacheClear: () -> Unit) {
+    private var usedMemory: AtomicLong = atomic(0L)
+    private val lastAccessTime = atomic(System.currentTimeMillis())
+    private val monitorJob: AtomicRef<Job?> = atomic(initial = null)
+    private val isFinalized = atomic(initial = false)
+
     /**
      * Checks if the memory limit allows adding the specified amount of memory and performs the addition
      *
@@ -12,18 +17,7 @@ interface MemoryLimiter {
      * @param size is the checking array size
      * @return true if the memory was added successfully and false if adding the memory exceeds the memory limit
      */
-    fun checkMemoryLimitAndAdd(type: DataType, size: Int): Boolean
-
-    /**
-     * Resets the used memory into 0L
-     */
-    fun resetLimit()
-}
-
-class BaseMemoryLimiter internal constructor(private val memoryLimit: Long) : MemoryLimiter {
-    private var usedMemory: AtomicLong = atomic(0L)
-
-    override fun checkMemoryLimitAndAdd(type: DataType, size: Int): Boolean {
+    fun checkMemoryLimitAndAdd(type: DataType, size: Int): Boolean {
         // Attempt to add memory and check the limit
         val added = sizeInBytes(type.ordinal, size)
         val successful = usedMemory.getAndUpdate { current ->
@@ -33,8 +27,36 @@ class BaseMemoryLimiter internal constructor(private val memoryLimit: Long) : Me
         return successful
     }
 
-    override fun resetLimit() {
+    /**
+     * Resets the used memory into 0L
+     */
+    fun resetLimit() {
         usedMemory.value = 0L
+    }
+
+    fun updateLastAccessTime() {
+        lastAccessTime.value = System.currentTimeMillis()
+
+        // Start monitoring if not already started
+        if (monitorJob.compareAndSet(expect = null, update = null) && !isFinalized.value) {
+            val newJob = CoroutineScope(Dispatchers.Default).launch {
+                while (isActive) {
+                    delay(cacheClearingInterval)
+                    if (System.currentTimeMillis() - lastAccessTime.value > cacheClearingInterval) {
+                        onCacheClear()
+                    }
+                }
+            }
+            if (!monitorJob.compareAndSet(expect = null, newJob)) {
+                newJob.cancel() // Cancel if another thread set the job
+            }
+        }
+    }
+
+    fun stopMonitoring() {
+        if (isFinalized.compareAndSet(expect = false, update = true)) {
+            monitorJob.getAndSet(value = null)?.cancel()
+        }
     }
 
     companion object {
@@ -58,15 +80,5 @@ class BaseMemoryLimiter internal constructor(private val memoryLimit: Long) : Me
         private fun sizeInBytes(typeIndex: Int, size: Int): Long {
             return typeSizes[typeIndex] * size
         }
-    }
-}
-
-object MemoryLimiters {
-    val DefaultAutoAllocator: MemoryLimiter = BaseMemoryLimiter((PlatformUtils.maxHeap * 0.3).toLong())
-    val DefaultManualAllocator: MemoryLimiter = BaseMemoryLimiter(50 * 1024 * 1024)
-    val NoAllocator: MemoryLimiter = BaseMemoryLimiter(0L)
-
-    fun customLimiter(memoryLimit: Long): MemoryLimiter {
-        return BaseMemoryLimiter(memoryLimit)
     }
 }

@@ -3,7 +3,7 @@ package io.kinference.core.data.tensor
 import io.kinference.core.*
 import io.kinference.data.ONNXTensor
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.TensorProto

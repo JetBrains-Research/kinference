@@ -7,7 +7,7 @@ import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.MutableNumberNDArrayCore
 import io.kinference.ndarray.arrays.NumberNDArrayCore
-import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gelu.biasGelu
 import io.kinference.operator.*

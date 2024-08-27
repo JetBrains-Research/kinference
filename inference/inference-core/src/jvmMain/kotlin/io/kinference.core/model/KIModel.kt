@@ -5,6 +5,7 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.memory.*
+import io.kinference.ndarray.arrays.memory.contexts.finalizeAllocatorContext
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
@@ -17,14 +18,10 @@ class KIModel(
     val name: String,
     val opSet: OperatorSetRegistry,
     val graph: KIGraph,
-    private val memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
-    parallelismLimit: Int = PlatformUtils.cores,
+    predictionConfig: PredictionConfig = PredictionConfigs.NoAllocator,
 ) : Model<KIONNXData<*>>, Profilable, Cacheable {
     private val profiles: MutableList<ProfilingContext> = ArrayList()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default.limitedParallelism(parallelismLimit)
-    private val modelArrayStorage: ModelArrayStorage = ModelArrayStorage(MemoryLimiters.DefaultManualAllocator)
+    private val predictionContextDispatcher: PredictionContextDispatcher = PredictionContextDispatcher(predictionConfig)
 
     override fun addProfilingContext(name: String): ProfilingContext = ProfilingContext(name).apply { profiles.add(this) }
     override fun analyzeProfilingResults(): ProfileAnalysisEntry = profiles.analyze("Model $name")
@@ -36,7 +33,6 @@ class KIModel(
             if (profile) addProfilingContext("Model $name") else null
         )
 
-        val limiterContext = ParallelismLimiterContext(dispatcher)
         var coreReserved = false
         val results = try {
             withContext(NonCancellable) {
@@ -44,33 +40,16 @@ class KIModel(
                 coreReserved = true
             }
 
-            when (MemoryLimiters.DefaultManualAllocator) {
-                MemoryLimiters.NoAllocator -> {
-                    withContext(limiterContext) {
-                        return@withContext graph.execute(input, contexts)
-                    }
-                }
-                MemoryLimiters.DefaultManualAllocator -> {
-                    val allocatorContext = modelArrayStorage.createManualAllocatorContext()
-                    val mixedContext = allocatorContext + limiterContext
-
-                    withContext(mixedContext) {
-                        return@withContext graph.execute(input, contexts)
-                    }
-                }
-                else -> {
-                    val allocatorContext = modelArrayStorage.createAutoAllocatorContext()
-                    val mixedContext = allocatorContext + limiterContext
-
-                    withContext(mixedContext) {
-                        val coroutineContext = coroutineContext[AutoAllocatorContext.Key]!!
-                        val execResult = graph.execute(input, contexts)
-                        val copies = execResult.map { it.clone(it.name) }.toList()
-                        coroutineContext.returnUsedArrays()
-                        return@withContext copies
-                    }
-                }
+            val predictionContext = predictionContextDispatcher.getPredictionContext()
+            val output = if (predictionContextDispatcher.allocationMode != AllocationMode.Auto) withContext(predictionContext) {
+                return@withContext graph.execute(input, contexts)
+            } else withContext(predictionContext) {
+                return@withContext graph.execute(input, contexts).map { it.clone(it.name) }.toList()
             }
+
+            predictionContext.finalizeAllocatorContext()
+            predictionContextDispatcher.returnStorage(predictionContext)
+            output
         } finally {
             if (coreReserved) {
                 ResourcesDispatcher.releaseCore()
@@ -82,11 +61,11 @@ class KIModel(
 
     override suspend fun close() {
         graph.close()
-        modelArrayStorage.close()
+        predictionContextDispatcher.close()
     }
 
     override fun clearCache() {
-        modelArrayStorage.clearCache()
+        predictionContextDispatcher.clearCache()
     }
 
     companion object {
@@ -96,14 +75,13 @@ class KIModel(
 
         suspend operator fun invoke(
             proto: ModelProto,
-            memoryLimiter: MemoryLimiter = MemoryLimiters.NoAllocator,
-            limiterParallelismCounter: Int = PlatformUtils.cores,
+            predictionConfig: PredictionConfig = PredictionConfigs.NoAllocator,
         ): KIModel {
             val name = "${proto.domain}:${proto.modelVersion}"
             val id = "$name:${generateModelId()}"
             val opSet = OperatorSetRegistry(proto.opSetImport)
             val graph = KIGraph(proto.graph!!, opSet)
-            return KIModel(id, name, opSet, graph, memoryLimiter, limiterParallelismCounter)
+            return KIModel(id, name, opSet, graph, predictionConfig)
         }
     }
 }

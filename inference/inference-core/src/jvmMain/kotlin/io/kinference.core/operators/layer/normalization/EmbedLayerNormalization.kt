@@ -5,7 +5,7 @@ import io.kinference.core.data.tensor.*
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.operator.*
 import io.kinference.primitives.types.DataType

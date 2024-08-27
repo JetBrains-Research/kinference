@@ -7,7 +7,7 @@ import io.kinference.core.optimizer.rules.context.AttentionContextRule
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.map
 import io.kinference.ndarray.arrays.tiled.FloatTiledArray

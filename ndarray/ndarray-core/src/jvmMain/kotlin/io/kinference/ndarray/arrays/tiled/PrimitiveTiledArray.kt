@@ -5,6 +5,7 @@ package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.memory.*
+import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides

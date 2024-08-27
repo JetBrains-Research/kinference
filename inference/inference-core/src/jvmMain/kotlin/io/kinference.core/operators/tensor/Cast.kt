@@ -6,7 +6,7 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.ManualAllocatorContext
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.pointers.mapTo
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.operator.*
