@@ -5,7 +5,7 @@ import kotlin.coroutines.CoroutineContext
 
 interface BaseAllocatorContext: CoroutineContext.Element
 
-abstract class BaseAllocatorContextWithStorage<T : ArrayStorage>(protected val storage: T) : BaseAllocatorContext {
+abstract class BaseAllocatorContextWithStorage<T : ArrayStorage>(internal val storage: T) : BaseAllocatorContext {
     fun finalizeContext() {
         storage.resetState()
     }

@@ -4,8 +4,8 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.*
 import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
+import io.kinference.ndarray.arrays.memory.storage.*
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
@@ -59,11 +59,9 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
                 require(size % blockSize == 0) { "Size must divide blockSize" }
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
+            val blocks = coroutineContext[AutoAllocatorContext.Key]?.getPrimitiveBlock(blocksNum, blockSize) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
-            val coroutineContext = coroutineContext[AutoAllocatorContext.Key]
-            val blocks = coroutineContext?.getArrays(type, blockSize, blocksNum) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
-
-            return PrimitiveTiledArray(blocks.map { it as PrimitiveArray }.toTypedArray())
+            return PrimitiveTiledArray(blocks)
         }
 
         suspend operator fun invoke(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : PrimitiveTiledArray {

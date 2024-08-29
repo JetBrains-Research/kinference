@@ -17,15 +17,15 @@ internal class PrimitiveAutoHandlingArrayStorage : TypedAutoHandlingStorage {
         private val type = DataType.CurrentPrimitive
     }
 
-    override fun getBlock(blocksNum: Int, blockSize: Int, limiter: MemoryManager): Array<Any> {
+    fun getBlock(blocksNum: Int, blockSize: Int, limiter: MemoryManager): Array<PrimitiveArray> {
         val unusedQueue = unused.getOrPut(blockSize) { ArrayDeque(blocksNum) }
         val usedQueue = used.getOrPut(blockSize) { ArrayDeque(blocksNum) }
 
         val blocks = if (limiter.checkMemoryLimitAndAdd(type, blockSize * blocksNum)) {
             Array(blocksNum) {
-                val block = unusedQueue.removeFirstOrNull()
-                block?.fill(PrimitiveConstants.ZERO)
-                block ?: PrimitiveArray(blockSize)
+                unusedQueue.removeFirstOrNull()?.apply {
+                    fill(PrimitiveConstants.ZERO)
+                } ?: PrimitiveArray(blockSize)
             }
         } else {
             Array(blocksNum) {
@@ -35,7 +35,7 @@ internal class PrimitiveAutoHandlingArrayStorage : TypedAutoHandlingStorage {
 
         usedQueue.addAll(blocks)
 
-        return blocks as Array<Any>
+        return blocks
     }
 
     override fun moveBlocksIntoUnused() {
