@@ -11,6 +11,7 @@ okio = "3.6.0"
 onnxruntime = "1.17.0.patched-1"
 slf4j = "2.0.9"
 wire = "4.9.3"
+fastutil = "8.5.14"
 
 # JS Dependencies
 loglevel = "1.8.1"
@@ -36,3 +37,4 @@ onnxruntime-gpu = { module = "com.microsoft.onnxruntime:onnxruntime_gpu", versio
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
+fastutil-core = { module = "it.unimi.dsi:fastutil-core", version.ref = "fastutil" }

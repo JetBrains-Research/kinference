@@ -73,6 +73,8 @@ const val ERF_COEF_3 = 1.421413741
 const val ERF_COEF_4 = -1.453152027
 const val ERF_COEF_5 = 1.061405429
 
+const val INIT_STORAGE_SIZE = 64
+
 internal fun IntArray.swap(leftIdx: Int, rightIdx: Int) {
     val temp = get(leftIdx)
     this[leftIdx] = this[rightIdx]
