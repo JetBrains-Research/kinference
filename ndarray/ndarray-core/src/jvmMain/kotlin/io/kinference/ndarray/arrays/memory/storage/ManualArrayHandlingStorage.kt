@@ -16,7 +16,7 @@ interface ManualStorage : ArrayStorage {
 }
 
 internal class ManualArrayHandlingStorage(private val memoryManager: MemoryManager) : ManualStorage {
-    private val storage: List<TypedManualHandlingStorage> = listOf(
+    private val storage: Array<TypedManualHandlingStorage> = arrayOf(
         ByteManualHandlingArrayStorage(),
         ShortManualHandlingArrayStorage(),
         IntManualHandlingArrayStorage(),

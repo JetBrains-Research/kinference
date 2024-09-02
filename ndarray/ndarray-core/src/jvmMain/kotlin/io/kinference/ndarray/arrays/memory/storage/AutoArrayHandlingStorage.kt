@@ -7,7 +7,7 @@ internal interface TypedAutoHandlingStorage {
 }
 
 internal class AutoArrayHandlingStorage(internal val limiter: MemoryManager) : ArrayStorage {
-    internal val storage: List<TypedAutoHandlingStorage> = listOf(
+    internal val storage: Array<TypedAutoHandlingStorage> = arrayOf(
         ByteAutoHandlingArrayStorage(),
         ShortAutoHandlingArrayStorage(),
         IntAutoHandlingArrayStorage(),

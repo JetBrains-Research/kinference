@@ -163,10 +163,8 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
 
             val softmaxDest = (context?.getNDArray(scores.type, scoresStrides) ?: allocateNDArray(scores.type, scoresStrides)) as MutableNumberNDArrayCore
 
-            return softmax(input = scores, axis = -1, dest = softmaxDest)
-
             //softmax for each result (normalize along last axis)
-//            return scores.softmax(axis = -1)
+            return softmax(input = scores, axis = -1, dest = softmaxDest)
         }
 
         private suspend fun IntNDArray?.maskFromIndices(unidir: Boolean, batchSize: Int, seqLen: Int, pastSeqLen: Int, maskFilterValue: Float = -10_000f, context: ManualAllocatorContext? = null): FloatNDArray {
@@ -174,20 +172,20 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
             val maskDataShape = intArrayOf(batchSize, seqLen, fullSeqLen)
             val maskStrides = Strides(maskDataShape)
 
-            val mask = context?.getNDArray(DataType.FLOAT, maskStrides) ?: MutableFloatNDArray(maskStrides)
+            val mask = (context?.getNDArray(DataType.FLOAT, maskStrides) ?: MutableFloatNDArray(maskStrides)) as MutableFloatNDArray
             val maskOffset = seqLen * fullSeqLen
             repeat(batchSize) { i ->
                 if (this != null) {
                     //raw attention (no padding). only raw attention mask is 2-dimensional
                     if (this.rank == 2) {
-                        val maskPointer = (mask as MutableFloatNDArray).array.pointer(maskOffset * i)
+                        val maskPointer = mask.array.pointer(maskOffset * i)
                         val maskIndicesPointer = this.array.pointer(i * fullSeqLen)
 
                         maskPointer.accept(maskIndicesPointer, fullSeqLen) { _, src -> if (src > 0) 0f else maskFilterValue }
                     } else {
                         //for left/right-side padding
                         val maskIndicesPointer = this.array.pointer(i)
-                        val maskPointer = (mask as MutableFloatNDArray).array.pointer(maskOffset * i + maskIndicesPointer.get())
+                        val maskPointer = mask.array.pointer(maskOffset * i + maskIndicesPointer.get())
                         maskPointer.map(fullSeqLen - maskIndicesPointer.get()) { maskFilterValue }
 
                         if (this.rank == 1 && this.shape[0] == 2 * batchSize) {
@@ -205,7 +203,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                 }
 
                 if (unidir) {
-                    val maskPointer = (mask as MutableFloatNDArray).array.pointer()
+                    val maskPointer = mask.array.pointer()
                     for (seqIdx in 0 until seqLen - 1) {
                         val start = pastSeqLen + seqIdx + 1
                         maskPointer.linearIndex = seqIdx * fullSeqLen + maskOffset * i + start
@@ -213,7 +211,7 @@ sealed class Attention(name: String, info: OperatorInfo, attributes: Map<String,
                     }
                 }
             }
-            return (mask as MutableFloatNDArray)
+            return mask
         }
 
         private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)

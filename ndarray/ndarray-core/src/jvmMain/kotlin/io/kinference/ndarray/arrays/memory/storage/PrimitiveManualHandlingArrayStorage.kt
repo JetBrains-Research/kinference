@@ -25,7 +25,7 @@ internal class PrimitiveManualHandlingArrayStorage : TypedManualHandlingStorage 
     override fun getNDArray(strides: Strides, fillZeros: Boolean, limiter: MemoryManager): MutableNDArrayCore {
         val blockSize = blockSizeByStrides(strides)
         val blocksNum = strides.linearSize / blockSize
-        val blocks = if (limiter.checkMemoryLimitAndAdd(type, size = blockSize * blocksNum)) {
+        val blocks = if (limiter.checkMemoryLimitAndAdd(type.getPrimitiveArraySizeInBytes(arraySize = blockSize * blocksNum))) {
             val queue = storage.getOrPut(blockSize) { ArrayDeque(blocksNum) }
             Array(blocksNum) {
                 queue.removeFirstOrNull()?.apply {

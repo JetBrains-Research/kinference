@@ -1,6 +1,5 @@
 package io.kinference.ndarray.arrays.memory
 
-import io.kinference.primitives.types.DataType
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 
@@ -13,15 +12,13 @@ internal class MemoryManager internal constructor(private val memoryLimit: Long,
     /**
      * Checks if the memory limit allows adding the specified amount of memory and performs the addition
      *
-     * @param type is the DataType of underlying primitives in a checking array
-     * @param size is the checking array size
+     * @param sizeInBytes is the checking size of an array in bytes
      * @return true if the memory was added successfully and false if adding the memory exceeds the memory limit
      */
-    fun checkMemoryLimitAndAdd(type: DataType, size: Int): Boolean {
+    fun checkMemoryLimitAndAdd(sizeInBytes: Long): Boolean {
         // Attempt to add memory and check the limit
-        val added = sizeInBytes(type.ordinal, size)
         val successful = usedMemory.getAndUpdate { current ->
-            if (current + added > memoryLimit) current else current + added
+            if (current + sizeInBytes > memoryLimit) current else current + sizeInBytes
         } != usedMemory.value // Check if the update was successful
 
         return successful
@@ -34,6 +31,16 @@ internal class MemoryManager internal constructor(private val memoryLimit: Long,
         usedMemory.value = 0L
     }
 
+    /**
+     * Updates the last access time to the current system time and starts a monitoring coroutine if it isn't already running.
+     *
+     * This function sets the `lastAccessTime` to the current system time in milliseconds.
+     * It also initiates a monitoring coroutine to periodically check
+     * if the time since the last access exceeds a predefined `cacheClearingInterval`.
+     * If it does, the `onCacheClear` function is triggered to handle
+     * any necessary cache clearing.
+     * The coroutine will run only if it is not already running and `isFinalized` is false.
+     */
     fun updateLastAccessTime() {
         lastAccessTime.value = System.currentTimeMillis()
 
@@ -53,32 +60,16 @@ internal class MemoryManager internal constructor(private val memoryLimit: Long,
         }
     }
 
+    /**
+     * Stops the monitoring process by canceling the active monitoring coroutine.
+     *
+     * This function sets the `isFinalized` flag to true, indicating that the monitoring process has been
+     * concluded.
+     * If a monitoring coroutine is currently active, it will be canceled.
+     */
     fun stopMonitoring() {
         if (isFinalized.compareAndSet(expect = false, update = true)) {
             monitorJob.getAndSet(value = null)?.cancel()
-        }
-    }
-
-    companion object {
-        private val typeSizes: LongArray = LongArray(DataType.entries.size).apply {
-            this[DataType.BYTE.ordinal] = Byte.SIZE_BYTES.toLong()
-            this[DataType.SHORT.ordinal] = Short.SIZE_BYTES.toLong()
-            this[DataType.INT.ordinal] = Int.SIZE_BYTES.toLong()
-            this[DataType.LONG.ordinal] = Long.SIZE_BYTES.toLong()
-
-            this[DataType.UBYTE.ordinal] = UByte.SIZE_BYTES.toLong()
-            this[DataType.USHORT.ordinal] = UShort.SIZE_BYTES.toLong()
-            this[DataType.UINT.ordinal] = UInt.SIZE_BYTES.toLong()
-            this[DataType.ULONG.ordinal] = ULong.SIZE_BYTES.toLong()
-
-            this[DataType.FLOAT.ordinal] = Float.SIZE_BYTES.toLong()
-            this[DataType.DOUBLE.ordinal] = Double.SIZE_BYTES.toLong()
-
-            this[DataType.BOOLEAN.ordinal] = 1.toLong()
-        }
-
-        private fun sizeInBytes(typeIndex: Int, size: Int): Long {
-            return typeSizes[typeIndex] * size
         }
     }
 }

@@ -3,6 +3,7 @@
 package io.kinference.ndarray.arrays.memory.storage
 
 import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
@@ -15,4 +16,9 @@ internal fun AutoArrayHandlingStorage.getPrimitiveBlock(blocksNum: Int, blockSiz
 @GenerateNameFromPrimitives
 internal fun AutoAllocatorContext.getPrimitiveBlock(blocksNum: Int, blockSize: Int): Array<PrimitiveArray> {
     return storage.getPrimitiveBlock(blocksNum = blocksNum, blockSize = blockSize)
+}
+
+@GenerateNameFromPrimitives
+internal fun DataType.getPrimitiveArraySizeInBytes(arraySize: Int): Long {
+    return PrimitiveConstants.SIZE_BYTES * arraySize
 }

@@ -15,7 +15,6 @@ import kotlin.math.*
 
 @GenerateNameFromPrimitives
 internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray, output: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
-//    val output = MutablePrimitiveNDArray(input.strides)
 
     val inputBlocks = input.array.blocks
     val biasBlocks = bias.array.blocks
