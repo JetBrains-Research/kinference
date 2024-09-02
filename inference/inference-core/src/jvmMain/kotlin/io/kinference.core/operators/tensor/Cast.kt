@@ -802,7 +802,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
+        val manualContext = coroutineContext[ManualAllocatorContext]
 
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!

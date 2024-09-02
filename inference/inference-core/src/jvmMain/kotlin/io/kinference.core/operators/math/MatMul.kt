@@ -51,7 +51,7 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
+        val manualContext = coroutineContext[ManualAllocatorContext]
 
         val first = inputs[0]!!.data as NumberNDArrayCore
         val second = inputs[1]!!.data as NumberNDArrayCore

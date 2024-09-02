@@ -56,7 +56,7 @@ class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
+        val manualContext = coroutineContext[ManualAllocatorContext]
 
         val left = inputs[0]!!.data as NumberNDArrayCore
         val right = inputs[1]!!.data as NumberNDArrayCore

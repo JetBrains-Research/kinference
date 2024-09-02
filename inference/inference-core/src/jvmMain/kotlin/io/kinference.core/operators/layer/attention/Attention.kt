@@ -288,7 +288,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val maskFilterValue: Float by attribute("mask_filter_value") { it: Number -> it.toFloat() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val context = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
+        val context = coroutineContext[ManualAllocatorContext]
 
         val input = inputs[0]!!
         val weights = inputs[1]!!

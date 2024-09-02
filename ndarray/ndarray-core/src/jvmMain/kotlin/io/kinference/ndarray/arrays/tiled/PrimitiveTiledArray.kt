@@ -60,7 +60,7 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
                 require(size % blockSize == 0) { "Size must divide blockSize" }
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
-            val blocks =  (coroutineContext[PredictionContext.Key] as? AutoAllocatorContext)?.getPrimitiveBlock(blocksNum, blockSize)
+            val blocks = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(blocksNum, blockSize)
                 ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
             return PrimitiveTiledArray(blocks)

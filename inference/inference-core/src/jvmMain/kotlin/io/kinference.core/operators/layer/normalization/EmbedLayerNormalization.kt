@@ -176,7 +176,7 @@ class EmbedLayerNormalizationVer1(
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
+        val manualContext = coroutineContext[ManualAllocatorContext]
 
         val inputIds = inputs[0]!!.data as IntNDArray
         val segmentIds = inputs[1]?.data as IntNDArray?
