@@ -1,8 +1,6 @@
 package io.kinference.ndarray.arrays.memory.contexts
 
 import io.kinference.ndarray.arrays.memory.storage.AutoArrayHandlingStorage
-import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.PrimitiveArray
 import io.kinference.utils.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlin.coroutines.*

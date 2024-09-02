@@ -11,7 +11,6 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class MatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {

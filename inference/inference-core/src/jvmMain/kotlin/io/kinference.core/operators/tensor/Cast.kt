@@ -14,7 +14,6 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {

@@ -25,8 +25,10 @@ sealed class PredictionContext(
     override val key
         get() = Key
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E? = getPolymorphicElement(key)
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext = minusPolymorphicKey(key)
 }
 

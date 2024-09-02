@@ -19,7 +19,6 @@ import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.PredictionContext
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.coroutineContext

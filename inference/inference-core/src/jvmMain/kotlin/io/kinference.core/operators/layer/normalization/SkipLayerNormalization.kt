@@ -13,7 +13,6 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 import kotlin.math.sqrt
 

@@ -10,7 +10,6 @@ import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
-import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class Add(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
