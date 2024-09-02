@@ -13,6 +13,7 @@ import io.kinference.operator.*
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 import kotlin.math.sqrt
 
@@ -107,7 +108,7 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
 
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[ManualAllocatorContext.Key]
+        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
 
         val input = inputs[0]!!.data as FloatNDArray
         val output = (manualContext?.getNDArray(DataType.FLOAT, input.strides, fillZeros = false) ?: MutableFloatNDArray(input.strides)) as MutableFloatNDArray
@@ -119,7 +120,7 @@ class SkipLayerNormalizationVer1(name: String, attributes: Map<String, Attribute
             epsilon = epsilon,
             dst = output
         )
-        // Do we need to pass context here??
+
         return listOf(output.asTensor(context = manualContext))
     }
 }

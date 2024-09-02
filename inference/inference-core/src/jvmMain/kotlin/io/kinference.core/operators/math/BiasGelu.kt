@@ -11,6 +11,7 @@ import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gelu.biasGelu
 import io.kinference.operator.*
+import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class BiasGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -43,7 +44,7 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[ManualAllocatorContext.Key]
+        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
 
         val input = inputs[0]!!.data as NumberNDArrayCore
         val bias = inputs[1]!!.data as NumberNDArrayCore

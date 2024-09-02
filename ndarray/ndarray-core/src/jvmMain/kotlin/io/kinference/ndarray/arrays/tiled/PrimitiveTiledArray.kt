@@ -11,6 +11,7 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.utils.PredictionContext
 import io.kinference.utils.inlines.InlineInt
 import kotlin.coroutines.coroutineContext
 import kotlin.math.min
@@ -59,7 +60,8 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
                 require(size % blockSize == 0) { "Size must divide blockSize" }
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
-            val blocks = coroutineContext[AutoAllocatorContext.Key]?.getPrimitiveBlock(blocksNum, blockSize) ?: Array(blocksNum) { PrimitiveArray(blockSize) }
+            val blocks =  (coroutineContext[PredictionContext.Key] as? AutoAllocatorContext)?.getPrimitiveBlock(blocksNum, blockSize)
+                ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
             return PrimitiveTiledArray(blocks)
         }

@@ -19,6 +19,7 @@ import io.kinference.optimizer.GraphOptimizer.Companion.isOpt
 import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.PredictionContext
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.coroutineContext
@@ -287,7 +288,7 @@ class AttentionVer1(name: String, attributes: Map<String, Attribute<Any>>, input
     private val maskFilterValue: Float by attribute("mask_filter_value") { it: Number -> it.toFloat() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val context = coroutineContext[ManualAllocatorContext.Key]
+        val context = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
 
         val input = inputs[0]!!
         val weights = inputs[1]!!

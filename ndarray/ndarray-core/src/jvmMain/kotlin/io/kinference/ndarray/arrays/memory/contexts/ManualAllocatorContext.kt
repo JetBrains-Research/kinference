@@ -4,14 +4,13 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.memory.storage.ManualArrayHandlingStorage
 import io.kinference.ndarray.arrays.memory.storage.ManualStorage
 import io.kinference.primitives.types.DataType
-import kotlin.coroutines.CoroutineContext
+import io.kinference.utils.AllocatorContext
+import kotlinx.coroutines.CoroutineDispatcher
 
 class ManualAllocatorContext internal constructor(
+    dispatcher: CoroutineDispatcher,
     storage: ManualArrayHandlingStorage,
-) : BaseAllocatorContextWithStorage<ManualStorage>(storage) {
-
-    companion object Key : CoroutineContext.Key<ManualAllocatorContext>
-    override val key: CoroutineContext.Key<*> get() = Key
+) : AllocatorContext<ManualStorage>(dispatcher, storage) {
 
     fun getNDArray(dataType: DataType, strides: Strides, fillZeros: Boolean = false): MutableNDArrayCore {
         return storage.getNDArray(dataType, strides, fillZeros)

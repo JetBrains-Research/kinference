@@ -14,6 +14,7 @@ import io.kinference.primitives.types.DataType
 import io.kinference.protobuf.FLOAT_TENSOR_TYPES
 import io.kinference.protobuf.message.AttributeProto
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class Cast(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -801,7 +802,7 @@ class CastVer6(name: String, attributes: Map<String, Attribute<Any>>, inputs: Li
     private val toType: Int by attribute("to") { it: Number -> it.toInt() }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[ManualAllocatorContext.Key]
+        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
 
         val tensor = inputs.first()!!
         val to = TensorProto.DataType.fromValue(toType)!!

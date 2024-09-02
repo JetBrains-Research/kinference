@@ -5,7 +5,6 @@ import io.kinference.core.graph.KIGraph
 import io.kinference.graph.Contexts
 import io.kinference.model.Model
 import io.kinference.ndarray.arrays.memory.*
-import io.kinference.ndarray.arrays.memory.contexts.finalizeAllocatorContext
 import io.kinference.operator.OperatorSetRegistry
 import io.kinference.profiler.*
 import io.kinference.protobuf.message.ModelProto
@@ -47,7 +46,6 @@ class KIModel(
                 return@withContext graph.execute(input, contexts).map { it.clone(it.name) }.toList()
             }
 
-            predictionContext.finalizeAllocatorContext()
             predictionContextDispatcher.returnStorage(predictionContext)
             output
         } finally {

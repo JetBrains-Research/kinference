@@ -3,6 +3,7 @@ package io.kinference.ndarray.arrays.memory.storage
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.memory.*
 import io.kinference.primitives.types.DataType
+import io.kinference.utils.ArrayStorage
 
 internal interface TypedManualHandlingStorage {
     fun getNDArray(strides: Strides, fillZeros: Boolean = false, limiter: MemoryManager): MutableNDArrayCore

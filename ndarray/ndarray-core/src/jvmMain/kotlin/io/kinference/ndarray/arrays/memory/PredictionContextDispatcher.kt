@@ -3,14 +3,8 @@ package io.kinference.ndarray.arrays.memory
 import io.kinference.ndarray.arrays.memory.contexts.*
 import io.kinference.ndarray.arrays.memory.storage.*
 import io.kinference.utils.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.coroutines.CoroutineContext
-
-interface ArrayStorage {
-    fun resetState()
-}
 
 class PredictionContextDispatcher(private val predictionConfig: PredictionConfig) : Closeable {
     private val limiter: MemoryManager = MemoryManager(
@@ -18,11 +12,11 @@ class PredictionContextDispatcher(private val predictionConfig: PredictionConfig
         cacheClearingInterval = predictionConfig.memoryClearingInterval,
         onCacheClear = ::clearCache)
 
-    private val contextQueue: ConcurrentLinkedQueue<CoroutineContext> = ConcurrentLinkedQueue()
+    private val contextQueue: ConcurrentLinkedQueue<PredictionContext> = ConcurrentLinkedQueue()
     val allocationMode
         get() = predictionConfig.allocationMode
 
-    fun getPredictionContext(): CoroutineContext {
+    fun getPredictionContext(): PredictionContext {
         val allocatorContext = when (predictionConfig.allocationMode) {
             AllocationMode.NoAllocation -> getNoAllocatorContext()
             AllocationMode.Manual -> getManualAllocatorContext()
@@ -31,21 +25,23 @@ class PredictionContextDispatcher(private val predictionConfig: PredictionConfig
         return allocatorContext
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getNoAllocatorContext(): CoroutineContext {
-        return contextQueue.poll() ?: (NoAllocatorContext() + ParallelismLimiterContext(Dispatchers.Default.limitedParallelism(predictionConfig.parallelismLimit)))
+    private fun getNoAllocatorContext(): PredictionContext {
+        return contextQueue.poll() ?: (NoAllocatorContext(getDispatcher()))
+    }
+
+    private fun getAutoAllocatorContext(): PredictionContext {
+        limiter.updateLastAccessTime()
+        return contextQueue.poll() ?: (AutoAllocatorContext(getDispatcher(), AutoArrayHandlingStorage(limiter)))
+    }
+
+    private fun getManualAllocatorContext(): PredictionContext {
+        limiter.updateLastAccessTime()
+        return contextQueue.poll() ?: (ManualAllocatorContext(getDispatcher(), ManualArrayHandlingStorage(limiter)))
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getAutoAllocatorContext(): CoroutineContext {
-        limiter.updateLastAccessTime()
-        return contextQueue.poll() ?: (AutoAllocatorContext(AutoArrayHandlingStorage(limiter)) + ParallelismLimiterContext(Dispatchers.Default.limitedParallelism(predictionConfig.parallelismLimit)))
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getManualAllocatorContext(): CoroutineContext {
-        limiter.updateLastAccessTime()
-        return contextQueue.poll() ?: (ManualAllocatorContext(ManualArrayHandlingStorage(limiter)) + ParallelismLimiterContext(Dispatchers.Default.limitedParallelism(predictionConfig.parallelismLimit)))
+    private fun getDispatcher(): CoroutineDispatcher {
+        return Dispatchers.Default.limitedParallelism(predictionConfig.parallelismLimit)
     }
 
     fun clearCache() {
@@ -58,7 +54,10 @@ class PredictionContextDispatcher(private val predictionConfig: PredictionConfig
         clearCache()
     }
 
-    fun returnStorage(context: CoroutineContext) {
+    fun returnStorage(context: PredictionContext) {
+        if (context is AllocatorContext<*>) {
+            context.finalizeContext()
+        }
         contextQueue.offer(context)
     }
 }

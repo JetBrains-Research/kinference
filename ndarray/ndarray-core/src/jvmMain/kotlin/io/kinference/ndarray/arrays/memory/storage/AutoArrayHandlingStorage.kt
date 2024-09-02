@@ -1,6 +1,7 @@
 package io.kinference.ndarray.arrays.memory.storage
 
 import io.kinference.ndarray.arrays.memory.*
+import io.kinference.utils.ArrayStorage
 
 internal interface TypedAutoHandlingStorage {
     fun moveBlocksIntoUnused()

@@ -2,6 +2,7 @@ package io.kinference.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
 object ResourcesDispatcher {
@@ -16,11 +17,30 @@ object ResourcesDispatcher {
     }
 }
 
-class ParallelismLimiterContext(val dispatcher: CoroutineDispatcher) : CoroutineContext.Element {
-    companion object Key : CoroutineContext.Key<ParallelismLimiterContext>
-    override val key: CoroutineContext.Key<*> get() = Key
+interface PredictionKey<T : PredictionContext> : CoroutineContext.Key<T>
+
+sealed class PredictionContext(
+    val dispatcher: CoroutineDispatcher
+) : AbstractCoroutineContextElement(PredictionContext) {
+    companion object Key : PredictionKey<PredictionContext>
 }
 
+interface ArrayStorage {
+    fun resetState()
+}
+
+abstract class AllocatorContext<T : ArrayStorage>(
+    dispatcher: CoroutineDispatcher,
+    val storage: T
+) : PredictionContext(dispatcher) {
+
+    fun finalizeContext() {
+        storage.resetState()
+    }
+}
+
+class NoAllocatorContext(dispatcher: CoroutineDispatcher) : PredictionContext(dispatcher)
+
 fun CoroutineScope.launchWithLimitOrDefault(block: suspend CoroutineScope.() -> Unit) {
-    this.launch(coroutineContext[ParallelismLimiterContext.Key]?.dispatcher ?: Dispatchers.Default, block = block)
+    this.launch(coroutineContext[PredictionContext]?.dispatcher ?: Dispatchers.Default, block = block)
 }

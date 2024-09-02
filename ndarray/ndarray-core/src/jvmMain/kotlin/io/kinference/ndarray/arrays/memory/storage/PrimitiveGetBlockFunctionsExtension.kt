@@ -19,6 +19,6 @@ internal fun AutoAllocatorContext.getPrimitiveBlock(blocksNum: Int, blockSize: I
 }
 
 @GenerateNameFromPrimitives
-internal fun DataType.getPrimitiveArraySizeInBytes(arraySize: Int): Long {
+internal fun getPrimitiveArraySizeInBytes(arraySize: Int): Long {
     return PrimitiveConstants.SIZE_BYTES * arraySize
 }

@@ -24,7 +24,7 @@ internal class PrimitiveAutoHandlingArrayStorage : TypedAutoHandlingStorage {
         val unusedQueue = unused.getOrPut(blockSize) { ArrayDeque(blocksNum) }
         val usedQueue = used.getOrPut(blockSize) { ArrayDeque(blocksNum) }
 
-        val blocks = if (limiter.checkMemoryLimitAndAdd(type.getPrimitiveArraySizeInBytes(arraySize = blockSize * blocksNum))) {
+        val blocks = if (limiter.checkMemoryLimitAndAdd(getPrimitiveArraySizeInBytes(arraySize = blockSize * blocksNum))) {
             Array(blocksNum) {
                 unusedQueue.removeFirstOrNull()?.apply {
                     fill(PrimitiveConstants.ZERO)

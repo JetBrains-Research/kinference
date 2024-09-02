@@ -11,6 +11,7 @@ import io.kinference.ndarray.broadcasting.Broadcasting
 import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import io.kinference.utils.PredictionContext
 import kotlin.coroutines.coroutineContext
 
 sealed class MatMul(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
@@ -50,7 +51,7 @@ class MatMulVer1(name: String, attributes: Map<String, Attribute<Any>>, inputs: 
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val manualContext = coroutineContext[ManualAllocatorContext.Key]
+        val manualContext = coroutineContext[PredictionContext.Key] as? ManualAllocatorContext
 
         val first = inputs[0]!!.data as NumberNDArrayCore
         val second = inputs[1]!!.data as NumberNDArrayCore
