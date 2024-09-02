@@ -8,6 +8,7 @@ import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.acceptWithRecursive
 import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.utils.launchWithLimitOrDefault
@@ -127,21 +128,17 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
 
     val alpha = alpha.toPrimitive()
-    val dBlocksInRow = destination.blocksInRow
     val lrBlocksInRow = this.blocksInRow
 
     val n = this.shape[0]
     val t = this.shape[1]
     val m = other.shape[0]
 
-    val dBlockSize = destination.array.blockSize
     val lrBlockSize = this.array.blockSize
 
-    val destBlocks = destination.array.blocks
     val leftBlocks = this.array.blocks
     val rightBlocks = other.array.blocks
     val rowFlop = t * m
-    val zero = (0).toPrimitive()
 
 
     /* TODO: (dmitriyb) this is temporary commented. On GEC performance test we have large inputs that cause out of memory exceptions
@@ -161,33 +158,26 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     // TODO: (cupertank) Remove constants
     // TODO: (dmitriyb) Implement concurrent array retrieve with a separate structure from ArraysDispatcher
     parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, _ ->
-        val mSums = Array(m) { PrimitiveArray(lrBlockSize) }
+        val tempSum = PrimitiveArray(lrBlockSize)
+        val destPointer = destination.array.pointer()
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow
             val rightBlockIter = rightBlocks.iterator()
 
-            val destBlockOffset = i * dBlocksInRow
+            destPointer.linearIndex = i * m
 
             for (k in 0 until m) {
-                val tempArray = mSums[k]
                 for (lrBlock in 0 until lrBlocksInRow) {
                     val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
                     val rightBlock = rightBlockIter.next()
 
-                    for (j in tempArray.indices) {
-                        tempArray[j] += leftBlock[j] * rightBlock[j]
+                    for (j in tempSum.indices) {
+                        tempSum[j] += leftBlock[j] * rightBlock[j]
                     }
                 }
-            }
 
-            val mSumsIter = mSums.iterator()
-            for (destBlockNum in 0 until dBlocksInRow) {
-                val destBlock = destBlocks[destBlockOffset + destBlockNum]
-                for (j in destBlock.indices) {
-                    val sumBlock = mSumsIter.next()
-                    destBlock[j] = sumBlock.sum() * alpha
-                    sumBlock.fill(zero)
-                }
+                destPointer.setAndIncrement(tempSum.sum() * alpha)
+                tempSum.fill(PrimitiveConstants.ZERO)
             }
         }
     }

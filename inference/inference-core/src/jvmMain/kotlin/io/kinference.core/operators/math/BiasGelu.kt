@@ -5,9 +5,13 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
+import io.kinference.ndarray.arrays.MutableNumberNDArrayCore
 import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.ndarray.extensions.gelu.biasGelu
 import io.kinference.operator.*
+import kotlin.coroutines.coroutineContext
 
 sealed class BiasGelu(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -39,16 +43,20 @@ class BiasGeluVer1(name: String, attributes: Map<String, Attribute<Any>> = empty
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
+        val manualContext = coroutineContext[ManualAllocatorContext]
+
         val input = inputs[0]!!.data as NumberNDArrayCore
         val bias = inputs[1]!!.data as NumberNDArrayCore
 
         require(input.shape.last() == bias.shape.last()) { "Last dimensions of input and bias tensors must be equal" }
+
+        val dest = (manualContext?.getNDArray(input.type, input.strides) ?: allocateNDArray(input.type, input.strides)) as MutableNumberNDArrayCore
 
         // Uses ERF formula with fractional error less than x.xx * 10 ^ -4.
         // Algorithm 26.2.17 in Abromowitz and Stegun, Handbook of Mathematical.
         // Another possible ERF implementation (several ms faster):
         // https://github.com/apache/commons-numbers/blob/master/commons-numbers-gamma/src/main/java/org/apache/commons/numbers/gamma/BoostErf.java
 
-        return listOf(biasGelu(input, bias).asTensor("C"))
+        return listOf(biasGelu(input, bias, dest).asTensor("C", manualContext))
     }
 }

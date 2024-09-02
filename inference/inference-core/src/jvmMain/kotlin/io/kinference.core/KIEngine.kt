@@ -10,29 +10,18 @@ import io.kinference.core.optimizer.rules.OptimizerRuleSet
 import io.kinference.data.ONNXData
 import io.kinference.data.ONNXDataType
 import io.kinference.model.IrOptimizableEngine
-import io.kinference.ndarray.arrays.memory.MemoryLimiter
-import io.kinference.ndarray.arrays.memory.MemoryLimiters
 import io.kinference.optimizer.GraphOptimizer
 import io.kinference.optimizer.OptimizerRule
 import io.kinference.protobuf.*
 import io.kinference.protobuf.message.*
 import io.kinference.utils.CommonDataLoader
-import io.kinference.utils.PlatformUtils
+import io.kinference.utils.PredictionConfig
+import io.kinference.utils.PredictionConfigs
 import okio.Buffer
 import okio.Path
 import okio.Path.Companion.toPath
 
 typealias KIONNXData<T> = ONNXData<T, CoreBackend>
-
-// Define an interface for allocation control marking output
-internal interface KIONNXDataArraysReleaser {
-    fun markOutput()
-}
-
-internal fun <T> KIONNXData<T>.markOutput() {
-    if (this is KIONNXDataArraysReleaser)
-        this.markOutput()
-}
 
 object CoreBackend : BackendInfo(name = "KInference Core CPU Backend")
 
@@ -51,24 +40,24 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     fun protoReader(bytes: ByteArray) = ProtobufReader(Buffer().write(bytes), KI_READER_CONFIG)
 
-    suspend fun loadModel(bytes: ByteArray, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
+    suspend fun loadModel(bytes: ByteArray, optimize: Boolean, predictionConfig: PredictionConfig): KIModel {
         val rules = if (optimize) OptimizerRuleSet.DEFAULT_OPT_RULES else emptyList()
-        return loadModel(bytes, rules, memoryLimiter, parallelismLimit)
+        return loadModel(bytes, rules, predictionConfig)
     }
 
     override suspend fun loadModel(bytes: ByteArray, optimize: Boolean): KIModel {
-        return loadModel(bytes, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
+        return loadModel(bytes, optimize, PredictionConfigs.NoAllocator)
     }
 
-    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, MemoryLimiters.NoAllocator, PlatformUtils.cores)
+    override suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>): KIModel = loadModel(bytes, rules, PredictionConfigs.NoAllocator)
 
-    suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
+    suspend fun loadModel(bytes: ByteArray, rules: List<OptimizerRule<KIONNXData<*>>>, predictionConfig: PredictionConfig): KIModel {
         val modelScheme = ModelProto.decode(protoReader(bytes))
-        val model = KIModel(modelScheme, memoryLimiter)
+        val model = KIModel(modelScheme, predictionConfig)
 
         return if (rules.isNotEmpty()) {
             val newGraph = GraphOptimizer(model.graph).run(rules) as KIGraph
-            KIModel(model.id, model.name, model.opSet, newGraph, memoryLimiter, parallelismLimit)
+            KIModel(model.id, model.name, model.opSet, newGraph, predictionConfig)
         } else {
             model
         }
@@ -76,12 +65,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
 
     override suspend fun loadModel(bytes: ByteArray): KIModel = loadModel(bytes, optimize = true)
 
-    suspend fun loadModel(path: Path, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
-        return loadModel(CommonDataLoader.bytes(path), optimize, memoryLimiter, parallelismLimit)
+    suspend fun loadModel(path: Path, optimize: Boolean, predictionConfig: PredictionConfig): KIModel {
+        return loadModel(CommonDataLoader.bytes(path), optimize, predictionConfig)
     }
 
     override suspend fun loadModel(path: Path, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
+        return loadModel(path, optimize, PredictionConfigs.NoAllocator)
     }
 
     override suspend fun loadModel(path: Path): KIModel = loadModel(path, optimize = true)
@@ -90,12 +79,12 @@ object KIEngine : IrOptimizableEngine<KIONNXData<*>> {
         return loadModel(CommonDataLoader.bytes(path), rules)
     }
 
-    suspend fun loadModel(path: String, optimize: Boolean, memoryLimiter: MemoryLimiter, parallelismLimit: Int): KIModel {
-        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize, memoryLimiter, parallelismLimit)
+    suspend fun loadModel(path: String, optimize: Boolean, predictionConfig: PredictionConfig): KIModel {
+        return loadModel(CommonDataLoader.bytes(path.toPath()), optimize, predictionConfig)
     }
 
     override suspend fun loadModel(path: String, optimize: Boolean): KIModel {
-        return loadModel(path, optimize, MemoryLimiters.NoAllocator, PlatformUtils.cores)
+        return loadModel(path, optimize, PredictionConfigs.NoAllocator)
     }
 
     override suspend fun loadModel(path: String): KIModel = loadModel(path, optimize = true)

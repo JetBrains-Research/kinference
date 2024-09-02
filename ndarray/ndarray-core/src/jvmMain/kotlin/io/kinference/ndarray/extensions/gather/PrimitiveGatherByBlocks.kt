@@ -26,14 +26,11 @@ internal suspend fun gatherByBlocksPrimitive(array: PrimitiveNDArray, indices: N
     val dataToCopyBlocks = dataToCopySize / array.array.blockSize
 
     val dataBlocks = array.array.blocks
-    val dataMarkers = array.array.marker
 
     val destBatchBlocksOffset = indicesSize * dataToCopyBlocks
     val inputBatchBlockOffset = array.shape[actualAxis] * dataToCopyBlocks
 
     val destArray = arrayOfNulls<PrimitiveArray>(destBatchBlocksOffset * dataBatchSize)
-    val destMarkersArray = arrayOfNulls<StateMarker>(destBatchBlocksOffset * dataBatchSize)
-
 
     for (dataBatchNum in 0 until dataBatchSize) {
         val dataBlocksOffset = inputBatchBlockOffset * dataBatchNum
@@ -46,12 +43,11 @@ internal suspend fun gatherByBlocksPrimitive(array: PrimitiveNDArray, indices: N
 
             for (blockIdx in 0 until dataToCopyBlocks) {
                 destArray[destBlocksOffset + blockIdx] = dataBlocks[dataOffset + blockIdx]
-                destMarkersArray[destBlocksOffset + blockIdx] = dataMarkers[dataOffset + blockIdx]
             }
 
             destBlocksOffset += dataToCopyBlocks
         }
     }
 
-    return PrimitiveNDArray(PrimitiveTiledArray(destArray as Array<PrimitiveArray>, destMarkersArray as Array<StateMarker>), Strides(destShape))
+    return PrimitiveNDArray(PrimitiveTiledArray(destArray as Array<PrimitiveArray>), Strides(destShape))
 }

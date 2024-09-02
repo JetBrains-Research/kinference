@@ -2,10 +2,9 @@
 package io.kinference.ndarray.extensions.constants
 
 import io.kinference.primitives.annotations.*
-import io.kinference.primitives.types.DataType
-import io.kinference.primitives.types.toPrimitive
 import io.kinference.ndarray.toUShort
 import io.kinference.ndarray.toUByte
+import io.kinference.primitives.types.*
 
 
 @GenerateNameFromPrimitives
@@ -29,5 +28,7 @@ internal object PrimitiveConstants {
 
     val INV_ERF_COEF_1 = (4.330746750799873).toPrimitive()
     val INV_ERF_COEF_2 = (6.802721088435375).toPrimitive()
+
+    val SIZE_BYTES = PrimitiveType.SIZE_BYTES.toLong()
 }
 

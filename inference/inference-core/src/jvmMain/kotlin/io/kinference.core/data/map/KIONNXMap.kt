@@ -9,7 +9,7 @@ import io.kinference.protobuf.message.TensorProto
 import io.kinference.types.ValueInfo
 import io.kinference.types.ValueTypeInfo
 
-class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data), KIONNXDataArraysReleaser {
+class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTypeInfo.MapTypeInfo) : ONNXMap<Map<Any, KIONNXData<*>>, CoreBackend>(name, data) {
     constructor(data: Map<Any, KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.MapTypeInfo)
 
     override val backend = CoreBackend
@@ -25,10 +25,6 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     }
 
     override fun rename(name: String): KIONNXMap = KIONNXMap(name, data, info)
-
-    override fun markOutput() {
-        data.values.forEach { it.markOutput() }
-    }
 
     override suspend fun clone(newName: String?): KIONNXMap {
         val newMap = HashMap<Any, KIONNXData<*>>(data.size)

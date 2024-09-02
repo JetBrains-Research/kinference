@@ -30,7 +30,7 @@ import kotlin.math.*
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore, MemoryControlledArray {
+internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides) : NumberNDArrayCore {
     var array: PrimitiveTiledArray = array
         protected set
 
@@ -83,10 +83,6 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override fun singleValue(): PrimitiveType {
         require(isScalar() || array.size == 1) { "NDArray contains more than 1 value" }
         return array.blocks[0][0]
-    }
-
-    override fun markOutput() {
-        array.marker.forEach { it.invoke() }
     }
 
     override suspend fun clone(): PrimitiveNDArray {

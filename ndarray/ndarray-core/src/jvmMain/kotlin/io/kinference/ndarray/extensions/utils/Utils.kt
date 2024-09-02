@@ -1,5 +1,7 @@
 package io.kinference.ndarray.extensions.utils
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+
 /***
  * Calculates the total size of the tensor with such shape.
  */
@@ -49,4 +51,15 @@ internal fun computeColumnMajorIndex(
 
 internal fun isInPadding(actual: Int, bound: Int) : Boolean {
     return actual < 0 || actual >= bound
+}
+
+inline fun <V> Int2ObjectOpenHashMap<V>.getOrPut(key: Int, defaultValue: () -> V): V {
+    val existingValue = this[key]
+    return if (existingValue != null) {
+        existingValue
+    } else {
+        val value = defaultValue()
+        put(key, value)
+        value
+    }
 }

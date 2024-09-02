@@ -7,7 +7,7 @@ import io.kinference.data.ONNXSequence
 import io.kinference.protobuf.message.SequenceProto
 import io.kinference.types.*
 
-class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data), KIONNXDataArraysReleaser {
+class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTypeInfo.SequenceTypeInfo) : ONNXSequence<List<KIONNXData<*>>, CoreBackend>(name, data) {
     constructor(name: String?, info: ValueTypeInfo.SequenceTypeInfo, size: Int, init: (Int) -> KIONNXData<*>) : this(name, List(size, init), info)
     constructor(data: List<KIONNXData<*>>, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.SequenceTypeInfo)
 
@@ -22,10 +22,6 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
     }
 
     override fun rename(name: String): KIONNXSequence = KIONNXSequence(name, data, info)
-
-    override fun markOutput() {
-        data.forEach { it.markOutput() }
-    }
 
     val length: Int = data.size
 
