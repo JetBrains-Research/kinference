@@ -3,6 +3,10 @@ package io.kinference.ndarray.extensions.broadcasting
 import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.ndarray.extensions.utils.calculateBlock
 
+internal fun interface ScalarBroadcastFun {
+    operator fun invoke(leftOffset: Int, rightOffset: Int, destOffset: Int, axisToBroadcastIdx: Int)
+}
+
 internal data class BroadcastingInfo(
     val broadcastingShapes: Array<IntArray>,
     val broadcastingDestShape: IntArray,
@@ -88,8 +92,6 @@ internal data class BroadcastingInfo(
         }
     }
 }
-
-
 
 internal fun makeOffsets(shape: IntArray, blocksInRow: Int): IntArray {
     val offsets = IntArray(shape.size)
