@@ -56,6 +56,7 @@ fun KotlinJvmTarget.configureBenchmarkTests() {
         group = "verification"
 
         maxHeapSize = "4G"
+        systemProperty("kotlinx.coroutines.debug", "off")
 
         useJUnitPlatform()
 

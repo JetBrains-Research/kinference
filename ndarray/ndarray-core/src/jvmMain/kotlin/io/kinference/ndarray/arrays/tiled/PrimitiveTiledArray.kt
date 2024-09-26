@@ -4,8 +4,8 @@
 package io.kinference.ndarray.arrays.tiled
 
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.memory.*
-import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
+import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
+import io.kinference.ndarray.arrays.memory.storage.*
 import io.kinference.ndarray.arrays.pointers.PrimitivePointer
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.blockSizeByStrides
@@ -17,7 +17,7 @@ import kotlin.math.min
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker: Array<StateMarker> = emptyMarker) {
+internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>) {
     val size: Int
     val blockSize: Int = if (blocks.isEmpty()) 0 else blocks.first().size
     val blocksNum: Int = blocks.size
@@ -27,8 +27,7 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
     }
 
     companion object {
-        val type: ArrayTypes = ArrayTypes.valueOf(PrimitiveArray::class.simpleName!!)
-        private val emptyMarker: Array<StateMarker> = arrayOf()
+        val type: DataType = DataType.CurrentPrimitive
 
         suspend operator fun invoke(strides: Strides): PrimitiveTiledArray {
             val blockSize = blockSizeByStrides(strides)
@@ -60,15 +59,10 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
                 require(size % blockSize == 0) { "Size must divide blockSize" }
 
             val blocksNum = if (blockSize == 0) 0 else size / blockSize
+            val blocks = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(blocksNum, blockSize)
+                ?: Array(blocksNum) { PrimitiveArray(blockSize) }
 
-            val coroutineContext = coroutineContext[AllocatorContext.Key]
-
-            // With array dispatcher
-            val containerArray = coroutineContext?.getArrayContainers(type, blockSize, blocksNum) ?: Array(blocksNum) { ArrayContainer(type, blockSize) }
-            val blocks = Array(containerArray.size) { i -> (containerArray[i] as PrimitiveArrayContainer).array }
-            val marker = Array(containerArray.size) { i -> containerArray[i].markAsOutput }
-
-            return PrimitiveTiledArray(blocks, marker)
+            return PrimitiveTiledArray(blocks)
         }
 
         suspend operator fun invoke(size: Int, blockSize: Int, init: (InlineInt) -> PrimitiveType) : PrimitiveTiledArray {
@@ -133,17 +127,17 @@ internal class PrimitiveTiledArray(val blocks: Array<PrimitiveArray>, val marker
         blocks[blockIdx][blockOff] = value
     }
 
-    suspend fun copyOf(): PrimitiveTiledArray {
-        val copyArray = PrimitiveTiledArray(size, blockSize)
+    fun copyOf(): PrimitiveTiledArray {
+        val copyBlocks = Array(blocksNum) { PrimitiveArray(blockSize) }
 
         for (blockNum in 0 until blocksNum) {
             val thisBlock = this.blocks[blockNum]
-            val destBlock = copyArray.blocks[blockNum]
+            val destBlock = copyBlocks[blockNum]
 
             thisBlock.copyInto(destBlock)
         }
 
-        return copyArray
+        return PrimitiveTiledArray(copyBlocks)
     }
 
     fun copyInto(dest: PrimitiveTiledArray, destOffset: Int = 0, srcStart: Int = 0, srcEnd: Int = size) {

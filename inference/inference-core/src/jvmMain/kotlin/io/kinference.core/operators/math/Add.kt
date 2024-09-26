@@ -5,9 +5,12 @@ import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.data.ONNXData
 import io.kinference.graph.Contexts
-import io.kinference.ndarray.arrays.NumberNDArrayCore
+import io.kinference.ndarray.arrays.*
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
+import io.kinference.ndarray.extensions.allocateNDArray
 import io.kinference.operator.*
 import io.kinference.protobuf.message.TensorProto
+import kotlin.coroutines.coroutineContext
 
 sealed class Add(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
@@ -52,7 +55,16 @@ class AddVer7(name: String, attributes: Map<String, Attribute<Any>>, inputs: Lis
     }
 
     override suspend fun <D : ONNXData<*, *>> apply(contexts: Contexts<D>, inputs: List<KITensor?>): List<KITensor?> {
-        val result = (inputs[0]!!.data as NumberNDArrayCore) + (inputs[1]!!.data as NumberNDArrayCore)
-        return listOf(result.asTensor("C"))
+        val manualContext = coroutineContext[ManualAllocatorContext]
+
+        val left = inputs[0]!!.data as NumberNDArrayCore
+        val right = inputs[1]!!.data as NumberNDArrayCore
+
+        val destShape = broadcastShape(listOf(left.shape, right.shape))
+        val destStrides = Strides(destShape)
+        val dest = (manualContext?.getNDArray(left.type, destStrides) ?: allocateNDArray(left.type, destStrides)) as MutableNumberNDArrayCore
+
+        val result = left.plus(right, dest) //(inputs[0]!!.data as NumberNDArrayCore) + (inputs[1]!!.data as NumberNDArrayCore)
+        return listOf(result.asTensor("C", manualContext))
     }
 }

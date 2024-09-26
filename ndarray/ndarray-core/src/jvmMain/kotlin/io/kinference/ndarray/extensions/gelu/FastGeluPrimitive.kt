@@ -6,7 +6,6 @@ package io.kinference.ndarray.extensions.gelu
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
-import io.kinference.ndarray.arrays.memory.PrimitiveArrayContainer
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.parallelizeByBlocks

@@ -1,8 +1,9 @@
+@file:OptIn(ExperimentalStdlibApi::class)
 package io.kinference.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
 
 object ResourcesDispatcher {
     private val tokenChannel = Channel<Unit>(capacity = PlatformUtils.cores)
@@ -16,11 +17,46 @@ object ResourcesDispatcher {
     }
 }
 
-class ParallelismLimiterContext(val dispatcher: CoroutineDispatcher) : CoroutineContext.Element {
-    companion object Key : CoroutineContext.Key<ParallelismLimiterContext>
-    override val key: CoroutineContext.Key<*> get() = Key
+sealed class PredictionContext(
+    val dispatcher: CoroutineDispatcher
+) : AbstractCoroutineContextElement(PredictionContext) {
+    companion object Key : CoroutineContext.Key<PredictionContext>
+
+    override val key
+        get() = Key
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E? = getPolymorphicElement(key)
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext = minusPolymorphicKey(key)
+}
+
+interface ArrayStorage {
+    fun resetState()
+}
+
+abstract class AllocatorContext<T : ArrayStorage>(
+    dispatcher: CoroutineDispatcher,
+    val storage: T
+) : PredictionContext(dispatcher) {
+    companion object Key : AbstractCoroutineContextKey<PredictionContext, AllocatorContext<*>>(
+        PredictionContext.Key,
+        { it as? AllocatorContext<*> }
+    )
+
+    fun finalizeContext() {
+        storage.resetState()
+    }
+}
+
+class NoAllocatorContext(dispatcher: CoroutineDispatcher) : PredictionContext(dispatcher) {
+    companion object Key : AbstractCoroutineContextKey<PredictionContext, NoAllocatorContext>(
+        PredictionContext.Key,
+        { it as? NoAllocatorContext }
+    )
 }
 
 fun CoroutineScope.launchWithLimitOrDefault(block: suspend CoroutineScope.() -> Unit) {
-    this.launch(coroutineContext[ParallelismLimiterContext.Key]?.dispatcher ?: Dispatchers.Default, block = block)
+    this.launch(coroutineContext[PredictionContext]?.dispatcher ?: Dispatchers.Default, block = block)
 }

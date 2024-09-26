@@ -17,7 +17,7 @@ fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
 object Broadcasting {
     fun broadcastShapeForMatmul(leftShape: IntArray, rightShape: IntArray): IntArray {
         val actualLeftShape = if (leftShape.size == 1) intArrayOf(1, leftShape[0]) else leftShape
-        val actualRightShape = if (rightShape.size == 1) intArrayOf(1, rightShape[1]) else rightShape
+        val actualRightShape = if (rightShape.size == 1) intArrayOf(rightShape[0], 1) else rightShape
 
         val outputMatrixShape = intArrayOf(actualLeftShape[actualLeftShape.lastIndex - 1], actualRightShape.last())
         val broadcastShape = broadcastShape(listOf(actualLeftShape.copyOfRange(0, actualLeftShape.size - 2),

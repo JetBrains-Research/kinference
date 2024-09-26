@@ -11,6 +11,7 @@ okio = "3.4.0"
 onnxruntime = "1.17.0.patched-1"
 slf4j = "2.0.9"
 wire = "4.8.1"
+fastutil = "8.5.14"
 
 primitives = "0.1.26-kotlin18"
 
@@ -38,3 +39,4 @@ onnxruntime-gpu = { module = "com.microsoft.onnxruntime:onnxruntime_gpu", versio
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
+fastutil-core = { module = "it.unimi.dsi:fastutil-core", version.ref = "fastutil" }
