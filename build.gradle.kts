@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 group = "io.kinference"
-version = "0.2.22"
+version = "0.2.23"
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
