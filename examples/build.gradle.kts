@@ -9,13 +9,13 @@ kotlin {
             dependencies {
                 api(project(":inference:inference-api"))
                 api(project(":inference:inference-core"))
+                api(project(":inference:inference-ort"))
                 api(project(":serialization:serializer-protobuf"))
                 api(project(":utils:utils-common"))
 
                 api(project(":ndarray:ndarray-api"))
                 api(project(":ndarray:ndarray-core"))
 
-                api(libs.wire.runtime)
                 implementation("org.jetbrains.kotlinx:kotlin-deeplearning-api:0.5.2")
                 implementation("org.jetbrains.kotlinx:kotlin-deeplearning-dataset:0.5.2")  // Dataset support
 
@@ -25,7 +25,8 @@ kotlin {
                 api("org.slf4j:slf4j-api:2.0.9")
                 api("org.slf4j:slf4j-simple:2.0.9")
 
-                implementation("com.knuddels:jtokkit:1.1.0")
+                implementation("ai.djl:api:0.28.0")
+                implementation("ai.djl.huggingface:tokenizers:0.28.0")
             }
         }
     }

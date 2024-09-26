@@ -3,17 +3,13 @@ package io.kinference.examples.classification
 import io.kinference.core.KIEngine
 import io.kinference.core.data.tensor.KITensor
 import io.kinference.core.data.tensor.asTensor
+import io.kinference.examples.downloadFile
+import io.kinference.examples.resourcesPath
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.FloatNDArray.Companion.invoke
 import io.kinference.utils.CommonDataLoader
 import io.kinference.utils.PredictionConfigs
 import io.kinference.utils.inlines.InlineInt
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.prepareRequest
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.copyAndClose
 import okio.Path.Companion.toPath
 import org.jetbrains.kotlinx.dl.api.preprocessing.pipeline
 import org.jetbrains.kotlinx.dl.dataset.OnFlyImageDataset
@@ -43,36 +39,6 @@ private val preprocessing = pipeline<BufferedImage>()
 
 // Path to the small dataset of dogs vs cats images (100 images)
 private val dogsVsCatsDatasetPath = dogsCatsSmallDatasetPath()
-
-/**
- * Downloads a file from the specified URL and saves it to the given output path.
- * If the file already exists at the output path, the download is skipped.
- *
- * @param url The URL from which the file will be downloaded.
- * @param outputPath The path to which the downloaded file will be saved.
- */
-private suspend fun downloadFile(url: String, outputPath: String) {
-    // Check if the file already exists
-    val file = File(outputPath)
-    if (file.exists()) {
-        println("File already exists at $outputPath. Skipping download.")
-        return // Exit the function if the file exists
-    }
-
-    // Create an instance of HttpClient with custom timeout settings
-    val client = HttpClient {
-        install(HttpTimeout) {
-            requestTimeoutMillis = 600_000 // Set timeout to 10 minutes (600,000 milliseconds)
-        }
-    }
-
-    // Download the file and write to the specified output path
-    client.prepareRequest(url).execute { response ->
-        response.bodyAsChannel().copyAndClose(File(outputPath).writeChannel())
-    }
-
-    client.close()
-}
 
 /**
  * Creates a Map of input tensors categorized by their respective classes (e.g., "cat" and "dog").
@@ -129,17 +95,16 @@ private fun displayTopPredictions(predictions: FloatNDArray, classLabels: List<S
 }
 
 suspend fun main() {
-    val resourcesPath = System.getProperty("user.dir") + "/cache/"
     val modelUrl = "https://github.com/onnx/models/raw/main/validated/vision/classification/caffenet/model/caffenet-12.onnx"
     val synsetUrl = "https://s3.amazonaws.com/onnx-model-zoo/synset.txt"
+    val modelName = "CaffeNet"
 
-    println("Current working directory: $resourcesPath")
     println("Downloading model from: $modelUrl")
-    downloadFile(modelUrl, "$resourcesPath/model.onnx")
+    downloadFile(modelUrl, "$resourcesPath/$modelName.onnx")
     println("Downloading synset from: $synsetUrl")
     downloadFile(synsetUrl, "$resourcesPath/synset.txt")
 
-    val modelBytes = CommonDataLoader.bytes("$resourcesPath/model.onnx".toPath())
+    val modelBytes = CommonDataLoader.bytes("$resourcesPath/$modelName.onnx".toPath())
     val classLabels = File("$resourcesPath/synset.txt").readLines()
 
     println("Loading model...")
