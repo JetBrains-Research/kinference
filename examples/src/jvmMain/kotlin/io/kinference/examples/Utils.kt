@@ -1,5 +1,9 @@
 package io.kinference.examples
 
+import io.kinference.core.KIONNXData
+import io.kinference.core.data.tensor.KITensor
+import io.kinference.ndarray.arrays.LongNDArray
+import io.kinference.ndarray.arrays.NumberNDArrayCore
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.prepareRequest
@@ -38,4 +42,23 @@ suspend fun downloadFile(url: String, outputPath: String) {
     }
 
     client.close()
+}
+
+suspend fun extractTopToken(output: Map<String, KIONNXData<*>>, tokensSize: Int, outputName: String): Long {
+    val logits = output[outputName]!! as KITensor
+    val sliced = logits.data.slice(
+        starts = intArrayOf(0, 0, tokensSize - 1, 0),   // First batch, first element in the second dimension, last token, first vocab entry
+        ends = intArrayOf(1, 1, tokensSize, 50257),     // Same batch, same second dimension, one token step, whole vocab (50257)
+        steps = intArrayOf(1, 1, 1, 1)                  // Step of 1 for each dimension
+    ) as NumberNDArrayCore
+    val softmax = sliced.softmax(axis = -1)
+    val topK = softmax.topK(
+        axis = -1,                                      // Apply top-k along the last dimension (vocabulary size)
+        k = 1,                                          // Retrieve the top 1 element
+        largest = true,                                 // We want the largest probabilities (most probable tokens)
+        sorted = false                                  // Sorting is unnecessary since we are only retrieving the top 1
+    )
+    val tokenId = (topK.second as LongNDArray)[intArrayOf(0, 0, 0, 0)]
+
+    return tokenId
 }
