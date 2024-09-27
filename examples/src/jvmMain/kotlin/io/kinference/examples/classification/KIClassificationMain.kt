@@ -66,7 +66,7 @@ private suspend fun createInputs(): Map<String, List<KITensor>> {
     for (i in 0 until dataset.xSize()) {
         val inputData = dataset.getX(i)
         val inputClass = if (dataset.getY(i).toInt() == 0) "cat" else "dog"
-        val floatNDArray = FloatNDArray(tensorShape) { index: InlineInt -> inputData[index.value]}  // Create an NDArray from the image data
+        val floatNDArray = FloatNDArray(tensorShape) { index: InlineInt -> inputData[index.value] } // Create an NDArray from the image data
         val inputTensor = floatNDArray.transpose(permuteAxis).asTensor(INPUT_TENSOR_NAME)           // Transpose and create a tensor from the NDArray
         inputTensors.putIfAbsent(inputClass, mutableListOf())
         inputTensors[inputClass]!!.add(inputTensor)
@@ -83,7 +83,7 @@ private suspend fun createInputs(): Map<String, List<KITensor>> {
  * @param originalClass The actual class label of the instance being predicted.
  */
 private fun displayTopPredictions(predictions: FloatNDArray, classLabels: List<String>, originalClass: String) {
-    val predictionArray = predictions.array.blocks.first()
+    val predictionArray = predictions.array.toArray()
     val indexedScores = predictionArray.withIndex().sortedByDescending { it.value }.take(5)
 
     println("\nOriginal class: $originalClass")
