@@ -83,3 +83,9 @@ subprojects {
         targetCompatibility = jvmTargetVersion.toString()
     }
 }
+
+project(":examples") {
+    tasks.withType<PublishToMavenRepository>().configureEach {
+        onlyIf { false }
+    }
+}
