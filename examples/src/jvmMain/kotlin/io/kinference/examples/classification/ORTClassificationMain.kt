@@ -1,7 +1,7 @@
 package io.kinference.examples.classification
 
 import io.kinference.examples.downloadFile
-import io.kinference.examples.resourcesPath
+import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.FloatNDArray.Companion.invoke
 import io.kinference.ort.ORTEngine
@@ -99,12 +99,12 @@ suspend fun main() {
     val modelName = "CaffeNet"
 
     println("Downloading model from: $modelUrl")
-    downloadFile(modelUrl, "$resourcesPath/$modelName.onnx")
+    downloadFile(modelUrl, "$modelName.onnx")
     println("Downloading synset from: $synsetUrl")
-    downloadFile(synsetUrl, "$resourcesPath/synset.txt")
+    downloadFile(synsetUrl, "synset.txt")
 
-    val modelBytes = CommonDataLoader.bytes("$resourcesPath/$modelName.onnx".toPath())
-    val classLabels = File("$resourcesPath/synset.txt").readLines()
+    val modelBytes = CommonDataLoader.bytes("$cacheDirectory/$modelName.onnx".toPath())
+    val classLabels = File("$cacheDirectory/synset.txt").readLines()
 
     println("Loading model...")
     val model = ORTEngine.loadModel(modelBytes)

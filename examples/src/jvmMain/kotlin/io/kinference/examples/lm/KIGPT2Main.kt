@@ -5,7 +5,7 @@ import io.kinference.core.KIEngine
 import io.kinference.core.data.tensor.asTensor
 import io.kinference.examples.downloadFile
 import io.kinference.examples.extractTopToken
-import io.kinference.examples.resourcesPath
+import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArrayCore
 import io.kinference.utils.CommonDataLoader
@@ -22,9 +22,9 @@ suspend fun main() {
     val modelName = "gpt2-lm-head-10"
 
     println("Downloading model from: $modelUrl")
-    downloadFile(modelUrl, "$resourcesPath/$modelName.onnx")
+    downloadFile(modelUrl, "$modelName.onnx")  //GPT-2 from model zoo is around 650 Mb, adjust your timeout if needed
 
-    val modelBytes = CommonDataLoader.bytes("${resourcesPath}/$modelName.onnx".toPath())
+    val modelBytes = CommonDataLoader.bytes("${cacheDirectory}/$modelName.onnx".toPath())
 
     println("Loading model...")
     val model = KIEngine.loadModel(modelBytes, optimize = true, predictionConfig = PredictionConfigs.DefaultAutoAllocator)
