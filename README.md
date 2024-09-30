@@ -181,8 +181,13 @@ kotlin {
 ```
 
 ## Examples
-You can find several KInference usage examples in [this repository](https://github.com/JetBrains-Research/kinference-examples).
-The repository has examples of multi-backend project configuration and sharing KInference-related code between the modules.
+The [examples module](https://github.com/JetBrains-Research/kinference/tree/master/examples) contains examples of solving classification tasks
+(cats vs dogs) and text generation. 
+Different backends are used in the examples.
+Models for the examples were selected from the [ONNX Model Zoo](https://github.com/onnx/models).
+Running the examples does not require converting models to different opsets.
+However, if you need to run a model with operator versions not supported by KInference,
+you can refer to [Convert guide](https://github.com/OpenPPL/ppl.nn/blob/master/docs/en/onnx-model-opset-convert-guide.md).
 
 ## Want to know more?
 KInference API itself is widely documented, so you can explore its code and interfaces to get to know KInference better.
