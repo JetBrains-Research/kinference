@@ -24,10 +24,8 @@ suspend fun main() {
     println("Downloading model from: $modelUrl")
     downloadFile(modelUrl, "$modelName.onnx")  //GPT-2 from model zoo is around 650 Mb, adjust your timeout if needed
 
-    val modelBytes = CommonDataLoader.bytes("${cacheDirectory}/$modelName.onnx".toPath())
-
     println("Loading model...")
-    val model = KIEngine.loadModel(modelBytes, optimize = true, predictionConfig = PredictionConfigs.DefaultAutoAllocator)
+    val model = KIEngine.loadModel("$cacheDirectory/$modelName.onnx".toPath(), optimize = true, predictionConfig = PredictionConfigs.DefaultAutoAllocator)
 
     val tokenizer = HuggingFaceTokenizer.newInstance("gpt2", mapOf("modelMaxLength" to "1024"))
     val testString = "Neurogenesis is most active during embryonic development and is responsible for producing " +

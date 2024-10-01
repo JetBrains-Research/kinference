@@ -27,10 +27,8 @@ suspend fun main() {
     println("Downloading model from: $modelUrl")
     downloadFile(modelUrl, "$modelName.onnx") //GPT-2 from model zoo is around 650 Mb, adjust your timeout if needed
 
-    val modelBytes = CommonDataLoader.bytes("${cacheDirectory}/$modelName.onnx".toPath())
-
     println("Loading model...")
-    val model = ORTEngine.loadModel(modelBytes)
+    val model = ORTEngine.loadModel("$cacheDirectory/$modelName.onnx".toPath())
 
     val tokenizer = HuggingFaceTokenizer.newInstance("gpt2", mapOf("modelMaxLength" to "1024"))
     val testString = "Neurogenesis is most active during embryonic development and is responsible for producing " +
@@ -63,12 +61,12 @@ suspend fun main() {
 }
 
 private suspend fun convertToKITensorMap(outputs: Map<String, ORTData<*>>): Map<String, KITensor> {
-    return outputs.map { (key, value) ->
-        val ortTensor = value as ORTTensor
+    return outputs.map { (name, ortTensor) ->
+        val ortTensor = ortTensor as ORTTensor
         val data = ortTensor.toFloatArray()
         val shape = ortTensor.shape.toIntArray()
         val ndArray = FloatNDArray(shape) { idx: InlineInt -> data[idx.value] }
-        val tensor = ndArray.asTensor(key)
-        return@map key to tensor
+        val kiTensor = ndArray.asTensor(name)
+        return@map name to kiTensor
     }.toMap()
 }

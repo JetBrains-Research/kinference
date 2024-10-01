@@ -104,11 +104,10 @@ suspend fun main() {
     println("Downloading synset from: $synsetUrl")
     downloadFile(synsetUrl, "synset.txt")
 
-    val modelBytes = CommonDataLoader.bytes("$cacheDirectory/$modelName.onnx".toPath())
     val classLabels = File("$cacheDirectory/synset.txt").readLines()
 
     println("Loading model...")
-    val model = KIEngine.loadModel(modelBytes, optimize = true, predictionConfig = PredictionConfigs.DefaultAutoAllocator)
+    val model = KIEngine.loadModel("$cacheDirectory/$modelName.onnx".toPath(), optimize = true, predictionConfig = PredictionConfigs.DefaultAutoAllocator)
     println("Creating inputs...")
     val inputTensors = createInputs()
 

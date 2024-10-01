@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.utils.addToStdlib.applyIf
 
 group = "io.kinference"
 version = "0.2.22"
@@ -35,21 +36,23 @@ subprojects {
 
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
-
-        plugin("maven-publish")
         plugin("idea")
     }
 
 
-    publishing {
-        repositories {
-            maven {
-                name = "SpacePackages"
-                url = uri("https://packages.jetbrains.team/maven/p/ki/maven")
+    applyIf(path != ":examples") {
+        apply(plugin = "maven-publish")
 
-                credentials {
-                    username = System.getenv("JB_SPACE_CLIENT_ID")
-                    password = System.getenv("JB_SPACE_CLIENT_SECRET")
+        publishing {
+            repositories {
+                maven {
+                    name = "SpacePackages"
+                    url = uri("https://packages.jetbrains.team/maven/p/ki/maven")
+
+                    credentials {
+                        username = System.getenv("JB_SPACE_CLIENT_ID")
+                        password = System.getenv("JB_SPACE_CLIENT_SECRET")
+                    }
                 }
             }
         }
@@ -81,11 +84,5 @@ subprojects {
     tasks.withType(JavaCompile::class.java) {
         sourceCompatibility = jvmTargetVersion.toString()
         targetCompatibility = jvmTargetVersion.toString()
-    }
-}
-
-project(":examples") {
-    tasks.withType<PublishToMavenRepository>().configureEach {
-        onlyIf { false }
     }
 }

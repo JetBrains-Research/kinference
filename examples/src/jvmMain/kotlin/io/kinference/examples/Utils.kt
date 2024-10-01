@@ -20,7 +20,7 @@ import java.io.File
  * It is used in various functions to check for existing files or directories,
  * create new ones if they do not exist, and manage the caching of downloaded files.
  */
-val cacheDirectory = System.getProperty("user.dir") + "/cache/"
+val cacheDirectory = System.getProperty("user.dir") + "/.cache/"
 
 /**
  * Downloads a file from the given URL and saves it with the specified file name.

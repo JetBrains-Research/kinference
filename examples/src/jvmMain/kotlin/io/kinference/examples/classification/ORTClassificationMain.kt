@@ -103,11 +103,10 @@ suspend fun main() {
     println("Downloading synset from: $synsetUrl")
     downloadFile(synsetUrl, "synset.txt")
 
-    val modelBytes = CommonDataLoader.bytes("$cacheDirectory/$modelName.onnx".toPath())
     val classLabels = File("$cacheDirectory/synset.txt").readLines()
 
     println("Loading model...")
-    val model = ORTEngine.loadModel(modelBytes)
+    val model = ORTEngine.loadModel("$cacheDirectory/$modelName.onnx".toPath())
     println("Creating inputs...")
     val inputTensors = createInputs()
 
