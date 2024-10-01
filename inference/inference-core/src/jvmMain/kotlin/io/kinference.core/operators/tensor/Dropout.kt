@@ -14,17 +14,17 @@ import io.kinference.utils.inlines.InlineInt
 sealed class Dropout(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 13)  // last version. Other versions: 1, 6, 7, 10, 12.
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 12)  // last version. Other versions: 1, 6, 7, 10.
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
-                in Dropout13.VERSION.asRange() -> Dropout13(name, attributes, inputs, outputs)
+                in Dropout12.VERSION.asRange() -> Dropout12(name, attributes, inputs, outputs)
                 else -> error("Unsupported version of Dropout operator: $version")
             }
     }
 }
 
-class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+class Dropout12(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Dropout(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS_T = setOf(
@@ -59,7 +59,7 @@ class Dropout13(name: String, attributes: Map<String, Attribute<Any>>, inputs: L
             IOInfo(1, TYPE_CONSTRAINTS_T2, "mask", optional = true, differentiable = false)
         )
 
-        internal val VERSION = VersionInfo(sinceVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 12)
         private val INFO = OperatorInfo("Dropout", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 
