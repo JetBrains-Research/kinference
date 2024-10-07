@@ -28,6 +28,8 @@ include(":adapters:kmath:adapter-kmath-core")
 include(":adapters:kmath:adapter-kmath-ort")
 include(":adapters:kmath:adapter-kmath-ort-gpu")
 
+include(":examples")
+
 
 pluginManagement {
     repositories {

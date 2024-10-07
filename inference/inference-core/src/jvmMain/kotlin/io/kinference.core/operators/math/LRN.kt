@@ -16,17 +16,17 @@ import io.kinference.protobuf.message.TensorProto
 sealed class LRN(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     Operator<KITensor, KITensor>(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 13)  // last version. Other versions: 1.
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 1)
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) =
             when (version ?: DEFAULT_VERSION.sinceVersion) {
-                in LRN13.VERSION.asRange() -> LRN13(name, attributes, inputs, outputs)
+                in LRN1.VERSION.asRange() -> LRN1(name, attributes, inputs, outputs)
                 else -> error("Unsupported version of LRN operator: $version")
             }
     }
 }
 
-class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
+class LRN1(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) :
     LRN(name, INFO, attributes, inputs, outputs) {
     companion object {
         private val TYPE_CONSTRAINTS = setOf(
@@ -51,7 +51,7 @@ class LRN13(name: String, attributes: Map<String, Attribute<Any>>, inputs: List<
             IOInfo(0, TYPE_CONSTRAINTS, "Y", optional = false, differentiable = true)
         )
 
-        internal val VERSION = VersionInfo(sinceVersion = 13)
+        internal val VERSION = VersionInfo(sinceVersion = 1)
         private val INFO = OperatorInfo("LRN", ATTRIBUTES_INFO, INPUTS_INFO, OUTPUTS_INFO, VERSION, OperatorInfo.DEFAULT_DOMAIN)
     }
 

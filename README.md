@@ -54,7 +54,7 @@ it is highly recommended to use KInference TensorFlow.js backend instead for mor
 KInference Core dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-core", "0.2.23")
+    api("io.kinference", "inference-core", "0.2.24")
 }
 ```
 
@@ -67,7 +67,7 @@ This backend is recommended for JavaScript projects.
 TensorFlow.js backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-tfjs", "0.2.23")
+    api("io.kinference", "inference-tfjs", "0.2.24")
 }
 ```
 
@@ -81,14 +81,14 @@ To check on the system requirements, visit the following [link](https://onnxrunt
 ONNXRuntime CPU backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-ort", "0.2.23")
+    api("io.kinference", "inference-ort", "0.2.24")
 }
 ```
 
 ONNXRuntime GPU backend dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-ort-gpu", "0.2.23")
+    api("io.kinference", "inference-ort-gpu", "0.2.24")
 }
 ```
 
@@ -104,7 +104,7 @@ Array adapter for the [kmath](https://github.com/SciProgCentre/kmath) library th
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adapter-kmath-{backend_name}", "0.2.23")
+    api("io.kinference", "adapter-kmath-{backend_name}", "0.2.24")
 }
 ```
 
@@ -114,12 +114,12 @@ Array adapter for the [multik](https://github.com/Kotlin/multik) library that wo
 Dependency coordinates:
 ```kotlin
 dependencies {
-    api("io.kinference", "adapter-multik-{backend_name}", "0.2.23")
+    api("io.kinference", "adapter-multik-{backend_name}", "0.2.24")
 }
 ```
 
 ## Getting started
-Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.23*
+Let us now walk through how to get started with KInference. The latest version of KInference is *0.2.24*
 
 ### Setup dependencies repository
 
@@ -142,7 +142,7 @@ To enable the backend, you can add the chosen KInference runtime as a dependency
 
 ```kotlin
 dependencies {
-    api("io.kinference", "inference-core", "0.2.23")
+    api("io.kinference", "inference-core", "0.2.24")
 }
 ```
 
@@ -160,20 +160,20 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.kinference:inference-api:0.2.23")
-                api("io.kinference:ndarray-api:0.2.23")
+                api("io.kinference:inference-api:0.2.24")
+                api("io.kinference:ndarray-api:0.2.24")
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                api("io.kinference:inference-core:0.2.23")
+                api("io.kinference:inference-core:0.2.24")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                api("io.kinference:inference-tfjs:0.2.23")
+                api("io.kinference:inference-tfjs:0.2.24")
             }
         }
     }
@@ -181,8 +181,13 @@ kotlin {
 ```
 
 ## Examples
-You can find several KInference usage examples in [this repository](https://github.com/JetBrains-Research/kinference-examples).
-The repository has examples of multi-backend project configuration and sharing KInference-related code between the modules.
+The [examples module](https://github.com/JetBrains-Research/kinference/tree/master/examples) contains examples of solving classification tasks
+(cats vs dogs) and text generation. 
+Different backends are used in the examples.
+Models for the examples were selected from the [ONNX Model Zoo](https://github.com/onnx/models).
+Running the examples does not require converting models to different opsets.
+However, if you need to run a model with operator versions not supported by KInference,
+you can refer to [Convert guide](https://github.com/OpenPPL/ppl.nn/blob/master/docs/en/onnx-model-opset-convert-guide.md).
 
 ## Want to know more?
 KInference API itself is widely documented, so you can explore its code and interfaces to get to know KInference better.
