@@ -3,7 +3,8 @@ package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
+import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
+import io.kinference.ndarray.arrays.memory.storage.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.stubs.absoluteValue
 import io.kinference.ndarray.stubs.pow
@@ -11,6 +12,7 @@ import io.kinference.ndarray.math.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
+import kotlin.coroutines.coroutineContext
 import kotlin.math.*
 
 @GenerateNameFromPrimitives
@@ -22,12 +24,19 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
 
     val blockSize = input.array.blockSize
 
+    val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
+    val temporaryBlocks = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
+        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
+    val temporaryBlocksAbs = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
+        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
+
+
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, coroutineIndex ->
-        val temporaryBlock = PrimitiveArray(blockSize)
-        val temporaryBlockAbs = PrimitiveArray(blockSize)
+        val temporaryBlock = temporaryBlocks[coroutineIndex]
+        val temporaryBlockAbs = temporaryBlocksAbs[coroutineIndex]
 
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]
