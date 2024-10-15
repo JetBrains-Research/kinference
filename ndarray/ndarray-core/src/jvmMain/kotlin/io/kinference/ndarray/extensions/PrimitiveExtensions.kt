@@ -134,50 +134,33 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
     val t = this.shape[1]
     val m = other.shape[0]
 
-    val lrBlockSize = this.array.blockSize
-
     val leftBlocks = this.array.blocks
     val rightBlocks = other.array.blocks
     val rowFlop = t * m
 
-
-    /* TODO: (dmitriyb) this is temporary commented. On GEC performance test we have large inputs that cause out of memory exceptions
-        We need to implement controlling mechanism which will prevent ArrayDispatcher of enormous grow*/
-
-    // This approach when arrays acquired before parallelizeByBlocks() is faster
-//    val coroutineCount = countCoroutinesByData(rowFlop, n, 262144)
-//    val containerArray = ArrayDispatcher.getArraysAndMarkers(PrimitiveTiledArray.type, lrBlockSize, m * coroutineCount)
-//    val mSumsArrays = Array(coroutineCount) { index ->
-//        Array(m) { mIndex ->
-//            (containerArray[index * m + mIndex] as PrimitiveArrayContainer).array
-//        }
-//    }
-
     // Constant 262144 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
-    // TODO: (dmitriyb) Implement concurrent array retrieve with a separate structure from ArraysDispatcher
     parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, _ ->
-        val tempSum = PrimitiveArray(lrBlockSize)
         val destPointer = destination.array.pointer()
         for (i in nStart until nEnd) {
             val leftBlockOffset = i * lrBlocksInRow
-            val rightBlockIter = rightBlocks.iterator()
+            var rightBlockIndex = 0
 
             destPointer.linearIndex = i * m
 
             for (k in 0 until m) {
+                var totalSum = PrimitiveConstants.ZERO
                 for (lrBlock in 0 until lrBlocksInRow) {
                     val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
-                    val rightBlock = rightBlockIter.next()
+                    val rightBlock = rightBlocks[rightBlockIndex++]
 
-                    for (j in tempSum.indices) {
-                        tempSum[j] += leftBlock[j] * rightBlock[j]
+                    for (j in leftBlock.indices) {
+                        totalSum += leftBlock[j] * rightBlock[j]
                     }
                 }
 
-                destPointer.setAndIncrement(tempSum.sum() * alpha)
-                tempSum.fill(PrimitiveConstants.ZERO)
+                destPointer.setAndIncrement((totalSum * alpha).toPrimitive())
             }
         }
     }
