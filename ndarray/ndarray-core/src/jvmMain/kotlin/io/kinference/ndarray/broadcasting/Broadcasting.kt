@@ -7,6 +7,7 @@ import io.kinference.primitives.types.DataType
 // TODO remove to different module
 fun unsqueezeFirst(shape: IntArray, newShapeSize: Int): IntArray {
     val wrapSize = newShapeSize - shape.size
+    if (wrapSize == 0) return shape
 
     val wrappedShape = IntArray(newShapeSize)
     wrappedShape.fill(1, 0, wrapSize)
@@ -35,7 +36,11 @@ object Broadcasting {
         destination: MutableNDArrayCore,
         op: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
     ): MutableNDArrayCore {
-        val wrappedInputs = inputs.map { it.reshape(unsqueezeFirst(it.shape, destination.shape.size)) }
+        val destRank = destination.shape.size
+        val wrappedInputs = inputs.map { input ->
+            if (input.shape.size == destRank) input
+            else input.reshape(unsqueezeFirst(input.shape, destRank))
+        }
 
         broadcast(wrappedInputs, destination, op)
         return destination
@@ -101,29 +106,43 @@ object Broadcasting {
         destination: MutableNDArrayCore,
         recurrentBack: suspend (List<NDArrayCore>, MutableNDArrayCore) -> Unit
     ) {
+        val numInputs = inputs.size
         val indexedInputs = inputs.withIndex()
         val (arraysWithOne, arraysWithoutOne) = indexedInputs.partition { it.value.shape[0] == 1 }
 
+        val mergedInputs = MutableList<NDArrayCore>(numInputs) { inputs[0] }
+
         if (destination.shape.size == 1) {
             val broadcastSize = destination.shape.last()
-            val broadcastArraysWithOne = arraysWithOne.map {
-                val value = allocateNDArray(it.value.type, Strides(intArrayOf(broadcastSize)))
-                it.copy(value = value.apply { fill(it.value.singleValue()) })
+            val broadcastArraysWithOne = arraysWithOne.map { indexedInput ->
+                val value = allocateNDArray(indexedInput.value.type, Strides(intArrayOf(broadcastSize)))
+                value.apply { fill(indexedInput.value.singleValue()) }
             }
-            val mergedInputs = broadcastArraysWithOne.plus(arraysWithoutOne).sortedBy { it.index }.map { it.value }
+
+            arraysWithOne.forEachIndexed { i, indexedInput ->
+                mergedInputs[indexedInput.index] = broadcastArraysWithOne[i]
+            }
+
+            for (indexedInput in arraysWithoutOne) {
+                mergedInputs[indexedInput.index] = indexedInput.value
+            }
 
             return recurrentBack(mergedInputs, destination)
         }
 
-        val viewedArraysWithOne = arraysWithOne.map { it.copy(value = it.value.view(0)) }
+        val fixedViewsWithOne = arraysWithOne.map { it.copy(value = it.value.view(0)) }
+
+        for (indexedInput in fixedViewsWithOne) {
+            mergedInputs[indexedInput.index] = indexedInput.value
+        }
 
         for (i in 0 until destination.shape[0]) {
-            val viewedArraysWithoutOne = arraysWithoutOne.map { it.copy(value = it.value.view(i)) }
+            for (indexedInput in arraysWithoutOne) {
+                mergedInputs[indexedInput.index] = indexedInput.value.view(i)
+            }
+
             val viewedDestination = destination.viewMutable(i)
-
-            val mergedViewedInputs = viewedArraysWithOne.plus(viewedArraysWithoutOne).sortedBy { it.index }.map { it.value }
-
-            recurrentBack(mergedViewedInputs, viewedDestination)
+            recurrentBack(mergedInputs, viewedDestination)
         }
     }
 }
