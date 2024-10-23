@@ -44,10 +44,33 @@ subprojects {
         apply(plugin = "maven-publish")
 
         publishing {
+            publications {
+                create<MavenPublication>("maven") {
+                    pom {
+                        name = "KInference"
+                        description =
+                            "KInference is a library that simplifies the execution of complex ONNX machine learning models in Kotlin. " +
+                            "It ensures efficient inference of these models on various platforms and is designed for both server-side and local usage."
+
+                        licenses {
+                            license {
+                                name = "Apache License, Version 2.0"
+                                url = "https://www.apache.org/licenses/LICENSE-2.0"
+                            }
+                        }
+
+                        scm {
+                            url = "https://github.com/JetBrains-Research/kinference"
+                        }
+                    }
+                }
+            }
+
             repositories {
                 maven {
                     name = "SpacePackages"
                     url = uri("https://packages.jetbrains.team/maven/p/ki/maven")
+
 
                     credentials {
                         username = System.getenv("JB_SPACE_CLIENT_ID")
