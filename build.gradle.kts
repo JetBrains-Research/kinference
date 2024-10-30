@@ -45,7 +45,9 @@ subprojects {
 
         publishing {
             publications {
-                create<MavenPublication>("maven") {
+                all {
+                    if (this !is MavenPublication) return@all
+
                     pom {
                         name = "KInference"
                         description =
