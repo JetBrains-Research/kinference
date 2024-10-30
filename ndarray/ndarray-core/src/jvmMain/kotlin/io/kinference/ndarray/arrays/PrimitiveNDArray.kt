@@ -42,8 +42,8 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         }
 
     override fun view(vararg axes: Int): PrimitiveNDArray {
-        for ((i, axis) in axes.withIndex()) {
-            require(shape[i] > axis)
+        for (i in axes.indices) {
+            require(shape[i] > axes[i])
         }
 
         val offset = axes.foldIndexed(0) { index, acc, i -> acc + i * strides.strides[index] }
