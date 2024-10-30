@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.utils.addToStdlib.applyIf
 
 group = "io.kinference"
-version = "0.2.25"
+version = "0.2.26"
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
