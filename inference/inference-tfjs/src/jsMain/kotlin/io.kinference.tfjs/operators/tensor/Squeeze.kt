@@ -16,7 +16,7 @@ sealed class Squeeze(name: String, info: OperatorInfo, attributes: Map<String, A
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in SqueezeVer1.VERSION.asRange() -> SqueezeVer1(name, attributes, inputs, outputs)
-            else -> error("Unsupported version of Constant operator: $version")
+            else -> error("Unsupported version of Squeeze operator: $version")
         }
     }
 }
