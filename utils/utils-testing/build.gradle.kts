@@ -28,6 +28,7 @@ kotlin {
                 api(kotlin("test-annotations-common"))
 
                 api(libs.kinference.primitives.annotations)
+                api(libs.kotlinx.coroutines.test)
             }
         }
 

@@ -5,7 +5,7 @@ apache-commons = "4.0-beta1"
 aws = "1.12.761"
 kmath = "0.3.1"
 kotlin-atomicfu = "0.23.2"
-kotlin-coroutines = "1.8.0-RC"
+kotlin-coroutines = "1.9.0"
 multik = "0.2.2"
 okio = "3.6.0"
 onnxruntime = "1.17.0.patched-1"
@@ -40,3 +40,5 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
 fastutil-core = { module = "it.unimi.dsi:fastutil-core", version.ref = "fastutil" }
+
+kotlinx-coroutines-test =  { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
