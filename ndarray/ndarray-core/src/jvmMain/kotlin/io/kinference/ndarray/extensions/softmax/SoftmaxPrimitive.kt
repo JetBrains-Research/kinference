@@ -17,52 +17,53 @@ import io.kinference.ndarray.extensions.*
 
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
+internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
 
     val outputArray = dest.array
-    val maxesArray = PrimitiveArray(inputBlocks.size)
+    val maxesArray = PrimitiveTiledArray(rows * stride, inputBlockSize)
+    maxesArray.fill(PrimitiveType.MIN_VALUE_FOR_MAX)
 
-    //Finding Max for each block
-    // Constant 65536 was precomputed on M1 Max processor
-    // With this constant two launches work faster than single thread without launches
-    // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd, _ ->
-        for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = inputBlocks[blockNum].max()
-        }
-    }
+    val blocksInStride = stride/inputBlockSize
+    val stridesInRow = columns / stride
 
-    val blocksInRow = columns / inputBlockSize
-
-    //Minus maximum from input and store in output
-    // Constant 1048576 was precomputed on M1 Max processor
-    // With this constant two launches work faster than single thread without launches
-    // TODO: (cupertank) Remove constants
+    //Finding Max along the axis
     parallelizeByRows(columns, rows, 1048576) { rowStart, rowEnd, _ ->
         for (rowNum in rowStart until rowEnd) {
-            val rowBlockStart = rowNum * blocksInRow
-            var localMax = PrimitiveType.MIN_VALUE_FOR_MAX
-            for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                localMax = max(localMax, maxesArray[rowBlockIdx])
+            val rowStrideStart = rowNum * stridesInRow
+            val maxBlockStart = rowNum * blocksInStride
+
+            for (strideNum in rowStrideStart until rowStrideStart + stridesInRow) {
+                val strideStartBlock = strideNum * blocksInStride
+
+                for (blockNum in 0 until blocksInStride) {
+                    val inputBlock = inputBlocks[strideStartBlock + blockNum]
+                    val maxBlock = maxesArray.blocks[maxBlockStart + blockNum]
+
+                    for (j in  inputBlock.indices) {
+                        maxBlock[j] = max(inputBlock[j], maxBlock[j])
+                    }
+                }
             }
 
-            for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val inputBlock = inputBlocks[rowBlockIdx]
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+            for (strideNum in rowStrideStart until rowStrideStart + stridesInRow) {
+                val strideStartBlock = strideNum * blocksInStride
 
-                for (j in outputBlock.indices) {
-                    outputBlock[j] = inputBlock[j] - localMax
+                for (blockNum in 0 until blocksInStride) {
+                    val maxBlock = maxesArray.blocks[maxBlockStart + blockNum]
+                    val inputBlock = inputBlocks[strideStartBlock + blockNum]
+                    val outputBlock = outputArray.blocks[strideStartBlock + blockNum]
+
+                    for (j in  inputBlock.indices) {
+                        outputBlock[j] = inputBlock[j] - maxBlock[j]
+                    }
                 }
             }
         }
     }
 
     // Apply exp for output array
-    // Constant 2048 was precomputed on M1 Max processor
-    // With this constant two launches work faster than single thread without launches
-    // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputArray.blocks[blockNum]
@@ -73,35 +74,38 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
         }
     }
 
-    val sumsArray = PrimitiveArray(outputArray.blocks.size)
+    val sumsArray = PrimitiveTiledArray(rows*stride, inputBlockSize)
+    sumsArray.fill((0).toPrimitive())
 
-    // Calculate sum for each block
-    // Constant 131072 was precomputed on M1 Max processor
-    // With this constant two launches work faster than single thread without launches
-    // TODO: (cupertank) Remove constants
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 131072) { blockStart, blockEnd, _ ->
-        for (blockNum in blockStart until blockEnd) {
-            sumsArray[blockNum] = outputArray.blocks[blockNum].sum()
-        }
-    }
-
-    // Div by sum in output array
-    // Constant 1048576 was precomputed on M1 Max processor
-    // With this constant two launches work faster than single thread without launches
-    // TODO: (cupertank) Remove constants
+    // Compute sums along axis and divide output by them
     parallelizeByRows(columns, rows, 1048576) { rowStart, rowEnd, _ ->
         for (rowNum in rowStart until rowEnd) {
-            val rowBlockStart = rowNum * blocksInRow
-            var localSum = (0).toPrimitive()
-            for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                localSum += sumsArray[rowBlockIdx]
+            val rowStrideStart = rowNum * stridesInRow
+            val maxBlockStart = rowNum * blocksInStride
+
+            for (strideNum in rowStrideStart until rowStrideStart + stridesInRow) {
+                val strideStartBlock = strideNum * blocksInStride
+
+                for (blockNum in 0 until blocksInStride) {
+                    val outputBlock = outputArray.blocks[strideStartBlock + blockNum]
+                    val sumBlock = maxesArray.blocks[maxBlockStart + blockNum]
+
+                    for (j in outputBlock.indices) {
+                        sumBlock[j] += outputBlock[j]
+                    }
+                }
             }
 
-            for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                val outputBlock = outputArray.blocks[rowBlockIdx]
+            for (strideNum in rowStrideStart until rowStrideStart + stridesInRow) {
+                val strideStartBlock = strideNum * blocksInStride
 
-                for (j in outputBlock.indices) {
-                    outputBlock[j] /= localSum
+                for (blockNum in 0 until blocksInStride) {
+                    val outputBlock = outputArray.blocks[strideStartBlock + blockNum]
+                    val sumBlock = maxesArray.blocks[maxBlockStart + blockNum]
+
+                    for (j in outputBlock.indices) {
+                        outputBlock[j] /= sumBlock[j]
+                    }
                 }
             }
         }
@@ -111,5 +115,5 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
 }
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
-    softmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)
+internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray =
+    softmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns, stride)
