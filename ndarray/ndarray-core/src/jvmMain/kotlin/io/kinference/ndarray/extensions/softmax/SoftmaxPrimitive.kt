@@ -106,7 +106,6 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
 
                     for (j in outputBlock.indices) {
                         outputBlock[j] /= sumBlock[j]
-                        val ob = outputBlock[j]
                     }
                 }
             }
