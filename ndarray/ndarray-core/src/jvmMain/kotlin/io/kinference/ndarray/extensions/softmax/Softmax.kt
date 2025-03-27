@@ -13,11 +13,17 @@ suspend fun softmax(
     val actualAxis = input.indexAxis(axis)
     val rows = input.computeBlockSize(toDim = actualAxis)
     val columns = input.computeBlockSize(fromDim = actualAxis)
-    val stride = if(actualAxis == input.shape.size-1) 1 else input.computeBlockSize(fromDim = actualAxis + 1)
+    val stride = if(actualAxis == input.rank - 1) 1 else input.computeBlockSize(fromDim = actualAxis + 1)
 
     return when(input.type) {
-        DataType.FLOAT -> softmaxFloat(input as FloatNDArray, rows, columns, stride)
-        DataType.DOUBLE -> softmaxDouble(input as DoubleNDArray, rows, columns, stride)
+        DataType.FLOAT -> when(stride) {
+            1 -> softmaxOldFloat(input as FloatNDArray, rows, columns)
+            else -> softmaxFloat(input as FloatNDArray, rows, columns, stride)
+        }
+        DataType.DOUBLE -> when(stride) {
+            1 -> softmaxOldDouble(input as DoubleNDArray, rows, columns)
+            else -> softmaxDouble(input as DoubleNDArray, rows, columns, stride)
+        }
         else -> error("Softmax operation supported only for FLOAT and DOUBLE tensors, actual type is ${input.type}")
     }
 }
@@ -34,11 +40,17 @@ suspend fun softmax(
     val actualAxis = input.indexAxis(axis)
     val rows = input.computeBlockSize(toDim = actualAxis)
     val columns = input.computeBlockSize(fromDim = actualAxis)
-    val stride = if(actualAxis == input.shape.size-1) 1 else input.computeBlockSize(fromDim = actualAxis + 1)
+    val stride = if(actualAxis == input.rank - 1) 1 else input.computeBlockSize(fromDim = actualAxis + 1)
 
     return when(input.type) {
-        DataType.FLOAT -> softmaxFloat(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns, stride)
-        DataType.DOUBLE ->  softmaxDouble(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns, stride)
+        DataType.FLOAT -> when(stride) {
+            1 -> softmaxOldFloat(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns)
+            else -> softmaxFloat(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns, stride)
+        }
+        DataType.DOUBLE -> when(stride) {
+            1 -> softmaxOldDouble(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns)
+            else -> softmaxDouble(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns, stride)
+        }
         else -> error("Softmax operation supported only for FLOAT and DOUBLE tensors, actual type is ${input.type}")
     }
 }
