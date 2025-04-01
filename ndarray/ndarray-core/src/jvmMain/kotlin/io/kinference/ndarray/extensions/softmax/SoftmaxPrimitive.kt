@@ -18,7 +18,7 @@ import io.kinference.ndarray.math.exp
 
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray {
+internal suspend fun softmaxVer13Primitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
     val outputArray = dest.array
@@ -116,11 +116,11 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
 }
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray =
-    softmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns, stride)
+internal suspend fun softmaxVer13Primitive(input: PrimitiveNDArray, rows: Int, columns: Int, stride: Int): MutablePrimitiveNDArray =
+    softmaxVer13Primitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns, stride)
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxOldPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
+internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
 
@@ -214,5 +214,5 @@ internal suspend fun softmaxOldPrimitive(input: PrimitiveNDArray, dest: MutableP
 }
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxOldPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
-    softmaxOldPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)
+internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
+    softmaxVer1Primitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)
