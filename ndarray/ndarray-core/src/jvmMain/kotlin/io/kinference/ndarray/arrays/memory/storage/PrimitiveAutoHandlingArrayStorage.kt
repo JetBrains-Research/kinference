@@ -16,25 +16,21 @@ internal class PrimitiveAutoHandlingArrayStorage : TypedAutoHandlingStorage {
     private val used = Int2ObjectOpenHashMap<ArrayDeque<PrimitiveArray>>(INIT_STORAGE_SIZE)
     private val unused = Int2ObjectOpenHashMap<ArrayDeque<PrimitiveArray>>(INIT_STORAGE_SIZE)
 
-    companion object {
-        private val type = DataType.CurrentPrimitive
-    }
-
     internal fun getBlock(blocksNum: Int, blockSize: Int, limiter: MemoryManager): Array<PrimitiveArray> {
         val unusedQueue = unused.getOrPut(blockSize) { ArrayDeque(blocksNum) }
         val usedQueue = used.getOrPut(blockSize) { ArrayDeque(blocksNum) }
 
         val blocks = if (limiter.checkMemoryLimitAndAdd(getPrimitiveArraySizeInBytes(arraySize = blockSize * blocksNum))) {
-            Array(blocksNum) {
+            val retrieved = Array(blocksNum) {
                 unusedQueue.removeFirstOrNull()?.apply {
                     fill(PrimitiveConstants.ZERO)
                 } ?: PrimitiveArray(blockSize)
             }
+            usedQueue.addAll(retrieved)
+            retrieved
         } else {
             Array(blocksNum) { PrimitiveArray(blockSize) }
         }
-
-        usedQueue.addAll(blocks)
 
         return blocks
     }
