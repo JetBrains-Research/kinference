@@ -33,11 +33,11 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
 
     suspend fun runFromS3(name: String, delta: Double = DELTA, disableTests: List<String> = emptyList(), errorsVerbose: Boolean = true) {
         val toFolder = name.replace(":", "/").toPath()
-        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta, coroutinesCount = 1, errorsVerbose)
+        runTestsFromFolder(S3TestDataLoader, toFolder, disableTests, delta, errorsVerbose)
     }
 
     suspend fun runFromResources(testPath: String, delta: Double = DELTA, disableTests: List<String> = emptyList(), errorsVerbose: Boolean = true) {
-        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta, coroutinesCount = 1, errorsVerbose)
+        runTestsFromFolder(ResourcesTestDataLoader, testPath.toPath(), disableTests, delta, errorsVerbose)
     }
 
     private suspend fun runTestsFromFolder(
@@ -45,7 +45,6 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
         testPath: Path,
         disableTests: List<String> = emptyList(),
         delta: Double = DELTA,
-        coroutinesCount: Int = 1,
         errorsVerbose: Boolean = true
     ) {
         val model = testEngine.loadModel(loader.getFullPath(testPath) / "model.onnx")
@@ -53,57 +52,54 @@ class AccuracyRunner<T : ONNXData<*, *>>(private val testEngine: TestEngine<T>) 
         logger.info { "Predict: $testPath" }
         val filesInfo = loader.text(testPath / "descriptor.txt").lines().map { ONNXTestDataInfo.fromString(it) }
         val testGroups = filesInfo.filter { "test" in it.path }.groupBy { info -> info.path.takeWhile { it != '/' } }
-        for ((group, files) in testGroups) {
-            if (group in disableTests) {
-                continue
-            }
 
-            val inputFiles = files.filter { file -> "input" in file.path }
-            val inputs = inputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
-
-            val outputFiles = files.filter { file -> "output" in file.path }
-            val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
-
-            if (errorsVerbose)
-                logger.info { "Start predicting: $group" }
-
-            val actualOutputsList: List<Map<String, T>> = if (testEngine is MemoryProfileable) {
-                val memoryBeforeTest = testEngine.allocatedMemory()
-                val outputs = model.predict(inputs)
-                val memoryAfterTest = testEngine.allocatedMemory()
-                if (errorsVerbose)
-                    logger.info { "Memory before predict: $memoryBeforeTest" }
-                    logger.info { "Memory after predict: $memoryAfterTest" }
-                val outputsInMemorySize = expectedOutputs.getInMemorySize()
-                assertLessOrEquals(
-                    expected = outputsInMemorySize, actual = memoryAfterTest - memoryBeforeTest,
-                    message = "Memory leak found. Expected memory usage: ${memoryBeforeTest + outputsInMemorySize}, actual: $memoryAfterTest"
-                )
-                listOf(outputs)
-            } else {
-                val predictions: List<Deferred<Map<String, T>>> = List(coroutinesCount) {
-                    scope.async {
-                        model.predict(inputs)
-                    }
+        // we are escaping the coroutine test scope because it is one threaded by default
+        withContext(scope.coroutineContext) {
+            for ((group, files) in testGroups) {
+                if (group in disableTests) {
+                    continue
                 }
-                predictions.awaitAll()
-            }
 
-            actualOutputsList.forEach { actualOutputs ->
+                val inputFiles = files.filter { file -> "input" in file.path }
+                val inputs = inputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
+
+                val outputFiles = files.filter { file -> "output" in file.path }
+                val expectedOutputs = outputFiles.map { testEngine.loadData(loader.bytes(testPath / it.path), it.type) }
+
+                if (errorsVerbose)
+                    logger.info { "Start predicting: $group" }
+
+                val actualOutputs: Map<String, T> = if (testEngine is MemoryProfileable) {
+                    val memoryBeforeTest = testEngine.allocatedMemory()
+                    val outputs = model.predict(inputs)
+                    val memoryAfterTest = testEngine.allocatedMemory()
+                    if (errorsVerbose)
+                        logger.info { "Memory before predict: $memoryBeforeTest" }
+                        logger.info { "Memory after predict: $memoryAfterTest" }
+                    val outputsInMemorySize = expectedOutputs.getInMemorySize()
+                    assertLessOrEquals(
+                        expected = outputsInMemorySize, actual = memoryAfterTest - memoryBeforeTest,
+                        message = "Memory leak found. Expected memory usage: ${memoryBeforeTest + outputsInMemorySize}, actual: $memoryAfterTest"
+                    )
+                    outputs
+                } else {
+                    model.predict(inputs)
+                }
+
                 try {
                     check(ONNXTestData(group, expectedOutputs.associateBy { it.name!! }, actualOutputs), delta, errorsVerbose)
                 } catch (e: Exception) {
                     model.close()
+                    throw e
+                }
+                finally {
                     inputs.forEach { it.close() }
                     expectedOutputs.forEach { it.close() }
-                    throw e
-                } finally {
                     actualOutputs.values.forEach { it.close() }
                 }
             }
-            inputs.forEach { it.close() }
-            expectedOutputs.forEach { it.close() }
         }
+
         model.close()
 
         if (testEngine is MemoryProfileable) {
