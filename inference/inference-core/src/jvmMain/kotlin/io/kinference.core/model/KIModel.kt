@@ -32,13 +32,7 @@ class KIModel(
             if (profile) addProfilingContext("Model $name") else null
         )
 
-        var coreReserved = false
-        val results = try {
-            withContext(NonCancellable) {
-                ResourcesDispatcher.reserveCore()
-                coreReserved = true
-            }
-
+        val results = ResourcesDispatcher.reserveCore().suspendUse {
             val predictionContext = predictionContextDispatcher.getPredictionContext()
             val output = if (predictionContextDispatcher.allocationMode != AllocationMode.Auto) withContext(predictionContext) {
                 return@withContext graph.execute(input, contexts)
@@ -48,10 +42,6 @@ class KIModel(
 
             predictionContextDispatcher.returnStorage(predictionContext)
             output
-        } finally {
-            if (coreReserved) {
-                ResourcesDispatcher.releaseCore()
-            }
         }
 
         return results.associateBy { it.name!! }

@@ -3,17 +3,71 @@ package io.kinference.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.selects.select
 import kotlin.coroutines.*
 
-object ResourcesDispatcher {
-    private val tokenChannel = Channel<Unit>(capacity = PlatformUtils.cores)
+fun interface SuspendCloseable {
+    suspend fun close()
+}
 
-    suspend fun reserveCore() {
-        tokenChannel.send(Unit)
+suspend inline fun <T : SuspendCloseable, R> T.suspendUse(block: (T) -> R): R {
+    try {
+        return block(this)
+    } finally {
+        this.close()
+    }
+}
+
+sealed class ResourceController(
+    protected val tokenChannel: Channel<Unit>,
+    private val onLeaseCreated: (suspend () -> Unit) = {  },
+    private val onLeaseClosed: (suspend () -> Unit) = {  }
+) {
+
+    suspend fun reserveCore(): CoreLease {
+        var lease: CoreLease? = null
+
+        return runCatching {
+            select {
+                tokenChannel.onSend(Unit) {
+                    CoreLease().also {
+                        lease = it
+                        onLeaseCreated()
+                    }
+                }
+            }
+        }.getOrElse { ex ->
+            if (ex is CancellationException) {
+                lease?.close() // manually release
+                onLeaseClosed()
+            }
+            throw ex
+        }
     }
 
-    suspend fun releaseCore() {
-        tokenChannel.receive()
+    inner class CoreLease : SuspendCloseable {
+        override suspend fun close() {
+            withContext(NonCancellable) {
+                tokenChannel.receive()
+                onLeaseClosed()
+            }
+        }
+    }
+}
+
+object ResourcesDispatcher: ResourceController(Channel(PlatformUtils.cores))
+
+// Internal implementation for tests
+internal class TestResourcesDispatcher private constructor(
+    onLeaseCreated: (suspend () -> Unit) = {  },
+    onLeaseClosed: (suspend () -> Unit) = {  }
+) : ResourceController(Channel(capacity = 1), onLeaseCreated, onLeaseClosed) {
+    val testChannel get() = tokenChannel
+
+    companion object {
+        fun createTestResourceDispatcher(onLeaseCreated: (suspend () -> Unit) = {  }, onLeaseClosed: (suspend () -> Unit) = {  }): TestResourcesDispatcher {
+            return TestResourcesDispatcher(onLeaseCreated, onLeaseClosed)
+        }
     }
 }
 
