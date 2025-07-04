@@ -77,6 +77,8 @@ interface NumberNDArrayCore : NDArrayCore, NumberNDArray {
     override suspend operator fun times(other: NumberNDArray): MutableNumberNDArrayCore
     override suspend operator fun div(other: NumberNDArray): MutableNumberNDArrayCore
 
+    suspend fun softmaxVer1(axis: Int): NumberNDArrayCore
+    suspend fun logSoftmaxVer1(axis: Int): NumberNDArrayCore
     override suspend fun softmax(axis: Int): NumberNDArrayCore
     override suspend fun logSoftmax(axis: Int): NumberNDArrayCore
 
