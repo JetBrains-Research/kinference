@@ -16,7 +16,7 @@ import io.kinference.types.ValueTypeInfo
 class KITensor(name: String?, override val data: NDArrayCore, val info: ValueTypeInfo.TensorTypeInfo, private var context: ManualAllocatorContext? = null) : ONNXTensor<NDArrayCore, CoreBackend>(name, data) {
     constructor(data: NDArrayCore, info: ValueInfo) : this(info.name, data, info.typeInfo as ValueTypeInfo.TensorTypeInfo)
 
-    override suspend fun close() {
+    override fun close() {
         context?.returnNDArray(data)
         data.close()
     }

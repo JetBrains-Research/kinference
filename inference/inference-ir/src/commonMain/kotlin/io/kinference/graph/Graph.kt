@@ -201,7 +201,7 @@ abstract class Graph<T : ONNXData<*, *>> protected constructor(
 
     protected abstract fun makeContext(root: GraphContext<T>?): GraphContext<T>
 
-    override suspend fun close() {
+    override fun close() {
         closeAll(_initializers)
         closeAll(operators)
     }

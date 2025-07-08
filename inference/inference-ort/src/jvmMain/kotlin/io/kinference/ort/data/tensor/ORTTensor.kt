@@ -16,7 +16,7 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
         get() = data.info.shape
     override fun rename(name: String): ORTTensor = ORTTensor(name, data)
 
-    override suspend fun close() {
+    override fun close() {
         data.close()
     }
 

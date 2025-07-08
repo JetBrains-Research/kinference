@@ -47,7 +47,7 @@ class KIModel(
         return results.associateBy { it.name!! }
     }
 
-    override suspend fun close() {
+    override fun close() {
         graph.close()
         predictionContextDispatcher.close()
     }

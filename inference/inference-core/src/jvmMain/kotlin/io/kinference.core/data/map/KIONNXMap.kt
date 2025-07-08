@@ -20,7 +20,7 @@ class KIONNXMap(name: String?, data: Map<Any, KIONNXData<*>>, val info: ValueTyp
     val valueType: ValueTypeInfo?
         get() = info.valueType
 
-    override suspend fun close() {
+    override fun close() {
         data.values.forEach { it.close() }
     }
 

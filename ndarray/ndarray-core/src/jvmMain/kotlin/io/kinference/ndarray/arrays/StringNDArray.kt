@@ -38,7 +38,7 @@ open class StringNDArray(var array: Array<String>, strides: Strides) : NDArrayCo
         return StringNDArray(array.copyOf(), Strides(shape))
     }
 
-    override suspend fun close() = Unit
+    override fun close() = Unit
 
     override suspend fun toMutable(): MutableStringNDArray {
         return MutableStringNDArray(array.copyOf(), strides)

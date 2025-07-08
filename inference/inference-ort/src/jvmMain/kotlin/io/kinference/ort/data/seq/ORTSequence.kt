@@ -8,7 +8,7 @@ import io.kinference.ort.ORTBackend
 class ORTSequence(name: String?, override val data: OnnxSequence) : ONNXSequence<OnnxSequence, ORTBackend>(name, data) {
     override val backend: ORTBackend = ORTBackend
 
-    override suspend fun close() {
+    override fun close() {
         data.close()
     }
 
