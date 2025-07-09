@@ -8,7 +8,6 @@ import io.kinference.examples.extractTopToken
 import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.LongNDArray
 import io.kinference.ndarray.arrays.NDArrayCore
-import io.kinference.utils.CommonDataLoader
 import io.kinference.utils.PredictionConfigs
 import io.kinference.utils.inlines.InlineInt
 import okio.Path.Companion.toPath
@@ -54,5 +53,7 @@ suspend fun main() {
         currentContext = currentContext.concat(listOf(newTokenArray.unsqueeze(0)), axis = -1)
         print(tokenizer.decode(longArrayOf(outputTokens[idx])))
     }
+
+    model.close()
     println("\n\nDone")
 }

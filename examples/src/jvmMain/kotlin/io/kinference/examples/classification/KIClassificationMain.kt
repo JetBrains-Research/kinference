@@ -119,4 +119,6 @@ suspend fun main() {
             displayTopPredictions(predictions, classLabels, dataClass.key)
         }
     }
+
+    model.close()
 }

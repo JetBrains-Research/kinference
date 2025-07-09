@@ -57,6 +57,8 @@ suspend fun main() {
         currentContext = ORTTensor(newTokenArray, longArrayOf(1, 1, tokensSize + idx + 1L), INPUT_TENSOR_NAME)
         print(tokenizer.decode(longArrayOf(outputTokens[idx])))
     }
+
+    model.close()
     println("\n\nDone")
 }
 
