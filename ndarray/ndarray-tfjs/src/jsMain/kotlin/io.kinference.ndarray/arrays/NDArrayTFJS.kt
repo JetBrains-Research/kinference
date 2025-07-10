@@ -21,7 +21,7 @@ abstract class NDArrayTFJS internal constructor(internal var tfjsArray: ArrayTFJ
 
     override val type: DataType = tfjsArray.dtype.resolveTFJSDataType()
 
-    override suspend fun close() {
+    override fun close() {
         tfjsArray.dispose()
     }
 

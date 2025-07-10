@@ -18,7 +18,7 @@ class TFJSTensor(name: String?, override val data: NDArrayTFJS, val info: ValueT
         return TFJSTensor(name, data, info)
     }
 
-    override suspend fun close() {
+    override fun close() {
         data.close()
     }
 

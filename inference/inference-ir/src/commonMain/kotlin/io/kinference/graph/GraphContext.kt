@@ -52,7 +52,7 @@ class GraphContext<T : ONNXData<*, *>>(private val base: GraphContext<T>? = null
         shapes.clear()
     }
 
-    override suspend fun close() {
+    override fun close() {
         for (value in values) {
             value.value.close()
         }

@@ -17,7 +17,7 @@ class ORTTensor(name: String?, override val data: OnnxTensor) : ONNXTensor<OnnxT
     val shape: LongArray
         get() = data.info.shape
 
-    override suspend fun close() {
+    override fun close() {
         data.close()
     }
 

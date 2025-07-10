@@ -33,7 +33,7 @@ class GRUDefaultGate internal constructor(
 
     fun getVector(batchNum: Int) = gateData[batchNum]
 
-    override suspend fun close() {
+    override fun close() {
         closeArrays(gateData)
     }
 }
@@ -48,7 +48,7 @@ class GRUHiddenGate private constructor(
     private val gateData: Array<MutableNumberNDArrayTFJS>,
 ) : Closeable {
 
-    override suspend fun close() {
+    override fun close() {
         closeArrays(gateData)
     }
 
@@ -144,7 +144,7 @@ class GRUHiddenGate private constructor(
 
 data class GRUGates(val update: GRUDefaultGate, val reset: GRUDefaultGate, val hidden: GRUHiddenGate) : Closeable {
 
-    override suspend fun close() {
+    override fun close() {
         update.close()
         reset.close()
         hidden.close()
@@ -200,7 +200,7 @@ class GRUHiddenState internal constructor(
     val data: Array<Array<MutableNumberNDArrayTFJS>>
         get() = stateData
 
-    override suspend fun close() {
+    override fun close() {
         stateData.forEach { closeArrays(it) }
     }
 

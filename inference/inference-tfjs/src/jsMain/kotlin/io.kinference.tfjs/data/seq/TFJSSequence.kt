@@ -16,7 +16,7 @@ class TFJSSequence(name: String?, data: List<TFJSData<*>>, val info: ValueTypeIn
 
     override fun rename(name: String) = TFJSSequence(name, data, info)
 
-    override suspend fun close() {
+    override fun close() {
         data.forEach { it.close() }
     }
 

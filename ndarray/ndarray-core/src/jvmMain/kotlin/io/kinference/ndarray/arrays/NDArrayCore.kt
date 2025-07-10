@@ -4,7 +4,7 @@ import io.kinference.ndarray.extensions.*
 
 interface NDArrayCore : NDArray {
     override suspend fun clone(): NDArrayCore
-    override suspend fun close() = Unit
+    override fun close() = Unit
 
     suspend fun map(function: PrimitiveToPrimitiveFunction, destination: MutableNDArray): MutableNDArrayCore
     suspend fun map(function: PrimitiveToPrimitiveFunction): MutableNDArrayCore
