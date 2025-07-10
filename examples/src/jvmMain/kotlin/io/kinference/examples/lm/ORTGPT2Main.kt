@@ -7,11 +7,9 @@ import io.kinference.examples.downloadFile
 import io.kinference.examples.extractTopToken
 import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.FloatNDArray
-import io.kinference.ndarray.arrays.FloatNDArray.Companion.invoke
 import io.kinference.ort.ORTData
 import io.kinference.ort.ORTEngine
 import io.kinference.ort.data.tensor.ORTTensor
-import io.kinference.utils.CommonDataLoader
 import io.kinference.utils.inlines.InlineInt
 import io.kinference.utils.toIntArray
 import okio.Path.Companion.toPath
@@ -57,6 +55,8 @@ suspend fun main() {
         currentContext = ORTTensor(newTokenArray, longArrayOf(1, 1, tokensSize + idx + 1L), INPUT_TENSOR_NAME)
         print(tokenizer.decode(longArrayOf(outputTokens[idx])))
     }
+
+    model.close()
     println("\n\nDone")
 }
 

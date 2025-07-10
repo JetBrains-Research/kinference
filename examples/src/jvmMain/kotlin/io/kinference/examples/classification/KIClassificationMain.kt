@@ -6,8 +6,6 @@ import io.kinference.core.data.tensor.asTensor
 import io.kinference.examples.downloadFile
 import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.FloatNDArray.Companion.invoke
-import io.kinference.utils.CommonDataLoader
 import io.kinference.utils.PredictionConfigs
 import io.kinference.utils.inlines.InlineInt
 import okio.Path.Companion.toPath
@@ -119,4 +117,6 @@ suspend fun main() {
             displayTopPredictions(predictions, classLabels, dataClass.key)
         }
     }
+
+    model.close()
 }
