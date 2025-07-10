@@ -92,8 +92,8 @@ subprojects {
         }
     }
 
-    val kotlinVersion = KotlinVersion.KOTLIN_2_2
-    val jvmTargetVersion = JvmTarget.JVM_21
+    val kotlinVersion = KotlinVersion.KOTLIN_2_0
+    val jvmTargetVersion = JvmTarget.JVM_17
 
     tasks.withType(KotlinCompilationTask::class.java) {
         compilerOptions {
