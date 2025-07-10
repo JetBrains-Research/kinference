@@ -19,8 +19,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlin-deeplearning-api:0.5.2")
                 implementation("org.jetbrains.kotlinx:kotlin-deeplearning-dataset:0.5.2")  // Dataset support
 
-                implementation("io.ktor:ktor-client-core:2.3.13")
-                implementation("io.ktor:ktor-client-cio:2.3.13") // JVM Engine
+                implementation("io.ktor:ktor-client-core:3.1.1")
+                implementation("io.ktor:ktor-client-cio:3.1.1") // JVM Engine
 
                 api("org.slf4j:slf4j-api:2.0.9")
                 api("org.slf4j:slf4j-simple:2.0.9")

@@ -1,5 +1,8 @@
 rootProject.name = "kinference"
 
+// Include build-logic composite build
+includeBuild("build-logic")
+
 include(":ndarray:ndarray-api")
 include(":ndarray:ndarray-core")
 include(":ndarray:ndarray-tfjs")
@@ -36,5 +39,10 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
+    }
+
+    // Make the test plugin available to the main build
+    plugins {
+        id("io.kinference.testplugin")
     }
 }

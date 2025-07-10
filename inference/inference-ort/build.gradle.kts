@@ -4,6 +4,10 @@ import io.kinference.gradle.configureHeavyTests
 group = rootProject.group
 version = rootProject.version
 
+plugins {
+    id("io.kinference.testplugin")
+}
+
 kotlin {
     jvm {
         configureHeavyTests()

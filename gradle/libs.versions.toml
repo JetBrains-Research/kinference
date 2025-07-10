@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.0"
+kotlin = "2.2.0"
 
 apache-commons = "4.0-beta1"
 aws = "1.12.787"
@@ -22,7 +22,7 @@ tfjs = "4.14.0"
 [plugins]
 kinference-primitives = { id = "io.kinference.primitives", version.ref = "primitives" }
 kotlin-atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin"}
 
 [libraries]
 apache-commons-math4-core = { module = "org.apache.commons:commons-math4-core", version.ref = "apache-commons" }

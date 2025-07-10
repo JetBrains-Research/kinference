@@ -3,6 +3,10 @@ import io.kinference.gradle.configureTests
 group = rootProject.group
 version = rootProject.version
 
+plugins {
+    id("io.kinference.testplugin")
+}
+
 kotlin {
     jvm {
         configureTests()

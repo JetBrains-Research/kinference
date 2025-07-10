@@ -65,4 +65,3 @@ class S3Client(val config: Config) {
         println("Finished files downloading")
     }
 }
-

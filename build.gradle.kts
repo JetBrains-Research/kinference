@@ -26,7 +26,7 @@ allprojects {
         maven("https://repo.kotlin.link")
     }
 
-    plugins.withType<YarnPlugin>() {
+    plugins.withType<YarnPlugin> {
         the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
     }
 }
@@ -92,8 +92,8 @@ subprojects {
         }
     }
 
-    val kotlinVersion = KotlinVersion.KOTLIN_2_0
-    val jvmTargetVersion = JvmTarget.JVM_17
+    val kotlinVersion = KotlinVersion.KOTLIN_2_2
+    val jvmTargetVersion = JvmTarget.JVM_21
 
     tasks.withType(KotlinCompilationTask::class.java) {
         compilerOptions {
@@ -101,13 +101,13 @@ subprojects {
             languageVersion.set(kotlinVersion)
 
             if (this is KotlinJvmCompilerOptions) {
-                jvmTarget.set(jvmTargetVersion)
+                jvmTarget.convention(jvmTargetVersion)
             }
         }
     }
 
     tasks.withType(JavaCompile::class.java) {
-        sourceCompatibility = jvmTargetVersion.toString()
-        targetCompatibility = jvmTargetVersion.toString()
+        sourceCompatibility = jvmTargetVersion.target
+        targetCompatibility = jvmTargetVersion.target
     }
 }
