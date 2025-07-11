@@ -18,7 +18,7 @@ import io.kinference.ndarray.extensions.argMinMax.argMinMaxPrimitive
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.ndarray.extensions.dot.*
 import io.kinference.ndarray.extensions.reduce.primitive.reduceOperationPrimitive
-import io.kinference.ndarray.extensions.softmax.softmax
+import io.kinference.ndarray.extensions.softmax.*
 import io.kinference.utils.inlines.*
 import io.kinference.ndarray.stubs.*
 import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
@@ -263,6 +263,25 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return this.map(object : PrimitiveMap {
             override fun apply(value: PrimitiveType): PrimitiveType = erf(value)
         })
+    }
+
+    override suspend fun softmaxVer1(axis: Int): PrimitiveNDArray {
+        return softmaxVer1(this, axis) as PrimitiveNDArray
+    }
+
+    override suspend fun logSoftmaxVer1(axis: Int): PrimitiveNDArray {
+        fun log(type: DataType) = when(type) {
+            DataType.FLOAT -> object : FloatMap {
+                override fun apply(value: Float): Float = ln(value)
+            }
+
+            DataType.DOUBLE -> object : DoubleMap {
+                override fun apply(value: Double): Double = ln(value)
+            }
+            else -> error("LogSoftmax supported only for DOUBLE and FLOAT types")
+        }
+        val output = softmaxVer1(this, axis)
+        return output.mapMutable(log(output.type)) as MutablePrimitiveNDArray
     }
 
     override suspend fun softmax(axis: Int): PrimitiveNDArray {
