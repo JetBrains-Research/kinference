@@ -3,6 +3,7 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.Strides
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
+import kotlin.math.max
 import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
@@ -117,7 +118,7 @@ internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunc
 }
 
 internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
-    val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
+    val batchSize = max((countRows + 19)/20, (minDataPerLaunch + rowSize - 1) / rowSize)
 
     return min(batchSize, countRows)
 }

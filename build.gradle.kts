@@ -20,6 +20,7 @@ plugins {
 
 allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
@@ -38,7 +39,6 @@ subprojects {
         plugin("org.jetbrains.kotlin.multiplatform")
         plugin("idea")
     }
-
 
     applyIf(path != ":examples") {
         apply(plugin = "maven-publish")
@@ -93,7 +93,7 @@ subprojects {
     }
 
     val kotlinVersion = KotlinVersion.KOTLIN_2_0
-    val jvmTargetVersion = JvmTarget.JVM_17
+    val jvmTargetVersion = JvmTarget.JVM_21
 
     tasks.withType(KotlinCompilationTask::class.java) {
         compilerOptions {
@@ -106,8 +106,8 @@ subprojects {
         }
     }
 
-    tasks.withType(JavaCompile::class.java) {
-        sourceCompatibility = jvmTargetVersion.toString()
-        targetCompatibility = jvmTargetVersion.toString()
-    }
+//    tasks.withType(JavaCompile::class.java) {
+//        sourceCompatibility = jvmTargetVersion.toString()
+//        targetCompatibility = jvmTargetVersion.toString()
+//    }
 }
