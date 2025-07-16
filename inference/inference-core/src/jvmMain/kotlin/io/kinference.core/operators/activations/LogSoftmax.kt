@@ -10,7 +10,7 @@ import io.kinference.protobuf.message.AttributeProto
 
 sealed class LogSoftmax(name: String, info: OperatorInfo, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) : Activation(name, info, attributes, inputs, outputs) {
     companion object {
-        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 13);
+        private val DEFAULT_VERSION = VersionInfo(sinceVersion = 13)
 
         operator fun invoke(name: String, version: Int?, attributes: Map<String, Attribute<Any>>, inputs: List<String>, outputs: List<String>) = when (version ?: DEFAULT_VERSION.sinceVersion) {
             in LogSoftmaxVer13.VERSION.asRange() -> LogSoftmaxVer13(name, attributes, inputs, outputs)

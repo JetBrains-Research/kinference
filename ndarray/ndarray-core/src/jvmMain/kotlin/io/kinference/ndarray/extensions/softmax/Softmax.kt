@@ -37,16 +37,8 @@ suspend fun softmax(
     val stride = if (actualAxis == input.rank - 1) 1 else input.computeBlockSize(fromDim = actualAxis + 1)
 
     return when (input.type) {
-        DataType.FLOAT -> when (stride) {
-            1 -> softmaxVer1Float(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns)
-            else -> softmaxVer13Float(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns, stride)
-        }
-
-        DataType.DOUBLE -> when (stride) {
-            1 -> softmaxVer1Double(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns)
-            else -> softmaxVer13Double(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns, stride)
-        }
-
+        DataType.FLOAT -> softmaxVer13Float(input as FloatNDArray, dest as MutableFloatNDArray, rows, columns, stride)
+        DataType.DOUBLE -> softmaxVer13Double(input as DoubleNDArray, dest as MutableDoubleNDArray, rows, columns, stride)
         else -> error("Softmax operation supported only for FLOAT and DOUBLE tensors, actual type is ${input.type}")
     }
 }
