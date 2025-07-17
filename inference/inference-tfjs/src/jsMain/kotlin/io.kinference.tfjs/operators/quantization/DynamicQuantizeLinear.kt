@@ -69,7 +69,7 @@ class DynamicQuantizeLinearVer11(name: String, attributes: Map<String, Attribute
         return outputs.asNamedOutputs(this.outputs)
     }
 
-    override suspend fun close() {
+    override fun close() {
         super.close()
         closeAll(byteSizeScalar, scalarZero)
     }

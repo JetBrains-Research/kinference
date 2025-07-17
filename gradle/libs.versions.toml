@@ -2,7 +2,7 @@
 kotlin = "2.0.0"
 
 apache-commons = "4.0-beta1"
-aws = "1.12.761"
+aws = "1.12.787"
 kmath = "0.3.1"
 kotlin-atomicfu = "0.23.2"
 kotlin-coroutines = "1.9.0"

@@ -11,7 +11,7 @@ class ORTMap(name: String?, override val data: OnnxMap) : ONNXMap<OnnxMap, ORTBa
     override val type: ONNXDataType = ONNXDataType.ONNX_MAP
     override fun rename(name: String): ORTMap = ORTMap(name, data)
 
-    override suspend fun close() {
+    override fun close() {
         data.close()
     }
 

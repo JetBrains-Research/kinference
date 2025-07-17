@@ -23,7 +23,7 @@ class TFJSMap(name: String?, data: Map<Any, TFJSData<*>>, val info: ValueTypeInf
 
     override fun rename(name: String) = TFJSMap(name, data, info)
 
-    override suspend fun close() {
+    override fun close() {
         data.values.forEach { it.close() }
     }
 

@@ -13,7 +13,7 @@ class KIONNXSequence(name: String?, data: List<KIONNXData<*>>, val info: ValueTy
 
     override val backend = CoreBackend
 
-    override suspend fun close() {
+    override fun close() {
         data.forEach { it.close() }
     }
 

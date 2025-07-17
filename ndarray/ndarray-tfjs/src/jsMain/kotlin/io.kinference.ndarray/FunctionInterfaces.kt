@@ -14,7 +14,7 @@ data class MomentsOutput(
     val variance: NumberNDArrayTFJS
 ) : Closeable {
 
-    override suspend fun close() {
+    override fun close() {
         mean.close()
         variance.close()
     }
@@ -31,7 +31,7 @@ data class QrDecompositionResult(
     val q: NumberNDArrayTFJS,
     val r: NumberNDArrayTFJS
 ) : Closeable {
-    override suspend fun close() {
+    override fun close() {
         q.close()
         r.close()
     }

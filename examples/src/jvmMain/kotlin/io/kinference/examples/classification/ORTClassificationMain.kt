@@ -3,10 +3,8 @@ package io.kinference.examples.classification
 import io.kinference.examples.downloadFile
 import io.kinference.examples.cacheDirectory
 import io.kinference.ndarray.arrays.*
-import io.kinference.ndarray.arrays.FloatNDArray.Companion.invoke
 import io.kinference.ort.ORTEngine
 import io.kinference.ort.data.tensor.ORTTensor
-import io.kinference.utils.CommonDataLoader
 import io.kinference.utils.inlines.InlineInt
 import io.kinference.utils.toLongArray
 import okio.Path.Companion.toPath
@@ -118,4 +116,6 @@ suspend fun main() {
             displayTopPredictions(predictions, classLabels, dataClass.key)
         }
     }
+
+    model.close()
 }

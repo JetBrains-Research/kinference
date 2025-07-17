@@ -65,7 +65,7 @@ class PredictionContextDispatcher(private val predictionConfig: PredictionConfig
         limiter.resetLimit()
     }
 
-    override suspend fun close() {
+    override fun close() {
         clearCache()
     }
 

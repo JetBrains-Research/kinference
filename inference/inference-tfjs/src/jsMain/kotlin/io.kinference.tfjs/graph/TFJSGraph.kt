@@ -19,7 +19,7 @@ class TFJSGraph private constructor(
     private val preparedTensorsContext: GraphContext<TFJSData<*>> = GraphContext()
 ) : Graph<TFJSData<*>>(proto, initializers, operators, valueOrderInfo) {
 
-    override suspend fun close() {
+    override fun close() {
         preparedTensorsContext.close()
         super.close()
     }

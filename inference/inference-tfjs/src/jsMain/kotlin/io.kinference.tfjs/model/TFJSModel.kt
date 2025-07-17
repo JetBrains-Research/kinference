@@ -18,7 +18,7 @@ class TFJSModel(val name: String, val opSet: OperatorSetRegistry, val graph: TFJ
         }
     }
 
-    override suspend fun close() {
+    override fun close() {
         graph.close()
     }
 

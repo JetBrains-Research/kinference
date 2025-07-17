@@ -38,7 +38,7 @@ open class BooleanNDArray(var array: BooleanTiledArray, strides: Strides) : NDAr
         return BooleanNDArray(array.copyOf(), Strides(shape))
     }
 
-    override suspend fun close() = Unit
+    override fun close() = Unit
 
     override fun view(vararg axes: Int): BooleanNDArray {
         for ((i, axis) in axes.withIndex()) {
