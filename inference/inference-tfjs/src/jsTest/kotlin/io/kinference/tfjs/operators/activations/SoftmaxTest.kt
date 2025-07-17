@@ -5,7 +5,7 @@ import io.kinference.utils.TestRunner
 import kotlin.test.Test
 
 class SoftmaxTest {
-    private fun getTargetPath(dirName: String) = "softmax/$dirName/"
+    private fun getTargetPath(dirName: String) = "softmax/v1/$dirName/"
 
     @Test
     fun test_softmax_axis_0() = TestRunner.runTest {
