@@ -1,4 +1,5 @@
 @file:GeneratePrimitives(DataType.NUMBER)
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions
 
@@ -11,6 +12,7 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.CoroutineContext
@@ -158,6 +160,50 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
                     for (j in leftBlock.indices) {
                         totalSum += leftBlock[j] * rightBlock[j]
                     }
+                }
+
+                destPointer.setAndIncrement((totalSum * alpha).toPrimitive())
+            }
+        }
+    }
+
+    return destination
+}
+
+@SpecifyPrimitives(include = [DataType.FLOAT, DataType.DOUBLE])
+internal suspend fun PrimitiveNDArray.vectorizedDotTransposedWithAlpha(alpha: Double, other: NumberNDArray, destination: MutableNumberNDArray): MutableNumberNDArray {
+    other as PrimitiveNDArray; destination as MutablePrimitiveNDArray
+
+    val alpha = alpha.toPrimitive()
+    val lrBlocksInRow = this.blocksInRow
+
+    val n = this.shape[0]
+    val t = this.shape[1]
+    val m = other.shape[0]
+
+    val leftBlocks = this.array.blocks
+    val rightBlocks = other.array.blocks
+    val rowFlop = t * m
+
+    // Constant 262144 was precomputed on M1 Max processor
+    // With this constant two launches work faster than single thread without launches
+    // TODO: (cupertank) Remove constants
+    parallelizeByRows(rowFlop, n, 262144) { nStart: Int, nEnd: Int, _ ->
+        val destPointer = destination.array.pointer()
+        val blockSize = this.array.blockSize
+        for (i in nStart until nEnd) {
+            val leftBlockOffset = i * lrBlocksInRow
+            var rightBlockIndex = 0
+
+            destPointer.linearIndex = i * m
+
+            for (k in 0 until m) {
+                var totalSum = PrimitiveConstants.ZERO
+                for (lrBlock in 0 until lrBlocksInRow) {
+                    val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
+                    val rightBlock = rightBlocks[rightBlockIndex++]
+
+                    totalSum += BinaryOp(PrimitiveSlice(leftBlock), PrimitiveSlice(rightBlock), Mul).reduce(Add, blockSize)
                 }
 
                 destPointer.setAndIncrement((totalSum * alpha).toPrimitive())

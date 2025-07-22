@@ -19,64 +19,42 @@ benchmark {
         register("jvmBenchmark")
     }
     configurations {
-        register("vector") {
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
+        register("all") {
+            include(".*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
         }
         register("dot") {
-            include(".*DotBenchmark")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
+            include(".*Dot.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
         register("softmax") {
-            include(".*SoftmaxBenchmark")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("floatSoftmax") {
-            include(".*FloatSoftmaxBenchmark.*")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
+            include(".*Softmax.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
         register("double") {
             include("Double.*")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
         register("float") {
             include("Float.*")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("pllvd") {
-            include(".*parallelLVDot.*")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("pvd") {
-            include(".*parallelVectorDot.*")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"

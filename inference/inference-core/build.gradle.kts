@@ -43,6 +43,16 @@ kotlin {
             dependencies {
                 implementation(project(":utils:utils-testing"))
             }
+            compilerOptions {
+                freeCompilerArgs.add("-Xadd-modules=jdk.incubator.vector")
+            }
         }
     }
+    tasks.withType<JavaExec>().configureEach {
+        jvmArgs = listOf("--add-modules=jdk.incubator.vector")
+    }
+    tasks.withType<Test>().configureEach {
+        jvmArgs = listOf("--add-modules=jdk.incubator.vector")
+    }
+
 }

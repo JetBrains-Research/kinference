@@ -35,6 +35,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
     }
 }

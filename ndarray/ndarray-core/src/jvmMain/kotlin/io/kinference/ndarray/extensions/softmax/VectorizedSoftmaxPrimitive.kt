@@ -1,26 +1,24 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions.softmax
 
 import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
-import io.kinference.ndarray.stubs.max
-import io.kinference.primitives.types.*
-import io.kinference.ndarray.math.FastMath
-import io.kinference.ndarray.math.exp
-import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
-import kotlin.math.*
 import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.extensions.gather.gatherByBlocksULong
+import io.kinference.ndarray.stubs.max
+import io.kinference.primitives.annotations.GenerateNameFromPrimitives
+import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.types.*
+import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.vector.*
-
-
+import kotlin.math.*
 
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
+internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
     val inputBlockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
 
@@ -33,7 +31,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = inputBlocks[blockNum].max()
+            maxesArray[blockNum] = PrimitiveSlice(inputBlocks[blockNum], 0).reduce(Max, inputBlockSize)
         }
     }
 
@@ -54,10 +52,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
                 val inputBlock = inputBlocks[rowBlockIdx]
                 val outputBlock = outputArray.blocks[rowBlockIdx]
-
-                for (j in outputBlock.indices) {
-                    outputBlock[j] = inputBlock[j] - localMax
-                }
+                BinaryOp(PrimitiveSlice(inputBlock, 0), Value(localMax), Sub).into(outputBlock, 0, inputBlock.size)
             }
         }
     }
@@ -70,9 +65,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputArray.blocks[blockNum]
 
-            for (j in outputBlock.indices) {
-                outputBlock[j] = FastMath.exp(outputBlock[j])
-            }
+            UnaryOp(PrimitiveSlice(outputBlock, 0), Exp).into(outputBlock, 0, outputBlock.size)
         }
     }
 
@@ -84,7 +77,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 131072) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            sumsArray[blockNum] = outputArray.blocks[blockNum].sum()
+            sumsArray[blockNum] = PrimitiveSlice(outputArray.blocks[blockNum], 0).reduce(Add, inputBlockSize)
         }
     }
 
@@ -102,10 +95,7 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
                 val outputBlock = outputArray.blocks[rowBlockIdx]
-
-                for (j in outputBlock.indices) {
-                    outputBlock[j] /= localSum
-                }
+                BinaryOp(PrimitiveSlice(outputBlock, 0), Value(localSum), Div).into(outputBlock, 0, outputBlock.size)
             }
         }
     }
@@ -114,5 +104,5 @@ internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, dest: MutablePrim
 }
 
 @GenerateNameFromPrimitives
-internal suspend fun softmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
-    softmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)
+internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray =
+    vectorizedSoftmaxPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides), rows, columns)
