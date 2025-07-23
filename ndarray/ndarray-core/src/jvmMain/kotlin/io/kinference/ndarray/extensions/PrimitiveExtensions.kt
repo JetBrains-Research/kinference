@@ -203,7 +203,7 @@ internal suspend fun PrimitiveNDArray.vectorizedDotTransposedWithAlpha(alpha: Do
                     val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
                     val rightBlock = rightBlocks[rightBlockIndex++]
 
-                    totalSum += BinaryOp(PrimitiveSlice(leftBlock), PrimitiveSlice(rightBlock), Mul).reduce(Add, blockSize)
+                    totalSum += Mul(PrimitiveSlice(leftBlock), PrimitiveSlice(rightBlock)).reduce(ADD, blockSize)
                 }
 
                 destPointer.setAndIncrement((totalSum * alpha).toPrimitive())

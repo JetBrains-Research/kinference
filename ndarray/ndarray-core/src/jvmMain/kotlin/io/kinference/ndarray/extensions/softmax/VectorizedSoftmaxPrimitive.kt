@@ -31,7 +31,7 @@ internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: M
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = PrimitiveSlice(inputBlocks[blockNum], 0).reduce(Max, inputBlockSize)
+            maxesArray[blockNum] = PrimitiveSlice(inputBlocks[blockNum]).reduce(MAX, inputBlockSize)
         }
     }
 
@@ -52,7 +52,7 @@ internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: M
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
                 val inputBlock = inputBlocks[rowBlockIdx]
                 val outputBlock = outputArray.blocks[rowBlockIdx]
-                BinaryOp(PrimitiveSlice(inputBlock, 0), Value(localMax), Sub).into(outputBlock, 0, inputBlock.size)
+                Sub(PrimitiveSlice(inputBlock), Value(localMax)).into(outputBlock, 0, inputBlock.size)
             }
         }
     }
@@ -64,8 +64,7 @@ internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: M
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputArray.blocks[blockNum]
-
-            UnaryOp(PrimitiveSlice(outputBlock, 0), Exp).into(outputBlock, 0, outputBlock.size)
+            Exp(PrimitiveSlice(outputBlock)).into(outputBlock, 0, outputBlock.size)
         }
     }
 
@@ -77,7 +76,7 @@ internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: M
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 131072) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            sumsArray[blockNum] = PrimitiveSlice(outputArray.blocks[blockNum], 0).reduce(Add, inputBlockSize)
+            sumsArray[blockNum] = PrimitiveSlice(outputArray.blocks[blockNum], 0).reduce(ADD, inputBlockSize)
         }
     }
 
@@ -95,7 +94,7 @@ internal suspend fun vectorizedSoftmaxPrimitive(input: PrimitiveNDArray, dest: M
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
                 val outputBlock = outputArray.blocks[rowBlockIdx]
-                BinaryOp(PrimitiveSlice(outputBlock, 0), Value(localSum), Div).into(outputBlock, 0, outputBlock.size)
+                Div(PrimitiveSlice(outputBlock), Value(localSum)).into(outputBlock, 0, outputBlock.size)
             }
         }
     }
