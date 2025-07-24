@@ -59,7 +59,14 @@ benchmark {
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
-    }
+        register("dotN") {
+            include("FloatDotN.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 7 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }}
 
 }
 

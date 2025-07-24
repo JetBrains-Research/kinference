@@ -89,10 +89,12 @@ fun interface ParallelizeBody {
 /*
  * Parallelize with batching by minDataPerLaunch
  */
-suspend fun parallelizeByBlocks(blockSize: Int,
-                                countBlocks: Int,
-                                minDataPerLaunch: Int,
-                                body: ParallelizeBody) {
+suspend fun parallelizeByBlocks(
+    blockSize: Int,
+    countBlocks: Int,
+    minDataPerLaunch: Int,
+    body: ParallelizeBody
+) {
 
     val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
 
@@ -109,7 +111,8 @@ suspend fun parallelizeByBlocks(blockSize: Int,
     }
 }
 
-suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) =
+    parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
 
 internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
     val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)
@@ -118,7 +121,10 @@ internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunc
 }
 
 internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
-    val batchSize = max((countRows + 19)/20, (minDataPerLaunch + rowSize - 1) / rowSize)
+    //val availableCores = Runtime.getRuntime().availableProcessors()
+    //val minBatchSize = (countRows + availableCores - 1) / availableCores
+    //val batchSize = max((minDataPerLaunch + rowSize - 1) / rowSize, minBatchSize)
+    val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
 
     return min(batchSize, countRows)
 }
