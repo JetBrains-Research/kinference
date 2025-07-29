@@ -1,5 +1,6 @@
 @file:GeneratePrimitives(DataType.NUMBER)
 @file:Suppress("DuplicatedCode", "unused")
+@file:GenerateVector
 
 package io.kinference.ndarray.arrays
 
@@ -25,6 +26,7 @@ import io.kinference.ndarray.stubs.MAX_VALUE_FOR_MIN
 import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -151,7 +153,16 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         return MutablePrimitiveNDArray(newArray, newStrides)
     }
 
-    private fun slice(dst: PrimitivePointer, src: PrimitivePointer, offset: Int, axis: Int, shape: IntArray, starts: IntArray, ends: IntArray, steps: IntArray) {
+    private fun slice(
+        dst: PrimitivePointer,
+        src: PrimitivePointer,
+        offset: Int,
+        axis: Int,
+        shape: IntArray,
+        starts: IntArray,
+        ends: IntArray,
+        steps: IntArray
+    ) {
         val start = starts[axis]
         val end = ends[axis]
         val step = steps[axis]
@@ -182,11 +193,10 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
     override suspend fun min(): PrimitiveType {
         var min = PrimitiveType.MAX_VALUE_FOR_MIN
+        val blockSize = this.array.blockSize
         for (block in array.blocks) {
-            for (idx in block.indices) {
-                val tmp = block[idx]
-                if (tmp < min) min = tmp
-            }
+            val blockMin = PrimitiveSlice(block).reduce(MIN, blockSize)
+            if (blockMin < min) min = blockMin
         }
         return min
     }
@@ -197,22 +207,21 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
     override suspend fun max(): PrimitiveType {
         var max = PrimitiveType.MIN_VALUE_FOR_MAX
+        val blockSize = this.array.blockSize
         for (block in array.blocks) {
-            for (idx in block.indices) {
-                val tmp = block[idx]
-                if (tmp > max) max = tmp
-            }
+            val blockMax = PrimitiveSlice(block).reduce(MAX, blockSize)
+            if (blockMax > max) max = blockMax
         }
-
         return max
     }
 
     override suspend fun sum(): PrimitiveType {
         var sum = (0).toPrimitive()
+        val blockSize = this.array.blockSize
 
         for (block in array.blocks) {
             for (idx in block.indices) {
-                sum = (sum + block[idx]).toPrimitive()
+                sum = (PrimitiveSlice(block).reduce(ADD, blockSize) + sum).toPrimitive()
             }
         }
         return sum
@@ -270,7 +279,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     }
 
     override suspend fun logSoftmax(axis: Int): PrimitiveNDArray {
-        fun log(type: DataType) = when(type) {
+        fun log(type: DataType) = when (type) {
             DataType.FLOAT -> object : FloatMap {
                 override fun apply(value: Float): Float = ln(value)
             }
@@ -278,8 +287,10 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
             DataType.DOUBLE -> object : DoubleMap {
                 override fun apply(value: Double): Double = ln(value)
             }
+
             else -> error("LogSoftmax supported only for DOUBLE and FLOAT types")
         }
+
         val output = softmax(this, axis)
         return output.mapMutable(log(output.type)) as MutablePrimitiveNDArray
     }
@@ -429,6 +440,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                     }
                 }
             }
+
             transposeA -> {
                 // TODO rewrite using block operations
                 for (t in 0 until m) {
@@ -442,6 +454,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                     }
                 }
             }
+
             transposeB -> {
                 for (t in 0 until m) {
                     val aIdx = t * lda + aOffset
@@ -458,6 +471,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                     }
                 }
             }
+
             else -> {
                 for (t in 0 until m) {
                     val cIdx = t * ldc + cOffset
@@ -562,7 +576,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                         var maximumIndex = 0
 
                         inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
-                            if (value > maximum)  {
+                            if (value > maximum) {
                                 maximum = value
                                 maximumIndex = index
                             }
@@ -580,7 +594,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                         var minimumIndex = 0
 
                         inputPointer.forEachIndexed(countDims - 1, 1) { index: Int, value: PrimitiveType ->
-                            if (value < minimum)  {
+                            if (value < minimum) {
                                 minimum = value
                                 minimumIndex = index
                             }
@@ -991,15 +1005,17 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
         recurrentCopyInput(0, this, outputArray)
 
-        when(mode) {
+        when (mode) {
             PadMode.CONSTANT -> {
                 if (constant != (0).toPrimitive()) {
                     recurrentFillConstant(0, outputArray)
                 }
             }
+
             PadMode.EDGE -> {
                 recurrentFillEdge(0, outputArray)
             }
+
             PadMode.REFLECT -> {
                 recurrentFillReflect(0, outputArray)
             }
@@ -1031,7 +1047,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         val blockToCopy = if (axisToStop != -1) computeBlockSize(fromDim = axisToStop) else 0
 
         fun tileCopy(axis: Int, inputOffset: Int, outputOffset: Int) {
-            when(axis) {
+            when (axis) {
                 axisToStop -> {
                     val inputPointer = this.array.pointer(inputOffset)
                     val outputPointer = outputArray.array.pointer(outputOffset)
@@ -1062,7 +1078,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         fun tileRepeat(axis: Int, offset: Int) {
             val countRepeat = repeats[axis]
 
-            when(axis) {
+            when (axis) {
                 axisToStop -> return
                 shape.lastIndex -> {
                     val blockSize = this.shape[axis]
@@ -1074,6 +1090,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
                         outputPointer.accept(inputPointer, blockSize) { _: PrimitiveType, src: PrimitiveType -> src }
                     }
                 }
+
                 else -> {
                     val dims = this.shape[axis]
                     repeat(dims) { dim ->
@@ -1116,7 +1133,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
     override suspend fun reshape(shape: IntArray): PrimitiveNDArray = reshape(Strides(shape))
 
     private fun transposeByBlocks(permutations: IntArray): PrimitiveNDArray {
-        val outputBlocks =  this.array.blocks.copyOf()
+        val outputBlocks = this.array.blocks.copyOf()
         val outputStrides = strides.transpose(permutations)
 
         var axisToStop: Int = permutations.size
@@ -1131,7 +1148,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
 
         fun transposeByBlocksRec(axis: Int, inputOffset: Int, outputOffset: Int) {
-            when(axis) {
+            when (axis) {
                 shape.lastIndex, axisToStop -> {
                     val inputStartBlockNum = inputOffset / this.array.blockSize
                     val outputStartBlockNum = outputOffset / this.array.blockSize
@@ -1184,7 +1201,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         val outputArray = MutablePrimitiveNDArray(outputStrides)
 
         fun transposeRec(axis: Int, inputOffset: Int, outputOffset: Int) {
-            when(axis) {
+            when (axis) {
                 shape.lastIndex -> {
                     val dims = outputStrides.shape[axis]
                     val inputStride = this.strides.strides[permutations[axis]]
@@ -1280,12 +1297,12 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         }
 
         @JvmName("invokeStrides")
-        suspend operator fun invoke(strides: Strides) : PrimitiveNDArray {
+        suspend operator fun invoke(strides: Strides): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(strides), strides)
         }
 
         @JvmName("invokeStridesInlineInt")
-        suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType) : PrimitiveNDArray {
+        suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(strides, init), strides)
         }
 
@@ -1296,7 +1313,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         }
 
         @JvmName("invokeShape")
-        suspend operator fun invoke(shape: IntArray) : PrimitiveNDArray {
+        suspend operator fun invoke(shape: IntArray): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
         }
 
@@ -1306,7 +1323,7 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         }
 
         @JvmName("invokeShapeInlineInt")
-        suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType) : PrimitiveNDArray {
+        suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
             return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
         }
 

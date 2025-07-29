@@ -21,8 +21,8 @@ benchmark {
     configurations {
         register("all") {
             include(".*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
+            warmups = 5 // number of warmup iterations
+            iterations = 15 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
@@ -36,10 +36,10 @@ benchmark {
             reportFormat = "text"
         }
         register("softmax") {
-            include(".*Softmax.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
+            include(".*Softmax")
+            warmups = 2 // number of warmup iterations
+            iterations = 3 // number of iterations
+            iterationTime = 8 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
@@ -62,11 +62,52 @@ benchmark {
         register("dotN") {
             include("FloatDotN.*")
             warmups = 3 // number of warmup iterations
-            iterations = 7 // number of iterations
+            iterations = 5 // number of iterations
             iterationTime = 10 // time in seconds per iteration
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
-        }}
+        }
+        register("softmax13") {
+            include(".*Softmax13.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }
+        register("logistic") {
+            include(".*Logistic.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }
+        register("neg") {
+            include(".*Neg.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }
+        register("probit") {
+            include(".*Probit.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }
+        register("gelu") {
+            include(".*Gelu.*")
+            warmups = 3 // number of warmup iterations
+            iterations = 5 // number of iterations
+            iterationTime = 10 // time in seconds per iteration
+            iterationTimeUnit = "SECONDS"
+            reportFormat = "text"
+        }
+    }
 
 }
 

@@ -3,19 +3,17 @@ package io.kinference.ndarray
 import kotlinx.benchmark.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.probit.probitDouble
+import io.kinference.ndarray.extensions.probit.vecProbitDouble
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
-import io.kinference.ndarray.extensions.softmax.softmaxDouble
-import io.kinference.ndarray.extensions.softmax.vectorizedSoftmaxDouble
 
 @State(Scope.Benchmark)
-open class DoubleSoftmax {
+open class DoubleProbit {
     @Param("100", "200", "400")
     var rank: Int = 0
     lateinit var src: DoubleNDArray
-    lateinit var dest: MutableDoubleNDArray
-    lateinit var linearSrc: DoubleLNDArray
-    lateinit var linearDest: MutableDoubleLNDArray
+    lateinit var dest: DoubleNDArray
 
     @Setup
     fun genArrays() = runBlocking {
@@ -27,7 +25,7 @@ open class DoubleSoftmax {
     @Benchmark
     fun standardSM(): DoubleNDArray {
         runBlocking {
-            softmaxDouble(src, dest, rank, rank*rank)
+            dest = probitDouble(src)
         }
         return dest
     }
@@ -35,7 +33,7 @@ open class DoubleSoftmax {
     @Benchmark
     fun vectorizedSM(): DoubleNDArray {
         runBlocking {
-            vectorizedSoftmaxDouble(src, dest, rank, rank*rank)
+            dest = vecProbitDouble(src)
         }
         return dest
     }
@@ -48,9 +46,9 @@ open class DoubleSoftmax {
 // DoubleSoftmax13.vectorized     100  thrpt    5  438.411 ±  18.189  ops/s
 // DoubleSoftmax13.vectorized     200  thrpt    5   63.997 ±  87.344  ops/s
 // DoubleSoftmax13.vectorized     400  thrpt    5   13.138 ±   0.078  ops/s
-// FloatSoftmax13.standard        100  thrpt    5  459.294 ± 482.716  ops/s
-// FloatSoftmax13.standard        200  thrpt    5   60.638 ± 112.389  ops/s
-// FloatSoftmax13.standard        400  thrpt    5   12.688 ±   0.050  ops/s
-// FloatSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
-// FloatSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
-// FloatSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s
+// DoubleSoftmax13.standard        100  thrpt    5  459.294 ± 482.716  ops/s
+// DoubleSoftmax13.standard        200  thrpt    5   60.638 ± 112.389  ops/s
+// DoubleSoftmax13.standard        400  thrpt    5   12.688 ±   0.050  ops/s
+// DoubleSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
+// DoubleSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
+// DoubleSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s

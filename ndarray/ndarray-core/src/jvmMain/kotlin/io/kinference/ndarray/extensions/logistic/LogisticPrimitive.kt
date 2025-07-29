@@ -1,4 +1,5 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions.logistic
 
@@ -13,6 +14,14 @@ import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.stubs.abs
 import kotlin.math.abs
+import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.*
+import io.kinference.primitives.annotations.GenerateVector
+import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
+import io.kinference.ndarray.stubs.abs
+import kotlin.math.abs
+import kotlin.math.exp
 
 
 @GenerateNameFromPrimitives
@@ -45,3 +54,37 @@ internal suspend fun logisticPrimitive(input: PrimitiveNDArray, dest: MutablePri
 @GenerateNameFromPrimitives
 internal suspend fun logisticPrimitive(input: PrimitiveNDArray): MutablePrimitiveNDArray =
     logisticPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides))
+
+
+@GenerateNameFromPrimitives
+internal suspend fun vecLogisticPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
+    val inputBlockSize = input.array.blockSize
+    val inputBlocks = input.array.blocks
+
+    val outputBlocks = dest.array.blocks
+
+    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
+        for (blockNum in blockStart until blockEnd) {
+            val inputBlock = inputBlocks[blockNum]
+            val outputBlock = outputBlocks[blockNum]
+
+            val one = PrimitiveConstants.ONE
+            val zero = PrimitiveConstants.ZERO
+
+            val input = PrimitiveSlice(inputBlock)
+            val mid = Div(Value(one), Add(Value(one), Exp(Neg(Abs(input)))))
+            val a = IfElse(
+                GE(input, Value(zero)),
+                mid,
+                Sub(Value(one), mid)
+            )
+            a.into(outputBlock, 0, inputBlockSize)
+        }
+    }
+
+    return dest
+}
+
+@GenerateNameFromPrimitives
+internal suspend fun vecLogisticPrimitive(input: PrimitiveNDArray): MutablePrimitiveNDArray =
+    vecLogisticPrimitive(input, MutablePrimitiveNDArray(PrimitiveTiledArray(input.linearSize, input.array.blockSize), input.strides))

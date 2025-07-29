@@ -3,19 +3,17 @@ package io.kinference.ndarray
 import kotlinx.benchmark.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
+import io.kinference.ndarray.extensions.activations.exp.exp
+import io.kinference.ndarray.extensions.activations.exp.vecExp
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
-import io.kinference.ndarray.extensions.softmax.softmaxDouble
-import io.kinference.ndarray.extensions.softmax.vectorizedSoftmaxDouble
 
 @State(Scope.Benchmark)
-open class DoubleSoftmax {
+open class DoubleExp {
     @Param("100", "200", "400")
     var rank: Int = 0
     lateinit var src: DoubleNDArray
-    lateinit var dest: MutableDoubleNDArray
-    lateinit var linearSrc: DoubleLNDArray
-    lateinit var linearDest: MutableDoubleLNDArray
+    lateinit var dest: DoubleNDArray
 
     @Setup
     fun genArrays() = runBlocking {
@@ -27,7 +25,7 @@ open class DoubleSoftmax {
     @Benchmark
     fun standardSM(): DoubleNDArray {
         runBlocking {
-            softmaxDouble(src, dest, rank, rank*rank)
+            dest = src.exp()
         }
         return dest
     }
@@ -35,7 +33,7 @@ open class DoubleSoftmax {
     @Benchmark
     fun vectorizedSM(): DoubleNDArray {
         runBlocking {
-            vectorizedSoftmaxDouble(src, dest, rank, rank*rank)
+            dest = src.vecExp()
         }
         return dest
     }
