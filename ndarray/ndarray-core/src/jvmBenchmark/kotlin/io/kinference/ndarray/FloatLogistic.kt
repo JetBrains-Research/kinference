@@ -16,8 +16,6 @@ open class FloatLogistic {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: MutableFloatNDArray
-    lateinit var linearSrc: FloatLNDArray
-    lateinit var linearDest: MutableFloatLNDArray
 
     @Setup
     fun genArrays() = runBlocking {

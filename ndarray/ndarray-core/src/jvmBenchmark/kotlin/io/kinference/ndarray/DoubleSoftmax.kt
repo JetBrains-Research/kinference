@@ -14,8 +14,6 @@ open class DoubleSoftmax {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
-    lateinit var linearSrc: DoubleLNDArray
-    lateinit var linearDest: MutableDoubleLNDArray
 
     @Setup
     fun genArrays() = runBlocking {
