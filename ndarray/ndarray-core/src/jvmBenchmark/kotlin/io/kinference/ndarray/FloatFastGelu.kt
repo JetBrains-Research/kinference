@@ -5,7 +5,6 @@ import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.gelu.fastGeluFloat
 import io.kinference.ndarray.extensions.gelu.vecFastGeluFloat
-import io.kinference.ndarray.extensions.gelu.vecFastGeluPrimitive
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 
@@ -23,7 +22,7 @@ open class FloatFastGelu {
     }
 
     @Benchmark
-    fun standardSM(): FloatNDArray {
+    fun standard(): FloatNDArray {
         runBlocking {
             dest = fastGeluFloat(src, null)
         }
@@ -31,7 +30,7 @@ open class FloatFastGelu {
     }
 
     @Benchmark
-    fun vectorizedSM(): FloatNDArray {
+    fun vectorized(): FloatNDArray {
         runBlocking {
             dest = vecFastGeluFloat(src, null)
         }

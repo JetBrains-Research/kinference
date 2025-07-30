@@ -23,7 +23,7 @@ open class DoubleProbit {
     }
 
     @Benchmark
-    fun standardSM(): DoubleNDArray {
+    fun standard(): DoubleNDArray {
         runBlocking {
             dest = probitDouble(src)
         }
@@ -31,7 +31,7 @@ open class DoubleProbit {
     }
 
     @Benchmark
-    fun vectorizedSM(): DoubleNDArray {
+    fun vectorized(): DoubleNDArray {
         runBlocking {
             dest = vecProbitDouble(src)
         }

@@ -23,7 +23,7 @@ open class FloatProbit {
     }
 
     @Benchmark
-    fun standardSM(): FloatNDArray {
+    fun standard(): FloatNDArray {
         runBlocking {
             dest = probitFloat(src)
         }
@@ -31,7 +31,7 @@ open class FloatProbit {
     }
 
     @Benchmark
-    fun vectorizedSM(): FloatNDArray {
+    fun vectorized(): FloatNDArray {
         runBlocking {
             dest = vecProbitFloat(src)
         }

@@ -23,7 +23,7 @@ open class DoubleFastGelu {
     }
 
     @Benchmark
-    fun standardSM(): DoubleNDArray {
+    fun standard(): DoubleNDArray {
         runBlocking {
             dest = fastGeluDouble(src, null)
         }
@@ -31,7 +31,7 @@ open class DoubleFastGelu {
     }
 
     @Benchmark
-    fun vectorizedSM(): DoubleNDArray {
+    fun vectorized(): DoubleNDArray {
         runBlocking {
             dest = vecFastGeluDouble(src, null)
         }

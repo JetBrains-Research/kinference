@@ -23,7 +23,7 @@ open class FloatExp {
     }
 
     @Benchmark
-    fun standardSM(): FloatNDArray {
+    fun standard(): FloatNDArray {
         runBlocking {
             dest = src.exp()
         }
@@ -31,7 +31,7 @@ open class FloatExp {
     }
 
     @Benchmark
-    fun vectorizedSM(): FloatNDArray {
+    fun vectorized(): FloatNDArray {
         runBlocking {
             dest = src.vecExp()
         }

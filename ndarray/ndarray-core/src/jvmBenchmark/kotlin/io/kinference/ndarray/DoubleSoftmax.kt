@@ -25,7 +25,7 @@ open class DoubleSoftmax {
     }
 
     @Benchmark
-    fun standardSM(): DoubleNDArray {
+    fun standard(): DoubleNDArray {
         runBlocking {
             softmaxDouble(src, dest, rank, rank*rank)
         }
@@ -33,7 +33,7 @@ open class DoubleSoftmax {
     }
 
     @Benchmark
-    fun vectorizedSM(): DoubleNDArray {
+    fun vectorized(): DoubleNDArray {
         runBlocking {
             vectorizedSoftmaxDouble(src, dest, rank, rank*rank)
         }

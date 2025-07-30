@@ -13,14 +13,15 @@ import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.ndarray.stubs.min
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.math.exp
+import io.kinference.ndarray.math.FastMath
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.GenerateVector
 import kotlin.coroutines.coroutineContext
 import kotlin.math.*
 import io.kinference.primitives.vector.*
+import jdk.incubator.vector.*
 
 @GenerateNameFromPrimitives
 internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray?): MutablePrimitiveNDArray {
@@ -110,6 +111,7 @@ internal suspend fun vecFastGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
                 }
             }
 
+            val a = 2
             val two = PrimitiveConstants.TWO
             val one = PrimitiveConstants.ONE
             val half = PrimitiveConstants.HALF

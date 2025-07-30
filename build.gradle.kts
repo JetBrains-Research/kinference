@@ -52,7 +52,7 @@ subprojects {
                         name = "KInference"
                         description =
                             "KInference is a library that simplifies the execution of complex ONNX machine learning models in Kotlin. " +
-                            "It ensures efficient inference of these models on various platforms and is designed for both server-side and local usage."
+                                    "It ensures efficient inference of these models on various platforms and is designed for both server-side and local usage."
 
                         licenses {
                             license {
@@ -106,8 +106,8 @@ subprojects {
         }
     }
 
-//    tasks.withType(JavaCompile::class.java) {
-//        sourceCompatibility = jvmTargetVersion.toString()
-//        targetCompatibility = jvmTargetVersion.toString()
-//    }
+    //tasks.withType(JavaCompile::class.java) {
+    //    sourceCompatibility = jvmTargetVersion.toString()
+    //    targetCompatibility = jvmTargetVersion.toString()
+    //}
 }

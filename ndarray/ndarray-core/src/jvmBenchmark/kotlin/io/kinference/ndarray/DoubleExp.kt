@@ -23,7 +23,7 @@ open class DoubleExp {
     }
 
     @Benchmark
-    fun standardSM(): DoubleNDArray {
+    fun standard(): DoubleNDArray {
         runBlocking {
             dest = src.exp()
         }
@@ -31,7 +31,7 @@ open class DoubleExp {
     }
 
     @Benchmark
-    fun vectorizedSM(): DoubleNDArray {
+    fun vectorized(): DoubleNDArray {
         runBlocking {
             dest = src.vecExp()
         }

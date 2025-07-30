@@ -3,7 +3,6 @@ package io.kinference.ndarray
 import io.kinference.ndarray.arrays.Strides
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
-import kotlin.math.max
 import kotlin.math.min
 
 fun Double.toUShort() = this.toInt().toUShort()
@@ -127,4 +126,11 @@ internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int
     val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
 
     return min(batchSize, countRows)
+}
+
+object VecUtils {
+    val isModuleLoaded =
+        ModuleLayer.boot().modules().stream().anyMatch {
+            it.name == "jdk.incubator.vector"
+        }
 }

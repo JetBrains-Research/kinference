@@ -19,4 +19,3 @@ inline fun FastMath.exp(value: Int) = exp(value.toDouble()).toInt()
 inline fun FastMath.exp(value: Long) = exp(value.toDouble()).toLong()
 inline fun FastMath.exp(value: UInt) = exp(value.toDouble()).toUInt()
 inline fun FastMath.exp(value: ULong) = exp(value.toDouble()).toULong()
-
