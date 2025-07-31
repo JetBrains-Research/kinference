@@ -72,7 +72,7 @@ internal suspend fun vecLogisticPrimitive(input: PrimitiveNDArray, dest: Mutable
             val zero = PrimitiveConstants.ZERO
 
             val input = PrimitiveSlice(inputBlock)
-            val mid = Div(Value(one), Add(Value(one), Exp(Neg(Abs(input)))))
+            val mid = Div(Value(one), Add(Value(PrimitiveConstants.ONE + PrimitiveConstants.ZERO), Exp(Neg(Abs(input)))))
             val a = IfElse(
                 GE(input, Value(zero)),
                 mid,

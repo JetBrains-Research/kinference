@@ -130,7 +130,7 @@ internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int
 
 object VecUtils {
     val isModuleLoaded =
-        ModuleLayer.boot().modules().stream().anyMatch {
-            it.name == "jdk.incubator.vector"
-        }
+        if (ModuleLayer.boot().modules().stream().anyMatch { it.name == "jdk.incubator.vector" })
+            jdk.incubator.vector.FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 16
+        else false
 }

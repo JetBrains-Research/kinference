@@ -29,86 +29,30 @@ benchmark {
             iterationTimeUnit = "SECONDS"
             reportFormat = "text"
         }
-        register("dot") {
-            include(".*Dot.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("softmax") {
-            include(".*Softmax")
-            warmups = 2 // number of warmup iterations
-            iterations = 3 // number of iterations
-            iterationTime = 8 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("double") {
-            include("Double.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("float") {
-            include("Float.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("dotN") {
-            include("FloatDotN.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("softmax13") {
-            include(".*Softmax13.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("logistic") {
-            include(".*Logistic.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("neg") {
-            include(".*Neg.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("probit") {
-            include(".*Probit.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
-        register("gelu") {
-            include(".*Gelu.*")
-            warmups = 3 // number of warmup iterations
-            iterations = 5 // number of iterations
-            iterationTime = 10 // time in seconds per iteration
-            iterationTimeUnit = "SECONDS"
-            reportFormat = "text"
-        }
+
+        val types = arrayOf("Double", "Float")
+        val benchmarks = arrayOf("Dot", "Elu", "Softmax", "Logistic", "Neg", "Probit", "Gelu")
+        for (type in types)
+            register(type.lowercase()) {
+                include(".*$type.*")
+                warmups = 2 // number of warmup iterations
+                iterations = 3 // number of iterations
+                iterationTime = 8 // time in seconds per iteration
+                iterationTimeUnit = "SECONDS"
+                reportFormat = "text"
+            }
+
+        for (type in types)
+            for (name in benchmarks)
+                register(type.lowercase() + name) {
+                    include(".*$type$name.*")
+                    warmups = 2 // number of warmup iterations
+                    iterations = 3 // number of iterations
+                    iterationTime = 8 // time in seconds per iteration
+                    iterationTimeUnit = "SECONDS"
+                    reportFormat = "text"
+                }
+
     }
 
 }
