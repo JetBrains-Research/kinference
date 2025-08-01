@@ -30,25 +30,26 @@ benchmark {
             reportFormat = "text"
         }
 
-        val types = arrayOf("Double", "Float")
+        var types = arrayOf("Double", "Float")
         val benchmarks = arrayOf("Dot", "Elu", "Softmax", "Logistic", "Neg", "Probit", "Gelu")
         for (type in types)
             register(type.lowercase()) {
                 include(".*$type.*")
-                warmups = 2 // number of warmup iterations
-                iterations = 3 // number of iterations
-                iterationTime = 8 // time in seconds per iteration
+                warmups = 3 // number of warmup iterations
+                iterations = 5 // number of iterations
+                iterationTime = 10 // time in seconds per iteration
                 iterationTimeUnit = "SECONDS"
                 reportFormat = "text"
             }
 
+        types += ""
         for (type in types)
             for (name in benchmarks)
                 register(type.lowercase() + name) {
                     include(".*$type$name.*")
-                    warmups = 2 // number of warmup iterations
-                    iterations = 3 // number of iterations
-                    iterationTime = 8 // time in seconds per iteration
+                    warmups = 3 // number of warmup iterations
+                    iterations = 5 // number of iterations
+                    iterationTime = 10 // time in seconds per iteration
                     iterationTimeUnit = "SECONDS"
                     reportFormat = "text"
                 }

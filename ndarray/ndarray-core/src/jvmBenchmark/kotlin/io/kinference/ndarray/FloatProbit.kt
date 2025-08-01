@@ -18,7 +18,7 @@ open class FloatProbit {
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = FloatNDArray(FloatTiledArray(strides){ _ -> Random.nextFloat()}, strides)
+        src = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
         dest = FloatNDArray.zeros(IntArray(3) { rank })
     }
 

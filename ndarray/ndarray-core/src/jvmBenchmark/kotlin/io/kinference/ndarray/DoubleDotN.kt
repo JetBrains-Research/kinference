@@ -20,8 +20,8 @@ open class DoubleDotN {
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(2) { rank })
-        left = DoubleNDArray(DoubleTiledArray(strides){ _ -> Random.nextDouble()}, strides)
-        right = DoubleNDArray(DoubleTiledArray(strides){ _ -> Random.nextDouble()}, strides)
+        left = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
+        right = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
         dest = DoubleNDArray.zeros(IntArray(2) { rank })
     }
 

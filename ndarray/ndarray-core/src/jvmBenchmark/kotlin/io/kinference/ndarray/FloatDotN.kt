@@ -20,8 +20,8 @@ open class FloatDotN {
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(2) { rank })
-        left = FloatNDArray(FloatTiledArray(strides){ _ -> Random.nextFloat()}, strides)
-        right = FloatNDArray(FloatTiledArray(strides){ _ -> Random.nextFloat()}, strides)
+        left = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
+        right = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
         dest = FloatNDArray.zeros(IntArray(2) { rank })
     }
 

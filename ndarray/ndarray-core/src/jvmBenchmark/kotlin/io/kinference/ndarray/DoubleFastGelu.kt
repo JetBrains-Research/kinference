@@ -19,7 +19,7 @@ open class DoubleFastGelu {
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = DoubleNDArray(DoubleTiledArray(strides) { _ -> Random.nextDouble() }, strides)
+        src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
     }
 
     @Benchmark

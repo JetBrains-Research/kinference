@@ -19,8 +19,8 @@ open class FloatDotTranspose {
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(2) { rank })
-        left = FloatNDArray(FloatTiledArray(strides){ _ -> Random.nextFloat()}, strides)
-        right = FloatNDArray(FloatTiledArray(strides){ _ -> Random.nextFloat()}, strides)
+        left = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
+        right = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
         alpha = Random.nextDouble()
         dest = FloatNDArray.zeros(IntArray(2) { rank })
     }
