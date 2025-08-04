@@ -3,30 +3,33 @@ package io.kinference.ndarray
 import kotlinx.benchmark.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.extensions.activations.elu.*
-import io.kinference.ndarray.extensions.probit.vecProbitDouble
+import io.kinference.ndarray.extensions.gelu.computeGeluDouble
+import io.kinference.ndarray.extensions.gelu.computeGeluFloat
+import io.kinference.ndarray.extensions.gelu.vecGeluDouble
+import io.kinference.ndarray.extensions.gelu.vecFastGeluPrimitive
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 
 @State(Scope.Benchmark)
-open class DoubleElu {
+open class DoubleBiasGelu {
     @Param("100", "200", "400")
     var rank: Int = 0
     lateinit var src: DoubleNDArray
-    lateinit var dest: DoubleNDArray
+    lateinit var bias: DoubleNDArray
+    lateinit var dest: MutableDoubleNDArray
     val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = DoubleNDArray(DoubleTiledArray(strides) { 1.0 - Random.nextDouble() * 2 }, strides)
-        dest = DoubleNDArray.zeros(IntArray(3) { rank })
+        src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
+        bias = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
     }
 
     @Benchmark
     fun standard() {
         runBlocking {
-            dest = src.elu()
+            dest = computeGeluDouble(src, bias)
         }
         bh.consume(dest)
     }
@@ -34,7 +37,7 @@ open class DoubleElu {
     @Benchmark
     fun vectorized() {
         runBlocking {
-            dest = src.vectorizedElu()
+            dest = vecGeluDouble(src, bias)
         }
         bh.consume(dest)
     }
@@ -47,9 +50,9 @@ open class DoubleElu {
 // DoubleSoftmax13.vectorized     100  thrpt    5  438.411 ±  18.189  ops/s
 // DoubleSoftmax13.vectorized     200  thrpt    5   63.997 ±  87.344  ops/s
 // DoubleSoftmax13.vectorized     400  thrpt    5   13.138 ±   0.078  ops/s
-// DoubleSoftmax13.standard        100  thrpt    5  459.294 ± 482.716  ops/s
-// DoubleSoftmax13.standard        200  thrpt    5   60.638 ± 112.389  ops/s
-// DoubleSoftmax13.standard        400  thrpt    5   12.688 ±   0.050  ops/s
-// DoubleSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
-// DoubleSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
-// DoubleSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s
+// FloatSoftmax13.standard        100  thrpt    5  459.294 ± 482.716  ops/s
+// FloatSoftmax13.standard        200  thrpt    5   60.638 ± 112.389  ops/s
+// FloatSoftmax13.standard        400  thrpt    5   12.688 ±   0.050  ops/s
+// FloatSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
+// FloatSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
+// FloatSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s

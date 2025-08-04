@@ -14,6 +14,7 @@ open class DoubleSoftmax13 {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,19 +24,19 @@ open class DoubleSoftmax13 {
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             softmaxVer13Double(src, dest, rank, rank * rank, rank)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             vecSoftmaxVer13Double(src, dest, rank, rank * rank, rank)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

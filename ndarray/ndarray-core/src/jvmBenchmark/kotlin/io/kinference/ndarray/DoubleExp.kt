@@ -14,28 +14,29 @@ open class DoubleExp {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: DoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
+        src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
         dest = DoubleNDArray.zeros(IntArray(3) { rank })
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             dest = src.exp()
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             dest = src.vecExp()
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

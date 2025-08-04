@@ -3,30 +3,31 @@ package io.kinference.ndarray
 import kotlinx.benchmark.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
-import io.kinference.ndarray.extensions.activations.elu.*
-import io.kinference.ndarray.extensions.probit.vecProbitFloat
+import io.kinference.ndarray.extensions.gelu.computeGeluFloat
+import io.kinference.ndarray.extensions.gelu.vecGeluFloat
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 
 @State(Scope.Benchmark)
-open class FloatElu {
+open class FloatBiasGelu {
     @Param("100", "200", "400")
     var rank: Int = 0
     lateinit var src: FloatNDArray
-    lateinit var dest: FloatNDArray
+    lateinit var bias: FloatNDArray
+    lateinit var dest: MutableFloatNDArray
     val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = FloatNDArray(FloatTiledArray(strides) { 1f - Random.nextFloat() * 2 }, strides)
-        dest = FloatNDArray.zeros(IntArray(3) { rank })
+        src = FloatNDArray(FloatTiledArray(strides) { randomFloat() }, strides)
+        bias = FloatNDArray(FloatTiledArray(strides) { randomFloat() }, strides)
     }
 
     @Benchmark
     fun standard() {
         runBlocking {
-            dest = src.elu()
+            dest = computeGeluFloat(src, bias)
         }
         bh.consume(dest)
     }
@@ -34,7 +35,7 @@ open class FloatElu {
     @Benchmark
     fun vectorized() {
         runBlocking {
-            dest = src.vectorizedElu()
+            dest = vecGeluFloat(src, bias)
         }
         bh.consume(dest)
     }

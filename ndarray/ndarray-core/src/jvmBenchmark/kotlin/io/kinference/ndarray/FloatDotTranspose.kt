@@ -15,6 +15,7 @@ open class FloatDotTranspose {
     lateinit var right: FloatNDArray
     var alpha: Double = 1.0
     lateinit var dest: MutableFloatNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -26,18 +27,18 @@ open class FloatDotTranspose {
     }
 
     @Benchmark
-    fun standard(): FloatNDArray {
+    fun standard() {
         runBlocking {
             left.dotTransposedWithAlpha(alpha, right, dest)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): FloatNDArray {
+    fun vectorized() {
         runBlocking {
             left.vectorizedDotTransposedWithAlpha(alpha, right, dest)
         }
-        return dest
+        bh.consume(dest)
     }
 }

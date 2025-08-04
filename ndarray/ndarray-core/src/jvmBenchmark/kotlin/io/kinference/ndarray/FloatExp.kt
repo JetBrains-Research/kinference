@@ -14,6 +14,7 @@ open class FloatExp {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: FloatNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,19 +24,19 @@ open class FloatExp {
     }
 
     @Benchmark
-    fun standard(): FloatNDArray {
+    fun standard() {
         runBlocking {
             dest = src.exp()
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): FloatNDArray {
+    fun vectorized() {
         runBlocking {
             dest = src.vecExp()
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

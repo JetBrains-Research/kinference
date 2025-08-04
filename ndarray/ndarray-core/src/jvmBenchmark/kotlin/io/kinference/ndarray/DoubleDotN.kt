@@ -16,6 +16,7 @@ open class DoubleDotN {
     lateinit var left: DoubleNDArray
     lateinit var right: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -26,18 +27,18 @@ open class DoubleDotN {
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             dest = dotParallelN(left, right, dest)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             dest = vectorizedDotParallelN(left, right, dest)
         }
-        return dest
+        bh.consume(dest)
     }
 }

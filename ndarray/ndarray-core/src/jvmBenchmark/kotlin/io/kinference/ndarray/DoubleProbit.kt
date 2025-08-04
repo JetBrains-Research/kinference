@@ -14,6 +14,7 @@ open class DoubleProbit {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: DoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,19 +24,19 @@ open class DoubleProbit {
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             dest = probitDouble(src)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             dest = vecProbitDouble(src)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

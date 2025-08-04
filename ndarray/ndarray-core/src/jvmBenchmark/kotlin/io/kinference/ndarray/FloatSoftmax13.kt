@@ -14,6 +14,7 @@ open class FloatSoftmax13 {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: MutableFloatNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,11 +24,11 @@ open class FloatSoftmax13 {
     }
 
     @Benchmark
-    fun standard(): FloatNDArray {
+    fun standard(){
         runBlocking {
             softmaxVer13Float(src, dest, rank, rank * rank, rank)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
@@ -35,7 +36,7 @@ open class FloatSoftmax13 {
         runBlocking {
             vecSoftmaxVer13Float(src, dest, rank, rank * rank, rank)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

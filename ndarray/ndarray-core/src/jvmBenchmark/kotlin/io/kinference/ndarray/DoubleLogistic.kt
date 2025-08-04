@@ -12,32 +12,33 @@ import io.kinference.ndarray.extensions.softmax.vecSoftmaxVer13Double
 
 @State(Scope.Benchmark)
 open class DoubleLogistic {
-    @Param("100", "200", "400")
+    @Param("10", "20", "100")
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
-        val strides = Strides(IntArray(3) { rank })
+        val strides = Strides(IntArray(2) { rank })
         src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
-        dest = DoubleNDArray.zeros(IntArray(3) { rank })
+        dest = DoubleNDArray.zeros(IntArray(2) { rank })
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             dest = logisticDouble(src,dest)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             dest = vecLogisticDouble(src,dest)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

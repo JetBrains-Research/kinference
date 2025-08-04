@@ -14,28 +14,29 @@ open class FloatProbit {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: FloatNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(3) { rank })
-        src = FloatNDArray(FloatTiledArray(strides){ randomFloat()}, strides)
+        src = FloatNDArray(FloatTiledArray(strides) { randomFloat() }, strides)
         dest = FloatNDArray.zeros(IntArray(3) { rank })
     }
 
     @Benchmark
-    fun standard(): FloatNDArray {
+    fun standard() {
         runBlocking {
             dest = probitFloat(src)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): FloatNDArray {
+    fun vectorized() {
         runBlocking {
             dest = vecProbitFloat(src)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }

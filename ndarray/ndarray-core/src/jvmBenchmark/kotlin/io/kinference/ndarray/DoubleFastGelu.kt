@@ -15,6 +15,7 @@ open class DoubleFastGelu {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
+    val bh = Blackhole("")
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,19 +24,19 @@ open class DoubleFastGelu {
     }
 
     @Benchmark
-    fun standard(): DoubleNDArray {
+    fun standard() {
         runBlocking {
             dest = fastGeluDouble(src, null)
         }
-        return dest
+        bh.consume(dest)
     }
 
     @Benchmark
-    fun vectorized(): DoubleNDArray {
+    fun vectorized() {
         runBlocking {
             dest = vecFastGeluDouble(src, null)
         }
-        return dest
+        bh.consume(dest)
     }
 
 }
