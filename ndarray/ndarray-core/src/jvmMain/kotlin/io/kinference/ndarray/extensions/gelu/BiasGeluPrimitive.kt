@@ -116,50 +116,46 @@ internal suspend fun vecGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveND
             val outputBlock = outputBlocks[blockIdx]
             val block = inputBlocks[blockIdx]
             val biasBlock = biasBlocks[blockIdx % biasBlocks.size]
+            for (j in temporaryBlock.indices) {
+                temporaryBlock[j] = block[j] + biasBlock[j]
+            }
 
+            for (j in temporaryBlockAbs.indices) {
+                temporaryBlockAbs[j] = temporaryBlock[j] * PrimitiveConstants.SQRT_1_2
+            }
 
-            Add(PrimitiveSlice(block), PrimitiveSlice(biasBlock)).into(temporaryBlock, 0, blockSize)
-            Abs(Mul(PrimitiveSlice(temporaryBlock), Value(PrimitiveConstants.SQRT_1_2))).into(temporaryBlockAbs, 0, blockSize)
-            Mul(PrimitiveSlice(temporaryBlock), Value(PrimitiveConstants.HALF)).into(temporaryBlock, 0, blockSize)
-            Div(
-                Value(PrimitiveConstants.ONE),
-                Add(Mul(PrimitiveSlice(temporaryBlockAbs), Value(PrimitiveConstants.ERF_P_VALUE)), Value(PrimitiveConstants.ONE))
-            ).into(outputBlock, 0, blockSize)
-            Exp(Neg(Mul(PrimitiveSlice(temporaryBlockAbs), PrimitiveSlice(temporaryBlockAbs)))).into(temporaryBlockAbs, 0, blockSize)
+            for (j in temporaryBlock.indices) {
+                temporaryBlock[j] = temporaryBlock[j] * PrimitiveConstants.HALF
+            }
 
-            val ob = PrimitiveSlice(outputBlock)
-            Mul(
-                ob,
-                Add(
-                    Value(PrimitiveConstants.ERF_COEF_1),
-                    Mul(
-                        ob, Add(
-                            Value(PrimitiveConstants.ERF_COEF_2), Mul(
-                                ob, Add(
-                                    Value(PrimitiveConstants.ERF_COEF_3), Mul(
-                                        ob, Add(
-                                            Value(PrimitiveConstants.ERF_COEF_4), Mul(
-                                                ob,
-                                                Value(PrimitiveConstants.ERF_COEF_5)
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ).into(outputBlock, 0, blockSize)
-            Sub(
-                Value(PrimitiveConstants.ONE),
-                Mul(PrimitiveSlice(temporaryBlockAbs), PrimitiveSlice(outputBlock))
-            ).into(outputBlock, 0, blockSize)
+            for (j in temporaryBlockAbs.indices) {
+                temporaryBlockAbs[j] = temporaryBlockAbs[j].absoluteValue
+            }
+
+            for (j in outputBlock.indices) {
+                outputBlock[j] = PrimitiveConstants.ONE / (temporaryBlockAbs[j] * PrimitiveConstants.ERF_P_VALUE + PrimitiveConstants.ONE)
+            }
+
+            val tba = PrimitiveSlice(temporaryBlockAbs)
+            Exp(Neg(Mul(tba,tba))).into(temporaryBlockAbs, 0, blockSize)
+
+            for (j in outputBlock.indices) {
+                outputBlock[j] =
+                    outputBlock[j] * (PrimitiveConstants.ERF_COEF_1 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_2 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_3 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_4 + outputBlock[j] * PrimitiveConstants.ERF_COEF_5))))
+            }
+
+            for (j in outputBlock.indices) {
+                outputBlock[j] = PrimitiveConstants.ONE - temporaryBlockAbs[j] * outputBlock[j]
+            }
 
             for (j in outputBlock.indices) {
                 outputBlock[j] = FastMath.copySign(outputBlock[j], temporaryBlock[j])
             }
 
-            Mul(Add(Value(PrimitiveConstants.ONE), PrimitiveSlice(outputBlock)), PrimitiveSlice(temporaryBlock)).into(outputBlock, 0, blockSize)
+            for (j in outputBlock.indices) {
+                outputBlock[j] = (PrimitiveConstants.ONE + outputBlock[j]) * temporaryBlock[j]
+            }
+
         }
     }
     return output

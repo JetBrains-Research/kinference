@@ -17,6 +17,7 @@ import io.kinference.primitives.annotations.GenerateVector
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveArray
 import kotlin.math.ln
+import kotlin.math.abs
 import kotlin.math.sqrt
 import io.kinference.primitives.vector.*
 
@@ -50,12 +51,13 @@ internal suspend fun vecProbitPrimitive(input: PrimitiveNDArray, dest: MutablePr
 
             Add(Mul(PrimitiveSlice(temporaryBlockOne), Value(half)), Value(inv_erf_1)).into(temporaryBlockTwo, 0, blockSize)
 
-            for (j in outputBlock.indices) {
-                outputBlock[j] = PrimitiveConstants.SQRT_2 * FastMath.copySign(
-                    sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]),
-                    outputBlock[j]
+            val tbt = PrimitiveSlice(temporaryBlockTwo)
+            val a = Sqrt(Sub(Sqrt(Sub(Mul(tbt, tbt), Mul(PrimitiveSlice(temporaryBlockOne), Value(PrimitiveConstants.INV_ERF_COEF_2)))), tbt))
+            Mul(
+                Value(PrimitiveConstants.SQRT_2), IfElse(
+                    GE(PrimitiveSlice(outputBlock), Value(PrimitiveConstants.ZERO)), Abs(a), Neg(Abs(a))
                 )
-            }
+            ).into(outputBlock, 0, blockSize)
         }
     }
 
@@ -95,7 +97,10 @@ internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimi
             }
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = PrimitiveConstants.SQRT_2 * FastMath.copySign(sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]), outputBlock[j])
+                outputBlock[j] = PrimitiveConstants.SQRT_2 * FastMath.copySign(
+                    sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]),
+                    outputBlock[j]
+                )
             }
         }
     }

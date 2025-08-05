@@ -16,7 +16,7 @@ open class FloatDotN {
     lateinit var left: FloatNDArray
     lateinit var right: FloatNDArray
     lateinit var dest: MutableFloatNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -27,7 +27,7 @@ open class FloatDotN {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = dotParallelN(left, right, dest)
         }
@@ -35,7 +35,7 @@ open class FloatDotN {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vectorizedDotParallelN(left, right, dest)
         }

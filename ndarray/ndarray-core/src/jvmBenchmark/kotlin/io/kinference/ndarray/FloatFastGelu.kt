@@ -14,7 +14,7 @@ open class FloatFastGelu {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: MutableFloatNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -23,7 +23,7 @@ open class FloatFastGelu {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = fastGeluFloat(src, null)
         }
@@ -31,7 +31,7 @@ open class FloatFastGelu {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecFastGeluFloat(src, null)
         }

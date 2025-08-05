@@ -15,7 +15,7 @@ open class FloatBiasGelu {
     lateinit var src: FloatNDArray
     lateinit var bias: FloatNDArray
     lateinit var dest: MutableFloatNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -25,7 +25,7 @@ open class FloatBiasGelu {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = computeGeluFloat(src, bias)
         }
@@ -33,7 +33,7 @@ open class FloatBiasGelu {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecGeluFloat(src, bias)
         }

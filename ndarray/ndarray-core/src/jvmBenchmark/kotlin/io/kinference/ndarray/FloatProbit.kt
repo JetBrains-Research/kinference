@@ -14,7 +14,7 @@ open class FloatProbit {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: FloatNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -24,7 +24,7 @@ open class FloatProbit {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = probitFloat(src)
         }
@@ -32,7 +32,7 @@ open class FloatProbit {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecProbitFloat(src)
         }

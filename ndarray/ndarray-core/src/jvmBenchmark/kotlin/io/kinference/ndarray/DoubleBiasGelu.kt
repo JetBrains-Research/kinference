@@ -17,7 +17,7 @@ open class DoubleBiasGelu {
     lateinit var src: DoubleNDArray
     lateinit var bias: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -27,7 +27,7 @@ open class DoubleBiasGelu {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = computeGeluDouble(src, bias)
         }
@@ -35,7 +35,7 @@ open class DoubleBiasGelu {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecGeluDouble(src, bias)
         }

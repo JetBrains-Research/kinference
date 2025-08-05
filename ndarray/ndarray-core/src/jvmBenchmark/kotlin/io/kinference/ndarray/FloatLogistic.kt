@@ -16,7 +16,7 @@ open class FloatLogistic {
     var rank: Int = 0
     lateinit var src: FloatNDArray
     lateinit var dest: MutableFloatNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -26,7 +26,7 @@ open class FloatLogistic {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = logisticFloat(src,dest)
         }
@@ -34,7 +34,7 @@ open class FloatLogistic {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecLogisticFloat(src,dest)
         }

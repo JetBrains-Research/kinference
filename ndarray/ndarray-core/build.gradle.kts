@@ -31,7 +31,7 @@ benchmark {
         }
 
         var types = arrayOf("Double", "Float")
-        val benchmarks = arrayOf("BiasGelu", "Dot", "Elu", "Exp", "Gelu", "Logistic", "Neg", "Probit", "Softmax")
+        val benchmarks = arrayOf("BiasGelu", "Dot", "Elu", "Exp", "Gelu", "Logistic", "Neg", "Probit", "ReduceMax", "Softmax")
         for (type in types)
             register(type.lowercase()) {
                 include(".*$type.*")

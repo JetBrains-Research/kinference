@@ -14,7 +14,7 @@ open class DoubleElu {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: DoubleNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -24,7 +24,7 @@ open class DoubleElu {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = src.elu()
         }
@@ -32,7 +32,7 @@ open class DoubleElu {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = src.vectorizedElu()
         }

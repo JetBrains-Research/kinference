@@ -16,7 +16,7 @@ open class DoubleLogistic {
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
-    val bh = Blackhole("")
+    
 
     @Setup
     fun genArrays() = runBlocking {
@@ -26,7 +26,7 @@ open class DoubleLogistic {
     }
 
     @Benchmark
-    fun standard() {
+    fun standard(bh: Blackhole) {
         runBlocking {
             dest = logisticDouble(src,dest)
         }
@@ -34,7 +34,7 @@ open class DoubleLogistic {
     }
 
     @Benchmark
-    fun vectorized() {
+    fun vectorized(bh: Blackhole) {
         runBlocking {
             dest = vecLogisticDouble(src,dest)
         }
