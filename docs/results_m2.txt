@@ -1,4 +1,3 @@
-#
 DoubleDotN.standard               100  thrpt   15  15301.539 ± 2250.626  ops/s
 DoubleDotN.standard               400  thrpt   15    466.236 ±  133.751  ops/s
 DoubleDotN.standard              1000  thrpt   15     28.750 ±    4.297  ops/s
