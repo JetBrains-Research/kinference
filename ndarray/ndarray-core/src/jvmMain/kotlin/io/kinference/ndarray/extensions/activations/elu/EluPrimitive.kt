@@ -2,6 +2,7 @@
     DataType.DOUBLE,
     DataType.FLOAT
 )
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions.activations.elu
 
@@ -13,6 +14,8 @@ import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.parallelizeByBlocks
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.annotations.MakePublic
+import io.kinference.primitives.annotations.GenerateVector
+import io.kinference.primitives.vector.*
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.toPrimitive
 
@@ -32,14 +35,12 @@ internal suspend fun PrimitiveNDArray.elu(alpha: Float = 1f): PrimitiveNDArray {
             val inputBlock = inputBlocks[blockIdx]
             val outputBlock = outputBlocks[blockIdx]
 
-            for (idx in outputBlock.indices) {
-                val x = inputBlock[idx]
-                if (x >= PrimitiveConstants.ZERO) {
-                    outputBlock[idx] = x
-                } else {
-                    outputBlock[idx] = (FastMath.exp(x) - PrimitiveConstants.ONE) * actualAlpha
-                }
-            }
+            val x = PrimitiveSlice(inputBlock)
+            IfElse(
+                GE(x, Value(PrimitiveConstants.ZERO)),
+                x,
+                Mul(Sub(Exp(x), Value(PrimitiveConstants.ONE)), Value(actualAlpha))
+            ).into(outputBlock, 0, blockSize)
         }
     }
 

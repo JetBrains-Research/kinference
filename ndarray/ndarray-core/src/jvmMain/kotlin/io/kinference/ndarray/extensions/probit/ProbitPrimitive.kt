@@ -1,4 +1,6 @@
 @file:GeneratePrimitives(DataType.DOUBLE, DataType.FLOAT)
+@file:GenerateVector
+@file:Suppress("unused")
 
 package io.kinference.ndarray.extensions.probit
 
@@ -6,16 +8,16 @@ import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.math.FastMath
 import io.kinference.ndarray.parallelizeByBlocks
-import io.kinference.ndarray.stubs.ln
-import io.kinference.ndarray.stubs.sqrt
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.GenerateVector
 import io.kinference.primitives.types.DataType
 import io.kinference.primitives.types.PrimitiveArray
+import io.kinference.primitives.vector.*
 import kotlin.math.ln
 import kotlin.math.sqrt
+import kotlin.math.abs
 
 @GenerateNameFromPrimitives
 internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray): MutablePrimitiveNDArray {
@@ -31,22 +33,30 @@ internal suspend fun probitPrimitive(input: PrimitiveNDArray, dest: MutablePrimi
             val inputBlock = inputBlocks[blockIdx]
             val outputBlock = outputBlocks[blockIdx]
 
-            for (j in outputBlock.indices) {
-                outputBlock[j] = PrimitiveConstants.TWO * inputBlock[j] - PrimitiveConstants.ONE
-            }
+            Sub(Mul(PrimitiveSlice(inputBlock), Value(PrimitiveConstants.TWO)), Value(PrimitiveConstants.ONE)).into(outputBlock, 0, blockSize)
 
-            for (j in temporaryBlockOne.indices) {
-                val inputValue = outputBlock[j]
-                temporaryBlockOne[j] = ln((PrimitiveConstants.ONE - inputValue) * (PrimitiveConstants.ONE + inputValue))
-            }
+            Log(
+                Mul(
+                    Sub(Value(PrimitiveConstants.ONE), PrimitiveSlice(outputBlock)),
+                    Add(PrimitiveSlice(outputBlock), Value(PrimitiveConstants.ONE))
+                )
+            ).into(temporaryBlockOne, 0, blockSize)
 
-            for (j in temporaryBlockTwo.indices) {
-                temporaryBlockTwo[j] = PrimitiveConstants.INV_ERF_COEF_1 + PrimitiveConstants.HALF * temporaryBlockOne[j]
-            }
+            Add(Mul(PrimitiveSlice(temporaryBlockOne), Value(PrimitiveConstants.HALF)), Value(PrimitiveConstants.INV_ERF_COEF_1)).into(
+                temporaryBlockTwo,
+                0,
+                blockSize
+            )
 
-            for (j in outputBlock.indices) {
-                outputBlock[j] = PrimitiveConstants.SQRT_2 * FastMath.copySign(sqrt(sqrt(temporaryBlockTwo[j] * temporaryBlockTwo[j] - PrimitiveConstants.INV_ERF_COEF_2 * temporaryBlockOne[j]) - temporaryBlockTwo[j]), outputBlock[j])
-            }
+            val tbt = PrimitiveSlice(temporaryBlockTwo)
+
+            val a = Sqrt(Sub(Sqrt(Sub(Mul(tbt, tbt), Mul(PrimitiveSlice(temporaryBlockOne), Value(PrimitiveConstants.INV_ERF_COEF_2)))), tbt))
+            Mul(
+                Value(PrimitiveConstants.SQRT_2), IfElse(
+                    GE(PrimitiveSlice(outputBlock), Value(PrimitiveConstants.ZERO)), Abs(a), Neg(Abs(a))
+                )
+            ).into(outputBlock, 0, blockSize)
+
         }
     }
 

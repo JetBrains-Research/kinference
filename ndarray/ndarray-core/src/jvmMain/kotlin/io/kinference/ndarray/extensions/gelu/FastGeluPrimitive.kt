@@ -1,25 +1,23 @@
 @file:GeneratePrimitives(DataType.DOUBLE, DataType.FLOAT)
+@file:GenerateVector
 @file:Suppress("UnusedImport")
 
 package io.kinference.ndarray.extensions.gelu
 
-import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.MutablePrimitiveNDArray
 import io.kinference.ndarray.arrays.PrimitiveNDArray
 import io.kinference.ndarray.arrays.memory.contexts.AutoAllocatorContext
 import io.kinference.ndarray.arrays.memory.storage.*
-import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.countCoroutinesByData
 import io.kinference.ndarray.parallelizeByBlocks
-import io.kinference.ndarray.stubs.min
 import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
+import io.kinference.ndarray.math.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.math.FastMath
-import io.kinference.ndarray.math.exp
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.GenerateVector
 import kotlin.coroutines.coroutineContext
-import kotlin.math.*
 
 @GenerateNameFromPrimitives
 internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveNDArray?): MutablePrimitiveNDArray {
@@ -43,6 +41,7 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
             val outputBlock = outputBlocks[blockIdx]
             val block = inputBlocks[blockIdx]
 
+
             if (bias != null) {
                 val biasBlocks = bias.array.blocks
                 val biasBlock = biasBlocks[blockIdx % biasBlocks.size]
@@ -55,19 +54,25 @@ internal suspend fun fastGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveN
                 }
             }
 
-            for (j in temporaryBlockExp.indices) {
-                val temp = outputBlock[j]
-                temporaryBlockExp[j] = FastMath.exp(PrimitiveConstants.TWO * temp * (PrimitiveConstants.FGELU_COEF_1 * temp * temp + PrimitiveConstants.FGELU_COEF_2))
-            }
+            val blk = PrimitiveSlice(outputBlock)
+            val tmp = Add(Mul(Mul(blk, blk), Value(PrimitiveConstants.FGELU_COEF_1)), Value(PrimitiveConstants.FGELU_COEF_2))
+            Exp(Mul(Mul(blk, tmp), Value(PrimitiveConstants.TWO))).into(temporaryBlockExp, 0, blockSize)
+            Min(PrimitiveSlice(temporaryBlockExp), Value(PrimitiveType.MAX_VALUE)).into(temporaryBlockExp, 0, blockSize)
 
-            for (j in temporaryBlockExp.indices) {
-                temporaryBlockExp[j] =
-                    min(temporaryBlockExp[j], PrimitiveType.MAX_VALUE)
-            }
-
-            for (j in outputBlock.indices) {
-                outputBlock[j] = outputBlock[j] * (PrimitiveConstants.HALF + PrimitiveConstants.HALF * (temporaryBlockExp[j] - PrimitiveConstants.ONE) / (temporaryBlockExp[j] + PrimitiveConstants.ONE))
-            }
+            val txp = PrimitiveSlice(temporaryBlockExp)
+            Mul(
+                PrimitiveSlice(outputBlock),
+                Add(
+                    Mul(
+                        Div(
+                            Sub(PrimitiveSlice(temporaryBlockExp), Value(PrimitiveConstants.ONE)), Add(
+                                PrimitiveSlice(temporaryBlockExp), Value(PrimitiveConstants.ONE)
+                            )
+                        ),
+                        Value(PrimitiveConstants.HALF)
+                    ), Value(PrimitiveConstants.HALF)
+                )
+            ).into(outputBlock, 0, blockSize)
         }
     }
 

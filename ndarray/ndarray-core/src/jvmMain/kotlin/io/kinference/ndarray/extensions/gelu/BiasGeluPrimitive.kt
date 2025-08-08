@@ -1,4 +1,7 @@
 @file:GeneratePrimitives(DataType.DOUBLE, DataType.FLOAT)
+@file:Suppress("unused")
+@file:GenerateVector
+
 package io.kinference.ndarray.extensions.gelu
 
 import io.kinference.ndarray.*
@@ -11,7 +14,9 @@ import io.kinference.ndarray.stubs.pow
 import io.kinference.ndarray.math.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.GenerateVector
 import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
 import kotlin.coroutines.coroutineContext
 import kotlin.math.*
 
@@ -63,12 +68,12 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
                 outputBlock[j] = PrimitiveConstants.ONE / (temporaryBlockAbs[j] * PrimitiveConstants.ERF_P_VALUE + PrimitiveConstants.ONE)
             }
 
-            for (j in temporaryBlockAbs.indices) {
-                temporaryBlockAbs[j] = FastMath.exp(-(temporaryBlockAbs[j].pow(2)))
-            }
+            val tba = PrimitiveSlice(temporaryBlockAbs)
+            Exp(Neg(Mul(tba, tba))).into(temporaryBlockAbs, 0, blockSize)
 
             for (j in outputBlock.indices) {
-                outputBlock[j] = outputBlock[j] * (PrimitiveConstants.ERF_COEF_1 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_2 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_3 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_4 + outputBlock[j] * PrimitiveConstants.ERF_COEF_5))))
+                outputBlock[j] =
+                    outputBlock[j] * (PrimitiveConstants.ERF_COEF_1 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_2 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_3 + outputBlock[j] * (PrimitiveConstants.ERF_COEF_4 + outputBlock[j] * PrimitiveConstants.ERF_COEF_5))))
             }
 
             for (j in outputBlock.indices) {

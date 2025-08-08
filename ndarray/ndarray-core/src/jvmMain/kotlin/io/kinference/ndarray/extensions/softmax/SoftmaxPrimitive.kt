@@ -1,4 +1,5 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions.softmax
 
@@ -6,30 +7,31 @@ import io.kinference.ndarray.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.stubs.max
+import io.kinference.ndarray.extensions.MIN_VALUE_FOR_MAX
+import io.kinference.ndarray.math.*
 import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
+import io.kinference.primitives.annotations.GenerateVector
+import io.kinference.primitives.vector.*
 import io.kinference.primitives.types.*
-import io.kinference.ndarray.extensions.*
-import io.kinference.ndarray.math.exp
 import io.kinference.ndarray.math.FastMath
-import io.kinference.ndarray.stubs.MIN_VALUE_FOR_MAX
-import kotlin.math.*
+import io.kinference.ndarray.stubs.*
 
 @GenerateNameFromPrimitives
 internal suspend fun softmaxLastAxisPrimitive(input: PrimitiveNDArray, dest: MutablePrimitiveNDArray, rows: Int, columns: Int): MutablePrimitiveNDArray {
-    val inputBlockSize = input.array.blockSize
+    val blockSize = input.array.blockSize
     val inputBlocks = input.array.blocks
     val outputArray = dest.array
     val outputBlocks = outputArray.blocks
 
-    val blocksInRow = columns / inputBlockSize
+    val blocksInRow = columns / blockSize
 
     parallelizeByRows(columns, rows, 1048576) { rowStart, rowEnd, _ ->
         for (row in rowStart until rowEnd) {
             var rowMax = PrimitiveType.MIN_VALUE_FOR_MAX
             for (blockIdx in row * blocksInRow until (row + 1) * blocksInRow) {
                 val inputBlock = inputBlocks[blockIdx]
-                rowMax = max(rowMax, inputBlock.max())
+                rowMax = maxOf(rowMax, PrimitiveSlice(inputBlock).reduce(MAX, blockSize))
             }
             for (blockIdx in row * blocksInRow until (row + 1) * blocksInRow) {
                 val inputBlock = inputBlocks[blockIdx]
@@ -41,13 +43,10 @@ internal suspend fun softmaxLastAxisPrimitive(input: PrimitiveNDArray, dest: Mut
         }
     }
 
-    parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
+    parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockNum]
-
-            for (j in outputBlock.indices) {
-                outputBlock[j] = FastMath.exp(outputBlock[j])
-            }
+            Exp(PrimitiveSlice(outputBlock)).into(outputBlock, 0, blockSize)
         }
     }
 
@@ -56,7 +55,7 @@ internal suspend fun softmaxLastAxisPrimitive(input: PrimitiveNDArray, dest: Mut
             var rowSum = (0).toPrimitive()
             for (blockIdx in row * blocksInRow until (row + 1) * blocksInRow) {
                 val outputBlock = outputBlocks[blockIdx]
-                rowSum += outputBlock.sum()
+                rowSum += PrimitiveSlice(outputBlock).reduce(ADD, blockSize)
             }
 
             for (blockIdx in row * blocksInRow until (row + 1) * blocksInRow) {
@@ -106,7 +105,7 @@ internal suspend fun softmaxVer13Primitive(
                     val maxBlock = maxesArray.blocks[maxBlockStart + blockNum]
 
                     for (j in inputBlock.indices) {
-                        maxBlock[j] = max(inputBlock[j], maxBlock[j])
+                        maxBlock[j] = maxOf(inputBlock[j], maxBlock[j])
                     }
                 }
             }
@@ -132,10 +131,7 @@ internal suspend fun softmaxVer13Primitive(
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 2048) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockNum]
-
-            for (j in outputBlock.indices) {
-                outputBlock[j] = FastMath.exp(outputBlock[j])
-            }
+            Exp(PrimitiveSlice(outputBlock)).into(outputBlock, 0, inputBlockSize)
         }
     }
 
@@ -196,7 +192,7 @@ internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, dest: Mutable
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 65536) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            maxesArray[blockNum] = inputBlocks[blockNum].max()
+            maxesArray[blockNum] = PrimitiveSlice(inputBlocks[blockNum]).reduce(MAX, inputBlockSize)
         }
     }
 
@@ -211,7 +207,7 @@ internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, dest: Mutable
             val rowBlockStart = rowNum * blocksInRow
             var localMax = PrimitiveType.MIN_VALUE_FOR_MAX
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
-                localMax = max(localMax, maxesArray[rowBlockIdx])
+                localMax = maxOf(localMax, maxesArray[rowBlockIdx])
             }
 
             for (rowBlockIdx in rowBlockStart until rowBlockStart + blocksInRow) {
@@ -233,9 +229,7 @@ internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, dest: Mutable
         for (blockNum in blockStart until blockEnd) {
             val outputBlock = outputArray.blocks[blockNum]
 
-            for (j in outputBlock.indices) {
-                outputBlock[j] = FastMath.exp(outputBlock[j])
-            }
+            Exp(PrimitiveSlice(outputBlock)).into(outputBlock, 0, inputBlockSize)
         }
     }
 
@@ -247,7 +241,7 @@ internal suspend fun softmaxVer1Primitive(input: PrimitiveNDArray, dest: Mutable
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(inputBlockSize, inputBlocks.size, 131072) { blockStart, blockEnd, _ ->
         for (blockNum in blockStart until blockEnd) {
-            sumsArray[blockNum] = outputArray.blocks[blockNum].sum()
+            sumsArray[blockNum] = PrimitiveSlice(outputArray.blocks[blockNum]).reduce(ADD, inputBlockSize)
         }
     }
 

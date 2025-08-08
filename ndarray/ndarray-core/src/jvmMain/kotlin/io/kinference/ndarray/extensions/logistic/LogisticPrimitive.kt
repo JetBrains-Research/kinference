@@ -1,4 +1,6 @@
 @file:GeneratePrimitives(DataType.FLOAT, DataType.DOUBLE)
+@file:Suppress("unused")
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions.logistic
 
@@ -9,9 +11,10 @@ import io.kinference.primitives.annotations.GenerateNameFromPrimitives
 import io.kinference.primitives.annotations.GeneratePrimitives
 import io.kinference.primitives.types.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
-import io.kinference.ndarray.math.FastMath
-import io.kinference.ndarray.math.exp
-import io.kinference.ndarray.stubs.abs
+import io.kinference.primitives.annotations.GenerateVector
+import io.kinference.primitives.vector.*
+import io.kinference.ndarray.math.*
+import kotlin.math.exp
 import kotlin.math.abs
 
 
@@ -27,15 +30,15 @@ internal suspend fun logisticPrimitive(input: PrimitiveNDArray, dest: MutablePri
             val inputBlock = inputBlocks[blockNum]
             val outputBlock = outputBlocks[blockNum]
 
-            for (j in outputBlock.indices) {
-                val inputValue = inputBlock[j]
-                val midValue = PrimitiveConstants.ONE / (PrimitiveConstants.ONE + FastMath.exp(-abs(inputValue)))
+            val mid =
+                Div(Value(PrimitiveConstants.ONE), Add(Value(PrimitiveConstants.ONE + PrimitiveConstants.ZERO), Exp(Neg(Abs(PrimitiveSlice(inputBlock))))))
+            IfElse(
+                GE(PrimitiveSlice(inputBlock), Value(PrimitiveConstants.ZERO)),
+                mid,
+                Sub(Value(PrimitiveConstants.ONE), mid)
+            ).into(outputBlock, 0, inputBlockSize)
 
-                if (inputValue < PrimitiveConstants.ZERO)
-                    outputBlock[j] = PrimitiveConstants.ONE - midValue
-                else
-                    outputBlock[j] = midValue
-            }
+
         }
     }
 

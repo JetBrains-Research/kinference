@@ -4,6 +4,7 @@ import io.kinference.ndarray.arrays.Strides
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.min
+import jdk.incubator.vector.*
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
@@ -88,10 +89,12 @@ fun interface ParallelizeBody {
 /*
  * Parallelize with batching by minDataPerLaunch
  */
-suspend fun parallelizeByBlocks(blockSize: Int,
-                                countBlocks: Int,
-                                minDataPerLaunch: Int,
-                                body: ParallelizeBody) {
+suspend fun parallelizeByBlocks(
+    blockSize: Int,
+    countBlocks: Int,
+    minDataPerLaunch: Int,
+    body: ParallelizeBody
+) {
 
     val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
 
@@ -108,7 +111,8 @@ suspend fun parallelizeByBlocks(blockSize: Int,
     }
 }
 
-suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) =
+    parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
 
 internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
     val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)
@@ -120,4 +124,14 @@ internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int
     val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
 
     return min(batchSize, countRows)
+}
+
+object VecUtils {
+    val isModuleLoaded: Boolean
+        get() {
+            return true
+            //return if (ModuleLayer.boot().modules().stream().anyMatch { it.name == "jdk.incubator.vector" })
+            //    FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 8
+            //else throw RuntimeException("Vector API is not supported")
+        }
 }

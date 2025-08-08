@@ -20,6 +20,7 @@ plugins {
 
 allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
         maven(url = "https://packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
@@ -52,7 +53,7 @@ subprojects {
                         name = "KInference"
                         description =
                             "KInference is a library that simplifies the execution of complex ONNX machine learning models in Kotlin. " +
-                            "It ensures efficient inference of these models on various platforms and is designed for both server-side and local usage."
+                                    "It ensures efficient inference of these models on various platforms and is designed for both server-side and local usage."
 
                         licenses {
                             license {
@@ -93,7 +94,7 @@ subprojects {
     }
 
     val kotlinVersion = KotlinVersion.KOTLIN_2_0
-    val jvmTargetVersion = JvmTarget.JVM_17
+    val jvmTargetVersion = JvmTarget.JVM_21
 
     tasks.withType(KotlinCompilationTask::class.java) {
         compilerOptions {
@@ -103,11 +104,28 @@ subprojects {
             if (this is KotlinJvmCompilerOptions) {
                 jvmTarget.set(jvmTargetVersion)
             }
+
         }
     }
 
     tasks.withType(JavaCompile::class.java) {
-        sourceCompatibility = jvmTargetVersion.toString()
-        targetCompatibility = jvmTargetVersion.toString()
+        sourceCompatibility = jvmTargetVersion.ordinal.toString()
+        targetCompatibility = jvmTargetVersion.ordinal.toString()
     }
+
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("--module-path", System.getProperty("java.home") + "/jmods"))
+        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
+    }
+
+    tasks.withType<Test> {
+        jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
+        jvmArgs("--add-modules", "jdk.incubator.vector")
+    }
+
+    tasks.withType<JavaExec> {
+        jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
+        jvmArgs("--add-modules", "jdk.incubator.vector")
+    }
+
 }

@@ -13,7 +13,7 @@ slf4j = "2.0.9"
 wire = "4.9.3"
 fastutil = "8.5.14"
 
-primitives = "2.0.0-1"
+primitives = "2.1.0-dev"
 
 # JS Dependencies
 loglevel = "1.8.1"
@@ -41,4 +41,4 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
 fastutil-core = { module = "it.unimi.dsi:fastutil-core", version.ref = "fastutil" }
 
-kotlinx-coroutines-test =  { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }

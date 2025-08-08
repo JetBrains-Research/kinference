@@ -33,6 +33,7 @@ include(":examples")
 
 pluginManagement {
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         mavenCentral()
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
