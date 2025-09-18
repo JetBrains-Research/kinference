@@ -39,3 +39,5 @@ pluginManagement {
         maven(url = "https://packages.jetbrains.team/maven/p/ki/maven")
     }
 }
+
+include("inference:inference-core:src:jvmMain:jvmBenchmark")
