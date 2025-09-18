@@ -48,7 +48,7 @@ object PredictionConfigs {
     val DefaultManualAllocator: PredictionConfig = PredictionConfig(
         parallelismLimit = PlatformUtils.cores,
         allocationMode = AllocationMode.Manual,
-        memoryThreshold = 50 * 1024 * 1024,
+        memoryThreshold = 200 * 1024 * 1024,
         memoryClearingInterval = 500
     )
     val NoAllocator: PredictionConfig = PredictionConfig(
