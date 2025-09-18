@@ -41,18 +41,12 @@ fun getBlockSize(n: Int, max: Int): Int {
     return ret
 }
 
-var MAX_BLOCK_SIZE = 4096
-
 fun blockSizeByStrides(strides: Strides): Int {
     return when {
         strides.linearSize == 0 -> 0
         strides.shape.isEmpty() -> 1
         else -> {
             val rowSize = strides.shape.last()
-            //var blockSize = MAX_BLOCK_SIZE
-            //while (rowSize % blockSize != 0)
-            //    --blockSize
-
             val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
                 var num = rowSize / MIN_BLOCK_SIZE
                 while (rowSize % num != 0) num--
@@ -60,26 +54,6 @@ fun blockSizeByStrides(strides: Strides): Int {
             }
 
             blockSize
-        }
-    }
-}
-
-fun bigBlockSizeByStrides(strides: Strides): Int {
-    return when {
-        strides.linearSize == 0 -> 0
-        strides.shape.isEmpty() -> 1
-        strides.shape.last() > MAX_BLOCK_SIZE -> blockSizeByStrides(strides)
-        else -> {
-            val rowSize = strides.shape.last()
-            var suffixProd = 1
-            for (curDim in strides.shape.reversed()) {
-                if (suffixProd * curDim > MAX_BLOCK_SIZE) {
-                    return suffixProd * getBlockSize(curDim, MAX_BLOCK_SIZE / suffixProd)
-                } else {
-                    suffixProd *= curDim
-                }
-            }
-            return suffixProd
         }
     }
 }

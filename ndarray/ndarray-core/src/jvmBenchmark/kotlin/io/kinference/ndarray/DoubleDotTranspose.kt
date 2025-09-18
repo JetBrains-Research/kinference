@@ -15,13 +15,13 @@ open class DoubleDotTranspose {
     lateinit var right: DoubleNDArray
     var alpha: Double = 1.0
     lateinit var dest: MutableDoubleNDArray
-    
+
 
     @Setup
     fun genArrays() = runBlocking {
         val strides = Strides(IntArray(2) { rank })
-        left = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
-        right = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
+        left = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
+        right = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
         alpha = Random.nextDouble()
         dest = DoubleNDArray.zeros(IntArray(2) { rank })
     }

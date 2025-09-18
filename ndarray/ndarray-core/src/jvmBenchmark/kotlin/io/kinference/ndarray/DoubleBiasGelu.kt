@@ -4,32 +4,30 @@ import kotlinx.benchmark.*
 import io.kinference.ndarray.arrays.*
 import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.gelu.computeGeluDouble
-import io.kinference.ndarray.extensions.gelu.computeGeluFloat
 import io.kinference.ndarray.extensions.gelu.vecGeluDouble
-import io.kinference.ndarray.extensions.gelu.vecFastGeluPrimitive
-import kotlin.random.Random
+import io.kinference.utils.inlines.InlineInt
 import kotlinx.coroutines.runBlocking
 
 @State(Scope.Benchmark)
 open class DoubleBiasGelu {
-    @Param("100", "200", "400")
+    @Param("2304", "768", "1000")
     var rank: Int = 0
     lateinit var src: DoubleNDArray
     lateinit var bias: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
-    
 
     @Setup
     fun genArrays() = runBlocking {
-        val strides = Strides(IntArray(3) { rank })
+        val strides = Strides(IntArray(2) { rank })
         src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
         bias = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
+        dest = MutableDoubleNDArray(strides)
     }
 
     @Benchmark
     fun standard(bh: Blackhole) {
         runBlocking {
-            dest = computeGeluDouble(src, bias)
+            dest = computeGeluDouble(src, bias, dest)
         }
         bh.consume(dest)
     }
@@ -37,22 +35,8 @@ open class DoubleBiasGelu {
     @Benchmark
     fun vectorized(bh: Blackhole) {
         runBlocking {
-            dest = vecGeluDouble(src, bias)
+            dest = vecGeluDouble(src, bias, dest)
         }
         bh.consume(dest)
     }
-
 }
-
-// DoubleSoftmax13.standard       100  thrpt    5  385.272 ±  15.268  ops/s
-// DoubleSoftmax13.standard       200  thrpt    5   54.953 ±  68.908  ops/s
-// DoubleSoftmax13.standard       400  thrpt    5    9.679 ±   0.660  ops/s
-// DoubleSoftmax13.vectorized     100  thrpt    5  438.411 ±  18.189  ops/s
-// DoubleSoftmax13.vectorized     200  thrpt    5   63.997 ±  87.344  ops/s
-// DoubleSoftmax13.vectorized     400  thrpt    5   13.138 ±   0.078  ops/s
-// FloatSoftmax13.standard        100  thrpt    5  459.294 ± 482.716  ops/s
-// FloatSoftmax13.standard        200  thrpt    5   60.638 ± 112.389  ops/s
-// FloatSoftmax13.standard        400  thrpt    5   12.688 ±   0.050  ops/s
-// FloatSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
-// FloatSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
-// FloatSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s

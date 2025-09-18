@@ -10,23 +10,32 @@ import io.kinference.ndarray.extensions.softmax.vectorizedSoftmaxDouble
 
 @State(Scope.Benchmark)
 open class DoubleSoftmax {
-    @Param("100", "200", "400")
-    var rank: Int = 0
+    @Param("0", "1", "2", "3")
+    var type: Int = 0
+    val shape = arrayOf(
+        intArrayOf(10000, 10000),
+        intArrayOf(20000, 20000),
+        intArrayOf(10000, 30000),
+        intArrayOf(5000, 60000),
+    )
+    @Param("2048", "4096", "8192", "16384")
+    var bs = 0
     lateinit var src: DoubleNDArray
     lateinit var dest: MutableDoubleNDArray
-    
+
 
     @Setup
     fun genArrays() = runBlocking {
-        val strides = Strides(IntArray(3) { rank })
-        src = DoubleNDArray(DoubleTiledArray(strides){ randomDouble()}, strides)
-        dest = DoubleNDArray.zeros(IntArray(3) { rank })
+        MIN_BLOCK_SIZE = bs
+        val strides = Strides(shape[type])
+        src = DoubleNDArray(DoubleTiledArray(strides) { randomDouble() }, strides)
+        dest = DoubleNDArray.zeros(shape[type])
     }
 
     @Benchmark
     fun standard(bh: Blackhole) {
         runBlocking {
-            softmaxDouble(src, dest, rank, rank*rank)
+            softmaxDouble(src, dest, shape[type][0], shape[type][1])
         }
         bh.consume(dest)
     }
@@ -34,7 +43,7 @@ open class DoubleSoftmax {
     @Benchmark
     fun vectorized(bh: Blackhole) {
         runBlocking {
-            vectorizedSoftmaxDouble(src, dest, rank, rank*rank)
+            vectorizedSoftmaxDouble(src, dest, shape[type][0], shape[type][1])
         }
         bh.consume(dest)
     }
@@ -53,3 +62,17 @@ open class DoubleSoftmax {
 // FloatSoftmax13.vectorized      100  thrpt    5  471.050 ± 267.910  ops/s
 // FloatSoftmax13.vectorized      200  thrpt    5  100.519 ±  16.921  ops/s
 // FloatSoftmax13.vectorized      400  thrpt    5   13.911 ±   1.019  ops/s
+
+
+// DoubleSoftmax.standard         100  thrpt    5  256.336 ± 36.168  ops/s
+// DoubleSoftmax.standard         200  thrpt    5   47.665 ±  0.486  ops/s
+// DoubleSoftmax.standard         400  thrpt    5    7.475 ±  0.759  ops/s
+// DoubleSoftmax.vectorized       100  thrpt    5  343.252 ± 25.629  ops/s
+// DoubleSoftmax.vectorized       200  thrpt    5   67.822 ±  0.368  ops/s
+// DoubleSoftmax.vectorized       400  thrpt    5   11.269 ±  0.106  ops/s
+// DoubleSoftmax13.standard       100  thrpt    5  289.671 ± 10.640  ops/s
+// DoubleSoftmax13.standard       200  thrpt    5   48.527 ±  3.768  ops/s
+// DoubleSoftmax13.standard       400  thrpt    5    7.712 ±  0.378  ops/s
+// DoubleSoftmax13.vectorized     100  thrpt    5  362.637 ± 10.170  ops/s
+// DoubleSoftmax13.vectorized     200  thrpt    5   65.068 ±  6.079  ops/s
+// DoubleSoftmax13.vectorized     400  thrpt    5   12.376 ±  0.275  ops/s
