@@ -2,16 +2,19 @@
 
 package io.kinference.ndarray.arrays
 
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.tiled.PrimitiveTiledArray
 import io.kinference.ndarray.extensions.*
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.utils.inlines.InlineInt
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmName
 
 @GenerateNameFromPrimitives
 @MakePublic
-internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides), MutableNumberNDArrayCore {
+internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides: Strides = Strides.EMPTY) : PrimitiveNDArray(array, strides),
+    MutableNumberNDArrayCore {
     override fun set(index: IntArray, value: Any) {
         require(index.size == rank) { "Index size should contain $rank elements, but ${index.size} given" }
         val linearIndex = strides.offset(index)
@@ -77,6 +80,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                     }
                 }
             }
+
             this.isScalar() -> error("Plus assign of a scalar into a matrix is prohibited")
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 // TODO change to real plusAssign
@@ -118,6 +122,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                     }
                 }
             }
+
             this.isScalar() -> error("Minus assign of a scalar into a matrix is prohibited")
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
@@ -148,6 +153,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                     }
                 }
             }
+
             this.isScalar() -> error("Times assign of a scalar into a matrix is prohibited")
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
@@ -178,6 +184,7 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
                     }
                 }
             }
+
             this.isScalar() -> error("Div assign of a scalar into a matrix is prohibited")
             else -> this.applyWithBroadcast(other, this, true) { left, right, dest ->
                 left as PrimitiveNDArray; right as PrimitiveNDArray; dest as MutablePrimitiveNDArray
@@ -213,12 +220,24 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
 
         @JvmName("invokeStrides")
         suspend operator fun invoke(strides: Strides): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, strides) ?: MutablePrimitiveNDArray(
+                PrimitiveTiledArray(
+                    strides
+                ), strides
+            )) as MutablePrimitiveNDArray
         }
 
         @JvmName("invokeStridesInlineInt")
         suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(strides, init), strides)
+            val nda = MutablePrimitiveNDArray(strides)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeStridesIntArray")
@@ -229,22 +248,48 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
 
         @JvmName("invokeShape")
         suspend operator fun invoke(shape: IntArray): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+            val strides = Strides(shape)
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, strides) ?: MutablePrimitiveNDArray(
+                PrimitiveTiledArray(
+                    strides
+                ), strides
+            )) as MutablePrimitiveNDArray
         }
 
         @JvmName("invokeShapeVarArg")
         suspend operator fun invoke(vararg shape: Int): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+            val strides = Strides(shape)
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, strides) ?: MutablePrimitiveNDArray(
+                PrimitiveTiledArray(
+                    strides
+                ), strides
+            )) as MutablePrimitiveNDArray
         }
 
         @JvmName("invokeShapeInlineInt")
         suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+            val nda = MutablePrimitiveNDArray(shape)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeShapeVarArgInlineInt")
         suspend operator fun invoke(vararg shape: Int, init: (InlineInt) -> PrimitiveType): MutablePrimitiveNDArray {
-            return MutablePrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+            val nda = MutablePrimitiveNDArray(shape)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeShapeIntArray")
@@ -256,5 +301,9 @@ internal open class MutablePrimitiveNDArray(array: PrimitiveTiledArray, strides:
         suspend operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): MutablePrimitiveNDArray {
             return invoke(Strides(shape), init)
         }
+    }
+
+    override suspend fun close() {
+        coroutineContext[ManualAllocatorContext]?.returnNDArray(this)
     }
 }

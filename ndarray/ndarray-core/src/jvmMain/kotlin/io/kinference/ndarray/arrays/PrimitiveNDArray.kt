@@ -5,6 +5,7 @@
 package io.kinference.ndarray.arrays
 
 import io.kinference.ndarray.*
+import io.kinference.ndarray.arrays.memory.contexts.ManualAllocatorContext
 import io.kinference.ndarray.arrays.pointers.*
 import io.kinference.ndarray.arrays.pointers.accept
 import io.kinference.ndarray.arrays.pointers.isCompatibleWith
@@ -27,6 +28,7 @@ import io.kinference.ndarray.stubs.isCompatibleWith
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
 import io.kinference.primitives.vector.*
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmName
 import kotlin.math.*
 
@@ -1298,12 +1300,26 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
         @JvmName("invokeStrides")
         suspend operator fun invoke(strides: Strides): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+            //return PrimitiveNDArray(PrimitiveTiledArray(strides), strides)
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, strides) ?: PrimitiveNDArray(
+                PrimitiveTiledArray(
+                    strides
+                ), strides
+            )) as PrimitiveNDArray
+            //return coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, strides) as PrimitiveNDArray
         }
 
         @JvmName("invokeStridesInlineInt")
         suspend operator fun invoke(strides: Strides, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(strides, init), strides)
+            val nda = PrimitiveNDArray(strides)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeStridesIntArray")
@@ -1314,22 +1330,48 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
 
         @JvmName("invokeShape")
         suspend operator fun invoke(shape: IntArray): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+            //return
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, Strides(shape)) ?: PrimitiveNDArray(
+                PrimitiveTiledArray(
+                    shape
+                ), Strides(shape)
+            )) as PrimitiveNDArray
         }
 
         @JvmName("invokeShapeVarArg")
         suspend operator fun invoke(vararg shape: Int): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+            //    return PrimitiveNDArray(PrimitiveTiledArray(shape), Strides(shape))
+            return (coroutineContext[ManualAllocatorContext]?.getNDArray(DataType.CurrentPrimitive, Strides(shape)) ?: PrimitiveNDArray(
+                PrimitiveTiledArray(
+                    shape
+                ), Strides(shape)
+            )) as PrimitiveNDArray
         }
 
         @JvmName("invokeShapeInlineInt")
         suspend operator fun invoke(shape: IntArray, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+            val nda = PrimitiveNDArray(shape)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeShapeVarArgInlineInt")
         suspend operator fun invoke(vararg shape: Int, init: (InlineInt) -> PrimitiveType): PrimitiveNDArray {
-            return PrimitiveNDArray(PrimitiveTiledArray(shape, init), Strides(shape))
+            val nda = PrimitiveNDArray(shape)
+            val array = nda.array
+            var count = 0
+            for (block in array.blocks) {
+                for (idx in block.indices) {
+                    block[idx] = init(InlineInt(count++))
+                }
+            }
+            return nda
         }
 
         @JvmName("invokeShapeIntArray")
@@ -1341,6 +1383,10 @@ internal open class PrimitiveNDArray(array: PrimitiveTiledArray, strides: Stride
         suspend operator fun invoke(vararg shape: Int, init: (IntArray) -> PrimitiveType): PrimitiveNDArray {
             return invoke(Strides(shape), init)
         }
+    }
+
+    override suspend fun close() {
+        coroutineContext[ManualAllocatorContext]?.returnNDArray(this)
     }
 }
 

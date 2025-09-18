@@ -1,6 +1,8 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.arrays.Strides
+import io.kinference.ndarray.extensions.dot.DotUtils
+import io.kinference.utils.PlatformUtils
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.min
@@ -31,7 +33,15 @@ fun IntArray.concat(value: Int): IntArray {
     return copy
 }
 
-private const val MIN_BLOCK_SIZE = 512
+var MIN_BLOCK_SIZE = 4096
+
+fun getBlockSize(n: Int, max: Int): Int {
+    var ret = max
+    while (n % ret != 0) ret--
+    return ret
+}
+
+var MAX_BLOCK_SIZE = 4096
 
 fun blockSizeByStrides(strides: Strides): Int {
     return when {
@@ -39,6 +49,9 @@ fun blockSizeByStrides(strides: Strides): Int {
         strides.shape.isEmpty() -> 1
         else -> {
             val rowSize = strides.shape.last()
+            //var blockSize = MAX_BLOCK_SIZE
+            //while (rowSize % blockSize != 0)
+            //    --blockSize
 
             val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
                 var num = rowSize / MIN_BLOCK_SIZE
@@ -51,14 +64,30 @@ fun blockSizeByStrides(strides: Strides): Int {
     }
 }
 
+fun bigBlockSizeByStrides(strides: Strides): Int {
+    return when {
+        strides.linearSize == 0 -> 0
+        strides.shape.isEmpty() -> 1
+        strides.shape.last() > MAX_BLOCK_SIZE -> blockSizeByStrides(strides)
+        else -> {
+            val rowSize = strides.shape.last()
+            var suffixProd = 1
+            for (curDim in strides.shape.reversed()) {
+                if (suffixProd * curDim > MAX_BLOCK_SIZE) {
+                    return suffixProd * getBlockSize(curDim, MAX_BLOCK_SIZE / suffixProd)
+                } else {
+                    suffixProd *= curDim
+                }
+            }
+            return suffixProd
+        }
+    }
+}
+
 const val ERF_P_VALUE = 0.3275911
 const val ERF_P_VALUE_FLOAT = 0.3275911f
 val ERF_COEF = doubleArrayOf(
-    0.254829592,
-    -0.284496736,
-    1.421413741,
-    -1.453152027,
-    1.061405429
+    0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429
 )
 
 const val ERF_COEF_1_FLOAT = 0.254829592f
@@ -89,10 +118,7 @@ fun interface ParallelizeBody {
  * Parallelize with batching by minDataPerLaunch
  */
 suspend fun parallelizeByBlocks(
-    blockSize: Int,
-    countBlocks: Int,
-    minDataPerLaunch: Int,
-    body: ParallelizeBody
+    blockSize: Int, countBlocks: Int, minDataPerLaunch: Int, body: ParallelizeBody
 ) {
 
     val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
@@ -119,18 +145,53 @@ internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunc
     return (countRows + batchSize - 1) / batchSize
 }
 
-internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
-    //val availableCores = Runtime.getRuntime().availableProcessors()
-    //val minBatchSize = (countRows + availableCores - 1) / availableCores
-    //val batchSize = max((minDataPerLaunch + rowSize - 1) / rowSize, minBatchSize)
-    val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
+var LIMIT_COROUTINES = false
 
-    return min(batchSize, countRows)
+internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
+    val cores = PlatformUtils.cores
+    val batchSize = min((minDataPerLaunch + rowSize - 1) / rowSize, countRows)
+    val maxLaunches = cores * (cores + 1) / 2
+    return if (LIMIT_COROUTINES) batchSize else
+        maxOf(batchSize, (countRows + maxLaunches - 1) / maxLaunches)
+
+}
+
+suspend fun parallelizeByRowsWithLim(
+    rowSize: Int,
+    countRows: Int,
+    minDataPerLaunch: Int,
+    body: ParallelizeBody
+) {
+    val cores = PlatformUtils.cores
+    val maxLaunches = cores * (cores + 1) / 2
+    val batchSize = maxOf(
+        batchSizeByData(rowSize, countRows, minDataPerLaunch),
+        (countRows + maxLaunches - 1) / maxLaunches
+    )
+    if (batchSize == countRows) {
+        body(0, countRows, 0)
+    } else {
+        coroutineScope {
+            for ((index, blockStart) in (0 until countRows step batchSize).withIndex()) {
+                launchWithLimitOrDefault {
+                    body(blockStart, min(blockStart + batchSize, countRows), index)
+                }
+            }
+        }
+    }
+}
+
+internal fun nbs(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
+    val cores = PlatformUtils.cores
+    val maxLaunches = cores * (cores + 1) / 2
+    val batchSize = min((minDataPerLaunch + rowSize - 1) / rowSize, countRows)
+    val lowerBound = countRows / maxLaunches
+    return maxOf(batchSize, lowerBound)
 }
 
 object VecUtils {
-    val isModuleLoaded =
-        if (ModuleLayer.boot().modules().stream().anyMatch { it.name == "jdk.incubator.vector" })
-            jdk.incubator.vector.FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 16
-        else false
+    val isModuleLoaded = if (ModuleLayer.boot().modules().stream()
+            .anyMatch { it.name == "jdk.incubator.vector" }
+    ) jdk.incubator.vector.FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 16
+    else false
 }

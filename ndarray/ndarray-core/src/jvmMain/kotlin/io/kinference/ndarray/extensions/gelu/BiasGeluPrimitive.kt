@@ -30,18 +30,14 @@ internal suspend fun computeGeluPrimitive(input: PrimitiveNDArray, bias: Primiti
     val blockSize = input.array.blockSize
 
     val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val temporaryBlocks = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
-        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
-    val temporaryBlocksAbs = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
-        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
 
 
     // Constant 2048 was precomputed on M1 Max processor
     // With this constant two launches work faster than single thread without launches
     // TODO: (cupertank) Remove constants
     parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, coroutineIndex ->
-        val temporaryBlock = temporaryBlocks[coroutineIndex]
-        val temporaryBlockAbs = temporaryBlocksAbs[coroutineIndex]
+        val temporaryBlock = PrimitiveArray(blockSize)
+        val temporaryBlockAbs = PrimitiveArray(blockSize)
 
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]
@@ -103,14 +99,9 @@ internal suspend fun vecGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveND
 
     val blockSize = input.array.blockSize
 
-    val coroutineCount = countCoroutinesByData(blockSize, inputBlocks.size, 2048)
-    val temporaryBlocks = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
-        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
-    val temporaryBlocksAbs = coroutineContext[AutoAllocatorContext]?.getPrimitiveBlock(coroutineCount, blockSize)
-        ?: Array(coroutineCount) { PrimitiveArray(blockSize) }
     parallelizeByBlocks(blockSize, inputBlocks.size, 2048) { blockStart, blockEnd, coroutineIndex ->
-        val temporaryBlock = temporaryBlocks[coroutineIndex]
-        val temporaryBlockAbs = temporaryBlocksAbs[coroutineIndex]
+        val temporaryBlock = PrimitiveArray(blockSize)
+        val temporaryBlockAbs = PrimitiveArray(blockSize)
 
         for (blockIdx in blockStart until blockEnd) {
             val outputBlock = outputBlocks[blockIdx]
@@ -120,16 +111,10 @@ internal suspend fun vecGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveND
                 temporaryBlock[j] = block[j] + biasBlock[j]
             }
 
-            for (j in temporaryBlockAbs.indices) {
-                temporaryBlockAbs[j] = temporaryBlock[j] * PrimitiveConstants.SQRT_1_2
-            }
+            Abs(Mul(PrimitiveSlice(temporaryBlock), Value(PrimitiveConstants.SQRT_1_2))).into(temporaryBlockAbs, 0, blockSize)
 
             for (j in temporaryBlock.indices) {
                 temporaryBlock[j] = temporaryBlock[j] * PrimitiveConstants.HALF
-            }
-
-            for (j in temporaryBlockAbs.indices) {
-                temporaryBlockAbs[j] = temporaryBlockAbs[j].absoluteValue
             }
 
             for (j in outputBlock.indices) {
@@ -137,7 +122,7 @@ internal suspend fun vecGeluPrimitive(input: PrimitiveNDArray, bias: PrimitiveND
             }
 
             val tba = PrimitiveSlice(temporaryBlockAbs)
-            Exp(Neg(Mul(tba,tba))).into(temporaryBlockAbs, 0, blockSize)
+            Exp(Neg(Mul(tba, tba))).into(temporaryBlockAbs, 0, blockSize)
 
             for (j in outputBlock.indices) {
                 outputBlock[j] =
