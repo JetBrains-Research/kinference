@@ -127,11 +127,8 @@ internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int
 }
 
 object VecUtils {
-    val isModuleLoaded: Boolean
-        get() {
-            return true
-            //return if (ModuleLayer.boot().modules().stream().anyMatch { it.name == "jdk.incubator.vector" })
-            //    FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 8
-            //else throw RuntimeException("Vector API is not supported")
-        }
+    val isModuleLoaded: Boolean =
+        if (ModuleLayer.boot().modules().stream().anyMatch { it.name == "jdk.incubator.vector" })
+            FloatVector.SPECIES_PREFERRED.vectorByteSize() >= 8
+        else false
 }
