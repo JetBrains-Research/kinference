@@ -113,19 +113,22 @@ subprojects {
         targetCompatibility = jvmTargetVersion.ordinal.toString()
     }
 
-    tasks.withType<JavaCompile> {
-        options.compilerArgs.addAll(listOf("--module-path", System.getProperty("java.home") + "/jmods"))
-        options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
-    }
+    val isVectorizationEnabled = project.findProperty("enableVectorization") != null
 
-    tasks.withType<Test> {
-        jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
-        jvmArgs("--add-modules", "jdk.incubator.vector")
-    }
+    if (isVectorizationEnabled) {
+        tasks.withType<JavaCompile> {
+            options.compilerArgs.addAll(listOf("--module-path", System.getProperty("java.home") + "/jmods"))
+            options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
+        }
 
-    tasks.withType<JavaExec> {
-        jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
-        jvmArgs("--add-modules", "jdk.incubator.vector")
-    }
+        tasks.withType<Test> {
+            jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
+            jvmArgs("--add-modules", "jdk.incubator.vector")
+        }
 
+        tasks.withType<JavaExec> {
+            jvmArgs("--module-path", System.getProperty("java.home") + "/jmods")
+            jvmArgs("--add-modules", "jdk.incubator.vector")
+        }
+    }
 }
