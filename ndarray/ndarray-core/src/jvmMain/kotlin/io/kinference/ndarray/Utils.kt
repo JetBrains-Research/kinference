@@ -1,10 +1,12 @@
 package io.kinference.ndarray
 
 import io.kinference.ndarray.arrays.Strides
+import io.kinference.utils.PlatformUtils
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.min
 import jdk.incubator.vector.*
+import kotlin.math.max
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
@@ -114,15 +116,15 @@ suspend fun parallelizeByBlocks(
 suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) =
     parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
 
+private val MAX_LAUNCHES = PlatformUtils.cores * (PlatformUtils.cores + 1)
+
 internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
     val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)
-
-    return (countRows + batchSize - 1) / batchSize
+    return min((countRows + batchSize - 1) / batchSize, MAX_LAUNCHES)
 }
 
 internal fun batchSizeByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
-    val batchSize = (minDataPerLaunch + rowSize - 1) / rowSize
-
+    val batchSize = max((countRows + MAX_LAUNCHES - 1) / MAX_LAUNCHES, (minDataPerLaunch + rowSize - 1) / rowSize)
     return min(batchSize, countRows)
 }
 
