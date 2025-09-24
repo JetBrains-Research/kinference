@@ -18,6 +18,7 @@ kotlin {
                 implementation(libs.kotlinx.atomicfu)
                 api(libs.apache.commons.math4.core)
                 api(libs.fastutil.core)
+                implementation(libs.oshi.core)
             }
         }
     }

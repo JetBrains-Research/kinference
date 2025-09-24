@@ -4,6 +4,8 @@ import io.kinference.ndarray.arrays.Strides
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.min
+import oshi.SystemInfo
+import oshi.hardware.CentralProcessor
 
 fun Double.toUShort() = this.toInt().toUShort()
 fun Double.toUByte() = this.toInt().toUByte()
@@ -31,23 +33,36 @@ fun IntArray.concat(value: Int): IntArray {
     return copy
 }
 
-private const val MIN_BLOCK_SIZE = 512
+private val L1CacheSize: Int? = try {
+    val processor = SystemInfo().hardware.processor
+    val caches = processor.processorCaches.filter {
+        it.level.toInt() == 1 && it.type == CentralProcessor.ProcessorCache.Type.DATA
+    }
+    if (caches.size != 1) null else caches[0].cacheSize
+} catch (e: Exception) {
+    null
+}
+
+private const val MIN_BLOCK_SIZE = 1024
+private val MAX_BLOCK_SIZE = when (L1CacheSize) {
+    null -> MIN_BLOCK_SIZE
+    else -> maxOf(L1CacheSize * 3 / 32, MIN_BLOCK_SIZE)
+}
+
+private fun getBlocksize(size: Int): Int {
+    if (size < MAX_BLOCK_SIZE) return size
+    var blockNum = size / MAX_BLOCK_SIZE
+    val maxBlockNum = size / MIN_BLOCK_SIZE
+    while (size % blockNum != 0 && blockNum + 1 < maxBlockNum) blockNum++
+    while (size % blockNum != 0) blockNum--
+    return size / blockNum
+}
 
 fun blockSizeByStrides(strides: Strides): Int {
     return when {
         strides.linearSize == 0 -> 0
         strides.shape.isEmpty() -> 1
-        else -> {
-            val rowSize = strides.shape.last()
-
-            val blockSize = if (rowSize < MIN_BLOCK_SIZE) rowSize else {
-                var num = rowSize / MIN_BLOCK_SIZE
-                while (rowSize % num != 0) num--
-                rowSize / num
-            }
-
-            blockSize
-        }
+        else -> getBlocksize(strides.shape.last())
     }
 }
 
@@ -88,10 +103,12 @@ fun interface ParallelizeBody {
 /*
  * Parallelize with batching by minDataPerLaunch
  */
-suspend fun parallelizeByBlocks(blockSize: Int,
-                                countBlocks: Int,
-                                minDataPerLaunch: Int,
-                                body: ParallelizeBody) {
+suspend fun parallelizeByBlocks(
+    blockSize: Int,
+    countBlocks: Int,
+    minDataPerLaunch: Int,
+    body: ParallelizeBody
+) {
 
     val batchSize = batchSizeByData(blockSize, countBlocks, minDataPerLaunch)
 
@@ -108,7 +125,8 @@ suspend fun parallelizeByBlocks(blockSize: Int,
     }
 }
 
-suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) = parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
+suspend inline fun parallelizeByRows(rowSize: Int, countRows: Int, minDataPerLaunch: Int, body: ParallelizeBody) =
+    parallelizeByBlocks(rowSize, countRows, minDataPerLaunch, body)
 
 internal fun countCoroutinesByData(rowSize: Int, countRows: Int, minDataPerLaunch: Int): Int {
     val batchSize = batchSizeByData(rowSize, countRows, minDataPerLaunch)

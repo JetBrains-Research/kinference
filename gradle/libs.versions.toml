@@ -9,6 +9,7 @@ kotlin-coroutines = "1.9.0"
 multik = "0.2.2"
 okio = "3.6.0"
 onnxruntime = "1.17.0.patched-1"
+oshi-core = "6.9.0"
 slf4j = "2.0.9"
 wire = "4.9.3"
 fastutil = "8.5.14"
@@ -36,6 +37,7 @@ multik-core = { module = "org.jetbrains.kotlinx:multik-core", version.ref = "mul
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 onnxruntime-cpu = { module = "com.microsoft.onnxruntime:onnxruntime", version.ref = "onnxruntime" }
 onnxruntime-gpu = { module = "com.microsoft.onnxruntime:onnxruntime_gpu", version.ref = "onnxruntime" }
+oshi-core = {module = "com.github.oshi:oshi-core", version.ref = "oshi-core"}
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
