@@ -9,3 +9,5 @@ credentials.conf
 venv
 .DS_Store
 .kotlin
+cache
+.cache
