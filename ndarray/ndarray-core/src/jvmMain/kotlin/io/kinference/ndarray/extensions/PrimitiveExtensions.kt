@@ -1,4 +1,5 @@
 @file:GeneratePrimitives(DataType.NUMBER)
+@file:GenerateVector
 
 package io.kinference.ndarray.extensions
 
@@ -11,6 +12,7 @@ import io.kinference.ndarray.arrays.tiled.*
 import io.kinference.ndarray.extensions.constants.PrimitiveConstants
 import io.kinference.primitives.annotations.*
 import io.kinference.primitives.types.*
+import io.kinference.primitives.vector.*
 import io.kinference.utils.launchWithLimitOrDefault
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.CoroutineContext
@@ -32,7 +34,14 @@ internal fun erf(value: PrimitiveType): PrimitiveType {
 @SpecifyPrimitives(include = [DataType.BYTE, DataType.UBYTE])
 @BindPrimitives(type1 = [DataType.BYTE, DataType.UBYTE])
 @MakePublic
-internal suspend fun PrimitiveNDArray.quantizeDot(other: @BindPrimitives.Type1 PrimitiveNDArray, destination: MutableFloatNDArray, zeroPointA: Int = 0, zeroPointB: Int = 0, scale: Float = 1f, coroutineContext: CoroutineContext = EmptyCoroutineContext): MutableFloatNDArray {
+internal suspend fun PrimitiveNDArray.quantizeDot(
+    other: @BindPrimitives.Type1 PrimitiveNDArray,
+    destination: MutableFloatNDArray,
+    zeroPointA: Int = 0,
+    zeroPointB: Int = 0,
+    scale: Float = 1f,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): MutableFloatNDArray {
     val M = this.shape[0]
 
     suspend fun wrapper(body: suspend (inner: suspend () -> Unit) -> Unit = { it() }) {
@@ -99,6 +108,7 @@ internal suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, s
 
             output.array.pointer().accept(this.array.pointer(), output.linearSize) { _, src -> (src.toFloat() - zero) * sc }
         }
+
         canDequantizePerAxis(axis!!, zeroPoint, scale) -> {
             val actualAxis = indexAxis(axis)
             val blockCount = computeBlockSize(toDim = actualAxis)
@@ -116,6 +126,7 @@ internal suspend fun PrimitiveNDArray.dequantize(zeroPoint: PrimitiveNDArray?, s
                 }
             }
         }
+
         else -> error("Cannot perform dequantization. Scale and zero point tensors should be either scalars or 1D tensors containing ${shape[axis]} elements")
     }
 
@@ -129,6 +140,7 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
 
     val alpha = alpha.toPrimitive()
     val lrBlocksInRow = this.blocksInRow
+    val blockSize = this.array.blockSize
 
     val n = this.shape[0]
     val t = this.shape[1]
@@ -154,10 +166,7 @@ internal suspend fun PrimitiveNDArray.dotTransposedWithAlpha(alpha: Double, othe
                 for (lrBlock in 0 until lrBlocksInRow) {
                     val leftBlock = leftBlocks[leftBlockOffset + lrBlock]
                     val rightBlock = rightBlocks[rightBlockIndex++]
-
-                    for (j in leftBlock.indices) {
-                        totalSum += leftBlock[j] * rightBlock[j]
-                    }
+                    totalSum += Mul(PrimitiveSlice(leftBlock), PrimitiveSlice(rightBlock)).reduce(ADD, blockSize)
                 }
 
                 destPointer.setAndIncrement((totalSum * alpha).toPrimitive())
